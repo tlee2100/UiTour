@@ -1,0 +1,20 @@
+pages/
+
+Chức năng: chứa các trang hoàn chỉnh, thường tương ứng với route.
+
+Mục đích: phân tách page riêng biệt, dễ quản lý.
+
+Ví dụ:
+
+pages/
+├─ Home.jsx
+├─ Login.jsx
+├─ Profile.jsx
+
+// Home.jsx
+export default function Home() {
+  return <h1>Welcome to Home Page</h1>;
+}
+
+
+Mỗi page thường kết hợp nhiều component, ví dụ Navbar + Card + Footer.

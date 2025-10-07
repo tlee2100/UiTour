@@ -1,0 +1,21 @@
+services/
+
+Chức năng: chứa logic kết nối backend, gọi API.
+
+Mục đích: tách phần “giao tiếp backend” ra riêng, dễ quản lý, test.
+
+Ví dụ:
+
+// services/api.js
+export async function fetchMovies() {
+  const res = await fetch("/api/movies");
+  return res.json();
+}
+
+// Home.jsx
+import { fetchMovies } from "../services/api";
+
+const movies = await fetchMovies();
+
+
+Khi API thay đổi → chỉ sửa ở services, không sửa từng component.
