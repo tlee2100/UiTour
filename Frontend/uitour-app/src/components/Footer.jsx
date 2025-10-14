@@ -61,10 +61,12 @@ export default function Footer() {
           <div className="sub-right">
             <div className="lang-currency">
               <span className="lang">
-                <Icon icon="mdi:earth" width="16" height="16" />
+                <Icon icon="mdi:earth" className="earth-icon" width="16" height="16" />
                 English (US)
               </span>
-              <span className="currency">$ USD</span>
+              <span className="currency">
+                <span class="currency-symbol">$</span>USD
+              </span>
             </div>
             <div className="social">
               <a href="#">
