@@ -66,6 +66,36 @@ namespace UITour.Models
             modelBuilder.Entity<Booking>()
                 .Property(b => b.TotalPrice)
                 .HasColumnType("decimal(12,2)");
+
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Property)
+                .WithMany()
+                .HasForeignKey(b => b.PropertyID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Guest)
+                .WithMany()
+                .HasForeignKey(b => b.GuestID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Host)
+                .WithMany()
+                .HasForeignKey(b => b.HostID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Host>()
+                .HasMany(h => h.Properties)
+                .WithOne(p => p.Host)
+                .HasForeignKey(p => p.HostID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Host>()
+                .HasMany(h => h.Verifications)
+                .WithOne(v => v.Host)
+                .HasForeignKey(v => v.HostID)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
