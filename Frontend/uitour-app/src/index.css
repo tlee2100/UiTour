@@ -1,9 +1,3 @@
-/* Ẩn caret và disable selection cho tất cả các phần tử ngoại trừ input/textarea */
-*:not(input):not(textarea) {
-  caret-color: transparent !important; /* Ẩn con trỏ nhấp nháy */
-  user-select: none !important;         /* Không thể bôi đen / chọn text */
-}
-
 /* Reset lại cho input và textarea */
 input, textarea {
   user-select: text !important;        /* Cho phép chọn text bình thường */
