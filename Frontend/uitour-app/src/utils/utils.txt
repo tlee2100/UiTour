@@ -1,0 +1,19 @@
+utils/
+
+Chức năng: chứa hàm tiện ích, xử lý dữ liệu, format…
+
+Mục đích: tái sử dụng code chung, ví dụ định dạng tiền, ngày tháng.
+
+Ví dụ:
+
+// utils/format.js
+export function formatMoney(amount) {
+  return `$${amount.toFixed(2)}`;
+}
+
+import { formatMoney } from "../utils/format";
+
+<p>Price: {formatMoney(10.5)}</p>
+
+
+Tránh viết cùng logic nhiều nơi.

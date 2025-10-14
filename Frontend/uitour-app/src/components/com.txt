@@ -1,0 +1,25 @@
+components/
+
+Chức năng: chứa các component tái sử dụng trong app, ví dụ Button, Card, Navbar.
+
+Mục đích: viết một lần dùng nhiều nơi, tránh copy code.
+
+Ví dụ:
+
+components/
+├─ Button.jsx
+├─ Navbar.jsx
+├─ Card.jsx
+
+// Button.jsx
+export default function Button({ text, onClick }) {
+  return <button onClick={onClick}>{text}</button>;
+}
+
+// Home.jsx
+import Button from "../components/Button";
+
+<Button text="Click me" onClick={() => alert("Hello")} />
+
+
+Mỗi component là một “mảnh nhỏ” UI.
