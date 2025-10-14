@@ -1,5 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using UITour.Models;
+using UITour.DAL;
+using UITour.DAL.Interfaces;
+using UITour.DAL.Interfaces.Repositories;
+using UITour.DAL.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +14,29 @@ var connectionString = builder.Configuration.GetConnectionString("MyDB");
 // Đăng ký DbContext với DI
 builder.Services.AddDbContext<UITourContext>(options =>
     options.UseSqlServer(connectionString));
+
+// DAL registrations
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ICountryRepository, CountryRepository>();
+builder.Services.AddScoped<ICityRepository, CityRepository>();
+builder.Services.AddScoped<INeighbourhoodRepository, NeighbourhoodRepository>();
+builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
+builder.Services.AddScoped<IBedTypeRepository, BedTypeRepository>();
+builder.Services.AddScoped<ICancellationPolicyRepository, CancellationPolicyRepository>();
+builder.Services.AddScoped<IVerificationTypeRepository, VerificationTypeRepository>();
+builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IHostRepository, HostRepository>();
+builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
+builder.Services.AddScoped<IPropertyAmenityRepository, PropertyAmenityRepository>();
+builder.Services.AddScoped<IPropertyPhotoRepository, PropertyPhotoRepository>();
+builder.Services.AddScoped<ICalendarRepository, CalendarRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IHostVerificationRepository, HostVerificationRepository>();
+builder.Services.AddScoped<ISavedListingRepository, SavedListingRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
 // CORS for React dev servers
 const string CorsPolicy = "CorsPolicy";
