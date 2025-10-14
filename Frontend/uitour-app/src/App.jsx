@@ -1,5 +1,6 @@
 import { useState } from 'react'
-
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import MainLayout from './layouts/MainLayout';
 {/* Test header */}
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -10,27 +11,13 @@ function App() {
   
 
   return (
-    <div className='app-layout'>
-      {/* Gọi component Header */}
-      <Header />
-
-      {/* Nội dung khác */}
-      <main className="main-content">
-        <h2>Trang Home</h2>
-        <p>Nội dung thử nghiệm...</p>
-        <p>Nội dung mẫu</p>
-        <p>Nội dung mẫu</p>
-        <p>Nội dung mẫu</p>
-        <p>Nội dung mẫu</p>
-        <p>Nội dung mẫu</p>
-        <p>Nội dung mẫu</p>
-        <p>Nội dung mẫu</p>
-      </main>
-
-      {/* Gọi component Footer */}
-      <Footer/>
-      {/* <Footer /> */}
-    </div>
+  <Router>    
+    <Routes>
+      <Route path="/" element={<MainLayout />} >
+        
+      </Route>
+    </Routes>
+  </Router>
 
   );
     
