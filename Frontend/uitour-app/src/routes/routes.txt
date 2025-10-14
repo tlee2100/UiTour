@@ -1,0 +1,31 @@
+routes/
+
+Chức năng: chứa định nghĩa router, thường là file AppRouter.jsx.
+
+Mục đích: quản lý đường dẫn URL → component page tương ứng.
+
+Ví dụ:
+
+// routes/AppRouter.jsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "../pages/Home";
+import Login from "../pages/Login";
+
+export default function AppRouter() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+
+App.jsx thường chỉ cần:
+
+<AppRouter />
+
+
+→ tất cả routing được quản lý tập trung.
