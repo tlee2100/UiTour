@@ -98,6 +98,18 @@
   cursor: pointer;
 }
 
+.earth-icon {
+  vertical-align: bottom;
+  margin-right: 4px;
+}
+
+.currency-symbol {
+  text-decoration: none;
+  display: inline-block;
+  font-weight: normal;
+  margin-right: 4px;
+}
+
 .social {
   display: flex;
   gap: 16px;
