@@ -7,7 +7,9 @@ export default function Header() {
     <header className="header">
         {/* Logo */}
         <div className="header_logo">
-            <img src={logo} alt="UiTour Logo" className="logo" />
+            <button className="header_logoButton">
+                <img src={logo} alt="UiTour Logo" className="logo" />
+            </button>
         </div>
 
         {/* Search box */}
@@ -20,13 +22,21 @@ export default function Header() {
 
         {/* Right side */}
         <div className="header_right">
-            <span className="header_title">Become a Host</span>
+            <button className="header_title">
+                Become a Host
+            </button>
             <button className="header_globe">
                 <Icon icon="mdi:earth" width="24" height="24" />
             </button>
             <div className="header_profile">
-                <span className="header_menu">☰</span>
-                <div className="header_avatar"></div>
+                <button className="header_menu">
+                    <Icon icon="mdi:menu" width="24" height="24" />
+                </button>
+                <div className="header_avatar">
+                    <button className="header_avatarButton">
+                        <Icon icon="mdi:account" width="32" height="32" />
+                    </button>
+                </div>
             </div>
         </div>
     </header>
