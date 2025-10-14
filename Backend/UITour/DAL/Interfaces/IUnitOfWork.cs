@@ -2,7 +2,8 @@
  
  namespace UITour.DAL.Interfaces
  {
-     public interface IUnitOfWork : IAsyncDisposable
+    //gom het tat ca repository vao 1 transaction duy nhat de tranh viec save changes nhieu lan
+    public interface IUnitOfWork : IAsyncDisposable
      {
          ICountryRepository Countries { get; }
          ICityRepository Cities { get; }
