@@ -65,7 +65,7 @@ export default function Footer() {
                 English (US)
               </span>
               <span className="currency">
-                <span class="currency-symbol">$</span>USD
+                <span className="currency-symbol">$</span>USD
               </span>
             </div>
             <div className="social">
