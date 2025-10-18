@@ -39,15 +39,15 @@ const InfoHeader = () => {
 
         {/* Bên phải */}
         <div className="right">
-          <div className="icon-text">
+          <button className="icon-button share-button">
             <ShareIcon className="icon share-icon"/>
             <span className="text">Share</span>
-          </div>
+          </button>
 
-          <div className="icon-text">
+          <button className="icon-button save-button">
             <HeartIcon className="icon heart-icon"/>
             <span className="text">Save</span>
-          </div>
+          </button>
         </div>
       </div>
     </header>
