@@ -6,6 +6,7 @@ using UITour.Models;
 
 namespace UITour.DAL
 {
+    //tao db context 1 lan duy nhat
     public class UnitOfWork : IUnitOfWork
     {
         private readonly UITourContext _context;

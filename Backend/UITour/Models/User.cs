@@ -15,5 +15,7 @@ namespace UITour.Models
         public ICollection<Message> ReceivedMessages { get; set; }
         public ICollection<SavedListing> SavedListings { get; set; }
         public ICollection<Review> Reviews { get; set; }
+        public string? PasswordHash { get; set; } // Nullable property
+        public string? Name { get; set; } // Nullable alias for FullName
     }
 }
