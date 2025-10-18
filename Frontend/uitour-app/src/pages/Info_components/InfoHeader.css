@@ -62,12 +62,24 @@
   height: auto;
 }
 
+.info-header .icon-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: transparent;
+  border-radius: 8px;
+  border: none;
+  gap: 6px;
+  height: auto;
+  padding: 8px;
+}
+
 .info-header .icon {
   width: 16px;
   height: 16px;
 }
 
-.info-header .text-sm {
+.info-header .text {
   font-family: 'Inter', sans-serif;
   font-weight: 500;
   font-size: 14px;
@@ -103,4 +115,10 @@
   height: 20px;
   margin: 0;
   /*background-color: #6B7280; /* block display check*/
+}
+
+.info-header .icon-button:hover {
+  background-color: #F3F4F6;
+  border-radius: 8px;
+  cursor: pointer;
 }
