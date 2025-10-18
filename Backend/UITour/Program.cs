@@ -4,6 +4,7 @@ using UITour.DAL;
 using UITour.DAL.Interfaces;
 using UITour.DAL.Interfaces.Repositories;
 using UITour.DAL.Repositories;
+using UITour.ServicesL.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,7 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IHostVerificationRepository, HostVerificationRepository>();
 builder.Services.AddScoped<ISavedListingRepository, SavedListingRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IPropertyService, PropertyService>();
 
 // CORS for React dev servers
 const string CorsPolicy = "CorsPolicy";

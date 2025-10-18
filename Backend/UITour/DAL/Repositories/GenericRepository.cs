@@ -4,6 +4,7 @@ using UITour.DAL.Interfaces;
 
 namespace UITour.DAL.Repositories
 {
+    //implement cac method cua iRepository
     public class GenericRepository<TEntity> : IRepository<TEntity> where TEntity : class
     {
         private readonly DbContext _dbContext;
