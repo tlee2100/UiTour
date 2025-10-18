@@ -1,0 +1,124 @@
+/* Scope all rules under .info-header to avoid global collisions */
+.info-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 1120px;
+  height: fit-content;
+  margin-top: 20px;
+
+  /*background-color: #6B7280  /* To check the block display of the entire component */;
+}
+
+/* Title */
+.info-header .info-title {
+  width: 1120px;
+  height: auto;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  margin: 0; /* reset default h1 margins so gap works */
+  color: #222222;
+
+  /*background-color: #6B7280;  /*block display check*/
+}
+
+/* Details */
+.info-header .details {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 1120px;
+  height: auto;
+
+
+  /*background-color: #6B7280; /* block display check*/
+}
+
+/* Left */
+.info-header .left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  width: 367px;
+  height: auto;
+}
+
+/* Icon + Text */
+.info-header .icon-text {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  height: auto;
+}
+
+.info-header .icon-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: transparent;
+  border-radius: 8px;
+  border: none;
+  gap: 6px;
+  height: auto;
+  padding: 8px;
+}
+
+.info-header .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.info-header .text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  color: #000;
+}
+
+.info-header .dot {
+  width: 2px;
+  height: 2px;
+  background: #6B7280;
+  border-radius: 50%;
+}
+
+.info-header .reviews {
+  text-decoration: underline;
+}
+
+.info-header .location {
+  text-decoration: underline;
+  color: #6B7280;
+}
+
+/* Right */
+.info-header .right {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+  width: 128px;
+  height: 20px;
+  margin: 0;
+  /*background-color: #6B7280; /* block display check*/
+}
+
+.info-header .icon-button:hover {
+  background-color: #F3F4F6;
+  border-radius: 8px;
+  cursor: pointer;
+}

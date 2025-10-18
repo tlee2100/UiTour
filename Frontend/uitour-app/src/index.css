@@ -1,0 +1,16 @@
+/* Reset lại cho input và textarea */
+input, textarea {
+  user-select: text !important;        /* Cho phép chọn text bình thường */
+  caret-color: auto !important;        /* Hiển thị caret bình thường */
+}
+
+/* Optional: vẫn giữ outline khi focus cho accessibility */
+button:focus, input:focus, textarea:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
