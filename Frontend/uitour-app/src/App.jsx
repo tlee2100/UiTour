@@ -11,7 +11,7 @@ function App() {
   return (
   <Router>    
     <Routes>
-      {routes}
+      {routes}  {/* Chỉnh trang hiện trên web ở file index.jsx của folder routes */}
     </Routes>
   </Router>
 
