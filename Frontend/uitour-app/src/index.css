@@ -14,3 +14,12 @@ button:focus, input:focus, textarea:focus {
   box-sizing: border-box;
 }
 
+:root{
+  --uitour-color: #00C0E8;
+  --black: #000000;
+  --white: #FFFFFF;
+  --subtitle-color: #6B7280;
+  --hover-white: #F3F4F6;
+  --hover-uitour: #00a3c4;
+}
+
