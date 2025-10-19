@@ -1,10 +1,11 @@
-import { ReactComponent as House} from './house-badge.svg';
-import { ReactComponent as StarIcon} from './star.svg';
-import { ReactComponent as HeartIcon} from './heart.svg';
-import { ReactComponent as ShareIcon} from './share.svg';
-import { ReactComponent as BadgeIcon} from './badge.svg';
-import { ReactComponent as CalendarIcon} from './calendar.svg';
-import { ReactComponent as CleanIcon} from './clean.svg';
+import House from './house-badge.svg?react';
+import StarIcon from './star.svg?react';
+import HeartIcon from './heart.svg?react';
+import ShareIcon from './share.svg?react';
+import BadgeIcon from './badge.svg?react';
+import CalendarIcon from './calendar.svg?react';
+import CleanIcon from './clean.svg?react';
+import SelfCheckIcon from './self-checkin.svg?react';
 
 
 const icons = {
@@ -15,6 +16,7 @@ const icons = {
     badge:   BadgeIcon,
     calendar:CalendarIcon,
     clean:   CleanIcon,
+    selfcheck: SelfCheckIcon,
 };
 
 export default icons;
