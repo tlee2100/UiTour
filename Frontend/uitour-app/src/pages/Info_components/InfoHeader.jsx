@@ -1,6 +1,7 @@
 import React from "react";
 import "./InfoHeader.css"; 
 import SvgIcon from "../../components/SvgIcon";
+import ButtonWhite from "../../components/ButtonWhite";
 
 const InfoHeader = () => {
   return (
@@ -36,15 +37,12 @@ const InfoHeader = () => {
 
         {/* Bên phải */}
         <div className="right">
-          <button className="icon-button share-button">
-            <SvgIcon name="share" className="icon share-icon"/>
-            <span className="text">Share</span>
-          </button>
-
-          <button className="icon-button save-button">
-            <SvgIcon name="heart" className="icon heart-icon"/>
-            <span className="text">Save</span>
-          </button>
+          <ButtonWhite className="icon-button share-button" leftIcon={<SvgIcon name="share" className="icon share-icon"/>}>
+            Share
+          </ButtonWhite>
+          <ButtonWhite className="icon-button save-button" leftIcon={<SvgIcon name="heart" className="icon heart-icon"/>}>
+            Save
+          </ButtonWhite>
         </div>
       </div>
     </header>

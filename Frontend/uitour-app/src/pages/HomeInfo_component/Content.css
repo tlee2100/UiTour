@@ -144,6 +144,8 @@ body {
 /* Divider */
 .content-divider {
   width: 100%;
+  margin-top: 32px;
+  margin-bottom: 32px;
   border-top: 1px solid #E5E7EB;
 }
 
@@ -163,6 +165,8 @@ body {
   color: var(--subtitle-color)
 }
 
+
+/* Description style */
 .content-description {
   margin-top: 24px;
   margin-bottom: 24px;
@@ -177,18 +181,219 @@ body {
 }
 
 .content-button-underline{
-  font-family: "Inter", sans-serif;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
-  text-decoration: underline;
-  cursor: pointer;
-  border: none;
-  background: transparent;
-  border-radius: 8px;
-  padding: 12px;
+
 }
 
 .content-button-underline:hover {
   background-color: var(--hover-white);
+}
+
+/* Sleep section style */
+.content-sleep-section {
+  margin-top: 24px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 24px;
+  width: 670px;
+  height: 320px;
+}
+
+/* content-title */
+.content-title {
+  width: 670px;
+  height: 32px;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 32px;
+  display: flex;
+  align-items: start;
+  color: #000000;
+}
+
+/* content-thumbnail */
+.content-thumbnail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 16px;
+  width: 320px;
+  height: auto;
+}
+
+/* content-image */
+.content-image {
+  width: 320px;
+  height: 212px;
+  background: url(Bed.png);
+  border-radius: 8px;
+}
+
+/* content-title-subtitle */
+.content-title-subtitle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  width: 320px;
+  height: 44px;
+}
+
+/* content-subtitle-title */
+.content-subtitle-title {
+  width: 320px;
+  height: 24px;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 150%;
+  display: flex;
+  align-items: center;
+  color: #000000;
+}
+
+/* content-subtitle-text */
+.content-subtitle-text {
+  width: 320px;
+  height: 20px;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  color: var(--subtitle-color);
+}
+
+/* Place offer amenities container */
+.content-amen {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  gap: 32px;
+  width: 670px;
+  height: 356px;
+  flex: none;
+  order: 7;
+  flex-grow: 0;
+}
+
+.content-amen-title {
+  width: 670px;
+  height: 32px;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 32px;
+  display: flex;
+  align-items: start;
+  color: #000000;
+}
+
+/* Body: 2 columns side by side */
+.content-amen-body {
+  display: flex;
+  flex-direction: row;
+  gap: 24px; /* Space between columns */
+  width: 670px;
+}
+
+/* Column */
+.content-amen-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  gap: 16px;
+  width: 323px;
+  height: fit-content;
+  flex: none;
+  order: 0;
+  flex-grow: 1;
+}
+
+/* Item row (icon + text) */
+.content-amen-item {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  gap: 16px;
+  width: 323px;
+  height: 32px;
+  flex: none;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+/* Icon box (SvgIcon placeholder) */
+.content-icon {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000; /* nếu SvgIcon nhận màu từ currentColor */
+}
+
+/* Text wrapper */
+.content-amen-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  width: 275px;
+  height: 24px;
+  flex: none;
+  order: 1;
+  flex-grow: 1;
+}
+
+/* Item title */
+.content-amen-item-title {
+  width: 275px;
+  height: 24px;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  display: flex;
+  align-items: center;
+  color: #000000;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+/* Calendar section */
+.content-calendar-section {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  width: 670px;
+}
+
+.content-calendar-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 32px;
+  color: #000000;
 }
