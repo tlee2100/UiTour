@@ -1,0 +1,75 @@
+.itk-wrapper {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 1120px;
+}
+
+.itk-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 32px;
+  color: #000;
+}
+
+.itk-columns {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+}
+
+.itk-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 357.33px;
+}
+
+.itk-heading {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  color: #000;
+}
+
+.itk-subtext {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4B5563;
+}
+
+.itk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.itk-item {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.itk-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #000;
+}
+
+.itk-link {
+  display: flex;
+  align-items: center;
+}
+
+.itk-link-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  text-decoration: underline;
+  color: #000;
+}
