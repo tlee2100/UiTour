@@ -6,6 +6,7 @@ import InfoHeader from "./Info_components/InfoHeader";
 import Content from "./HomeInfo_component/Content";
 import InfoReview from "./Info_components/InfoReview";
 import InfoHost from "./Info_components/InfoHost";
+import InfoThingsToKnow from "./Info_components/InfoThingsToKnow";
 
 // Trang HomeInfoPage hiển thị thông tin chi tiết về một chỗ ở cụ thể
 export default function HomeInfoPage() {
@@ -51,7 +52,15 @@ export default function HomeInfoPage() {
           }
         ]} /> {/* Example usage of InfoReview */}
 
+        <div className="homeif-divider" />
+
         <InfoHost /> {/* Added InfoHost component */}
+
+        <div className="homeif-divider" />
+
+        <InfoThingsToKnow /> {/* Added InfoThingsToKnow component */}
+
+        <div className="homeif-end-divider" />
     </div>
   );
 }
