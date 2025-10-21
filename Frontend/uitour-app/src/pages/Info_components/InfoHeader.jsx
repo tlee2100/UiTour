@@ -1,9 +1,7 @@
 import React from "react";
-import StarIcon from "../../assets/icons/star.svg?react";
-import HeartIcon from "../../assets/icons/heart.svg?react";
-import ShareIcon from "../../assets/icons/share.svg?react";
-import BadgeIcon from "../../assets/icons/badge.svg?react";
 import "./InfoHeader.css"; 
+import SvgIcon from "../../components/SvgIcon";
+import ButtonWhite from "../../components/ButtonWhite";
 
 const InfoHeader = () => {
   return (
@@ -17,7 +15,7 @@ const InfoHeader = () => {
         <div className="left">
           {/* Rating */}
           <div className="icon-text">
-            <StarIcon className="icon star-icon"/>
+            <SvgIcon name="star" className="icon star-icon"/>
             <span className="text">5.0</span>
           </div>
 
@@ -28,7 +26,7 @@ const InfoHeader = () => {
           <span className="dot" />
 
           <div className="icon-text">
-            <BadgeIcon className="icon badge-icon"/>
+            <SvgIcon name="badge" className="icon badge-icon"/>
             <span className="text">Superhost</span>
           </div>
 
@@ -39,15 +37,12 @@ const InfoHeader = () => {
 
         {/* Bên phải */}
         <div className="right">
-          <button className="icon-button share-button">
-            <ShareIcon className="icon share-icon"/>
-            <span className="text">Share</span>
-          </button>
-
-          <button className="icon-button save-button">
-            <HeartIcon className="icon heart-icon"/>
-            <span className="text">Save</span>
-          </button>
+          <ButtonWhite className="icon-button share-button" leftIcon={<SvgIcon name="share" className="icon share-icon"/>}>
+            Share
+          </ButtonWhite>
+          <ButtonWhite className="icon-button save-button" leftIcon={<SvgIcon name="heart" className="icon heart-icon"/>}>
+            Save
+          </ButtonWhite>
         </div>
       </div>
     </header>

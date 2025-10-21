@@ -1,0 +1,62 @@
+.cal-container {
+  display: flex;
+  gap: 24px;
+}
+
+.cal-month {
+  border: none;
+  border-radius: 8px;
+  padding: 16px;
+  width: fit-content;
+}
+
+.cal-header {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.cal-weekday {
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: var(--half-subtitle-color);
+}
+
+.cal-days {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+}
+
+.cal-week-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(40px, 1fr));
+  column-gap: 4px;
+}
+
+.cal-day {
+  aspect-ratio: 1 / 1;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  height: auto;
+  text-align: center;
+  padding: 8px 0;
+  border-radius: 4px;
+  color: black;
+}
+
+.cal-today {
+  border: none;
+  font-weight: bold;
+  background-color: black;
+  color: white;
+  border-radius: 50%;
+}

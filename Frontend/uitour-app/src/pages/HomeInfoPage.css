@@ -7,3 +7,16 @@
   padding-right: 160px;
   background-color: #fff;
 }
+
+.homeif-divider {
+  width: 100%;
+  margin-top: 32px;
+  margin-bottom: 32px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.homeif-end-divider {
+  width: 100%;
+  margin-top: 32px;
+  border-top: 1px solid #E5E7EB;
+}
