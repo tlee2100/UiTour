@@ -129,7 +129,6 @@ body {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: url('Small.png') center/cover no-repeat;
 }
 
 .content-badge {
@@ -138,7 +137,6 @@ body {
   bottom: -4px;
   width: 16px;
   height: 28px;
-  background: url('Badge.png') center/cover no-repeat;
 }
 
 /* Divider */
