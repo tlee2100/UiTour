@@ -2,6 +2,7 @@ import "./Content.css";
 import SvgIcon from "../../components/SvgIcon";
 import ButtonWhite from "../../components/ButtonWhite";
 import Calendar from "../../components/Calendar";
+import AvatarImage from "../../assets/mockdata/images/avatar.png"; // Assuming you have an avatar image
 
 const Content = ({ description }) => {
     return (
@@ -26,8 +27,8 @@ const Content = ({ description }) => {
                         </div>
 
                         <div className="content-avatar-wrapper">
-                            <div className="content-avatar" />
-                            <div className="content-badge" />
+                            <img src={AvatarImage} className="content-avatar" />
+                            <SvgIcon name="superhost" className="content-badge" />
                         </div>
                     </div>
 

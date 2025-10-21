@@ -5,6 +5,7 @@ import Gallery from "./HomeInfo_component/Gallery";
 import InfoHeader from "./Info_components/InfoHeader";
 import Content from "./HomeInfo_component/Content";
 import InfoReview from "./Info_components/InfoReview";
+import InfoHost from "./Info_components/InfoHost";
 
 // Trang HomeInfoPage hiển thị thông tin chi tiết về một chỗ ở cụ thể
 export default function HomeInfoPage() {
@@ -49,6 +50,8 @@ export default function HomeInfoPage() {
             comment: "The stay was pleasant. Highly recommend!"
           }
         ]} /> {/* Example usage of InfoReview */}
+
+        <InfoHost /> {/* Added InfoHost component */}
     </div>
   );
 }

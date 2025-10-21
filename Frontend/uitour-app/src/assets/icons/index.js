@@ -27,6 +27,8 @@ import AmenKingBed from './amen-king-bed.svg?react';
 import AmenSmokeAlarm from './amen-smoke-alarm.svg?react';
 import ReviewStar from './review-star.svg?react';
 import Avatar from './avt.svg?react';
+import VerifiedBadge from './verified.svg?react';
+import SuperHostBadge from './superhost-badge.svg?react';
 
 
 const icons = {
@@ -35,9 +37,11 @@ const icons = {
     heart:   HeartIcon,
     share:   ShareIcon,
     badge:   BadgeIcon,
+    verified: VerifiedBadge,
     calendar:CalendarIcon,
     clean:   CleanIcon,
     selfcheck: SelfCheckIcon,
+    superhost: SuperHostBadge,
 
     amen_ac:        AmenAc,
     amen_bbq:       AmenBBQ,
