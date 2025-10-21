@@ -25,6 +25,8 @@ import AmenTV from './amen-tv.svg?react';
 import AmenWorkspace from './amen-workspace.svg?react';
 import AmenKingBed from './amen-king-bed.svg?react';
 import AmenSmokeAlarm from './amen-smoke-alarm.svg?react';
+import ReviewStar from './review-star.svg?react';
+import Avatar from './avt.svg?react';
 
 
 const icons = {
@@ -56,6 +58,9 @@ const icons = {
     amen_workspace: AmenWorkspace,
     amen_king_bed:  AmenKingBed,
     amen_smoke_alarm: AmenSmokeAlarm,
+
+    review_star:   ReviewStar,
+    avt:          Avatar,
 };
 
 export default icons;

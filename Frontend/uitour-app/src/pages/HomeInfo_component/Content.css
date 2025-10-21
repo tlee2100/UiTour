@@ -397,3 +397,20 @@ body {
   line-height: 32px;
   color: #000000;
 }
+
+.content-calendar-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  color: var(--subtitle-color);
+}
+
+.content-button-clear-days {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: black;
+  text-decoration: underline;
+  cursor: pointer;
+}
