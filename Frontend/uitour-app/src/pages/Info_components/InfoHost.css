@@ -5,7 +5,7 @@
   align-items: flex-start;
   gap: 32px;
   width: 1120px;
-  height: 292px;
+  height: fit-content;
 }
 
 /* ---------- HEADER ---------- */
