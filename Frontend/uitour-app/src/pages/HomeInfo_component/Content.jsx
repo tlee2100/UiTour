@@ -111,30 +111,30 @@ const Content = ({ description }) => {
                         {/* Column Left */}
                         <div className="content-amen-column">
                             <div className="content-amen-item">
-                                <SvgIcon name="amen_wifi" className="content-icon wifi-icon"/>
+                                <SvgIcon name="amen_wifi" className="content-icon wifi-icon" />
                                 <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Wifi</div>                                
+                                    <div className="content-amen-item-title">Wifi</div>
                                 </div>
                             </div>
 
                             <div className="content-amen-item">
-                                <SvgIcon name="amen_kitchen" className="content-icon kitchen-icon"/>
+                                <SvgIcon name="amen_kitchen" className="content-icon kitchen-icon" />
                                 <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Kitchen</div>                                    
+                                    <div className="content-amen-item-title">Kitchen</div>
                                 </div>
                             </div>
 
                             <div className="content-amen-item">
-                                <SvgIcon name="amen_tv" className="content-icon tv-icon"/>
+                                <SvgIcon name="amen_tv" className="content-icon tv-icon" />
                                 <div className="content-amen-text">
-                                    <div className="content-amen-item-title">TV</div>                                    
+                                    <div className="content-amen-item-title">TV</div>
                                 </div>
                             </div>
 
                             <div className="content-amen-item">
-                                <SvgIcon name="amen_ac" className="content-icon ac-icon"/>
+                                <SvgIcon name="amen_ac" className="content-icon ac-icon" />
                                 <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Air conditioning</div>                                    
+                                    <div className="content-amen-item-title">Air conditioning</div>
                                 </div>
                             </div>
                         </div>
@@ -142,30 +142,30 @@ const Content = ({ description }) => {
                         {/* Column Right */}
                         <div className="content-amen-column">
                             <div className="content-amen-item">
-                                <SvgIcon name="amen_free_parking" className="content-icon free-parking-icon"/>
+                                <SvgIcon name="amen_free_parking" className="content-icon free-parking-icon" />
                                 <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Free parking</div>                                    
+                                    <div className="content-amen-item-title">Free parking</div>
                                 </div>
                             </div>
 
                             <div className="content-amen-item">
-                                <SvgIcon name="amen_washer" className="content-icon washer-icon"/>
+                                <SvgIcon name="amen_washer" className="content-icon washer-icon" />
                                 <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Washer</div>                                    
+                                    <div className="content-amen-item-title">Washer</div>
                                 </div>
                             </div>
 
                             <div className="content-amen-item">
-                                <SvgIcon name="amen_pool" className="content-icon pool-icon"/>
+                                <SvgIcon name="amen_pool" className="content-icon pool-icon" />
                                 <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Pool</div>                                    
+                                    <div className="content-amen-item-title">Pool</div>
                                 </div>
                             </div>
 
                             <div className="content-amen-item">
-                                <SvgIcon name="amen_hottub" className="content-icon hottub-icon"/>
+                                <SvgIcon name="amen_hottub" className="content-icon hottub-icon" />
                                 <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Hot tub</div>                                    
+                                    <div className="content-amen-item-title">Hot tub</div>
                                 </div>
                             </div>
                         </div>
@@ -174,15 +174,17 @@ const Content = ({ description }) => {
                 </section>
                 <div className="content-divider" />
                 <div className="content-calendar-section">
-                    <div className="content-calendar-title">Select check-in day</div>
+                    <div className="content-calendar-text">
+                        <div className="content-calendar-title">Select check-in day</div>
+                        <div className="content-calendar-subtitle">Oct 21, 2025 - Oct 25, 2025</div>
+                    </div>
                     <Calendar />
+                    <ButtonWhite className="content-button-clear-days">Clear days</ButtonWhite>
                 </div>
-
-
+                <div className="content-divider" />
             </div>
 
-            {description && <div className="content-description">{description}</div>}
-        </div>
+        </div >
     );
 };
 
