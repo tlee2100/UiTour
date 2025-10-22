@@ -39,6 +39,7 @@ namespace UITour.ServicesL.Implementations
         public async Task<User> RegisterAsync(User user, string password)
         {
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+            user.RegisteredAt = DateTime.Now;
             await _unitOfWork.Users.AddAsync(user);
             await _unitOfWork.SaveChangesAsync();
             return user;
@@ -58,7 +59,7 @@ namespace UITour.ServicesL.Implementations
         {
             var existingUser = await GetByIdAsync(user.UserID);
 
-            existingUser.Name = user.Name;
+            existingUser.FullName = user.FullName;
             existingUser.Email = user.Email;
             existingUser.Phone = user.Phone;
 
