@@ -9,7 +9,7 @@ namespace UITour.Models
         [Required, StringLength(200)] public string FullName { get; set; }
         [StringLength(20)] public string Phone { get; set; }
         public DateTime RegisteredAt { get; set; }
-        [StringLength(200)] public string PasswordHash { get; set; }
+        [StringLength(200)] public string? PasswordHash { get; set; }
         public ICollection<Host> Hosts { get; set; }
       
         public ICollection<Booking> Bookings { get; set; }

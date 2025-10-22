@@ -128,7 +128,7 @@ namespace UITour.Controllers
 
         // GET: api/host/{id}/reviews
         [HttpGet("{id}/reviews")]
-        public async Task<IActionResult> GetHostReviews(int id)
+        /*public async Task<IActionResult> GetHostReviews(int id)
         {
             try
             {
@@ -139,7 +139,7 @@ namespace UITour.Controllers
             {
                 return BadRequest(ex.Message);
             }
-        }
+        }*/
 
         // GET: api/host/{id}/verification-status
         [HttpGet("{id}/verification-status")]
