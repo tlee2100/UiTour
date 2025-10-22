@@ -6,7 +6,7 @@ import InfoHeader from "./Info_components/InfoHeader";
 import Content from "./HomeInfo_component/Content";
 import InfoReview from "./Info_components/InfoReview";
 import InfoHost from "./Info_components/InfoHost";
-import InfoThingsToKnow from "./Info_components/InfoThingsToKnow";
+import InfoThingsToKnow from "./HomeInfo_component/InfoThingsToKnow";
 
 // Trang HomeInfoPage hiển thị thông tin chi tiết về một chỗ ở cụ thể
 export default function HomeInfoPage() {
@@ -15,7 +15,12 @@ export default function HomeInfoPage() {
 
   return ( //null
     <div className="home-info-page">
-      <InfoHeader /> {/* Updated to use InfoHeader */}
+      <InfoHeader title={"Apartment in Quận Ba Đình"} 
+                        info={{rating: "5.0",
+                                  reviews: "36 reviews"  ,
+                                  hostStatus: "Superhost",
+                                  location: "Quận Ba ĐÌnh, Ho Chi Minh city"
+                        }}/> {/* Updated to use InfoHeader */}
       <Gallery images={images} /> {/* Updated to use images directly {/**/}
       <Content /> {/**/}
       <InfoReview rating={4.8} reviewsCount={120}
