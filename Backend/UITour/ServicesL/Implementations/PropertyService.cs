@@ -43,7 +43,7 @@ namespace UITour.ServicesL.Implementations
         {
             var existingProperty = await GetByIdAsync(property.PropertyID);
 
-            existingProperty.Name = property.Name;
+            existingProperty.Location = property.Location;
             existingProperty.Description = property.Description;
             existingProperty.Price = property.Price;
             existingProperty.HostID = property.HostID;
@@ -79,7 +79,7 @@ namespace UITour.ServicesL.Implementations
                 query = query.Where(p => !p.Bookings.Any(b => b.CheckIn < checkOut && b.CheckOut > checkIn));
 
             if (guests.HasValue)
-                query = query.Where(p => p.MaxGuests >= guests);
+                query = query.Where(p => p.Accommodates >= guests);
 
             return await query.ToListAsync();
         }
