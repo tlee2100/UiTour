@@ -14,7 +14,7 @@ const routes = (
     {/* Nếu test xong nhớ chỉnh lại để ko bị conflict */}
 
 
-    {/*<Route path="tours" element={<HomeInfoPage />} /> {/* Cũng hiện ở <Outlet /> */}
+    <Route path="Home_Info" element={<HomeInfoPage />} /> {/* Cũng hiện ở <Outlet /> */}
   </Route>
 );
 
