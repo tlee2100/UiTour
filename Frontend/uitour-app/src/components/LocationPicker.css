@@ -1,0 +1,297 @@
+/* LocationPicker.css */
+.location-picker-container {
+  margin: 24px 0;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #f0f0f0;
+}
+
+.location-picker-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #f8f9fa;
+}
+
+.location-picker-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #222;
+}
+
+.location-picker-subtitle {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.location-picker-map {
+  height: 300px;
+  position: relative;
+}
+
+/* Custom Marker Animation */
+@keyframes pulse {
+  0% {
+    transform: rotate(-45deg) scale(1);
+  }
+  50% {
+    transform: rotate(-45deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(-45deg) scale(1);
+  }
+}
+
+.location-picker-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Manual Input Section */
+.location-picker-inputs {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group:last-child {
+  margin-bottom: 0;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #FF5A5F;
+  box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.1);
+}
+
+.input-group input:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Location Info */
+.location-picker-info {
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.location-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.location-info-item:last-child {
+  margin-bottom: 0;
+}
+
+.info-label {
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.info-value {
+  font-size: 14px;
+  font-family: monospace;
+}
+
+.info-value.valid {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.info-value.invalid {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* Quick Location Buttons */
+.location-picker-quick {
+  padding: 20px 24px;
+  background: #f8f9fa;
+}
+
+.location-picker-quick h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+}
+
+.quick-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.quick-btn {
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.quick-btn:hover:not(:disabled) {
+  background: #FF5A5F;
+  color: white;
+  border-color: #FF5A5F;
+}
+
+.quick-btn:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .location-picker-container {
+    margin: 16px 0;
+  }
+  
+  .location-picker-header {
+    padding: 16px 20px 12px;
+  }
+  
+  .location-picker-header h3 {
+    font-size: 18px;
+  }
+  
+  .location-picker-map {
+    height: 250px;
+  }
+  
+  .location-picker-inputs {
+    padding: 16px 20px;
+  }
+  
+  .location-picker-info {
+    padding: 12px 20px;
+  }
+  
+  .location-picker-quick {
+    padding: 16px 20px;
+  }
+  
+  .quick-buttons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .quick-btn {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .location-picker-container {
+    background: #1a1a1a;
+    border-color: #333;
+  }
+  
+  .location-picker-header {
+    background: #2a2a2a;
+    border-bottom-color: #333;
+  }
+  
+  .location-picker-header h3 {
+    color: #fff;
+  }
+  
+  .location-picker-subtitle {
+    color: #ccc;
+  }
+  
+  .location-picker-inputs {
+    background: #2a2a2a;
+    border-bottom-color: #333;
+  }
+  
+  .input-group label {
+    color: #fff;
+  }
+  
+  .input-group input {
+    background: #333;
+    border-color: #555;
+    color: #fff;
+  }
+  
+  .input-group input:focus {
+    border-color: #FF5A5F;
+  }
+  
+  .input-group input:disabled {
+    background: #444;
+    color: #666;
+  }
+  
+  .location-picker-info {
+    background: #1a1a1a;
+    border-bottom-color: #333;
+  }
+  
+  .info-label {
+    color: #fff;
+  }
+  
+  .location-picker-quick {
+    background: #2a2a2a;
+  }
+  
+  .location-picker-quick h4 {
+    color: #fff;
+  }
+  
+  .quick-btn {
+    background: #333;
+    border-color: #555;
+    color: #fff;
+  }
+  
+  .quick-btn:hover:not(:disabled) {
+    background: #FF5A5F;
+    border-color: #FF5A5F;
+  }
+  
+  .quick-btn:disabled {
+    background: #444;
+    color: #666;
+  }
+}
