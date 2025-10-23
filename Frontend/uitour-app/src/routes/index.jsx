@@ -3,18 +3,19 @@ import MainLayout from "../layouts/MainLayout";
 import HomePage from "../pages/HomeInfoPage";
 import HomeInfoPage from "../pages/HomeInfoPage";
 import ExperienceInfoPage from "../pages/ExperienceInfoPage";
+import MapDemoPage from "../pages/MapDemoPage";
 
 const routes = (
   <Route path="/" element={<MainLayout />}>
-
-    {/* Thay trang HomeInfoPage thành trang cần hiện trên web chính */}
-    {/* Ví dụ: <Route index element={<HomePage />} /> */}
-    {/*------<Route index element={<ExperienceInfoPage />}---------*/}
-    <Route index element={<ExperienceInfoPage />} />       {/* Hiện ở <Outlet /> */}
-    {/* Nếu test xong nhớ chỉnh lại để ko bị conflict */}
-
-
-    <Route path="Home_Info" element={<HomeInfoPage />} /> {/* Cũng hiện ở <Outlet /> */}
+    {/* Demo page để test map components */}
+    <Route index element={<MapDemoPage />} />
+    
+    {/* Property detail page với dynamic ID */}
+    <Route path="property/:id" element={<HomeInfoPage />} />
+    
+    {/* Other pages */}
+    <Route path="homeinfo" element={<HomeInfoPage />} />
+    <Route path="experienceinfo" element={<ExperienceInfoPage />} />
   </Route>
 );
 
