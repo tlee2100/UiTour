@@ -11,9 +11,11 @@ namespace UITour.ServicesL.Interfaces
         Task<Models.Host> RegisterHostAsync(Models.Host host);
         Task<bool> UpdateHostProfileAsync(Models.Host host);
         Task<bool> VerifyHostAsync(int hostId);
+        Task<bool> VerifyHostWithTypeAsync(int hostId, int verificationTypeId, string details = null);
+        Task<bool> IsHostVerifiedAsync(int hostId);
         Task<IEnumerable<HostVerification>> GetVerificationsAsync(int hostId);
         Task<decimal> GetEarningsAsync(int hostId, DateTime startDate, DateTime endDate);
-        Task<IEnumerable<Review>> GetHostReviewsAsync(int hostId);
-        Task<double> GetAverageRatingAsync(int hostId);
+        //Task<IEnumerable<Review>> GetHostReviewsAsync(int hostId);
+        //Task<double> GetAverageRatingAsync(int hostId);
     }
 }
