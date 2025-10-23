@@ -6,6 +6,7 @@ using UITour.DAL.Interfaces.Repositories;
 using UITour.DAL.Repositories;
 using UITour.ServicesL.Implementations;
 using UITour.ServicesL.Interfaces;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IHostService, HostService>();
 builder.Services.AddScoped<IPropertyService, PropertyService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<ICountryService, CountryService>();
+builder.Services.AddScoped<ICityService, CityService>();
 
 // CORS for React dev servers
 const string CorsPolicy = "CorsPolicy";
@@ -65,6 +68,12 @@ builder.Services.AddCors(options =>
 // Swagger / OpenAPI for API testing
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 
 var app = builder.Build();
 
