@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -100,6 +100,32 @@ namespace UITour.ServicesL.Implementations
             _unitOfWork.PropertyAmenities.Remove(propertyAmenity);
             await _unitOfWork.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<IEnumerable<Amenity>> GetAmenitiesByPropertyIdAsync(int propertyId)
+        {
+            return await _unitOfWork.PropertyAmenities.Query()
+                .Where(pa => pa.PropertyID == propertyId)
+                .Include(pa => pa.Amenity)              // <-- Join sang bảng Amenity
+                .Select(pa => pa.Amenity)               // <-- Lấy thông tin Amenity
+                .ToListAsync();
+        }
+
+        public async Task<RoomType> GetRoomTypeByPropertyIdAsync(int propertyId)
+        {
+            var property = await _unitOfWork.Properties.Query()
+                .Include(p => p.RoomType)
+                .FirstOrDefaultAsync(p => p.PropertyID == propertyId);
+
+            return property?.RoomType;
+        }
+
+        public async Task<BedType> GetBedTypeByPropertyIdAsync(int propertyId)
+        {
+            var property = await _unitOfWork.Properties.Query()
+                .Include(p => p.BedType)
+                .FirstOrDefaultAsync(p => p.PropertyID == propertyId);
+            return property?.BedType;
         }
     }
 }
