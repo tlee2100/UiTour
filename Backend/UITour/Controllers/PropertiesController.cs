@@ -94,5 +94,38 @@ namespace UITour.API.Controllers
             var success = await _propertyService.RemoveAmenityAsync(propertyId, amenityId);
             return success ? Ok("Amenity removed") : NotFound("Amenity not found");
         }
+
+        // GET: api/properties/5/amenities
+        [HttpGet("{propertyId}/amenities")]
+        public async Task<IActionResult> GetPropertyAmenities(int propertyId)
+        {
+            var amenities = await _propertyService.GetAmenitiesByPropertyIdAsync(propertyId);
+
+            if (!amenities.Any())
+                return NotFound($"No amenities found for property ID {propertyId}");
+
+            return Ok(amenities);
+        }
+
+        //GET: api/properties/5/roomtype
+        [HttpGet("{id:int}/roomtype")]
+        public async Task<IActionResult> GetRoomTypeByPropertyId(int id)
+        {
+            var roomType = await _propertyService.GetRoomTypeByPropertyIdAsync(id);
+            if (roomType == null)
+                return NotFound($"No RoomType found for Property ID {id}");
+
+            return Ok(roomType);
+        }
+
+        //GET: api/properties/5/bedtype
+        [HttpGet("{id:int}/bedtype")]
+        public async Task<IActionResult> GetBedTypeByPropertyId(int id)
+        {
+            var bedType = await _propertyService.GetBedTypeByPropertyIdAsync(id);
+            if (bedType == null)
+                return NotFound($"No BedType found for Property ID {id}");
+            return Ok(bedType);
+        }
     }
 }
