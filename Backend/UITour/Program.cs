@@ -47,6 +47,7 @@ builder.Services.AddScoped<IPropertyService, PropertyService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<ICountryService, CountryService>();
 builder.Services.AddScoped<ICityService, CityService>();
+builder.Services.AddScoped<INeighbourhoodService, NeighbourhoodService>();
 
 // CORS for React dev servers
 const string CorsPolicy = "CorsPolicy";
