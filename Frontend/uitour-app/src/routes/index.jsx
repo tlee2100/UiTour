@@ -3,20 +3,22 @@ import MainLayout from "../layouts/MainLayout";
 import HomePage from "../pages/HomePage";
 import HomeInfoPage from "../pages/HomeInfoPage";
 import ToursPage from "../pages/ToursPage";
+import ExperienceInfoPage from "../pages/ExperienceInfoPage";
+import MapDemoPage from "../pages/MapDemoPage";
 
 const routes = (
   <Route path="/" element={<MainLayout />}>
-    {/* Trang chủ */}
+    {/* Demo page để test map components */}
     <Route index element={<HomePage />} />
-    
-    {/* Trang tours */}
+    <Route path="demomap" element={<MapDemoPage />} />
     <Route path="tours" element={<ToursPage />} />
     
-    {/* Trang chi tiết phòng/tour */}
+    {/* Property detail page với dynamic ID */}
     <Route path="property/:id" element={<HomeInfoPage />} />
     
-    {/* Các route khác có thể thêm sau */}
-    {/* <Route path="about" element={<AboutPage />} /> */}
+    {/* Other pages */}
+    <Route path="homeinfo" element={<HomeInfoPage />} />
+    <Route path="experienceinfo" element={<ExperienceInfoPage />} />
   </Route>
 );
 
