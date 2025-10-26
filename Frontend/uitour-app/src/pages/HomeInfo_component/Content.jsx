@@ -2,32 +2,46 @@ import "./Content.css";
 import SvgIcon from "../../components/SvgIcon";
 import ButtonWhite from "../../components/ButtonWhite";
 import Calendar from "../../components/Calendar";
-import AvatarImage from "../../assets/mockdata/images/avatar.png"; // Assuming you have an avatar image
 
-const Content = ({ description }) => {
+const Content = ({ property }) => {
+    // Default values nếu property không có data
+    const defaultProperty = {
+        host: { name: "Host", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" },
+        accommodates: 2,
+        bedrooms: 1,
+        beds: 1,
+        bathrooms: 1,
+        description: "Beautiful property with great amenities and location.",
+        amenities: [],
+        ...property
+    };
+
+    const { host, accommodates, bedrooms, beds, bathrooms, description, amenities } = defaultProperty;
+
     return (
         <div className="content-content">
-
-            {/* TODO: Replace hardcoded text with dynamic data later */}
-
             <div className="content-left">
                 <div className="content-top">
                     <div className="content-header">
                         <div className="content-title">
-                            <h2>Entire rental unit hosted by Tèo Hoàng</h2>
+                            <h2>Entire rental unit hosted by {host?.name || "Host"}</h2>
                             <div className="content-meta">
-                                <span>2 guests</span>
+                                <span>{accommodates} guests</span>
                                 <span className="content-dot" />
-                                <span>1 bedroom</span>
+                                <span>{bedrooms} bedroom{bedrooms !== 1 ? 's' : ''}</span>
                                 <span className="content-dot" />
-                                <span>1 bed</span>
+                                <span>{beds} bed{beds !== 1 ? 's' : ''}</span>
                                 <span className="content-dot" />
-                                <span>1 bath</span>
+                                <span>{bathrooms} bath{bathrooms !== 1 ? 's' : ''}</span>
                             </div>
                         </div>
 
                         <div className="content-avatar-wrapper">
-                            <img src={AvatarImage} className="content-avatar" />
+                            <img 
+                                src={host?.avatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"} 
+                                className="content-avatar" 
+                                alt={host?.name || "Host"}
+                            />
                             <SvgIcon name="superhost" className="content-badge" />
                         </div>
                     </div>
@@ -41,7 +55,7 @@ const Content = ({ description }) => {
                         <div className="content-text">
                             <div className="content-item-title">Entire home</div>
                             <div className="content-subtitle">
-                                You’ll have the apartment to yourself
+                                You'll have the apartment to yourself
                             </div>
                         </div>
                     </div>
@@ -50,7 +64,7 @@ const Content = ({ description }) => {
                         <SvgIcon name="clean" className="content-icon clean-icon" />
                         <div className="content-text">
                             <div className="content-item-title">Enhanced Clean</div>
-                            <div className="content-subtitle">This Host committed to UiTour’s 5-step enhanced cleaning process.</div>
+                            <div className="content-subtitle">This Host committed to UiTour's 5-step enhanced cleaning process.</div>
                         </div>
                     </div>
 
@@ -72,20 +86,13 @@ const Content = ({ description }) => {
 
                 <div className="content-divider" />
 
-
-                {/* TODO: Replace hardcoded text with dynamic data later */}
                 <div className="content-description">
                     <p className="content-text">
-                        Come and stay in this superb duplex T2, in the heart of the historic
-                        center of Bordeaux. Spacious and bright, in a real Bordeaux building in
-                        exposed stone, you will enjoy all the charms of the city thanks to its
-                        ideal location. Close to many shops, bars and restaurants, you can
-                        access the apartment by tram A and C and bus routes 27 and 44.
+                        {description || "Come and stay in this superb property. Spacious and bright, you will enjoy all the charms of the city thanks to its ideal location. Close to many shops, bars and restaurants."}
                         <br />...
                     </p>
 
                     <ButtonWhite className="content-button-underline">Show more</ButtonWhite>
-
                 </div>
 
                 <div className="content-divider" />
@@ -111,69 +118,33 @@ const Content = ({ description }) => {
                     <div className="content-amen-body">
                         {/* Column Left */}
                         <div className="content-amen-column">
-                            <div className="content-amen-item">
-                                <SvgIcon name="amen_wifi" className="content-icon wifi-icon" />
-                                <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Wifi</div>
+                            {amenities.slice(0, Math.ceil(amenities.length / 2)).map((amenity, index) => (
+                                <div key={amenity.id || index} className="content-amen-item">
+                                    <SvgIcon name={`amen_${amenity.icon}`} className="content-icon" />
+                                    <div className="content-amen-text">
+                                        <div className="content-amen-item-title">{amenity.name}</div>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div className="content-amen-item">
-                                <SvgIcon name="amen_kitchen" className="content-icon kitchen-icon" />
-                                <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Kitchen</div>
-                                </div>
-                            </div>
-
-                            <div className="content-amen-item">
-                                <SvgIcon name="amen_tv" className="content-icon tv-icon" />
-                                <div className="content-amen-text">
-                                    <div className="content-amen-item-title">TV</div>
-                                </div>
-                            </div>
-
-                            <div className="content-amen-item">
-                                <SvgIcon name="amen_ac" className="content-icon ac-icon" />
-                                <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Air conditioning</div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
 
                         {/* Column Right */}
                         <div className="content-amen-column">
-                            <div className="content-amen-item">
-                                <SvgIcon name="amen_free_parking" className="content-icon free-parking-icon" />
-                                <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Free parking</div>
+                            {amenities.slice(Math.ceil(amenities.length / 2)).map((amenity, index) => (
+                                <div key={amenity.id || index} className="content-amen-item">
+                                    <SvgIcon name={`amen_${amenity.icon}`} className="content-icon" />
+                                    <div className="content-amen-text">
+                                        <div className="content-amen-item-title">{amenity.name}</div>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div className="content-amen-item">
-                                <SvgIcon name="amen_washer" className="content-icon washer-icon" />
-                                <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Washer</div>
-                                </div>
-                            </div>
-
-                            <div className="content-amen-item">
-                                <SvgIcon name="amen_pool" className="content-icon pool-icon" />
-                                <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Pool</div>
-                                </div>
-                            </div>
-
-                            <div className="content-amen-item">
-                                <SvgIcon name="amen_hottub" className="content-icon hottub-icon" />
-                                <div className="content-amen-text">
-                                    <div className="content-amen-item-title">Hot tub</div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
-                    <ButtonWhite >Show all 37 amenities</ButtonWhite>
+                    <ButtonWhite>Show all {amenities.length} amenities</ButtonWhite>
                 </section>
+                
                 <div className="content-divider" />
+                
                 <div className="content-calendar-section">
                     <div className="content-calendar-text">
                         <div className="content-calendar-title">Select check-in day</div>
@@ -184,8 +155,7 @@ const Content = ({ description }) => {
                 </div>
                 <div className="content-divider" />
             </div>
-
-        </div >
+        </div>
     );
 };
 
