@@ -7,11 +7,11 @@ namespace UITour.Models
     {
         [Key] public int BookingID { get; set; }
         [Required][ForeignKey("Property")] public int PropertyID { get; set; }
-        public Property? Property { get; set; } // Navigation property
-        [Required][ForeignKey("Guest")] public int GuestID { get; set; }
-        public User? Guest { get; set; } // Navigation property
+        public Property Property { get; set; } // Navigation property
+        [Required][ForeignKey("User")] public int UserID { get; set; }
+        public User User { get; set; } // Navigation property
         [Required][ForeignKey("Host")] public int HostID { get; set; }
-        public Host? Host { get; set; } // Navigation property
+        public Host Host { get; set; } // Navigation property
         [Required] public DateTime CheckIn { get; set; }
         [Required] public DateTime CheckOut { get; set; }
         [Required] public int Nights { get; set; }
