@@ -1,8 +1,12 @@
-// Mock API Service - Giả lập API calls
+// Mock API Service - Giả lập API calls cho Frontend
+// Mục tiêu:
+// - Cung cấp dữ liệu động (mock) để phát triển UI không cần backend thật
+// - Dễ thêm/sửa/xoá property, host, reviews theo ý muốn
+// - Mô phỏng độ trễ mạng (this.delay) để test loading
 class MockAPIService {
   constructor() {
-    this.baseURL = 'http://localhost:5000/api'; // Backend URL
-    this.delay = 500; // Simulate network delay
+    this.baseURL = 'http://localhost:5000/api'; // Backend URL (tham khảo)
+    this.delay = 500; // Độ trễ giả lập (ms). Tăng lên 1200 để thấy spinner rõ hơn
   }
 
   // Simulate API delay
@@ -11,6 +15,10 @@ class MockAPIService {
   }
 
   // Mock Properties Data
+  // Cách tuỳ biến nhanh:
+  // - Thêm object mới vào mảng để có thêm chỗ ở
+  // - Sửa latitude/longitude để marker hiển thị đúng vị trí trên Map
+  // - Sửa hostId để gắn chỗ ở với host tương ứng trong getMockHost()
   getMockProperties() {
     return [
       {
@@ -280,6 +288,8 @@ class MockAPIService {
   }
 
   // Mock Reviews Data
+  // Mỗi propertyId có một danh sách reviews riêng.
+  // Bạn có thể thêm review bằng cách thêm object vào mảng tương ứng.
   getMockReviews(propertyId) {
     const reviewsData = {
       1: [
@@ -361,6 +371,7 @@ class MockAPIService {
   }
 
   // Mock Host Data
+  // Khi thêm host mới: thêm một entry mới vào object hosts và dùng id đó trong property.hostId
   getMockHost(hostId) {
     const hosts = {
       1: {
