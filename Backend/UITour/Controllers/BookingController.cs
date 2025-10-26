@@ -17,18 +17,18 @@ namespace UITour.Controllers
 
         // POST: api/booking
         [HttpPost]
-        public async Task<IActionResult> CreateBooking([FromBody] BookingCreateRequest request)
+        public async Task<IActionResult> CreateBooking([FromBody] Booking request)
         {
             try
             {
                 var booking = new Booking
                 {
                     PropertyID = request.PropertyID,
-                    GuestID = request.GuestID,
+                    UserID = request.UserID,
                     HostID = request.HostID,
                     CheckIn = request.CheckIn,
                     CheckOut = request.CheckOut,
-                    GuestsCount = request.GuestCounts,
+                    GuestsCount = request.GuestsCount,
                     Status = "Pending"
                 };
 
@@ -143,7 +143,7 @@ namespace UITour.Controllers
 
         // PUT: api/booking/5/status
         [HttpPut("{id:int}/status")]
-        public async Task<IActionResult> UpdateBookingStatus(int id, [FromBody] BookingStatusUpdateRequest request)
+        public async Task<IActionResult> UpdateBookingStatus(int id, [FromBody] Booking request)
         {
             try
             {
@@ -175,19 +175,6 @@ namespace UITour.Controllers
         }
     }
 
-    // DTOs for request/response
-    public class BookingCreateRequest
-    {
-        public int PropertyID { get; set; }
-        public int GuestID { get; set; }
-        public int HostID { get; set; }
-        public DateTime CheckIn { get; set; }
-        public DateTime CheckOut { get; set; }
-        public short GuestCounts { get; set; }
-    }
-
-    public class BookingStatusUpdateRequest
-    {
-        public string Status { get; set; } = string.Empty;
-    }
+ 
+   
 }

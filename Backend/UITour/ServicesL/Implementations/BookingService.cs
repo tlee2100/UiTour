@@ -40,7 +40,7 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<IEnumerable<Booking>> GetByUserIdAsync(int userId)
         {
-            return await _unitOfWork.Bookings.Query().Where(b => b.GuestID == userId).ToListAsync();
+            return await _unitOfWork.Bookings.Query().Where(b => b.UserID == userId).ToListAsync();
         }
 
         public async Task<IEnumerable<Booking>> GetByHostIdAsync(int hostId)

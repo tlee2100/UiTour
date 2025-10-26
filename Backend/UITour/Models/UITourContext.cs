@@ -69,19 +69,20 @@ namespace UITour.Models
 
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.Property)
-                .WithMany()
+                .WithMany(p => p.Bookings)
                 .HasForeignKey(b => b.PropertyID)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Booking>()
-                .HasOne(b => b.Guest)
-                .WithMany()
-                .HasForeignKey(b => b.GuestID)
+                .HasOne(b => b.User)
+                .WithMany(u => u.Bookings)
+                .HasForeignKey(b => b.UserID)
                 .OnDelete(DeleteBehavior.Restrict);
+
 
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.Host)
-                .WithMany()
+                .WithMany(h => h.Bookings)
                 .HasForeignKey(b => b.HostID)
                 .OnDelete(DeleteBehavior.Restrict);
 

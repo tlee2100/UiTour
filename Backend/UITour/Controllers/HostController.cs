@@ -127,7 +127,7 @@ namespace UITour.Controllers
         }
 
         // GET: api/host/{id}/reviews
-        [HttpGet("{id}/reviews")]
+        //[HttpGet("{id}/reviews")]
         /*public async Task<IActionResult> GetHostReviews(int id)
         {
             try
