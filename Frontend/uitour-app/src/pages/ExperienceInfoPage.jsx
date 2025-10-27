@@ -1,6 +1,5 @@
 import React from "react";
-import { useState } from "react";
-import setdata from "../assets/mockdata/setdata"; // Corrected import
+import { useState } from "react"; // Corrected import
 import './ExperienceInfoPage.css'
 import InfoHeader from "./Info_components/InfoHeader";
 import InfoReview from "./Info_components/InfoReview";
