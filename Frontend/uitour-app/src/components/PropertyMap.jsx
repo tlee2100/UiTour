@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './PropertyMap.css';
 
-// Fix for default markers in react-leaflet
+/* ---------------- FIX ICON MẶC ĐỊNH ---------------- */
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -12,7 +12,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Custom marker icon
+/* ---------------- CUSTOM ICON ---------------- */
 const createCustomIcon = (color = '#FF5A5F') => {
   return L.divIcon({
     className: 'custom-marker',
@@ -39,32 +39,53 @@ const createCustomIcon = (color = '#FF5A5F') => {
     `,
     iconSize: [30, 30],
     iconAnchor: [15, 30],
-    popupAnchor: [0, -30]
+    popupAnchor: [0, -30],
   });
 };
 
-// Component để center map khi property thay đổi
-const MapCenter = ({ center, zoom }) => {
+/* ---------------- AUTO CENTER (khi đổi chỗ ở) ---------------- */
+const MapCenter = ({ center, zoom, property }) => {
   const map = useMap();
-  
+
   useEffect(() => {
-    map.setView(center, zoom);
-  }, [center, zoom, map]);
-  
+    if (!property || !center) return;
+
+    // Nếu bản đồ chưa khởi tạo xong thì chờ 200ms rồi flyTo
+    const timeout = setTimeout(() => {
+      map.flyTo(center, zoom, { animate: true, duration: 0.8 });
+    }, 200);
+
+    return () => clearTimeout(timeout);
+  }, [property?.id, center[0], center[1], zoom, map]);
+
   return null;
 };
 
-const PropertyMap = ({ 
-  property = null, 
-  center = [10.8231, 106.6297], // [lat, lng] format for Leaflet
+
+/* ---------------- FIX MAP SIZE (khi render lần đầu) ---------------- */
+const MapFixSize = () => {
+  const map = useMap();
+  useEffect(() => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 400);
+  }, [map]);
+  return null;
+};
+
+/* ---------------- MAIN COMPONENT ---------------- */
+const PropertyMap = ({
+  property = null,
+  center = [10.8231, 106.6297],
   zoom = 15,
-  height = '400px',
-  showPopup = true 
+  height = '500px',
+  width = '90%', // 👈 map chiếm 90% chiều ngang trang
+  showPopup = true,
 }) => {
   const [mapCenter, setMapCenter] = useState(center);
   const [mapZoom, setMapZoom] = useState(zoom);
 
-  // Update map center when property changes
+  // Update center khi property đổi
   useEffect(() => {
     if (property?.latitude && property?.longitude) {
       setMapCenter([property.latitude, property.longitude]);
@@ -75,10 +96,10 @@ const PropertyMap = ({
     }
   }, [property, center, zoom]);
 
-  // Determine marker position
-  const markerPosition = property?.latitude && property?.longitude 
-    ? [property.latitude, property.longitude]
-    : null;
+  const markerPosition =
+    property?.latitude && property?.longitude
+      ? [property.latitude, property.longitude]
+      : null;
 
   const handleDirections = () => {
     if (markerPosition) {
@@ -95,47 +116,48 @@ const PropertyMap = ({
   };
 
   return (
-    <div className="property-map-container" style={{ height }}>
+    <div
+      className="property-map-container"
+      style={{ width, margin: '32px auto' }}
+    >
       <div className="map-header">
         <h3>Vị trí</h3>
-        <p className="map-subtitle">
-          {property?.location || 'Vị trí của chỗ ở'}
-        </p>
+        <p className="map-subtitle">{property?.location || 'Vị trí của chỗ ở'}</p>
       </div>
-      
-      <div className="map-wrapper">
+
+      <div className="map-wrapper" style={{ height }}>
         <MapContainer
           center={mapCenter}
           zoom={mapZoom}
-          style={{ width: '100%', height: '100%', borderRadius: '12px' }}
-          zoomControl={true}
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '12px',
+            zIndex: 1,
+          }}
           scrollWheelZoom={true}
-          doubleClickZoom={true}
+          zoomControl={true}
           dragging={true}
+          doubleClickZoom={true}
           touchZoom={true}
-          boxZoom={false}
-          keyboard={false}
-          attributionControl={true}
         >
-          <MapCenter center={mapCenter} zoom={mapZoom} />
-          
-          {/* OpenStreetMap Tile Layer */}
+          <MapFixSize />
+          <MapCenter center={mapCenter} zoom={mapZoom} property={property} />
+
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          
-          {/* Property Marker */}
+
           {markerPosition && (
-            <Marker 
-              position={markerPosition}
-              icon={createCustomIcon()}
-            >
+            <Marker position={markerPosition} icon={createCustomIcon()}>
               {showPopup && (
                 <Popup>
                   <div className="popup-content">
-                    <h4>{property?.listingTitle || property?.name || 'Chỗ ở'}</h4>
-                    <p className="popup-address">{property?.location || 'Địa chỉ không xác định'}</p>
+                    <h4>{property?.listingTitle || 'Chỗ ở'}</h4>
+                    <p className="popup-address">
+                      {property?.location || 'Không rõ vị trí'}
+                    </p>
                     {property?.price && (
                       <p className="popup-price">${property.price}/đêm</p>
                     )}
@@ -147,23 +169,21 @@ const PropertyMap = ({
         </MapContainer>
       </div>
 
-      {/* Map Actions */}
+      {/* Actions */}
       <div className="map-actions">
-        <button 
+        <button
           className="map-action-btn"
           onClick={handleDirections}
           disabled={!markerPosition}
         >
-          <span>🚗</span>
-          Chỉ đường
+          <span>🚗</span> Chỉ đường
         </button>
-        <button 
+        <button
           className="map-action-btn"
           onClick={handleOpenMap}
           disabled={!markerPosition}
         >
-          <span>📍</span>
-          Mở OpenStreetMap
+          <span>📍</span> Mở OpenStreetMap
         </button>
       </div>
     </div>

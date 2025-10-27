@@ -33,7 +33,7 @@ class MockAPIService {
         priceUnit: "cho 2 đêm",
         currency: "USD",
         dates: "18-25 Jun",
-        mainImage: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
+        mainImage: "/images/id1_img01.png",
         isGuestFavourite: true,
         cleaningFee: 8,
         extraPeopleFee: 5,
@@ -64,11 +64,11 @@ class MockAPIService {
           { id: 5, name: "Free Parking", icon: "free_parking" }
         ],
         photos: [
-          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
-          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
-          "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800",
-          "https://images.unsplash.com/photo-1560448204-17c6bbbd2fcc?w=800",
-          "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800"
+          "/images/id1_img01.png",
+          "/images/id1_img02.png",
+          "/images/id1_img03.png",
+          "/images/id1_img04.png",
+          "/images/id1_img05.png"
         ]
       },
       {
@@ -321,7 +321,7 @@ class MockAPIService {
           userName: "Alice Nguyen",
           userAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100",
           rating: 5,
-          comment: "Rất tuyệt vời, phòng sạch sẽ và chủ nhà thân thiện! View thành phố rất đẹp.",
+          comment: "Rất tuyệt vời, phòng sạch sẽ và chủ nhà thân thiện! View thành phố rất đẹp. The stay was pleasant. Highly recommend! Good value for the price. The location is amazing and close to everything.Rất tuyệt vời, phòng sạch sẽ và chủ nhà thân thiện! View thành phố rất đẹp. The stay was pleasant. Highly recommend! Good value for the price. The location is amazing and close to everything.",
           createdAt: "2024-01-20T10:30:00Z",
           location: "Vietnam"
         },
@@ -371,7 +371,7 @@ class MockAPIService {
           userName: "Akira Ito",
           userAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
           rating: 5,
-          comment: "The stay was pleasant. Highly recommend!",
+          comment: "The stay was pleasant. Highly recommend! Good value for the price. The location is amazing and close to everything.",
           createdAt: "2023-12-20T08:45:00Z",
           location: "Japan"
         }
@@ -399,7 +399,7 @@ class MockAPIService {
       1: {
         id: 1,
         name: "Tèo Hoàng",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+        avatar: "/images/host1_avatar.png",
         joinedDate: "2020-03-15",
         responseRate: 98,
         responseTime: "within an hour",

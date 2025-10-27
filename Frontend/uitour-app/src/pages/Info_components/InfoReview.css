@@ -1,16 +1,15 @@
+/* Header */
 .inforeview {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 8px;
-  width: 1120px;
+  width: 100%;
   height: 32px;
 }
 
 /* Icon + Rating text */
 .ir-icon-text {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 4px;
   height: 32px;
@@ -27,15 +26,10 @@
 
 /* Rating number */
 .ir-rating-text {
-  width: 36px;
-  height: 32px;
   font-family: "Inter", sans-serif;
   font-weight: 500;
   font-size: 24px;
-  line-height: 32px;
   color: #000;
-  display: flex;
-  align-items: center;
 }
 
 /* Separator dot */
@@ -48,57 +42,46 @@
 
 /* Review count text */
 .ir-review-count {
-  width: fit-content;
-  height: 32px;
   font-family: "Inter", sans-serif;
   font-weight: 500;
   font-size: 24px;
-  line-height: 32px;
   color: #000;
-  display: flex;
-  align-items: center;
 }
-
 
 /* Container chính */
 .ir-review-section {
   display: flex;
   flex-direction: column;
   gap: 32px;
-  width: 1100px;
+  width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
-/* Grid 2 cột 3 hàng cho danh sách review */
+/* Masonry layout (cột tự động co giãn) */
 .ir-review-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+  column-count: 2;
+  column-gap: 24px;
 }
 
-/* Card chính */
+/* Card */
 .ir-review-card {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 16px;
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 24px;
   background: #ffffff;
-  /*border: 1px solid #e5e7eb;  /**/
   border-radius: 8px;
-  width: 520px;
-  height: 180px;
+  padding: 16px;
   box-sizing: border-box;
+  break-inside: avoid;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 /* User */
 .ir-review-user {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  gap: 24px;
-  width: 100%;
-  height: 56px;
+  gap: 16px;
 }
 
 /* Avatar */
@@ -106,29 +89,15 @@
   width: 56px;
   aspect-ratio: 1 / 1;
   position: relative;
-}
-
-.ir-review-avatar-icon{
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  inset: 0;
+  overflow: hidden;
   border-radius: 50%;
-  margin:auto;
-}
-
-.ir-review-avatar-base {
-  position: absolute;
-  inset: 0;
-  border-radius: 1000px;
-  background: #f3f4f6;
 }
 
 .ir-review-avatar-img {
-  position: absolute;
-  inset: 0;
-  border-radius: 1000px;
-  background: url("image.png") center/cover no-repeat;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* Title + Subtitle */
@@ -136,77 +105,59 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  width: 440px;
-  height: 44px;
 }
 
 .ir-review-title {
   font-family: "Inter", sans-serif;
   font-weight: 500;
   font-size: 16px;
-  line-height: 24px;
   color: #000;
-  display: flex;
-  align-items: center;
 }
 
 .ir-review-subtitle {
   font-family: "Inter", sans-serif;
   font-weight: 400;
   font-size: 14px;
-  line-height: 20px;
   color: #6b7280;
+}
+
+/* Rating stars */
+.ir-review-rating {
   display: flex;
-  align-items: center;
+  gap: 4px;
 }
 
 /* Comment */
 .ir-review-comment {
-  width: 100%;
-  height: 72px;
   font-family: "Inter", sans-serif;
-  font-weight: 400;
   font-size: 16px;
-  line-height: 24px;
   color: #000;
-  display: flex;
-  align-items: center;
+  line-height: 1.5;
+  margin-top: 8px;
 }
 
-/* Footer */
-.ir-review-footer {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  height: 20px;
-}
-
-.ir-review-readmore {
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
+/* Show more button */
+.ir-show-more-btn {
+  margin-left: 8px;
+  padding: 0;
   font-size: 14px;
-  line-height: 20px;
-  text-decoration-line: underline;
+  text-decoration: underline;
   color: #000;
   cursor: pointer;
-}
-
-.ir-review-chevron {
-  width: 16px;
-  height: 16px;
-  border-right: 2px solid #000;
-  border-top: 2px solid #000;
-  transform: rotate(45deg);
-  margin-top: 2px;
+  background: none;
+  border: none;
+  display: inline;
 }
 
 /* Button see all */
 .ir-button-seeall {
-  width: fit-content;
-  height: fit-content;
-  align-self: auto;
-  margin: 16px;
-  margin-top: 0px;
+  align-self: center;
+  margin-top: 0;
+}
+
+/* No reviews */
+.ir-no-reviews {
+  text-align: center;
+  font-size: 16px;
+  color: #6b7280;
 }
