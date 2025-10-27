@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './HomePage.css';
+import { useProperty } from '../contexts/PropertyContext';
 import { Icon } from '@iconify/react';
+import LoadingSpinner from "../components/LoadingSpinner";
+import ErrorMessage from "../components/ErrorMessage";
 
 export default function HomePage() {
   const [searchLocation, setSearchLocation] = useState('');
@@ -8,157 +11,28 @@ export default function HomePage() {
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState('');
 
-  const handleSearch = () => {
-    // TODO: Implement search functionality
+  const { properties, loading, error, fetchProperties } = useProperty();
+
+  const loadProperties = useCallback(async () => {
+    try {
+      await fetchProperties(); // gọi mockAPI.getProperties()
+    } catch (err) {
+      console.error('Error fetching properties:', err);
+    }
+  }, [fetchProperties]);
+
+  useEffect(() => {
+    loadProperties();
+  }, [loadProperties]);
+
+  const handleSearch = async () => {
     console.log('Search:', { searchLocation, checkIn, checkOut, guests });
+    await fetchProperties({
+      location: searchLocation,
+      guests: guests ? Number(guests) : null
+    });
   };
 
-  const properties = [
-    {
-      id: 1,
-      title: "Apartment in Quận Ba Đình",
-      location: "Hanoi, Vietnam",
-      rating: 4.33,
-      distance: "2,321 kilometres away",
-      dates: "18-25 Jun",
-      price: "₫1.440.000",
-      priceUnit: "cho 2 đêm",
-      image: "/src/assets/mockdata/images/img01.png",
-      isGuestFavourite: true
-    },
-    {
-      id: 2,
-      title: "Tiny home, Finland",
-      location: "Finland",
-      rating: 4.8,
-      distance: "2,321 kilometres away",
-      dates: "18-25 Jun",
-      price: "₫1.440.000",
-      priceUnit: "cho 2 đêm",
-      image: "/src/assets/mockdata/images/img02.png",
-      isGuestFavourite: true
-    },
-    {
-      id: 3,
-      title: "Cabin Lohusalu, Estonia",
-      location: "Estonia",
-      rating: 4.9,
-      distance: "2,321 kilometres away",
-      dates: "18-25 Jun",
-      price: "₫1.440.000",
-      priceUnit: "cho 2 đêm",
-      image: "/src/assets/mockdata/images/img03.png",
-      isGuestFavourite: true
-    },
-    {
-      id: 4,
-      title: "Oraşul Sovata, Romania",
-      location: "Romania",
-      rating: 4.7,
-      distance: "2,321 kilometres away",
-      dates: "18-25 Jun",
-      price: "₫1.440.000",
-      priceUnit: "cho 2 đêm",
-      image: "/src/assets/mockdata/images/img04.png",
-      isGuestFavourite: true
-    },
-    {
-      id: 5,
-      title: "Home in Greece",
-      location: "Greece",
-      rating: 4.6,
-      distance: "2,321 kilometres away",
-      dates: "18-25 Jun",
-      price: "₫1.440.000",
-      priceUnit: "cho 2 đêm",
-      image: "/src/assets/mockdata/images/img05.png",
-      isGuestFavourite: true
-    },
-    {
-      id: 6,
-      title: "Room in London",
-      location: "London, UK",
-      rating: 4.5,
-      distance: "2,321 kilometres away",
-      dates: "18-25 Jun",
-      price: "₫1.440.000",
-      priceUnit: "cho 2 đêm",
-      image: "/src/assets/mockdata/images/img01.png",
-      isGuestFavourite: true
-    },
-    {
-      id: 7,
-      title: "Apartment in Vietnam",
-      location: "Ho Chi Minh City, Vietnam",
-      rating: 4.8,
-      distance: "2,321 kilometres away",
-      dates: "18-25 Jun",
-      price: "₫1.440.000",
-      priceUnit: "cho 2 đêm",
-      image: "/src/assets/mockdata/images/img02.png",
-      isGuestFavourite: true
-    },
-    {
-      id: 8,
-      title: "Flat in Warsaw, Poland",
-      location: "Warsaw, Poland",
-      rating: 4.4,
-      distance: "2,321 kilometres away",
-      dates: "18-25 Jun",
-      price: "₫1.440.000",
-      priceUnit: "cho 2 đêm",
-      image: "/src/assets/mockdata/images/img03.png",
-      isGuestFavourite: true
-    },
-    {
-      id: 9,
-      title: "Cabo de Paso, Spain",
-      location: "Spain",
-      rating: 4.9,
-      distance: "2,321 kilometres away",
-      dates: "18-25 Jun",
-      price: "₫1.440.000",
-      priceUnit: "cho 2 đêm",
-      image: "/src/assets/mockdata/images/img04.png",
-      isGuestFavourite: true
-    },
-    {
-      id: 10,
-      title: "Cottage in Sweden",
-      location: "Sweden",
-      rating: 4.7,
-      distance: "2,321 kilometres away",
-      dates: "18-25 Jun",
-      price: "₫1.440.000",
-      priceUnit: "cho 2 đêm",
-      image: "/src/assets/mockdata/images/img05.png",
-      isGuestFavourite: true
-    },
-    {
-      id: 11,
-      title: "Wadi Rum Village, Jordan",
-      location: "Jordan",
-      rating: 4.6,
-      distance: "2,321 kilometres away",
-      dates: "18-25 Jun",
-      price: "₫1.440.000",
-      priceUnit: "cho 2 đêm",
-      image: "/src/assets/mockdata/images/img01.png",
-      isGuestFavourite: true
-    },
-    {
-      id: 12,
-      title: "Koh Chang, Thailand",
-      location: "Thailand",
-      rating: 4.8,
-      distance: "2,321 kilometres away",
-      dates: "18-25 Jun",
-      price: "₫1.440.000",
-      priceUnit: "cho 2 đêm",
-      image: "/src/assets/mockdata/images/img02.png",
-      isGuestFavourite: true
-    }
-  ];
 
   const categories = [
     { name: "Amazing views", icon: "mdi:mountain" },
@@ -172,6 +46,16 @@ export default function HomePage() {
     { name: "Courtyards", icon: "mdi:flower" }
   ];
 
+  // 🔄 Loading state
+  if (loading) {
+    return <LoadingSpinner message="Đang tải danh sách chỗ ở..." />;
+  }
+
+  // ⚠️ Error state
+  if (error) {
+    return <ErrorMessage message={error} />;
+  }
+
   return (
     <div className="homepage">
       {/* Search Bar */}
@@ -180,44 +64,44 @@ export default function HomePage() {
           <div className="search-bar">
             <div className="search-field">
               <label>Where</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search destinations"
                 value={searchLocation}
                 onChange={(e) => setSearchLocation(e.target.value)}
               />
             </div>
-            
+
             <div className="search-field">
               <label>Check in</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Add dates"
                 value={checkIn}
                 onChange={(e) => setCheckIn(e.target.value)}
               />
             </div>
-            
+
             <div className="search-field">
               <label>Check out</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Add dates"
                 value={checkOut}
                 onChange={(e) => setCheckOut(e.target.value)}
               />
             </div>
-            
+
             <div className="search-field">
               <label>Who</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Add guests"
                 value={guests}
                 onChange={(e) => setGuests(e.target.value)}
               />
             </div>
-            
+
             <button className="search-button" onClick={handleSearch}>
               <Icon icon="mdi:magnify" width="20" height="20" />
             </button>
@@ -254,7 +138,7 @@ export default function HomePage() {
           {properties.map(property => (
             <div key={property.id} className="property-card">
               <div className="property-image">
-                <img src={property.image} alt={property.title} />
+                <img src={property.mainImage} alt={property.listingTitle} />
                 {property.isGuestFavourite && (
                   <div className="guest-favourite-badge">
                     Guest favourite
@@ -265,12 +149,11 @@ export default function HomePage() {
                 </button>
               </div>
               <div className="property-info">
-                <div className="property-title">{property.title}</div>
+                <div className="property-title">{property.listingTitle}</div>
                 <div className="property-rating">
                   <Icon icon="mdi:star" width="14" height="14" />
                   <span>{property.rating}</span>
                 </div>
-                <div className="property-distance">{property.distance}</div>
                 <div className="property-dates">{property.dates}</div>
                 <div className="property-price">
                   <span className="price">{property.price}</span>

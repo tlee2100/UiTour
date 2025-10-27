@@ -30,7 +30,11 @@ class MockAPIService {
         latitude: 10.8231,
         longitude: 106.6297,
         price: 45,
+        priceUnit: "cho 2 đêm",
         currency: "USD",
+        dates: "18-25 Jun",
+        mainImage: "/images/id1_img01.png",
+        isGuestFavourite: true,
         cleaningFee: 8,
         extraPeopleFee: 5,
         bedrooms: 1,
@@ -60,23 +64,28 @@ class MockAPIService {
           { id: 5, name: "Free Parking", icon: "free_parking" }
         ],
         photos: [
-          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
-          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
-          "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800",
-          "https://images.unsplash.com/photo-1560448204-17c6bbbd2fcc?w=800",
-          "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800"
+          "/images/id1_img01.png",
+          "/images/id1_img02.png",
+          "/images/id1_img03.png",
+          "/images/id1_img04.png",
+          "/images/id1_img05.png"
         ]
       },
       {
         id: 2,
         listingTitle: "Luxury Apartment in District 1",
-        description: "Beautiful modern apartment in the heart of Ho Chi Minh City with stunning city views and premium amenities.",
+        description:
+          "Beautiful modern apartment in the heart of Ho Chi Minh City with stunning city views and premium amenities.",
         summary: "Modern 2BR apartment with city views",
         location: "District 1, Ho Chi Minh City",
         latitude: 10.7769,
         longitude: 106.7009,
         price: 89,
+        priceUnit: "cho 3 đêm",
         currency: "USD",
+        dates: "20-23 Jun",
+        mainImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
+        isGuestFavourite: true,
         cleaningFee: 15,
         extraPeopleFee: 10,
         bedrooms: 2,
@@ -108,21 +117,24 @@ class MockAPIService {
         photos: [
           "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
           "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
-          "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800",
-          "https://images.unsplash.com/photo-1560448204-17c6bbbd2fcc?w=800",
           "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800"
         ]
       },
       {
         id: 3,
         listingTitle: "Cozy Villa in District 2",
-        description: "Spacious villa with private garden, perfect for families. Located in a quiet neighborhood with easy access to the city center.",
+        description:
+          "Spacious villa with private garden, perfect for families. Located in a quiet neighborhood with easy access to the city center.",
         summary: "Family-friendly villa with garden",
         location: "District 2, Ho Chi Minh City",
-        latitude: 10.7870,
+        latitude: 10.787,
         longitude: 106.7487,
         price: 156,
+        priceUnit: "cho 5 đêm",
         currency: "USD",
+        dates: "10-15 Jul",
+        mainImage: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800",
+        isGuestFavourite: false,
         cleaningFee: 25,
         extraPeopleFee: 15,
         bedrooms: 4,
@@ -152,20 +164,24 @@ class MockAPIService {
         ],
         photos: [
           "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800",
-          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800",
-          "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800"
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800"
         ]
       },
       {
         id: 4,
         listingTitle: "Beach House in Vung Tau",
-        description: "Stunning beachfront property with direct access to the beach. Perfect for a relaxing getaway with ocean views.",
+        description:
+          "Stunning beachfront property with direct access to the beach. Perfect for a relaxing getaway with ocean views.",
         summary: "Beachfront house with ocean views",
         location: "Vung Tau, Ba Ria - Vung Tau",
-        latitude: 10.3460,
+        latitude: 10.346,
         longitude: 107.0843,
         price: 234,
+        priceUnit: "cho 4 đêm",
         currency: "USD",
+        dates: "5-9 May",
+        mainImage: "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=800",
+        isGuestFavourite: true,
         cleaningFee: 30,
         extraPeopleFee: 20,
         bedrooms: 3,
@@ -195,20 +211,24 @@ class MockAPIService {
         ],
         photos: [
           "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=800",
-          "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
-          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800"
+          "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800"
         ]
       },
       {
         id: 5,
         listingTitle: "Mountain Lodge in Da Lat",
-        description: "Charming lodge surrounded by pine forests. Experience the cool mountain air and peaceful atmosphere of Da Lat.",
+        description:
+          "Charming lodge surrounded by pine forests. Experience the cool mountain air and peaceful atmosphere of Da Lat.",
         summary: "Mountain lodge with forest views",
         location: "Da Lat, Lam Dong",
         latitude: 11.9404,
         longitude: 108.4583,
         price: 67,
+        priceUnit: "cho 2 đêm",
         currency: "USD",
+        dates: "1-3 Aug",
+        mainImage: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+        isGuestFavourite: true,
         cleaningFee: 12,
         extraPeopleFee: 8,
         bedrooms: 2,
@@ -233,25 +253,28 @@ class MockAPIService {
         amenities: [
           { id: 1, name: "WiFi", icon: "wifi" },
           { id: 12, name: "Fireplace", icon: "fireplace" },
-          { id: 13, name: "Mountain View", icon: "mountain" },
-          { id: 14, name: "Hiking Trails", icon: "hiking" }
+          { id: 13, name: "Mountain View", icon: "mountain" }
         ],
         photos: [
           "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
-          "https://images.unsplash.com/photo-1506905925346-14b1e3d7e6b3?w=800",
-          "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800"
+          "https://images.unsplash.com/photo-1506905925346-14b1e3d7e6b3?w=800"
         ]
       },
       {
         id: 6,
         listingTitle: "Riverside Hotel in Can Tho",
-        description: "Modern hotel with Mekong Delta views. Experience the local culture and enjoy the peaceful riverside setting.",
+        description:
+          "Modern hotel with Mekong Delta views. Experience the local culture and enjoy the peaceful riverside setting.",
         summary: "Riverside hotel with Mekong views",
         location: "Can Tho City",
         latitude: 10.0452,
         longitude: 105.7469,
         price: 45,
+        priceUnit: "cho 1 đêm",
         currency: "USD",
+        dates: "12-13 Jul",
+        mainImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        isGuestFavourite: false,
         cleaningFee: 8,
         extraPeopleFee: 5,
         bedrooms: 1,
@@ -276,8 +299,7 @@ class MockAPIService {
         amenities: [
           { id: 1, name: "WiFi", icon: "wifi" },
           { id: 15, name: "River View", icon: "river" },
-          { id: 16, name: "Breakfast", icon: "breakfast" },
-          { id: 17, name: "Concierge", icon: "concierge" }
+          { id: 16, name: "Breakfast", icon: "breakfast" }
         ],
         photos: [
           "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
@@ -299,7 +321,7 @@ class MockAPIService {
           userName: "Alice Nguyen",
           userAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100",
           rating: 5,
-          comment: "Rất tuyệt vời, phòng sạch sẽ và chủ nhà thân thiện! View thành phố rất đẹp.",
+          comment: "Rất tuyệt vời, phòng sạch sẽ và chủ nhà thân thiện! View thành phố rất đẹp. The stay was pleasant. Highly recommend! Good value for the price. The location is amazing and close to everything.Rất tuyệt vời, phòng sạch sẽ và chủ nhà thân thiện! View thành phố rất đẹp. The stay was pleasant. Highly recommend! Good value for the price. The location is amazing and close to everything.",
           createdAt: "2024-01-20T10:30:00Z",
           location: "Vietnam"
         },
@@ -349,7 +371,7 @@ class MockAPIService {
           userName: "Akira Ito",
           userAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
           rating: 5,
-          comment: "The stay was pleasant. Highly recommend!",
+          comment: "The stay was pleasant. Highly recommend! Good value for the price. The location is amazing and close to everything.",
           createdAt: "2023-12-20T08:45:00Z",
           location: "Japan"
         }
@@ -377,7 +399,7 @@ class MockAPIService {
       1: {
         id: 1,
         name: "Tèo Hoàng",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+        avatar: "/images/host1_avatar.png",
         joinedDate: "2020-03-15",
         responseRate: 98,
         responseTime: "within an hour",
@@ -448,11 +470,11 @@ class MockAPIService {
     await this.delayResponse();
     const properties = this.getMockProperties();
     const property = properties.find(p => p.id === parseInt(id));
-    
+
     if (!property) {
       throw new Error(`Property with id ${id} not found`);
     }
-    
+
     return {
       ...property,
       reviews: this.getMockReviews(property.id),
@@ -463,49 +485,59 @@ class MockAPIService {
   async getProperties(filters = {}) {
     await this.delayResponse();
     let properties = this.getMockProperties();
-    
+
     // Apply filters
     if (filters.location) {
-      properties = properties.filter(p => 
+      properties = properties.filter(p =>
         p.location.toLowerCase().includes(filters.location.toLowerCase())
       );
     }
-    
+
     if (filters.minPrice) {
       properties = properties.filter(p => p.price >= filters.minPrice);
     }
-    
+
     if (filters.maxPrice) {
       properties = properties.filter(p => p.price <= filters.maxPrice);
     }
-    
+
     if (filters.guests) {
       properties = properties.filter(p => p.accommodates >= filters.guests);
     }
-    
+
     if (filters.amenities && filters.amenities.length > 0) {
-      properties = properties.filter(p => 
-        filters.amenities.every(amenityId => 
+      properties = properties.filter(p =>
+        filters.amenities.every(amenityId =>
           p.amenities.some(amenity => amenity.id === amenityId)
         )
       );
     }
-    
-    return properties;
+
+    return properties.map(p => ({
+      id: p.id,
+      listingTitle: p.listingTitle,
+      location: p.location,
+      rating: p.rating,
+      dates: p.dates,
+      price: p.price,
+      priceUnit: p.priceUnit,
+      mainImage: p.mainImage,
+      isGuestFavourite: p.isGuestFavourite
+    }));
   }
 
   async searchProperties(query, filters = {}) {
     await this.delayResponse();
     let properties = this.getMockProperties();
-    
+
     // Search by location
     if (query) {
-      properties = properties.filter(p => 
+      properties = properties.filter(p =>
         p.location.toLowerCase().includes(query.toLowerCase()) ||
         p.listingTitle.toLowerCase().includes(query.toLowerCase())
       );
     }
-    
+
     // Apply additional filters
     return this.getProperties({ ...filters, location: query });
   }
