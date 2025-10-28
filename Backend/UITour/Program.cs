@@ -40,6 +40,10 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IHostVerificationRepository, HostVerificationRepository>();
 builder.Services.AddScoped<ISavedListingRepository, SavedListingRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<ITourRepository, TourRepository>();
+builder.Services.AddScoped<ITourParticipantRepository, TourParticipantRepository>();
+builder.Services.AddScoped<ITourPhotoRepository, TourPhotoRepository>();
+builder.Services.AddScoped<ITourReviewRepository, TourReviewRepository>();
 // Service registrations
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IHostService, HostService>();
@@ -48,6 +52,7 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<ICountryService, CountryService>();
 builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<INeighbourhoodService, NeighbourhoodService>();
+builder.Services.AddScoped<ITourService, TourService>();
 
 // CORS for React dev servers
 const string CorsPolicy = "CorsPolicy";
