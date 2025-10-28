@@ -5,21 +5,21 @@ import HomeInfoPage from "../pages/HomeInfoPage";
 import ToursPage from "../pages/ToursPage";
 import ExperienceInfoPage from "../pages/ExperienceInfoPage";
 import MapDemoPage from "../pages/MapDemoPage";
+import LoginPage from "../pages/LoginPage";
+import SignUpPage from "../pages/SignUpPage";
 
 const routes = (
-  <Route path="/" element={<MainLayout />}>
-    {/* Demo page để test map components */}
-    <Route index element={<HomePage />} />
-    <Route path="demomap" element={<MapDemoPage />} />
-    <Route path="tours" element={<ToursPage />} />
-    
-    {/* Property detail page với dynamic ID */}
-    <Route path="property/:id" element={<HomeInfoPage />} />
-    
-    {/* Other pages */}
-    <Route path="homeinfo" element={<HomeInfoPage />} />
-    <Route path="experienceinfo" element={<ExperienceInfoPage />} />
-  </Route>
+  <> <Route path="/login" element={<LoginPage />} />
+    <Route path="/signup" element={<SignUpPage />} />
+    <Route path="/" element={<MainLayout />}>
+      <Route index element={<HomePage />} />
+      <Route path="demomap" element={<MapDemoPage />} />
+      <Route path="tours" element={<ToursPage />} />
+      <Route path="property/:id" element={<HomeInfoPage />} />
+      <Route path="homeinfo" element={<HomeInfoPage />} />
+      <Route path="experienceinfo" element={<ExperienceInfoPage />} />
+    </Route>
+  </>
 );
 
 export default routes;
