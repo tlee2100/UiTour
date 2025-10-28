@@ -1,12 +1,17 @@
 .home-info-page {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 40px;
-  padding-left: 160px;
-  padding-right: 160px;
   background-color: #fff;
+
+  /* ✅ Cách 1: Giới hạn width toàn trang */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px; /* giảm padding cho vừa mắt hơn */
+  box-sizing: border-box;
 }
+
 
 .homeif-divider {
   width: 100%;
@@ -19,4 +24,40 @@
   width: 100%;
   margin-top: 32px;
   border-top: 1px solid #E5E7EB;
+}
+
+/* Layout hai cột giữa Content và BookingBox */
+.homeinfo-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+  margin-top: 24px;
+}
+
+/* Bên trái (nội dung mô tả nhà) */
+.homeinfo-left {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Bên phải (booking box) */
+.homeinfo-right {
+  flex-shrink: 0;
+  width: 370px;
+  position: sticky;
+  top: 100px; /* để box dính trên khi cuộn */
+  align-self: flex-start;
+}
+
+/* Responsive: xuống hàng khi màn hình nhỏ */
+@media (max-width: 1024px) {
+  .homeinfo-main {
+    flex-direction: column;
+  }
+
+  .homeinfo-right {
+    width: 100%;
+    position: static;
+  }
 }

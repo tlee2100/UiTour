@@ -1,0 +1,205 @@
+/* Booking Box */
+.hib-booking-box {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  gap: 16px;
+  width: 370px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0px 20px 25px rgba(31, 41, 55, 0.1),
+    0px 10px 10px rgba(31, 41, 55, 0.04);
+  border-radius: 8px;
+}
+
+/* Header */
+.hib-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 322px;
+  height: 32px;
+}
+
+.hib-price {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+.hib-price-value {
+  font-family: "Inter";
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 32px;
+  color: #000;
+}
+
+.hib-price-slash,
+.hib-price-night {
+  font-size: 16px;
+  line-height: 24px;
+  color: #000;
+}
+
+/* Rating */
+.hib-rating {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-family: "Inter";
+}
+
+.hib-rating-star {
+  font-size: 16px;
+}
+
+.hib-rating-score {
+  font-weight: 500;
+  font-size: 14px;
+  color: #000;
+}
+
+.hib-rating-dot {
+  width: 2px;
+  height: 2px;
+  background: #6b7280;
+  border-radius: 50%;
+}
+
+.hib-rating-reviews {
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: underline;
+}
+
+/* Details */
+.hib-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 322px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.hib-details-row {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  box-shadow: inset 0px -1px 0px #d1d5db;
+}
+
+.hib-attribute {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  box-shadow: inset -1px 0px 0px #d1d5db;
+}
+
+.hib-attribute:last-child {
+  box-shadow: none;
+}
+
+.hib-attribute-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #000;
+}
+
+.hib-attribute-value {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Guests */
+.hib-guests {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 8px;
+}
+
+.hib-guests-title {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.hib-guests-value {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.hib-chevron {
+  font-size: 18px;
+}
+
+/* Button */
+.hib-book-button {
+  width: 322px;
+  height: 44px;
+  background: #00c0e8;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.hib-book-button:hover {
+  background: #00add2;
+}
+
+/* Note */
+.hib-note {
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Price Details */
+.hib-price-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 322px;
+}
+
+.hib-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.hib-row-label {
+  font-size: 16px;
+  color: #000;
+}
+
+.hib-row-value {
+  font-size: 16px;
+  color: #000;
+}
+
+.hib-discount {
+  color: #10b981;
+}
+
+.hib-divider {
+  border: 1px solid #e5e7eb;
+  width: 100%;
+}
+
+.hib-total .hib-row-label,
+.hib-total .hib-row-value {
+  font-weight: 500;
+}
