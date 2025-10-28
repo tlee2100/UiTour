@@ -28,8 +28,13 @@
          IHostVerificationRepository HostVerifications { get; }
          ISavedListingRepository SavedListings { get; }
          IMessageRepository Messages { get; }
- 
-         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+         ITourRepository Tours { get; }
+         ITourParticipantRepository TourParticipants { get; }
+         ITourPhotoRepository TourPhotos { get; }
+         ITourReviewRepository TourReviews { get; }
+
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
      }
  }
  
