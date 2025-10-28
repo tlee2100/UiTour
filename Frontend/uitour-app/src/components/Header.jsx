@@ -1,24 +1,53 @@
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import logo from '../assets/UiTour.png';
 import './Header.css';
 
 export default function Header() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // TODO: Implement search functionality
+      console.log('Searching for:', searchQuery);
+    }
+  };
+
+  const handleLogoClick = () => {
+    navigate('/');
+  };
+
   return (
     <header className="header">
         {/* Logo */}
         <div className="header_logo">
-            <button className="header_logoButton">
+            <button className="header_logoButton" onClick={handleLogoClick}>
                 <img src={logo} alt="UiTour Logo" className="logo" />
             </button>
         </div>
 
+        {/* Navigation */}
+        <nav className="header_nav">
+          <Link to="/" className="nav_link active">Stays</Link>
+          <Link to="/tours" className="nav_link">Experiences</Link>
+        </nav>
+
         {/* Search box */}
-        <div className="header_search">
-            <input type="text" className="header_searchInput" placeholder="Start your search..." />
-            <button className="header_searchButton">
+        <form className="header_search" onSubmit={handleSearch}>
+            <input 
+              type="text" 
+              className="header_searchInput" 
+              placeholder="Start your search..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button type="submit" className="header_searchButton">
                 <Icon icon="mdi:magnify" width="24" height="24" />
             </button>
-        </div>
+        </form>
 
         {/* Right side */}
         <div className="header_right">

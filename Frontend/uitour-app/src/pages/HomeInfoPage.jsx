@@ -1,5 +1,6 @@
-import { useState } from "react";
-import setdata from "../assets/mockdata/setdata"; // Corrected import
+import { useState, useEffect, useCallback } from "react";
+import { useParams } from "react-router-dom";
+import { useProperty } from "../contexts/PropertyContext";
 import './HomeInfoPage.css';
 import Gallery from "./HomeInfo_component/Gallery";
 import InfoHeader from "./Info_components/InfoHeader";
@@ -99,13 +100,13 @@ export default function HomeInfoPage() {
         reviews={currentProperty.reviews || []}
       />
 
-        <div className="homeif-divider" />
+      <div className="homeif-divider" />
 
-        <InfoHost /> {/* Added InfoHost component */}
+      <InfoHost host={currentProperty.host} />
 
-        <div className="homeif-divider" />
+      <div className="homeif-divider" />
 
-        <InfoThingsToKnow /> {/* Added InfoThingsToKnow component */}
+      <InfoThingsToKnow property={currentProperty} />
 
       <div className="homeif-divider" />
 

@@ -43,7 +43,6 @@ namespace UITour.Models
         public ICollection<PropertyPhoto> Photos { get; set; }
         public ICollection<SavedListing> SavedListings { get; set; }
         public ICollection<Review> Reviews { get; set; }
-        public string? Name { get; set; } // Nullable property
-        public int? MaxGuests { get; set; } // Nullable property
+        
     }
 }
