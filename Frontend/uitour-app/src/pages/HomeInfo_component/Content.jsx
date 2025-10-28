@@ -153,7 +153,6 @@ const Content = ({ property }) => {
                     <Calendar />
                     <ButtonWhite className="content-button-clear-days">Clear days</ButtonWhite>
                 </div>
-                <div className="content-divider" />
             </div>
         </div>
     );

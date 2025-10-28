@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+import React, { useState, useEffect, useRef } from 'react';
+=======
 import React, { useState, useEffect } from 'react';
+>>>>>>> origin/master
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -7,14 +11,17 @@ import './PropertyMap.css';
 /* ---------------- FIX ICON MẶC ĐỊNH ---------------- */
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
 /* ---------------- CUSTOM ICON ---------------- */
-const createCustomIcon = (color = '#FF5A5F') => {
-  return L.divIcon({
+const createCustomIcon = (color = '#FF5A5F') =>
+  L.divIcon({
     className: 'custom-marker',
     html: `
       <div style="
@@ -41,34 +48,32 @@ const createCustomIcon = (color = '#FF5A5F') => {
     iconAnchor: [15, 30],
     popupAnchor: [0, -30],
   });
-};
 
-/* ---------------- AUTO CENTER (khi đổi chỗ ở) ---------------- */
-const MapCenter = ({ center, zoom, property }) => {
+/* ---------------- AUTO CENTER (chỉ khi property đổi) ---------------- */
+const MapCenter = ({ lat, lng, zoom }) => {
   const map = useMap();
+  const prevCoords = useRef([null, null]);
 
   useEffect(() => {
-    if (!property || !center) return;
+    if (!lat || !lng) return;
+    const [prevLat, prevLng] = prevCoords.current;
 
-    // Nếu bản đồ chưa khởi tạo xong thì chờ 200ms rồi flyTo
-    const timeout = setTimeout(() => {
-      map.flyTo(center, zoom, { animate: true, duration: 0.8 });
-    }, 200);
-
-    return () => clearTimeout(timeout);
-  }, [property?.id, center[0], center[1], zoom, map]);
+    // Chỉ flyTo nếu toạ độ thực sự thay đổi
+    if (lat !== prevLat || lng !== prevLng) {
+      map.flyTo([lat, lng], zoom, { animate: true, duration: 0.8 });
+      prevCoords.current = [lat, lng];
+    }
+  }, [lat, lng, zoom, map]);
 
   return null;
 };
 
-
-/* ---------------- FIX MAP SIZE (khi render lần đầu) ---------------- */
+/* ---------------- FIX MAP SIZE ---------------- */
 const MapFixSize = () => {
   const map = useMap();
   useEffect(() => {
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 400);
+    const timeout = setTimeout(() => map.invalidateSize(), 300);
+    return () => clearTimeout(timeout);
   }, [map]);
   return null;
 };
@@ -79,22 +84,27 @@ const PropertyMap = ({
   center = [10.8231, 106.6297],
   zoom = 15,
   height = '500px',
-  width = '90%', // 👈 map chiếm 90% chiều ngang trang
+  width = '100%',
   showPopup = true,
 }) => {
+  // Tạo center ban đầu
   const [mapCenter, setMapCenter] = useState(center);
-  const [mapZoom, setMapZoom] = useState(zoom);
 
-  // Update center khi property đổi
   useEffect(() => {
     if (property?.latitude && property?.longitude) {
-      setMapCenter([property.latitude, property.longitude]);
-      setMapZoom(16);
+      const newCenter = [property.latitude, property.longitude];
+      setMapCenter(prev => {
+        if (prev[0] === newCenter[0] && prev[1] === newCenter[1]) return prev; // 👈 không đổi
+        return newCenter;
+      });
     } else {
-      setMapCenter(center);
-      setMapZoom(zoom);
+      setMapCenter(prev => {
+        if (prev[0] === center[0] && prev[1] === center[1]) return prev; // 👈 không đổi
+        return center;
+      });
     }
-  }, [property, center, zoom]);
+  }, [property?.latitude, property?.longitude, center[0], center[1]]);
+
 
   const markerPosition =
     property?.latitude && property?.longitude
@@ -102,17 +112,15 @@ const PropertyMap = ({
       : null;
 
   const handleDirections = () => {
-    if (markerPosition) {
-      const url = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${markerPosition[0]},${markerPosition[1]}`;
-      window.open(url, '_blank');
-    }
+    if (!markerPosition) return;
+    const url = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${markerPosition[0]},${markerPosition[1]}`;
+    window.open(url, '_blank');
   };
 
   const handleOpenMap = () => {
-    if (markerPosition) {
-      const url = `https://www.openstreetmap.org/?mlat=${markerPosition[0]}&mlon=${markerPosition[1]}&zoom=16`;
-      window.open(url, '_blank');
-    }
+    if (!markerPosition) return;
+    const url = `https://www.openstreetmap.org/?mlat=${markerPosition[0]}&mlon=${markerPosition[1]}&zoom=16`;
+    window.open(url, '_blank');
   };
 
   return (
@@ -122,27 +130,33 @@ const PropertyMap = ({
     >
       <div className="map-header">
         <h3>Vị trí</h3>
-        <p className="map-subtitle">{property?.location || 'Vị trí của chỗ ở'}</p>
+        <p className="map-subtitle">
+          {property?.location || 'Vị trí của chỗ ở'}
+        </p>
       </div>
 
       <div className="map-wrapper" style={{ height }}>
         <MapContainer
           center={mapCenter}
-          zoom={mapZoom}
+          zoom={zoom}
           style={{
             width: '100%',
             height: '100%',
             borderRadius: '12px',
             zIndex: 1,
           }}
-          scrollWheelZoom={true}
-          zoomControl={true}
-          dragging={true}
-          doubleClickZoom={true}
-          touchZoom={true}
+          scrollWheelZoom
+          zoomControl
+          dragging
+          doubleClickZoom
+          touchZoom
         >
           <MapFixSize />
-          <MapCenter center={mapCenter} zoom={mapZoom} property={property} />
+          <MapCenter
+            lat={mapCenter[0]}
+            lng={mapCenter[1]}
+            zoom={zoom}
+          />
 
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -159,7 +173,7 @@ const PropertyMap = ({
                       {property?.location || 'Không rõ vị trí'}
                     </p>
                     {property?.price && (
-                      <p className="popup-price">${property.price}/đêm</p>
+                      <p className="popup-price">₫{property.price}/đêm</p>
                     )}
                   </div>
                 </Popup>
@@ -183,7 +197,7 @@ const PropertyMap = ({
           onClick={handleOpenMap}
           disabled={!markerPosition}
         >
-          <span>📍</span> Mở OpenStreetMap
+          <span>📍</span> Mở bản đồ
         </button>
       </div>
     </div>
