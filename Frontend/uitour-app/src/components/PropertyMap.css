@@ -1,0 +1,123 @@
+:root {
+  /* ✅ Ép trình duyệt hiểu rằng website chỉ hỗ trợ giao diện sáng */
+  color-scheme: light;
+}
+
+/* ========== Property Map Container ========== */
+.property-map-container {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  /*box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);/**/
+}
+
+/* Header */
+.map-header {
+  padding: 0px 24px 16px;
+  /*border-bottom: 1px solid #e5e7eb;/**/
+  background: #ffffff;
+}
+
+.map-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #222;
+}
+
+.map-subtitle {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Map Wrapper */
+.map-wrapper {
+  width: 100%;
+  min-height: 400px;
+  position: relative;
+}
+
+.leaflet-container {
+  border-radius: 12px;
+  z-index: 1;
+}
+
+/* Popup */
+.popup-content {
+  padding: 8px;
+  min-width: 200px;
+}
+
+.popup-content h4 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.popup-address {
+  margin: 0 0 6px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.popup-price {
+  margin: 0;
+  color: #ff5a5f;
+  font-weight: 600;
+}
+
+/* Custom Marker */
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Actions */
+.map-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  background: #ffffff;
+  /*border-top: 1px solid #e5e7eb;/**/
+}
+
+.map-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #222;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.map-action-btn:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
+}
+
+.map-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .property-map-container {
+    width: 95% !important;
+  }
+
+  .map-actions {
+    flex-direction: column;
+    padding: 12px 16px;
+  }
+
+  .map-action-btn {
+    justify-content: center;
+  }
+}
