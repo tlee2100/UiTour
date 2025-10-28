@@ -47,6 +47,11 @@ namespace UITour.Models
         // ================= Messages =================
         public DbSet<Message> Messages { get; set; }
 
+        // ================= Tours =================
+        public DbSet<Tour> Tours { get; set; }                
+        public DbSet<TourParticipant> TourParticipants { get; set; } 
+        public DbSet<TourReview> TourReviews { get; set; }   
+        public DbSet<TourPhoto> TourPhotos { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -66,7 +71,12 @@ namespace UITour.Models
             modelBuilder.Entity<Booking>()
                 .Property(b => b.TotalPrice)
                 .HasColumnType("decimal(12,2)");
+            
+            modelBuilder.Entity<Tour>()
+              .Property(t => t.Price)
+              .HasColumnType("decimal(10,2)");
 
+            // Relationships
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.Property)
                 .WithMany(p => p.Bookings)
@@ -97,6 +107,47 @@ namespace UITour.Models
                 .WithOne(v => v.Host)
                 .HasForeignKey(v => v.HostID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            
+            modelBuilder.Entity<TourParticipant>()
+               .HasKey(tb => new { tb.UserID, tb.TourID });
+
+            modelBuilder.Entity<Tour>()
+                .HasOne(t => t.Host)
+                .WithMany(h => h.Tours) // bạn có thể thêm ICollection<Tour> Tours vào model Host
+                .HasForeignKey(t => t.HostID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TourParticipant>()
+                .HasOne(tp => tp.Tour)
+                .WithMany(t => t.Participants)
+                .HasForeignKey(tp => tp.TourID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TourParticipant>()
+                .HasOne(tp => tp.User)
+                .WithMany()
+                .HasForeignKey(tp => tp.UserID)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            modelBuilder.Entity<TourReview>()
+                .HasOne(tr => tr.Tour)
+                .WithMany(t => t.Reviews)
+                .HasForeignKey(tr => tr.TourID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TourReview>()
+                .HasOne(tr => tr.User)
+                .WithMany()
+                .HasForeignKey(tr => tr.UserID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Tour - Photo
+            modelBuilder.Entity<TourPhoto>()
+                .HasOne(tp => tp.Tour)
+                .WithMany(t => t.Photos)
+                .HasForeignKey(tp => tp.TourID)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
