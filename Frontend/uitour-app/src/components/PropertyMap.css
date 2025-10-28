@@ -124,7 +124,7 @@
 }
 
 
-/* Dark mode */
+/* Dark mode 
 @media (prefers-color-scheme: dark) {
   .property-map-container {
     background: #1a1a1a;
@@ -152,3 +152,4 @@
     background: #444;
   }
 }
+/**/
