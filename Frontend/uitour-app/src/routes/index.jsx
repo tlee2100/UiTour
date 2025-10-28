@@ -1,18 +1,24 @@
 import { Route } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
-import HomePage from "../pages/HomeInfoPage";
+import HomePage from "../pages/HomePage";
 import HomeInfoPage from "../pages/HomeInfoPage";
+import ToursPage from "../pages/ToursPage";
+import ExperienceInfoPage from "../pages/ExperienceInfoPage";
+import MapDemoPage from "../pages/MapDemoPage";
 
 const routes = (
   <Route path="/" element={<MainLayout />}>
-
-    {/* Thay trang HomeInfoPage thành trang cần hiện trên web chính */}
-    {/* Ví dụ: <Route index element={<HomePage />} /> */}
-    <Route index element={<HomeInfoPage />} />       {/* Hiện ở <Outlet /> */}
-    {/* Nếu test xong nhớ chỉnh lại để ko bị conflict */}
-
-
-    {/*<Route path="tours" element={<HomeInfoPage />} /> {/* Cũng hiện ở <Outlet /> */}
+    {/* Demo page để test map components */}
+    <Route index element={<HomePage />} />
+    <Route path="demomap" element={<MapDemoPage />} />
+    <Route path="tours" element={<ToursPage />} />
+    
+    {/* Property detail page với dynamic ID */}
+    <Route path="property/:id" element={<HomeInfoPage />} />
+    
+    {/* Other pages */}
+    <Route path="homeinfo" element={<HomeInfoPage />} />
+    <Route path="experienceinfo" element={<ExperienceInfoPage />} />
   </Route>
 );
 

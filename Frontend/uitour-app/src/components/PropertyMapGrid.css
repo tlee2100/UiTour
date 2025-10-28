@@ -1,0 +1,158 @@
+/* PropertyMapGrid.css */
+.property-map-grid-container {
+  margin: 16px 0;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.map-grid-wrapper {
+  height: calc(100% - 100px); /* Subtract header and info height */
+  position: relative;
+}
+
+.map-grid-header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #f8f9fa;
+}
+
+.map-grid-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+}
+
+.search-location {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.map-grid-info {
+  padding: 12px 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #f0f0f0;
+}
+
+.map-grid-info p {
+  margin: 4px 0;
+  color: #666;
+  font-size: 12px;
+}
+
+/* Popup Styling */
+.popup-content {
+  padding: 8px;
+  min-width: 200px;
+}
+
+.popup-content h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+}
+
+.popup-address {
+  margin: 0 0 8px 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.popup-price {
+  margin: 0 0 12px 0;
+  color: #FF5A5F;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.popup-btn {
+  padding: 6px 12px;
+  background: #FF5A5F;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.popup-btn:hover {
+  background: #e04a4f;
+}
+
+/* Custom Marker Styling */
+.search-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.search-location-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Loading States */
+.map-grid-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: #f8f9fa;
+}
+
+.map-grid-loading .loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #FF5A5F;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.map-grid-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: #f8f9fa;
+  color: #666;
+  font-size: 14px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .property-map-grid-container {
+    margin: 12px 0;
+  }
+  
+  .map-grid-header {
+    padding: 12px 16px 8px;
+  }
+  
+  .map-grid-header h3 {
+    font-size: 16px;
+  }
+  
+  .map-grid-info {
+    padding: 8px 16px;
+  }
+  
+  .map-grid-info p {
+    font-size: 11px;
+  }
+}
