@@ -1,4 +1,23 @@
 .home-info-page {
+  /*
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 40px;
+  background-color: #fff;*/
+
+  /* ✅ Cách 1: Giới hạn width toàn trang */
+  /*
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px; 
+  box-sizing: border-box;/**/
+
+  min-height: 100vh;
+  background: white;
+}
+
+.homeinfo-container {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -8,10 +27,10 @@
   /* ✅ Cách 1: Giới hạn width toàn trang */
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 40px; /* giảm padding cho vừa mắt hơn */
+  padding: 0 40px;
+  /* giảm padding cho vừa mắt hơn */
   box-sizing: border-box;
 }
-
 
 .homeif-divider {
   width: 100%;
@@ -46,7 +65,8 @@
   flex-shrink: 0;
   width: 370px;
   position: sticky;
-  top: 100px; /* để box dính trên khi cuộn */
+  top: 100px;
+  /* để box dính trên khi cuộn */
   align-self: flex-start;
 }
 

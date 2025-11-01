@@ -64,19 +64,7 @@ export default function Header() {
           <Link to="/tours" className="nav_link">Experiences</Link>
         </nav>
 
-        {/* Search box */}
-        <form className="header_search" onSubmit={handleSearch}>
-            <input 
-              type="text" 
-              className="header_searchInput" 
-              placeholder="Start your search..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button type="submit" className="header_searchButton">
-                <Icon icon="mdi:magnify" width="24" height="24" />
-            </button>
-        </form>
+
 
         {/* Right side */}
         <div className="header_right">
