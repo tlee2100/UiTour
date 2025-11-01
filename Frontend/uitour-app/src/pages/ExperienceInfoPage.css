@@ -1,22 +1,76 @@
 .experience-info-page {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 40px;
   padding-left: 160px;
   padding-right: 160px;
   background-color: #fff;
 }
 
-.homeif-divider {
+/* ✅ Flex layout cho Gallery + About */
+.expif-two-columns {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 40px;
+}
+
+/* Trái lớn hơn (Giống Airbnb) */
+.expif-left-column {
+  flex: 2;
+}
+
+/* Phải hiển thị About */
+.expif-right-column {
+  flex: 1.2;
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* Dividers */
+.expif-divider {
   width: 100%;
   margin-top: 32px;
   margin-bottom: 32px;
   border-top: 1px solid #E5E7EB;
 }
 
-.homeif-end-divider {
+.expif-end-divider {
   width: 100%;
   margin-top: 32px;
   border-top: 1px solid #E5E7EB;
+}
+
+/* ==== Layout Details + Booking Box ==== */
+.expif-details-layout {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 40px;
+}
+
+/* Left content nhiều hơn */
+.expif-details-left {
+  width: 60%;
+}
+
+/* BookingBox cố định theo màn hình */
+.expif-details-right {
+  width: 40%;
+  position: sticky;
+  top: 120px; /* cách header khi scroll */
+  align-self: flex-start; /* giữ vị trí bắt đầu */
+}
+
+
+/* Responsive */
+@media(max-width: 900px){
+  .expif-two-columns {
+    flex-direction: column;
+  }
+  .expif-left-column,
+  .expif-right-column {
+    width: 100%;
+  }
 }
