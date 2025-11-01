@@ -1,0 +1,57 @@
+.sw-popover {
+  position: absolute;
+  top: 72px;
+  left: 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  width: 520px;
+  padding: 16px;
+  z-index: 30;
+}
+
+.sw-header {
+  font-weight: 600;
+  color: var(--black);
+  margin-bottom: 12px;
+}
+
+.sw-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.sw-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: box-shadow .2s, border-color .2s;
+}
+
+.sw-card:hover {
+  border-color: var(--black);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.sw-thumb {
+  height: 88px;
+  width: 100%;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+}
+
+.sw-title {
+  font-size: 14px;
+  color: var(--black);
+  font-weight: 500;
+}
+
+

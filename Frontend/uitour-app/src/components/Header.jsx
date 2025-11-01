@@ -1,17 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import logo from '../assets/UiTour.png';
 import './Header.css';
+import ProfileMenu from './ProfileMenu';
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+  const menuButtonRef = useRef(null);
   const navigate = useNavigate();
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // TODO: Implement search functionality
       console.log('Searching for:', searchQuery);
     }
   };
@@ -19,6 +22,32 @@ export default function Header() {
   const handleLogoClick = () => {
     navigate('/');
   };
+
+  const toggleMenu = () => setMenuOpen(prev => !prev);
+  const closeMenu = () => setMenuOpen(false);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (!menuOpen) return;
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(e.target)
+      ) {
+        setMenuOpen(false);
+      }
+    }
+    function handleEscape(e) {
+      if (e.key === 'Escape') setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [menuOpen]);
 
   return (
     <header className="header">
@@ -45,15 +74,24 @@ export default function Header() {
             <button className="header_globe">
                 <Icon icon="mdi:earth" width="24" height="24" />
             </button>
-            <div className="header_profile">
-                <button className="header_menu">
-                    <Icon icon="mdi:menu" width="24" height="24" />
-                </button>
+          <div className="header_profile">
+              <button
+                ref={menuButtonRef}
+                className="header_menu"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                onClick={toggleMenu}
+              >
+                  <Icon icon="mdi:menu" width="24" height="24" />
+              </button>
                 <div className="header_avatar">
                     <button className="header_avatarButton">
                         <Icon icon="mdi:account" width="32" height="32" />
                     </button>
                 </div>
+              {menuOpen && (
+                <ProfileMenu ref={menuRef} onClose={closeMenu} />
+              )}
             </div>
         </div>
     </header>

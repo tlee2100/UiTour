@@ -4,12 +4,18 @@ import { useProperty } from '../contexts/PropertyContext';
 import { Icon } from '@iconify/react';
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
+import SearchWhere from '../components/search/SearchWhere';
+import SearchDates from '../components/search/SearchDates';
+import SearchGuests from '../components/search/SearchGuests';
 
 export default function HomePage() {
   const [searchLocation, setSearchLocation] = useState('');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState('');
+  const [openWhere, setOpenWhere] = useState(false);
+  const [openDates, setOpenDates] = useState(false);
+  const [openGuests, setOpenGuests] = useState(false);
 
   const { properties, loading, error, fetchProperties } = useProperty();
 
@@ -62,50 +68,51 @@ export default function HomePage() {
       <section className="search-section">
         <div className="search-container">
           <div className="search-bar">
-            <div className="search-field">
+            <button className="search-field search-field-btn" onClick={() => { setOpenWhere(!openWhere); setOpenDates(false); setOpenGuests(false); }}>
               <label>Where</label>
-              <input
-                type="text"
-                placeholder="Search destinations"
-                value={searchLocation}
-                onChange={(e) => setSearchLocation(e.target.value)}
-              />
-            </div>
+              <div className="sf-value">{searchLocation || 'Search destinations'}</div>
+            </button>
 
-            <div className="search-field">
+            <button className="search-field search-field-btn" onClick={() => { setOpenDates(!openDates); setOpenWhere(false); setOpenGuests(false); }}>
               <label>Check in</label>
-              <input
-                type="text"
-                placeholder="Add dates"
-                value={checkIn}
-                onChange={(e) => setCheckIn(e.target.value)}
-              />
-            </div>
+              <div className="sf-value">{checkIn || 'Add dates'}</div>
+            </button>
 
-            <div className="search-field">
+            <button className="search-field search-field-btn" onClick={() => { setOpenDates(!openDates); setOpenWhere(false); setOpenGuests(false); }}>
               <label>Check out</label>
-              <input
-                type="text"
-                placeholder="Add dates"
-                value={checkOut}
-                onChange={(e) => setCheckOut(e.target.value)}
-              />
-            </div>
+              <div className="sf-value">{checkOut || 'Add dates'}</div>
+            </button>
 
-            <div className="search-field">
+            <button className="search-field search-field-btn" onClick={() => { setOpenGuests(!openGuests); setOpenWhere(false); setOpenDates(false); }}>
               <label>Who</label>
-              <input
-                type="text"
-                placeholder="Add guests"
-                value={guests}
-                onChange={(e) => setGuests(e.target.value)}
-              />
-            </div>
+              <div className="sf-value">{guests ? `${guests} guests` : 'Add guests'}</div>
+            </button>
 
             <button className="search-button" onClick={handleSearch}>
               <Icon icon="mdi:magnify" width="20" height="20" />
             </button>
           </div>
+
+          {/* Popovers */}
+          <SearchWhere
+            open={openWhere}
+            onClose={() => setOpenWhere(false)}
+            onSelectRegion={(r) => setSearchLocation(r.title)}
+          />
+
+          <SearchDates
+            open={openDates}
+            onClose={() => setOpenDates(false)}
+            value={{ checkIn, checkOut }}
+            onChange={(v) => { setCheckIn(v.checkIn || ''); setCheckOut(v.checkOut || ''); }}
+          />
+
+          <SearchGuests
+            open={openGuests}
+            onClose={() => setOpenGuests(false)}
+            guests={{ adults: Number(guests) || 1, children: 0, infants: 0, pets: 0 }}
+            onChange={(g) => setGuests(String(g.adults + g.children))}
+          />
         </div>
       </section>
 

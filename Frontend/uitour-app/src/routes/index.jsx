@@ -6,6 +6,8 @@ import HomeInfoPage from "../pages/HomeInfoPage";
 import ToursPage from "../pages/ToursPage";
 import ExperienceInfoPage from "../pages/ExperienceInfoPage";
 import MapDemoPage from "../pages/MapDemoPage";
+import LoginPage from "../pages/LoginPage";
+import SignUpPage from "../pages/SignUpPage";
 
 const AppRoutes = () => {
   return (
@@ -24,6 +26,9 @@ const AppRoutes = () => {
         <Route path="property/:id" element={<HomeInfoPage />} />
         <Route path="experienceinfo" element={<ExperienceInfoPage />} />
       </Route>
+
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignUpPage />} /> 
 
     </Routes>
   );

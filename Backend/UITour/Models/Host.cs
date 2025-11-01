@@ -16,7 +16,6 @@ namespace UITour.Models
         public ICollection<Property> Properties { get; set; }
         public ICollection<Booking> Bookings { get; set; }
         public ICollection<HostVerification> Verifications { get; set; }
-
-       
+        public ICollection<Tour> Tours { get; set; }
     }
 }
