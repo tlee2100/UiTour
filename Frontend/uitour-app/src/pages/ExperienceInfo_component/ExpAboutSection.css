@@ -1,0 +1,76 @@
+.expAbout-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 520px;
+  gap: 16px;
+}
+
+/* TITLE */
+.expAbout-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #000;
+}
+
+/* DESCRIPTION */
+.expAbout-description {
+  font-size: 16px;
+  line-height: 22px;
+  color: #757575;
+}
+
+/* DETAILS */
+.expAbout-details {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.expAbout-rating {
+  color: #000;
+  font-weight: 500;
+}
+.expAbout-reviews {
+  color: #000;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.expAbout-location {
+  color: #6B7280;
+  text-decoration: underline;
+}
+.expAbout-dot {
+  background: #6B7280;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+/* HOST SECTION */
+.expAbout-hostWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.expAbout-hostAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 100%;
+  object-fit: cover;
+}
+
+.expAbout-hostName {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.expAbout-hostRole {
+  font-size: 14px;
+  color: #000;
+  margin: 0;
+}

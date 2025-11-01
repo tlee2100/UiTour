@@ -1,0 +1,110 @@
+/* --- ITEM GRID  --- */
+.expGallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+}
+
+.expGallery-item {
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.expGallery-item img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: scale 0.25s;
+}
+
+.expGallery-item:hover img {
+    scale: 1.05;
+}
+
+/* Overlay "+X" */
+.expGallery-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    color: white;
+    font-size: 22px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+/* --- MODAL --- */
+.expGallery-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+}
+
+/* ✅ Wrapper giúp border-radius áp dụng đúng */
+.expGallery-modalImgWrapper {
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ✅ Scale ảnh theo trục lớn nhất - không bị ép tỉ lệ */
+.expGallery-modalImg {
+  max-width: 90vw;
+  max-height: 70vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+
+/* Close Button */
+.expGallery-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    font-size: 20px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    z-index: 5100;
+}
+
+/* Navigation Arrows */
+.expGallery-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.75);
+    border: none;
+    font-size: 36px;
+    width: 50px;
+    height: 70px;
+    cursor: pointer;
+    border-radius: 8px;
+    z-index: 5100;
+}
+.expGallery-nav.left { left: 20px; }
+.expGallery-nav.right { right: 20px; }
+
+/* Responsive */
+@media(max-width: 768px) {
+    .expGallery-modalImgWrapper {
+        max-width: 95vw;
+        max-height: 85vh;
+    }
+    .expGallery-item img {
+        height: 150px;
+    }
+}

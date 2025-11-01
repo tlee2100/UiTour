@@ -25,6 +25,7 @@ const AppRoutes = () => {
         <Route path="homeinfo" element={<HomeInfoPage />} />
         <Route path="property/:id" element={<HomeInfoPage />} />
         <Route path="experienceinfo" element={<ExperienceInfoPage />} />
+        <Route path="experience/:id" element={<ExperienceInfoPage />} />
       </Route>
 
       <Route path="/login" element={<LoginPage />} />
