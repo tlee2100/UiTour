@@ -1,10 +1,9 @@
 /* Tổng thể header */
-.header {
+.headerinfo {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  position: relative;
 
   padding: 24px 160px;
   gap: 24px;
@@ -22,13 +21,7 @@
   display: flex;
   align-items: center;
   gap: 32px;
-  justify-content: center;
-  flex: 1;
-  position: absolute;
-  /* ✅ đưa nav ra giữa tuyệt đối */
-  left: 50%;
-  transform: translateX(-50%);
-
+  margin-left: 40px;
 }
 
 .nav_link {
@@ -51,19 +44,19 @@
 }
 
 /* Logo */
-.header_logo img {
+.headerif_logo img {
   height: 45px;
   width: auto;
   max-width: 100%;
   object-fit: contain;
 }
 
-.header_logoButton {
+.headerif_logoButton {
   display: flex;
   align-items: center;
   justify-content: center;
-
-
+  
+  
   background: transparent;
   border: none;
   border-radius: 20%;
@@ -71,11 +64,33 @@
   cursor: pointer;
 }
 
-.header_logoButton:hover {
+.headerif_logoButton:hover {
   background-color: transparent;
 }
 
-.header_searchInput {
+/* Search box */
+.headerif_search {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 8px 8px 8px 24px;
+  gap: 16px;
+
+  width: 334px;
+  height: fit-content;
+
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0px 1px 2px rgba(31, 41, 55, 0.08);
+  border-radius: 1000px;
+
+    position: absolute;
+  /* ✅ đưa nav ra giữa tuyệt đối */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.headerif_searchInput {
   flex: 1;
   border: none;
   outline: none;
@@ -84,7 +99,7 @@
   color: #000;
 }
 
-.header_searchButton {
+.headerif_searchButton {
   width: 32px;
   height: 32px;
   border: none;
@@ -98,19 +113,19 @@
 }
 
 /* Right side */
-.header_right {
+.headerif_right {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 16px;
 }
 
-.header_title {
+.headerif_title {
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', sans-serif;  
   padding: 12px 12px 12px 12px;
 
   width: fit-content;
@@ -124,7 +139,7 @@
   cursor: pointer;
 }
 
-.header_globe {
+.headerif_globe {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -138,7 +153,7 @@
 }
 
 /* Profile dropdown */
-.header_profile {
+.headerif_profile {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -152,7 +167,7 @@
   border-radius: 100px;
 }
 
-.header_menu {
+.headerif_menu {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,7 +183,7 @@
   cursor: pointer;
 }
 
-.header_avatar {
+.headerif_avatar {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -180,7 +195,7 @@
   overflow: hidden;
 }
 
-.header_avatarButton {
+.headerif_avatarButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,11 +213,11 @@ button:hover {
   background-color: #f3f4f6;
 }
 
-.header_avatarButton:hover {
+.headerif_avatarButton:hover {
   background-color: #d1d5db;
 }
 
-.header_searchButton:hover {
+.headerif_searchButton:hover {
   background-color: #00a3c4;
 }
 
@@ -211,13 +226,14 @@ button:hover {
   .header {
     padding: 24px 40px;
   }
-
+  
   .header_search {
     width: 280px;
     margin-left: 20px;
   }
-
+  
   .header_nav {
+    margin-left: 20px;
     gap: 20px;
   }
 }
@@ -229,11 +245,11 @@ button:hover {
     flex-wrap: wrap;
     gap: 16px;
   }
-
+  
   .header_logo {
     order: 1;
   }
-
+  
   .header_nav {
     order: 3;
     width: 100%;
@@ -241,14 +257,14 @@ button:hover {
     margin: 16px 0 0 0;
     gap: 16px;
   }
-
+  
   .header_search {
     order: 2;
     width: 100%;
     margin: 0;
     max-width: 400px;
   }
-
+  
   .header_right {
     order: 4;
     width: 100%;
@@ -261,24 +277,24 @@ button:hover {
   .header {
     padding: 12px 16px;
   }
-
+  
   .header_nav {
     gap: 12px;
   }
-
+  
   .nav_link {
     padding: 6px 12px;
     font-size: 13px;
   }
-
+  
   .header_search {
     padding: 6px 6px 6px 16px;
   }
-
+  
   .header_searchInput {
     font-size: 13px;
   }
-
+  
   .header_title {
     font-size: 13px;
     padding: 8px 12px;
