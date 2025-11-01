@@ -149,6 +149,10 @@
   display: inline;
 }
 
+.ir-show-more-btn:hover{
+  background-color: transparent;
+}
+
 /* Button see all */
 .ir-button-seeall {
   align-self: center;

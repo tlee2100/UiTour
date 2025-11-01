@@ -71,54 +71,56 @@ export default function HomeInfoPage() {
   // Render property details
   return (
     <div className="home-info-page">
-      <InfoHeader
-        title={currentProperty.listingTitle}
-        info={{
-          rating: currentProperty.rating?.toString() || "0",
-          reviews: `${currentProperty.reviewsCount || 0} reviews`,
-          hostStatus: currentProperty.hostStatus || "Host",
-          location: currentProperty.location
-        }}
-      />
+      <div className="homeinfo-container">
+        <InfoHeader
+          title={currentProperty.listingTitle}
+          info={{
+            rating: currentProperty.rating?.toString() || "0",
+            reviews: `${currentProperty.reviewsCount || 0} reviews`,
+            hostStatus: currentProperty.hostStatus || "Host",
+            location: currentProperty.location
+          }}
+        />
 
-      <Gallery images={currentProperty.photos || []} />
+        <Gallery images={currentProperty.photos || []} />
 
-      <div className="homeinfo-main">
-        <div className="homeinfo-left">
-          <Content property={currentProperty} />
+        <div className="homeinfo-main">
+          <div className="homeinfo-left">
+            <Content property={currentProperty} />
+          </div>
+          <div className="homeinfo-right">
+            <HIBookingBox property={currentProperty} />
+          </div>
         </div>
-        <div className="homeinfo-right">
-          <HIBookingBox property={currentProperty} />
-        </div>
+
+        <div className="homeif-divider" />
+
+        <InfoReview
+          rating={currentProperty.rating || 0}
+          reviewsCount={currentProperty.reviewsCount || 0}
+          reviews={currentProperty.reviews || []}
+        />
+
+        <div className="homeif-divider" />
+
+        <InfoHost host={currentProperty.host} />
+
+        <div className="homeif-divider" />
+
+        <InfoThingsToKnow property={currentProperty} />
+
+        <div className="homeif-divider" />
+
+        {/* Property Map Section */}
+        <PropertyMap
+          property={currentProperty}
+          height="500px"
+          zoom={16}
+          showPopup={true}
+        />
+
+        <div className="homeif-end-divider" />
       </div>
-
-      <div className="homeif-divider" />
-
-      <InfoReview
-        rating={currentProperty.rating || 0}
-        reviewsCount={currentProperty.reviewsCount || 0}
-        reviews={currentProperty.reviews || []}
-      />
-
-      <div className="homeif-divider" />
-
-      <InfoHost host={currentProperty.host} />
-
-      <div className="homeif-divider" />
-
-      <InfoThingsToKnow property={currentProperty} />
-
-      <div className="homeif-divider" />
-
-      {/* Property Map Section */}
-      <PropertyMap
-        property={currentProperty}
-        height="500px"
-        zoom={16}
-        showPopup={true}
-      />
-
-      <div className="homeif-end-divider" />
     </div>
   );
 }

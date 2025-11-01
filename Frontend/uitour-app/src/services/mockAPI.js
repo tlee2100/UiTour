@@ -309,6 +309,115 @@ class MockAPIService {
     ];
   }
 
+  // ✅ Experience Mock Data
+  getMockExperiences() {
+    return [
+      {
+        id: 100,
+        category: "experience",
+
+        listingTitle: "Best Street Food Motorbike Tour in Ho Chi Minh City",
+        summary: "Top-rated motorbike street food adventure in Saigon",
+        description: "Ranked #1 Food Tour in Vietnam since 2022. Hotel pickup & 10 tastings included.",
+
+        rating: 4.9,
+        reviewsCount: 120,
+        hostStatus: "Superhost",
+
+        location: "District 1, Ho Chi Minh City",
+        latitude: 10.7769,
+        longitude: 106.7009,
+
+        price: 730000,
+        priceUnit: "per guest",
+        currency: "₫",
+
+        dates: "Daily • Flexible time",
+        mainImage: "/images/id1_img01.png",
+        photos: [
+          "/images/id100_img01.png",
+          "/images/id100_img02.png",
+          "/images/id100_img03.png",
+          "/images/id100_img04.png",
+          "/images/id100_img05.png",
+          "/images/id100_img06.png",
+        ],
+
+        isGuestFavourite: true,
+        active: true,
+        createdAt: "2024-03-21T11:00:00Z",
+
+        hostId: 1,
+
+        // ✅ NEW: Experience exclusive data
+        details: [
+          {
+            image: "https://hoiandelicacyhotel.com/wp-content/uploads/2022/08/tranfer.jpg",
+            title: "Hotel Pickup",
+            description: "We will pick you up from your hotel and start the culinary night adventure."
+          },
+          {
+            image: "https://tse1.mm.bing.net/th/id/OIP.72rOIOjqxKHRT4ianMKJSgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3",
+            title: "Papaya Salad",
+            description: "A fresh mix of shredded papaya, beef jerky, peanuts, and crispy crackers."
+          },
+          {
+            image: "https://vnifood.com/wp-content/uploads/2019/11/COCONUT-AND-KUMQUAT-JUICE-03.jpg",
+            title: "Coconut Kumquat Juice",
+            description: "Refreshing coconut juice infused with tangy kumquat — perfect to cool off the heat."
+          },
+          {
+            image: "https://i0.wp.com/scootersaigontour.com/wp-content/uploads/2017/03/grilled-rice-pancake-in-saigon-vietnam.jpg?fit=1024%2C945&ssl=1",
+            title: "Vietnamese Pizza (Bánh Tráng Nướng)",
+            description: "Crispy rice paper grilled with egg, cheese, and sausage — a must-try street snack."
+          },
+          {
+            image: "https://farm4.staticflickr.com/3867/14446625218_b1e83724dd_b.jpg",
+            title: "Chinatown Street Food",
+            description: "Explore the old alleys of Cholon and discover hidden family-run food stalls."
+          },
+          {
+            image: "https://www.cet.edu.vn/wp-content/uploads/2018/03/bun-thit-nuong-kieu-mien-nam.jpg",
+            title: "Bún Thịt Nướng",
+            description: "Grilled pork, fresh herbs, and rice noodles topped with homemade fish sauce."
+          },
+          {
+            image: "https://scootersaigontour.com/wp-content/uploads/2020/11/Quang-Ba-Flower-Market-in-Hanoi.jpg",
+            title: "Saigon Flower Market Stop",
+            description: "Take photos at the lively wholesale flower market while enjoying a local beer."
+          },
+          {
+            image: "https://www.theseasonedwok.com/wp-content/uploads/2023/12/banh-flan-recipe-f6.jpg",
+            title: "Flan or Chè Dessert",
+            description: "Finish the night with a creamy flan or a sweet traditional Vietnamese chè."
+          },
+          {
+            image: "https://images.thespinoff.co.nz/1/2024/07/Vietnameezy.jpg?w=1290",
+            title: "Bánh Mì Tasting",
+            description: "A famous Saigon-style baguette filled with pâté, cold cuts, and fresh herbs."
+          },
+          {
+            image: "https://hotelcastillo.in/wp-content/uploads/2022/07/valet-parking-4.jpg",
+            title: "Drop-off Service",
+            description: "We take you back to your hotel or a fun bar spot if you want to continue the night!"
+          }
+        ]
+        ,
+
+        booking: {
+          price: 730000,
+          currency: "₫",
+          timeSlots: [
+            { time: "1:00 - 5:00PM", spots: 10 },
+            { time: "5:00 - 9:00PM", spots: 10 },
+            { time: "6:00 - 10:00PM", spots: 10 }
+          ]
+        }
+      }
+    ];
+  }
+
+
   // Mock Reviews Data
   // Mỗi propertyId có một danh sách reviews riêng.
   // Bạn có thể thêm review bằng cách thêm object vào mảng tương ứng.
@@ -387,7 +496,70 @@ class MockAPIService {
           createdAt: "2024-02-25T09:15:00Z",
           location: "Spain"
         }
+      ],
+      100: [
+        {
+          id: 1,
+          userId: 101,
+          userName: "Alice Nguyen",
+          userAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100",
+          rating: 5,
+          comment: "Great food tour! Loved all the stops. Each dish was unique and delicious. Riding through Saigon by night was so much fun!",
+          createdAt: "2024-01-20T10:30:00Z",
+          location: "Vietnam"
+        },
+        {
+          id: 2,
+          userId: 102,
+          userName: "John Smith",
+          userAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
+          rating: 5,
+          comment: "The best street food I had in Vietnam! Our guide explained everything so well. I would definitely recommend this tour!",
+          createdAt: "2024-01-15T14:20:00Z",
+          location: "USA"
+        },
+        {
+          id: 3,
+          userId: 103,
+          userName: "Mai Tran",
+          userAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100",
+          rating: 5,
+          comment: "Bánh tráng nướng và bún thịt nướng siêu ngon! Hướng dẫn viên vui vẻ và chụp hình đẹp. Quá tuyệt!",
+          createdAt: "2024-01-10T16:45:00Z",
+          location: "Vietnam"
+        },
+        {
+          id: 4,
+          userId: 104,
+          userName: "Daniel Lee",
+          userAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100",
+          rating: 5,
+          comment: "Riding on the motorbike through hidden alleys was amazing. Tried so many things I never knew existed!",
+          createdAt: "2024-01-05T09:15:00Z",
+          location: "South Korea"
+        },
+        {
+          id: 5,
+          userId: 105,
+          userName: "Sophie Chen",
+          userAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100",
+          rating: 5,
+          comment: "The best part was the coconut kumquat drink and dessert at the end! So refreshing and memorable!",
+          createdAt: "2023-12-28T11:30:00Z",
+          location: "Taiwan"
+        },
+        {
+          id: 6,
+          userId: 106,
+          userName: "Akira Ito",
+          userAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
+          rating: 5,
+          comment: "Food was excellent. The guide was knowledgeable and kind. A must-do experience when visiting Ho Chi Minh City!",
+          createdAt: "2023-12-20T08:45:00Z",
+          location: "Japan"
+        }
       ]
+      ,
     };
     return reviewsData[propertyId] || [];
   }
@@ -463,6 +635,39 @@ class MockAPIService {
       }
     };
     return hosts[hostId] || hosts[1];
+  }
+
+  async getExperiences(filters = {}) {
+    await this.delayResponse();
+    let exps = this.getMockExperiences();
+
+    // 🔍 Search by location
+    if (filters.location) {
+      exps = exps.filter(e =>
+        e.location.toLowerCase().includes(filters.location.toLowerCase())
+      );
+    }
+
+    // Price filter
+    if (filters.minPrice) {
+      exps = exps.filter(e => e.price >= filters.minPrice);
+    }
+
+    if (filters.maxPrice) {
+      exps = exps.filter(e => e.price <= filters.maxPrice);
+    }
+
+    return exps.map(e => ({
+      id: e.id,
+      listingTitle: e.listingTitle,
+      location: e.location,
+      rating: e.rating,
+      dates: e.dates,
+      price: e.price,
+      priceUnit: e.priceUnit,
+      mainImage: e.mainImage,
+      isGuestFavourite: e.isGuestFavourite
+    }));
   }
 
   // API Methods
@@ -542,6 +747,37 @@ class MockAPIService {
     return this.getProperties({ ...filters, location: query });
   }
 
+  async getExperienceById(id) {
+    await this.delayResponse();
+    const experiences = this.getMockExperiences();
+    const exp = experiences.find(e => e.id === parseInt(id));
+
+    if (!exp) {
+      throw new Error(`Experience with id ${id} not found`);
+    }
+
+    return {
+      ...exp,
+      reviews: this.getMockReviews(exp.id) || [], // reuse reviews system
+      host: this.getMockHost(exp.hostId) || null
+    };
+  }
+  async searchExperiences(query, filters = {}) {
+    await this.delayResponse();
+    let exps = this.getMockExperiences();
+
+    if (query) {
+      exps = exps.filter(e =>
+        e.location.toLowerCase().includes(query.toLowerCase()) ||
+        e.listingTitle.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+
+    return this.getExperiences({ ...filters, location: query });
+  }
+
+
+
   async getReviewsByPropertyId(propertyId) {
     await this.delayResponse();
     return this.getMockReviews(propertyId);
@@ -552,6 +788,8 @@ class MockAPIService {
     return this.getMockHost(hostId);
   }
 }
+
+
 
 // Create singleton instance
 const mockAPI = new MockAPIService();
