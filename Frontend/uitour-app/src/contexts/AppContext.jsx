@@ -2,18 +2,47 @@ import { createContext, useContext, useReducer } from 'react';
 
 const AppContext = createContext();
 
-const initialState = {
-  user: null,
-  favorites: [],
-  searchHistory: [],
-  isLoading: false,
-  error: null
+// Get initial state from localStorage if available
+const getInitialState = () => {
+  const storedUser = localStorage.getItem('user');
+  const storedToken = localStorage.getItem('token');
+  
+  return {
+    user: storedUser ? JSON.parse(storedUser) : null,
+    token: storedToken || null,
+    favorites: [],
+    searchHistory: [],
+    isLoading: false,
+    error: null
+  };
 };
+
+const initialState = getInitialState();
 
 function appReducer(state, action) {
   switch (action.type) {
     case 'SET_USER':
+      const user = action.payload;
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('user');
+      }
       return { ...state, user: action.payload };
+    
+    case 'SET_TOKEN':
+      const token = action.payload;
+      if (token) {
+        localStorage.setItem('token', token);
+      } else {
+        localStorage.removeItem('token');
+      }
+      return { ...state, token: action.payload };
+    
+    case 'LOGOUT':
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      return { ...state, user: null, token: null };
     
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
