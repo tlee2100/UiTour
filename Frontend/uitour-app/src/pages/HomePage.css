@@ -70,7 +70,7 @@
 }
 
 .search-button {
-  background: var(--uitour-color);
+  background: #00b4d8;
   color: white;
   border: none;
   border-radius: 50%;
@@ -82,10 +82,16 @@
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
+  flex-shrink: 0;
 }
 
 .search-button:hover {
-  background: var(--hover-uitour);
+  background: #0099b8;
+}
+
+.search-button svg {
+  color: white;
+  fill: white;
 }
 
 /* Categories Section */
