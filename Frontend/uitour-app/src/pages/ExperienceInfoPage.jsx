@@ -47,6 +47,10 @@ export default function ExperienceInfoPage() {
       loadExperience(id);
     }
   }, [id, loadExperience, hasLoaded]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
 
   useEffect(() => {
     setHasLoaded(false);
@@ -67,16 +71,7 @@ export default function ExperienceInfoPage() {
   return (
     <div className="experience-info-page">
 
-      {/* Header */}
-      <InfoHeader
-        title={currentExperience.title}
-        info={{
-          rating: `${currentExperience.rating}`,
-          reviews: `${currentExperience.reviewsCount} reviews`,
-          hostStatus: currentExperience.hostStatus || "Host",
-          location: currentExperience.location
-        }}
-      />
+
 
       {/* Gallery + Overview */}
       <div className="expif-two-columns">

@@ -48,6 +48,11 @@ export default function HomeInfoPage() {
     }
   }, [id, loadProperty, hasLoaded]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+
   // Reset hasLoaded khi ID thay đổi
   useEffect(() => {
     setHasLoaded(false);

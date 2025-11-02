@@ -1,18 +1,17 @@
 import React from "react";
 import "./ExpInfoBookingBox.css";
 
-function ExpInfoBookingBox({ priceData }) {
-  if (!priceData) {
-    priceData = {
+function ExpInfoBookingBox({ booking }) {
+  if (!booking) {
+    booking = {
       price: 730000,
+      currency: "VND",
+      dates: "Daily",
       timeSlots: [
-        { time: "1:00 - 5:00PM", spots: 10 },
-        { time: "5:00 - 9:00PM", spots: 10 },
-        { time: "5:30 - 9:30PM", spots: 10 },
-        { time: "6:00 - 10:00PM", spots: 10 },
-        { time: "1:00 - 5:00PM", spots: 10 },
-      ],
-      currency: "₫"
+        { date: "2025-09-23", time: "1:00 - 5:00PM", spots: 10 },
+        { date: "2025-09-23", time: "5:00 - 9:00PM", spots: 10 },
+        { date: "2025-09-24", time: "6:00 - 10:00PM", spots: 10 }
+      ]
     };
   }
 
@@ -22,11 +21,17 @@ function ExpInfoBookingBox({ priceData }) {
 
   return (
     <div className="expib-box">
-      
+
       {/* ✅ Header */}
       <div className="expib-header">
         <div className="expib-price">
-          <span className="expib-price-text">From {priceData.currency}{priceData.price.toLocaleString()}</span>
+          <span className="expib-price-text">
+            From{" "}
+            {new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: booking.currency
+            }).format(booking.price)}
+          </span>
           <span className="expib-per">/ person</span>
         </div>
 
@@ -37,9 +42,14 @@ function ExpInfoBookingBox({ priceData }) {
 
       {/* ✅ Timeslot Select */}
       <div className="expib-slots">
-        {priceData.timeSlots.map((slot, i) => (
+        {booking.timeSlots.map((slot, i) => (
           <div className="expib-slot-item" key={i}>
-            <div className="expib-slot-label">Today, September 23</div>
+            <div className="expib-slot-label">
+              {new Date(slot.date).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric"
+              })}
+            </div>
             <div className="expib-slot-info">
               {slot.time} — {slot.spots} spots available
             </div>
@@ -47,7 +57,6 @@ function ExpInfoBookingBox({ priceData }) {
         ))}
       </div>
 
-      {/* ✅ Divider */}
       <div className="expib-divider"></div>
     </div>
   );
