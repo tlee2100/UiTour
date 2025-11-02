@@ -89,7 +89,7 @@ export default function HomePage() {
             </button>
 
             <button className="search-button" onClick={handleSearch}>
-              <Icon icon="mdi:magnify" width="20" height="20" />
+              <Icon icon="mdi:magnify" width="20" height="20" style={{ color: 'white' }} />
             </button>
           </div>
 
