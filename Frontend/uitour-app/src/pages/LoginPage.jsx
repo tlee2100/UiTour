@@ -28,7 +28,7 @@ const LoginPage = () => {
       // Chuyển hướng về trang chủ sau khi đăng nhập thành công
       navigate("/");
     } catch (err) {
-      setError(err.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.");
+      setError(err.message || "Login failed. Please check your email and password.");
     } finally {
       setIsLoading(false);
     }
@@ -40,7 +40,7 @@ const LoginPage = () => {
         <button className="close-btn">×</button>
 
         <h2 className="login-title">Login</h2>
-        <h3 className="welcome-text">Welcome to UiTour</h3>
+        <h3 className="welcome-text">Welcome to UiTour!</h3>
 
         {error && (
           <div style={{ 

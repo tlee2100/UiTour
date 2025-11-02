@@ -70,4 +70,12 @@
   margin: 8px 0;
 }
 
+.profile-menu_item-logout {
+  padding-left: 12px;
+}
+
+.profile-menu_item-logout span {
+  margin-left: 0;
+}
+
 
