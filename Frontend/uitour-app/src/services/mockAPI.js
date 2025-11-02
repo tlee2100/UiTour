@@ -316,6 +316,8 @@ class MockAPIService {
         id: 100,
         category: "experience",
 
+        duration: "~4 hours",
+
         listingTitle: "Best Street Food Motorbike Tour in Ho Chi Minh City",
         summary: "Top-rated motorbike street food adventure in Saigon",
         description: "Ranked #1 Food Tour in Vietnam since 2022. Hotel pickup & 10 tastings included.",
@@ -413,7 +415,260 @@ class MockAPIService {
             { time: "6:00 - 10:00PM", spots: 10 }
           ]
         }
-      }
+      },
+      {
+        id: 101,
+        category: "experience",
+
+        duration: "~1.5 hours",
+
+        listingTitle: "Traditional Vietnamese Water Puppet Show & Backstage Tour",
+        summary: "Discover Vietnam’s unique wooden puppetry art form",
+        description: "See skilled puppeteers bring folklore to life with water, music, and lights. Backstage access included.",
+
+        rating: 4.8,
+        reviewsCount: 85,
+        hostStatus: "Superhost",
+
+        location: "Hoan Kiem, Hanoi",
+        latitude: 21.0285,
+        longitude: 105.8542,
+
+        price: 550000,
+        priceUnit: "per guest",
+        currency: "₫",
+
+        dates: "Every evening • 6:00 PM",
+        mainImage: "/images/id101_img01.png",
+        photos: [
+          "/images/id101_img01.png",
+          "/images/id101_img02.png",
+          "/images/id101_img03.png",
+          "/images/id101_img04.png",
+          "/images/id101_img05.png",
+        ],
+
+        isGuestFavourite: true,
+        active: true,
+        createdAt: "2024-03-20T15:30:00Z",
+
+        hostId: 2,
+
+        details: [
+          {
+            image: "https://th.bing.com/th/id/R.5f2fbd65edb6deeedd6d1fa240b2edc7?rik=yfm5QAZJMK3TUw&riu=http%3a%2f%2fwtop.com%2fwp-content%2fuploads%2f2016%2f03%2fPSL-2-727x485.jpg&ehk=usCVZIoO0lQZE%2boksVa47s8ugJYQNv7HFt6xCsvu0Ow%3d&risl=&pid=ImgRaw&r=0",
+            title: "VIP Reserved Seat",
+            description: "Enjoy clear views of the gorgeous water stage show."
+          },
+          {
+            image: "https://tse2.mm.bing.net/th/id/OIP.9w1LaxuM7tuD6p-9gYeFCAHaEl?rs=1&pid=ImgDetMain&o=7&rm=3",
+            title: "Puppetry Folklore",
+            description: "See legends of dragons, rice farming and festivals."
+          },
+          {
+            image: "https://static.mothership.sg/1/2024/03/puxian-women-ensemble.jpg",
+            title: "Live Traditional Music",
+            description: "Performed by Vietnamese instruments like Đàn bầu, Trống."
+          },
+          {
+            image: "https://i.pinimg.com/originals/56/59/8f/56598fa2237e808b00eeca89f49fdbe0.jpg",
+            title: "Backstage Access",
+            description: "Meet puppeteers & try controlling a puppet!"
+          }
+        ],
+
+        booking: {
+          price: 550000,
+          currency: "₫",
+          timeSlots: [
+            { time: "6:00 - 7:15 PM", spots: 20 },
+            { time: "7:45 - 9:00 PM", spots: 20 }
+          ]
+        }
+      },
+      {
+        id: 102,
+        category: "experience",
+
+        duration: "~2 hours",
+        listingTitle: "Morning Yoga & Vegan Breakfast on Danang Beach",
+        summary: "Refresh your mind and body next to the ocean waves",
+        description: "Professional yoga instructors guide you in a sunrise meditation followed by a healthy vegan brunch.",
+
+        rating: 4.9,
+        reviewsCount: 64,
+        hostStatus: "Superhost",
+
+        location: "My Khe Beach, Da Nang",
+        latitude: 16.0592,
+        longitude: 108.2455,
+
+        price: 620000,
+        priceUnit: "per guest",
+        currency: "₫",
+
+        dates: "Daily • 6:00 AM",
+        mainImage: "/images/id102_img01.png",
+        photos: [
+          "/images/id102_img01.png",
+          "/images/id102_img02.png",
+          "/images/id102_img03.png",
+          "/images/id102_img04.png",
+        ],
+
+        active: true,
+        createdAt: "2024-03-28T09:00:00Z",
+        hostId: 3,
+
+        details: [
+          {
+            image: "https://th.bing.com/th/id/R.7688470f902deb728f75797e290ed1fb?rik=uaKo1yzwvfjRBg&pid=ImgRaw&r=0",
+            title: "Sunrise Meditation",
+            description: "Breathe peacefully while the sun rises over the sea."
+          },
+          {
+            image: "https://kiddomag.com.au/wp-content/uploads/2022/10/Vacswim-3059-1-scaled-e1665631261799.jpg",
+            title: "Experienced Guide",
+            description: "Instructor with 10+ years of yoga training."
+          },
+          {
+            image: "https://tse4.mm.bing.net/th/id/OIP._LMJDLd9JDZQVRj8JQyx9gHaJ4?rs=1&pid=ImgDetMain&o=7&rm=3",
+            title: "Vegan Brunch",
+            description: "Fresh smoothies, tropical fruits & tofu dishes."
+          }
+        ],
+
+        booking: {
+          price: 620000,
+          currency: "₫",
+          timeSlots: [
+            { time: "6:00 - 8:00 AM", spots: 12 },
+            { time: "8:30 - 10:30 AM", spots: 12 }
+          ]
+        }
+      },
+      {
+        id: 103,
+        category: "experience",
+
+        duration: "~6 hours",
+        listingTitle: "Cu Chi Tunnels War History Guided Tour",
+        summary: "Walk through Vietnam War underground tunnels",
+        description: "See real tunnels, weapon traps and learn the story of soldiers who lived underground.",
+
+        rating: 4.8,
+        reviewsCount: 210,
+        hostStatus: "Superhost",
+
+        location: "Cu Chi District, Ho Chi Minh City",
+        latitude: 11.146,
+        longitude: 106.346,
+
+        price: 890000,
+        priceUnit: "per guest",
+        currency: "₫",
+
+        dates: "Everyday • 8:00 AM",
+        mainImage: "/images/id103_img01.png",
+        photos: [
+          "/images/id103_img01.png",
+          "/images/id103_img02.png",
+          "/images/id103_img03.png",
+          "/images/id103_img04.png",
+          "/images/id103_img05.png",
+        ],
+
+        active: true,
+        createdAt: "2024-02-08T10:00:00Z",
+        hostId: 4,
+
+        details: [
+          {
+            image: "https://sawasdee.thaiairways.com/wp-content/uploads/2023/04/shutterstock_1865107804-1160x775.jpg",
+            title: "Tunnel Experience",
+            description: "Crawl inside preserved underground pathways."
+          },
+          {
+            image: "https://c8.alamy.com/comp/2RH6AHY/cu-chi-vietnam-21st-aug-2014-the-cu-chi-tunnels-are-an-immense-network-of-underground-tunnels-used-by-viet-cong-soldiers-during-the-vietnam-war-2RH6AHY.jpg",
+            title: "War Artifacts",
+            description: "Original traps and handmade tools from soldiers."
+          },
+          {
+            image: "https://img.freepik.com/premium-photo/vietnam-war-soldier-menu-peanuts-cane-sugar-today-it-is-served-tourists-cu-chi-tunnel-vietnam_479694-10438.jpg?w=996",
+            title: "Soldier Snacks",
+            description: "Try cassava with peanuts — meal from wartime era."
+          }
+        ],
+
+        booking: {
+          price: 890000,
+          currency: "₫",
+          timeSlots: [
+            { time: "8:00 AM - 2:00 PM", spots: 20 },
+            { time: "12:30 - 6:30 PM", spots: 20 }
+          ]
+        }
+      },
+      {
+        id: 104,
+        category: "experience",
+
+        duration: "~4 hours",
+        listingTitle: "Ha Long Bay Sunset Kayak & Cave Adventure",
+        summary: "Explore emerald waters and limestone caves",
+        description: "Kayak through peaceful lagoons & hidden caves — best time to see the golden sunset on the bay.",
+
+        rating: 5.0,
+        reviewsCount: 175,
+        hostStatus: "Superhost",
+
+        location: "Ha Long Bay, Quang Ninh",
+        latitude: 20.9101,
+        longitude: 107.1839,
+
+        price: 1250000,
+        priceUnit: "per guest",
+        currency: "₫",
+
+        dates: "Daily • 2:00 PM - Sunset",
+        mainImage: "/images/id104_img01.png",
+        photos: [
+          "/images/id104_img01.png",
+          "/images/id104_img02.png",
+          "/images/id104_img03.png",
+          "/images/id104_img04.png",
+        ],
+
+        active: true,
+        createdAt: "2024-04-01T13:30:00Z",
+        hostId: 5,
+
+        details: [
+          {
+            image: "https://vietnamtrips.com/files/photos/article1305/kayaking-in-halong-bay-1.jpg",
+            title: "Kayak Adventure",
+            description: "Paddle beside giant limestone towers."
+          },
+          {
+            image: "https://www.paradisevietnam.com/public/backend/uploads/images/ha-long-bay-cave-10.jpg",
+            title: "Hidden Caves",
+            description: "Discover caves with glimmering rocks inside."
+          },
+          {
+            image: "https://wallpaperaccess.com/full/3745010.jpg",
+            title: "Sunset Viewpoint",
+            description: "Golden hour photos guaranteed — perfect for couples."
+          }
+        ],
+
+        booking: {
+          price: 1250000,
+          currency: "₫",
+          timeSlots: [
+            { time: "2:00 - 6:00 PM", spots: 14 }
+          ]
+        }
+      },
     ];
   }
 
@@ -641,34 +896,37 @@ class MockAPIService {
     await this.delayResponse();
     let exps = this.getMockExperiences();
 
-    // 🔍 Search by location
+    // 🔍 Filter by location
     if (filters.location) {
       exps = exps.filter(e =>
         e.location.toLowerCase().includes(filters.location.toLowerCase())
       );
     }
 
-    // Price filter
+    // Price filters
     if (filters.minPrice) {
       exps = exps.filter(e => e.price >= filters.minPrice);
     }
-
     if (filters.maxPrice) {
       exps = exps.filter(e => e.price <= filters.maxPrice);
     }
 
+    // ✅ Return compact version for list display (TourPage / HomePage)
     return exps.map(e => ({
       id: e.id,
-      listingTitle: e.listingTitle,
-      location: e.location,
-      rating: e.rating,
-      dates: e.dates,
+      title: e.listingTitle,
+      description: e.summary || e.description,
       price: e.price,
-      priceUnit: e.priceUnit,
-      mainImage: e.mainImage,
+      rating: e.rating,
+      reviews: e.reviewsCount,
+      image: e.mainImage,
+      category: e.category || "experience",
+      duration: e.duration || "Flexible time",
+      location: e.location,
       isGuestFavourite: e.isGuestFavourite
     }));
   }
+
 
   // API Methods
   async getPropertyById(id) {

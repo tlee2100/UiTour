@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from "react-router-dom";
 import './HomePage.css';
 import { useProperty } from '../contexts/PropertyContext';
 import { Icon } from '@iconify/react';
@@ -18,6 +19,8 @@ export default function HomePage() {
   const [openGuests, setOpenGuests] = useState(false);
 
   const { properties, loading, error, fetchProperties } = useProperty();
+
+  const navigate = useNavigate();
 
   const loadProperties = useCallback(async () => {
     try {
@@ -143,7 +146,14 @@ export default function HomePage() {
       <section className="properties-section">
         <div className="properties-grid">
           {properties.map(property => (
-            <div key={property.id} className="property-card">
+            <div
+              key={property.id}
+              className="property-card"
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                navigate(`/property/${property.id}`);
+              }}
+            >
               <div className="property-image">
                 <img src={property.mainImage} alt={property.listingTitle} />
                 {property.isGuestFavourite && (
@@ -171,6 +181,7 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
 
       {/* Continue Exploring */}
       <section className="continue-section">
