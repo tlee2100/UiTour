@@ -173,8 +173,10 @@ export default function HomePage() {
                 </div>
                 <div className="property-dates">{property.dates}</div>
                 <div className="property-price">
-                  <span className="price">{property.price}</span>
-                  <span className="price-unit"> {property.priceUnit}</span>
+                  <span className="price">
+                    ₫{(property.pricing?.basePrice || property.price || 0).toLocaleString()}
+                  </span>
+                  <span className="price-unit"> / đêm</span>
                 </div>
               </div>
             </div>

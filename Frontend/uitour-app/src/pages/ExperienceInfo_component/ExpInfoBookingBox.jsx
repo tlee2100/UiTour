@@ -1,19 +1,11 @@
 import React from "react";
 import "./ExpInfoBookingBox.css";
 
-function ExpInfoBookingBox({ booking }) {
-  if (!booking) {
-    booking = {
-      price: 730000,
-      currency: "VND",
-      dates: "Daily",
-      timeSlots: [
-        { date: "2025-09-23", time: "1:00 - 5:00PM", spots: 10 },
-        { date: "2025-09-23", time: "5:00 - 9:00PM", spots: 10 },
-        { date: "2025-09-24", time: "6:00 - 10:00PM", spots: 10 }
-      ]
-    };
-  }
+function ExpInfoBookingBox({ booking, price: propPrice, currency: propCurrency }) {
+
+  const basePrice = Number(propPrice ?? booking?.pricing?.basePrice ?? 0);
+  const curr = propCurrency ?? booking?.pricing?.currency ?? "VND";
+  const timeSlots = booking?.timeSlots || [];
 
   const handleBookNow = () => {
     alert("✅ Booking success! (demo action)");
@@ -22,15 +14,15 @@ function ExpInfoBookingBox({ booking }) {
   return (
     <div className="expib-box">
 
-      {/* ✅ Header */}
+      {/* ✅ Pricing */}
       <div className="expib-header">
         <div className="expib-price">
           <span className="expib-price-text">
             From{" "}
             {new Intl.NumberFormat("vi-VN", {
               style: "currency",
-              currency: booking.currency
-            }).format(booking.price)}
+              currency: curr
+            }).format(basePrice)}
           </span>
           <span className="expib-per">/ person</span>
         </div>
@@ -40,24 +32,30 @@ function ExpInfoBookingBox({ booking }) {
         </button>
       </div>
 
-      {/* ✅ Timeslot Select */}
+      {/* ✅ Time Slots */}
       <div className="expib-slots">
-        {booking.timeSlots.map((slot, i) => (
-          <div className="expib-slot-item" key={i}>
-            <div className="expib-slot-label">
-              {new Date(slot.date).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric"
-              })}
+        {timeSlots.length > 0 ? (
+          timeSlots.map((slot) => (
+            <div className="expib-slot-item" key={slot.id}>
+              <div className="expib-slot-label">
+                {slot.date
+                  ? new Date(slot.date).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "Flexible"}
+              </div>
+              <div className="expib-slot-info">
+                {slot.time} — {slot.spotsAvailable} spots left
+              </div>
             </div>
-            <div className="expib-slot-info">
-              {slot.time} — {slot.spots} spots available
-            </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="expib-no-slots">No time slots available</p>
+        )}
       </div>
 
-      <div className="expib-divider"></div>
+      <div className="expib-divider" />
     </div>
   );
 }

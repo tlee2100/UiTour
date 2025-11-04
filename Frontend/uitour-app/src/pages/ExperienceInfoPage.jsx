@@ -14,7 +14,6 @@ import ExpInfoBookingBox from "./ExperienceInfo_component/ExpInfoBookingBox";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
 
-
 export default function ExperienceInfoPage() {
   const { id } = useParams();
   const {
@@ -47,10 +46,10 @@ export default function ExperienceInfoPage() {
       loadExperience(id);
     }
   }, [id, loadExperience, hasLoaded]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
 
   useEffect(() => {
     setHasLoaded(false);
@@ -60,41 +59,58 @@ export default function ExperienceInfoPage() {
     return <LoadingSpinner message="Loading experience..." />;
   }
 
-  if (error) {
-    return <ErrorMessage message={error} />;
+  if (error || !currentExperience) {
+    return <ErrorMessage message={error || "Experience not found"} />;
   }
 
-  if (!currentExperience) {
-    return <ErrorMessage message="Experience not found" />;
-  }
+  const exp = currentExperience;
 
   return (
     <div className="experience-info-page">
 
-
-
       {/* Gallery + Overview */}
       <div className="expif-two-columns">
         <div className="expif-left-column">
-          <ExpGallery images={currentExperience.photos || []} />
+          <ExpGallery
+            images={
+              Array.isArray(exp.photos) && exp.photos.length > 0
+                ? exp.photos // ✅ lấy đúng ảnh từ normalizeExperience()
+                : exp.media?.photos?.map(p => p.url) || [] // fallback để an toàn
+            }
+          />
+
         </div>
 
         <div className="expif-right-column">
-          <ExpAboutSection data={currentExperience} />
+          <ExpAboutSection
+            title={exp.listingTitle || exp.title}
+            summary={exp.summary}
+            rating={exp.rating}
+            reviewsCount={exp.reviewsCount}
+            location={`${exp.location.address}, ${exp.location.city}`}
+            duration={`${exp.durationHours} hours`}
+            price={exp.price}
+            currency={exp.currency}
+            host={exp.host}
+          />
         </div>
       </div>
 
-      {/* Details + Sticky Booking */}
+      {/* Details + Booking */}
       <div className="expif-details-layout">
         <div className="expif-details-left">
           <ExpDetails
             title="What you’ll do"
-            details={currentExperience.details || []}
+            details={exp.details}
           />
         </div>
 
         <div className="expif-details-right">
-          <ExpInfoBookingBox priceData={currentExperience.bookingInfo} />
+          <ExpInfoBookingBox
+            booking={exp.bookingInfo}
+            price={exp.price}            // ✅ Thêm giá đúng UI cần
+            currency={exp.currency}      // ✅ Thêm tiền tệ
+          />
         </div>
       </div>
 
@@ -102,25 +118,26 @@ export default function ExperienceInfoPage() {
 
       {/* Reviews */}
       <InfoReview
-        rating={currentExperience.rating}
-        reviewsCount={currentExperience.reviewsCount}
-        reviews={currentExperience.reviews || []}
+        rating={exp.rating}
+        reviewsCount={exp.reviewsCount}
+        reviews={exp.reviews}
       />
 
       <div className="expif-divider" />
 
       {/* Host */}
-      <InfoHost host={currentExperience.host} />
+      <InfoHost host={exp.host} />
 
       <div className="expif-divider" />
 
       {/* Map */}
       <PropertyMap
-        property={currentExperience}
+        property={exp}    // ✅ TRUY NGUYÊN OBJECT TRONG CONTEXT
         height="500px"
         zoom={16}
         showPopup={true}
       />
+
 
       <div className="expif-end-divider" />
     </div>

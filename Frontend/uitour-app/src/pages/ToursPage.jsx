@@ -47,10 +47,10 @@ export default function ToursPage() {
           <div className="tours-grid">
             {experiences.map(tour => (
               <div key={tour.id} className="tour-card">
-                
+
                 <div className="tour-image"
-                     onClick={() => navigate(`/experience/${tour.id}`)}>
-                  <img src={tour.image} alt={tour.title} />
+                  onClick={() => navigate(`/experience/${tour.id}`)}>
+                  <img src={tour.image} alt={tour.listingTitle || "Tour image"} />
 
                   <button className="favorite-button">
                     <Icon icon="mdi:heart-outline" width="20" height="20" />

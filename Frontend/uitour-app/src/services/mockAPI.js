@@ -23,20 +23,72 @@ class MockAPIService {
     return [
       {
         id: 1,
+        category: "property",
+
+        // tên hiển thị
         listingTitle: "Apartment in Quận Ba Đình",
-        description: "Come and stay in this superb duplex T2, in the heart of the historic center of Ho Chi Minh City. Spacious and bright, in a real building in exposed stone, you will enjoy all the charms of the city thanks to its ideal location. Close to many shops, bars and restaurants, you can access the apartment by tram A and C and bus routes 27 and 44.",
+        title: "Apartment in Quận Ba Đình", // fallback cho nơi dùng 'title'
+
         summary: "Beautiful apartment in historic Ba Dinh district",
+        description:
+          "Come and stay in this superb duplex T2, in the heart of the historic center of Ho Chi Minh City. Spacious and bright, in a real building in exposed stone, you will enjoy all the charms of the city thanks to its ideal location. Close to many shops, bars and restaurants, you can access the apartment by tram A and C and bus routes 27 and 44.",
+
+        rating: 5.0,
+        reviewsCount: 36,
+        isActive: true,
+
+        // ⬇ GIỮ location dạng string để KHÔNG phải sửa getProperties()
         location: "Quận Ba Đình, Ho Chi Minh City",
+        // ⬇ THÊM location object để đồng bộ Experience
+        locationObj: {
+          address: "Quận Ba Đình",
+          city: "Ho Chi Minh City",
+          country: "Vietnam",
+          lat: 10.8231,
+          lng: 106.6297
+        },
+        // ⬇ Giữ fallback cũ để các component chưa đổi vẫn chạy
         latitude: 10.8231,
         longitude: 106.6297,
-        price: 45,
+
+        // ⬇ Đồng bộ pricing như Experience + giữ price cũ cho list
+        pricing: {
+          basePrice: 45,
+          currency: "USD"
+        },
+        price: 45, // fallback cho list
         priceUnit: "cho 2 đêm",
         currency: "USD",
+
         dates: "18-25 Jun",
+
+        // Media đồng bộ: cover + photos {id,url}
+        media: {
+          cover: "/images/id1_img01.png",
+          photos: [
+            { id: "p11", url: "/images/id1_img01.png" },
+            { id: "p12", url: "/images/id1_img02.png" },
+            { id: "p13", url: "/images/id1_img03.png" },
+            { id: "p14", url: "/images/id1_img04.png" },
+            { id: "p15", url: "/images/id1_img05.png" }
+          ]
+        },
+        // giữ các fallback cũ đang được một số UI dùng
         mainImage: "/images/id1_img01.png",
-        isGuestFavourite: true,
+        photos: [
+          "/images/id1_img01.png",
+          "/images/id1_img02.png",
+          "/images/id1_img03.png",
+          "/images/id1_img04.png",
+          "/images/id1_img05.png"
+        ],
+
+        // phí đơn lẻ – HIBookingBox đang dùng các key này
         cleaningFee: 8,
         extraPeopleFee: 5,
+        serviceFee: 0,     // thêm để tính tổng không NaN
+        taxFee: 0,         // thêm để tính tổng không NaN
+
         bedrooms: 1,
         beds: 1,
         bathrooms: 1,
@@ -45,6 +97,23 @@ class MockAPIService {
         squareFeet: 600,
         isBusinessReady: true,
         active: true,
+
+        // đồng bộ details
+        details: [
+          {
+            id: "detail_1",
+            image: "/images/detail_placeholder.jpg",
+            title: "Modern living space",
+            description: "Fully equipped and comfortable"
+          }
+        ],
+
+        // đồng bộ booking (giữ timeSlots dạng Experience; property có thể để trống)
+        booking: {
+          maxGuests: 2,
+          timeSlots: [] // property thường đặt theo ngày – để trống vẫn OK với UI hiện tại
+        },
+
         createdAt: "2024-01-15T10:30:00Z",
         hostId: 1,
         roomTypeId: 1,
@@ -53,8 +122,7 @@ class MockAPIService {
         cityId: 1,
         countryId: 1,
         neighbourhoodId: 1,
-        rating: 5.0,
-        reviewsCount: 36,
+
         hostStatus: "Superhost",
         amenities: [
           { id: 1, name: "WiFi", icon: "wifi" },
@@ -62,32 +130,59 @@ class MockAPIService {
           { id: 3, name: "Kitchen", icon: "kitchen" },
           { id: 4, name: "TV", icon: "tv" },
           { id: 5, name: "Free Parking", icon: "free_parking" }
-        ],
-        photos: [
-          "/images/id1_img01.png",
-          "/images/id1_img02.png",
-          "/images/id1_img03.png",
-          "/images/id1_img04.png",
-          "/images/id1_img05.png"
         ]
+
       },
+
       {
         id: 2,
+        category: "property",
         listingTitle: "Luxury Apartment in District 1",
+        title: "Luxury Apartment in District 1",
+        summary: "Modern 2BR apartment with city views",
         description:
           "Beautiful modern apartment in the heart of Ho Chi Minh City with stunning city views and premium amenities.",
-        summary: "Modern 2BR apartment with city views",
+        rating: 4.8,
+        reviewsCount: 127,
+        isActive: true,
+
         location: "District 1, Ho Chi Minh City",
+        locationObj: {
+          address: "District 1",
+          city: "Ho Chi Minh City",
+          country: "Vietnam",
+          lat: 10.7769,
+          lng: 106.7009
+        },
         latitude: 10.7769,
         longitude: 106.7009,
+
+        pricing: { basePrice: 89, currency: "USD" },
         price: 89,
         priceUnit: "cho 3 đêm",
         currency: "USD",
         dates: "20-23 Jun",
+
+        media: {
+          cover: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
+          photos: [
+            { id: "p21", url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800" },
+            { id: "p22", url: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800" },
+            { id: "p23", url: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800" }
+          ]
+        },
         mainImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
-        isGuestFavourite: true,
+        photos: [
+          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
+          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
+          "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800"
+        ],
+
         cleaningFee: 15,
         extraPeopleFee: 10,
+        serviceFee: 0,
+        taxFee: 0,
+
         bedrooms: 2,
         beds: 2,
         bathrooms: 2,
@@ -96,6 +191,10 @@ class MockAPIService {
         squareFeet: 1200,
         isBusinessReady: true,
         active: true,
+
+        details: [],
+        booking: { maxGuests: 4, timeSlots: [] },
+
         createdAt: "2024-01-15T10:30:00Z",
         hostId: 2,
         roomTypeId: 1,
@@ -104,8 +203,7 @@ class MockAPIService {
         cityId: 1,
         countryId: 1,
         neighbourhoodId: 1,
-        rating: 4.8,
-        reviewsCount: 127,
+
         hostStatus: "Superhost",
         amenities: [
           { id: 1, name: "WiFi", icon: "wifi" },
@@ -113,30 +211,56 @@ class MockAPIService {
           { id: 3, name: "Kitchen", icon: "kitchen" },
           { id: 4, name: "Pool", icon: "pool" },
           { id: 5, name: "Gym", icon: "gym" }
-        ],
-        photos: [
-          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
-          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
-          "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800"
         ]
       },
+
       {
         id: 3,
+        category: "property",
         listingTitle: "Cozy Villa in District 2",
+        title: "Cozy Villa in District 2",
+        summary: "Family-friendly villa with garden",
         description:
           "Spacious villa with private garden, perfect for families. Located in a quiet neighborhood with easy access to the city center.",
-        summary: "Family-friendly villa with garden",
+        rating: 4.6,
+        reviewsCount: 89,
+        isActive: true,
+
         location: "District 2, Ho Chi Minh City",
+        locationObj: {
+          address: "District 2",
+          city: "Ho Chi Minh City",
+          country: "Vietnam",
+          lat: 10.787,
+          lng: 106.7487
+        },
         latitude: 10.787,
         longitude: 106.7487,
+
+        pricing: { basePrice: 156, currency: "USD" },
         price: 156,
         priceUnit: "cho 5 đêm",
         currency: "USD",
         dates: "10-15 Jul",
+
+        media: {
+          cover: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800",
+          photos: [
+            { id: "p31", url: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800" },
+            { id: "p32", url: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800" }
+          ]
+        },
         mainImage: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800",
-        isGuestFavourite: false,
+        photos: [
+          "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800",
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800"
+        ],
+
         cleaningFee: 25,
         extraPeopleFee: 15,
+        serviceFee: 0,
+        taxFee: 0,
+
         bedrooms: 4,
         beds: 4,
         bathrooms: 3,
@@ -145,6 +269,10 @@ class MockAPIService {
         squareFeet: 2500,
         isBusinessReady: false,
         active: true,
+
+        details: [],
+        booking: { maxGuests: 8, timeSlots: [] },
+
         createdAt: "2024-02-20T14:15:00Z",
         hostId: 2,
         roomTypeId: 2,
@@ -153,37 +281,63 @@ class MockAPIService {
         cityId: 1,
         countryId: 1,
         neighbourhoodId: 2,
-        rating: 4.6,
-        reviewsCount: 89,
+
         hostStatus: "Host",
         amenities: [
           { id: 1, name: "WiFi", icon: "wifi" },
           { id: 6, name: "BBQ", icon: "bbq" },
-          { id: 7, name: "Parking", icon: "parking" },
-          { id: 8, name: "Garden", icon: "garden" }
-        ],
-        photos: [
-          "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800",
-          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800"
+          { id: 7, name: "Parking", icon: "free_parking" }, // ✅ sửa
+          { id: 8, name: "Garden", icon: "ac" } // ✅ tạm fallback icon AC
         ]
       },
+
       {
         id: 4,
+        category: "property",
         listingTitle: "Beach House in Vung Tau",
+        title: "Beach House in Vung Tau",
+        summary: "Beachfront house with ocean views",
         description:
           "Stunning beachfront property with direct access to the beach. Perfect for a relaxing getaway with ocean views.",
-        summary: "Beachfront house with ocean views",
+        rating: 4.9,
+        reviewsCount: 156,
+        isActive: true,
+
         location: "Vung Tau, Ba Ria - Vung Tau",
+        locationObj: {
+          address: "Vung Tau",
+          city: "Ba Ria - Vung Tau",
+          country: "Vietnam",
+          lat: 10.346,
+          lng: 107.0843
+        },
         latitude: 10.346,
         longitude: 107.0843,
+
+        pricing: { basePrice: 234, currency: "USD" },
         price: 234,
         priceUnit: "cho 4 đêm",
         currency: "USD",
         dates: "5-9 May",
+
+        media: {
+          cover: "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=800",
+          photos: [
+            { id: "p41", url: "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=800" },
+            { id: "p42", url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800" }
+          ]
+        },
         mainImage: "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=800",
-        isGuestFavourite: true,
+        photos: [
+          "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=800",
+          "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800"
+        ],
+
         cleaningFee: 30,
         extraPeopleFee: 20,
+        serviceFee: 0,
+        taxFee: 0,
+
         bedrooms: 3,
         beds: 3,
         bathrooms: 2,
@@ -192,6 +346,10 @@ class MockAPIService {
         squareFeet: 1800,
         isBusinessReady: true,
         active: true,
+
+        details: [],
+        booking: { maxGuests: 6, timeSlots: [] },
+
         createdAt: "2024-03-10T09:45:00Z",
         hostId: 3,
         roomTypeId: 3,
@@ -200,37 +358,61 @@ class MockAPIService {
         cityId: 2,
         countryId: 1,
         neighbourhoodId: 3,
-        rating: 4.9,
-        reviewsCount: 156,
+
         hostStatus: "Superhost",
         amenities: [
           { id: 1, name: "WiFi", icon: "wifi" },
-          { id: 9, name: "Beach Access", icon: "beach" },
-          { id: 10, name: "Hot Tub", icon: "hot-tub" },
-          { id: 11, name: "Balcony", icon: "balcony" }
-        ],
-        photos: [
-          "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=800",
-          "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800"
+          { id: 10, name: "Hot Tub", icon: "hottub" }, // ✅ sửa
         ]
       },
+
       {
         id: 5,
+        category: "property",
         listingTitle: "Mountain Lodge in Da Lat",
+        title: "Mountain Lodge in Da Lat",
+        summary: "Mountain lodge with forest views",
         description:
           "Charming lodge surrounded by pine forests. Experience the cool mountain air and peaceful atmosphere of Da Lat.",
-        summary: "Mountain lodge with forest views",
+        rating: 4.7,
+        reviewsCount: 203,
+        isActive: true,
+
         location: "Da Lat, Lam Dong",
+        locationObj: {
+          address: "Da Lat",
+          city: "Lam Dong",
+          country: "Vietnam",
+          lat: 11.9404,
+          lng: 108.4583
+        },
         latitude: 11.9404,
         longitude: 108.4583,
+
+        pricing: { basePrice: 67, currency: "USD" },
         price: 67,
         priceUnit: "cho 2 đêm",
         currency: "USD",
         dates: "1-3 Aug",
+
+        media: {
+          cover: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+          photos: [
+            { id: "p51", url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800" },
+            { id: "p52", url: "https://images.unsplash.com/photo-1506905925346-14b1e3d7e6b3?w=800" }
+          ]
+        },
         mainImage: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
-        isGuestFavourite: true,
+        photos: [
+          "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+          "https://images.unsplash.com/photo-1506905925346-14b1e3d7e6b3?w=800"
+        ],
+
         cleaningFee: 12,
         extraPeopleFee: 8,
+        serviceFee: 0,
+        taxFee: 0,
+
         bedrooms: 2,
         beds: 2,
         bathrooms: 1,
@@ -239,6 +421,10 @@ class MockAPIService {
         squareFeet: 900,
         isBusinessReady: false,
         active: true,
+
+        details: [],
+        booking: { maxGuests: 4, timeSlots: [] },
+
         createdAt: "2024-01-25T16:20:00Z",
         hostId: 4,
         roomTypeId: 4,
@@ -247,36 +433,61 @@ class MockAPIService {
         cityId: 3,
         countryId: 1,
         neighbourhoodId: 4,
-        rating: 4.7,
-        reviewsCount: 203,
+
         hostStatus: "Host",
         amenities: [
           { id: 1, name: "WiFi", icon: "wifi" },
-          { id: 12, name: "Fireplace", icon: "fireplace" },
-          { id: 13, name: "Mountain View", icon: "mountain" }
-        ],
-        photos: [
-          "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
-          "https://images.unsplash.com/photo-1506905925346-14b1e3d7e6b3?w=800"
+          { id: 12, name: "Fireplace", icon: "heating" }, // ✅ dùng icon sưởi
         ]
       },
+
       {
         id: 6,
+        category: "property",
         listingTitle: "Riverside Hotel in Can Tho",
+        title: "Riverside Hotel in Can Tho",
+        summary: "Riverside hotel with Mekong views",
         description:
           "Modern hotel with Mekong Delta views. Experience the local culture and enjoy the peaceful riverside setting.",
-        summary: "Riverside hotel with Mekong views",
+        rating: 4.5,
+        reviewsCount: 78,
+        isActive: true,
+
         location: "Can Tho City",
+        locationObj: {
+          address: "Can Tho City",
+          city: "Can Tho",
+          country: "Vietnam",
+          lat: 10.0452,
+          lng: 105.7469
+        },
         latitude: 10.0452,
         longitude: 105.7469,
+
+        pricing: { basePrice: 45, currency: "USD" },
         price: 45,
         priceUnit: "cho 1 đêm",
         currency: "USD",
         dates: "12-13 Jul",
+
+        media: {
+          cover: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+          photos: [
+            { id: "p61", url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800" },
+            { id: "p62", url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800" }
+          ]
+        },
         mainImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
-        isGuestFavourite: false,
+        photos: [
+          "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+          "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800"
+        ],
+
         cleaningFee: 8,
         extraPeopleFee: 5,
+        serviceFee: 0,
+        taxFee: 0,
+
         bedrooms: 1,
         beds: 1,
         bathrooms: 1,
@@ -285,6 +496,10 @@ class MockAPIService {
         squareFeet: 600,
         isBusinessReady: true,
         active: true,
+
+        details: [],
+        booking: { maxGuests: 2, timeSlots: [] },
+
         createdAt: "2024-02-05T11:30:00Z",
         hostId: 5,
         roomTypeId: 1,
@@ -293,21 +508,16 @@ class MockAPIService {
         cityId: 4,
         countryId: 1,
         neighbourhoodId: 5,
-        rating: 4.5,
-        reviewsCount: 78,
+
         hostStatus: "New Host",
         amenities: [
           { id: 1, name: "WiFi", icon: "wifi" },
-          { id: 15, name: "River View", icon: "river" },
           { id: 16, name: "Breakfast", icon: "breakfast" }
-        ],
-        photos: [
-          "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
-          "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800"
         ]
       }
     ];
   }
+
 
   // ✅ Experience Mock Data
   getMockExperiences() {
@@ -315,360 +525,495 @@ class MockAPIService {
       {
         id: 100,
         category: "experience",
-
-        duration: "~4 hours",
-
-        listingTitle: "Best Street Food Motorbike Tour in Ho Chi Minh City",
+        title: "Best Street Food Motorbike Tour in Ho Chi Minh City",
         summary: "Top-rated motorbike street food adventure in Saigon",
-        description: "Ranked #1 Food Tour in Vietnam since 2022. Hotel pickup & 10 tastings included.",
-
+        description:
+          "Ranked #1 Food Tour since 2022. Hotel pickup & 10 tastings included.",
         rating: 4.9,
         reviewsCount: 120,
-        hostStatus: "Superhost",
-
-        location: "District 1, Ho Chi Minh City",
-        latitude: 10.7769,
-        longitude: 106.7009,
-
-        price: 730000,
-        priceUnit: "per guest",
-        currency: "₫",
-
-        dates: "Daily • Flexible time",
-        mainImage: "/images/id1_img01.png",
-        photos: [
-          "/images/id100_img01.png",
-          "/images/id100_img02.png",
-          "/images/id100_img03.png",
-          "/images/id100_img04.png",
-          "/images/id100_img05.png",
-          "/images/id100_img06.png",
-        ],
-
-        isGuestFavourite: true,
-        active: true,
-        createdAt: "2024-03-21T11:00:00Z",
-
         hostId: 1,
+        isActive: true,
 
-        // ✅ NEW: Experience exclusive data
+        durationHours: 4,
+
+        location: {
+          address: "District 1",
+          city: "Ho Chi Minh City",
+          country: "Vietnam",
+          lat: 10.7769,
+          lng: 106.7009
+        },
+
+        pricing: {
+          basePrice: 730000,
+          currency: "VND",
+          unit: "perPerson"
+        },
+
+        media: {
+          cover: "/images/id100_img01.png",
+          photos: [
+            { id: "p1", url: "/images/id100_img01.png" },
+            { id: "p2", url: "/images/id100_img02.png" },
+            { id: "p3", url: "/images/id100_img03.png" },
+            { id: "p4", url: "/images/id100_img04.png" },
+            { id: "p5", url: "/images/id100_img05.png" },
+            { id: "p6", url: "/images/id100_img06.png" }
+          ]
+        },
+
         details: [
           {
-            image: "https://hoiandelicacyhotel.com/wp-content/uploads/2022/08/tranfer.jpg",
+            id: "detail_1",
+            image:
+              "https://hoiandelicacyhotel.com/wp-content/uploads/2022/08/tranfer.jpg",
             title: "Hotel Pickup",
-            description: "We will pick you up from your hotel and start the culinary night adventure."
+            description:
+              "We will pick you up from your hotel and start the culinary night adventure."
           },
           {
-            image: "https://tse1.mm.bing.net/th/id/OIP.72rOIOjqxKHRT4ianMKJSgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3",
+            id: "detail_2",
+            image:
+              "https://tse1.mm.bing.net/th/id/OIP.72rOIOjqxKHRT4ianMKJSgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3",
             title: "Papaya Salad",
-            description: "A fresh mix of shredded papaya, beef jerky, peanuts, and crispy crackers."
+            description:
+              "A fresh mix of shredded papaya, beef jerky, peanuts, and crispy crackers."
           },
           {
-            image: "https://vnifood.com/wp-content/uploads/2019/11/COCONUT-AND-KUMQUAT-JUICE-03.jpg",
+            id: "detail_3",
+            image:
+              "https://vnifood.com/wp-content/uploads/2019/11/COCONUT-AND-KUMQUAT-JUICE-03.jpg",
             title: "Coconut Kumquat Juice",
-            description: "Refreshing coconut juice infused with tangy kumquat — perfect to cool off the heat."
+            description:
+              "Refreshing coconut juice infused with tangy kumquat — perfect to cool off the heat."
           },
           {
-            image: "https://i0.wp.com/scootersaigontour.com/wp-content/uploads/2017/03/grilled-rice-pancake-in-saigon-vietnam.jpg?fit=1024%2C945&ssl=1",
+            id: "detail_4",
+            image:
+              "https://i0.wp.com/scootersaigontour.com/wp-content/uploads/2017/03/grilled-rice-pancake-in-saigon-vietnam.jpg?fit=1024%2C945&ssl=1",
             title: "Vietnamese Pizza (Bánh Tráng Nướng)",
-            description: "Crispy rice paper grilled with egg, cheese, and sausage — a must-try street snack."
+            description:
+              "Crispy rice paper grilled with egg, cheese, and sausage — a must-try street snack."
           },
           {
-            image: "https://farm4.staticflickr.com/3867/14446625218_b1e83724dd_b.jpg",
+            id: "detail_5",
+            image:
+              "https://farm4.staticflickr.com/3867/14446625218_b1e83724dd_b.jpg",
             title: "Chinatown Street Food",
-            description: "Explore the old alleys of Cholon and discover hidden family-run food stalls."
+            description:
+              "Explore the old alleys of Cholon and discover hidden family-run food stalls."
           },
           {
-            image: "https://www.cet.edu.vn/wp-content/uploads/2018/03/bun-thit-nuong-kieu-mien-nam.jpg",
+            id: "detail_6",
+            image:
+              "https://www.cet.edu.vn/wp-content/uploads/2018/03/bun-thit-nuong-kieu-mien-nam.jpg",
             title: "Bún Thịt Nướng",
-            description: "Grilled pork, fresh herbs, and rice noodles topped with homemade fish sauce."
+            description:
+              "Grilled pork, fresh herbs, and rice noodles topped with homemade fish sauce."
           },
           {
-            image: "https://scootersaigontour.com/wp-content/uploads/2020/11/Quang-Ba-Flower-Market-in-Hanoi.jpg",
+            id: "detail_7",
+            image:
+              "https://scootersaigontour.com/wp-content/uploads/2020/11/Quang-Ba-Flower-Market-in-Hanoi.jpg",
             title: "Saigon Flower Market Stop",
-            description: "Take photos at the lively wholesale flower market while enjoying a local beer."
+            description:
+              "Take photos at the lively wholesale flower market while enjoying a local beer."
           },
           {
-            image: "https://www.theseasonedwok.com/wp-content/uploads/2023/12/banh-flan-recipe-f6.jpg",
+            id: "detail_8",
+            image:
+              "https://www.theseasonedwok.com/wp-content/uploads/2023/12/banh-flan-recipe-f6.jpg",
             title: "Flan or Chè Dessert",
-            description: "Finish the night with a creamy flan or a sweet traditional Vietnamese chè."
+            description:
+              "Finish the night with a creamy flan or a sweet traditional Vietnamese chè."
           },
           {
-            image: "https://images.thespinoff.co.nz/1/2024/07/Vietnameezy.jpg?w=1290",
+            id: "detail_9",
+            image:
+              "https://images.thespinoff.co.nz/1/2024/07/Vietnameezy.jpg?w=1290",
             title: "Bánh Mì Tasting",
-            description: "A famous Saigon-style baguette filled with pâté, cold cuts, and fresh herbs."
+            description:
+              "A famous Saigon-style baguette filled with pâté, cold cuts, and fresh herbs."
           },
           {
-            image: "https://hotelcastillo.in/wp-content/uploads/2022/07/valet-parking-4.jpg",
+            id: "detail_10",
+            image:
+              "https://hotelcastillo.in/wp-content/uploads/2022/07/valet-parking-4.jpg",
             title: "Drop-off Service",
-            description: "We take you back to your hotel or a fun bar spot if you want to continue the night!"
+            description:
+              "We take you back to your hotel or a fun bar spot if you want to continue the night!"
           }
-        ]
-        ,
+        ],
 
         booking: {
-          price: 730000,
-          currency: "₫",
+          maxGuests: 10,
           timeSlots: [
-            { time: "1:00 - 5:00PM", spots: 10 },
-            { time: "5:00 - 9:00PM", spots: 10 },
-            { time: "6:00 - 10:00PM", spots: 10 }
+            {
+              id: "slot_100_1",
+              date: "2025-03-21",
+              time: "13:00 - 17:00",
+              spotsAvailable: 10
+            },
+            {
+              id: "slot_100_2",
+              date: "2025-03-21",
+              time: "17:00 - 21:00",
+              spotsAvailable: 10
+            },
+            {
+              id: "slot_100_3",
+              date: "2025-03-22",
+              time: "18:00 - 22:00",
+              spotsAvailable: 10
+            }
           ]
-        }
-      },
+        },
+
+        createdAt: "2024-03-21T11:00:00Z"
+      }
+      ,
       {
         id: 101,
         category: "experience",
 
-        duration: "~1.5 hours",
-
-        listingTitle: "Traditional Vietnamese Water Puppet Show & Backstage Tour",
+        title: "Traditional Vietnamese Water Puppet Show & Backstage Tour",
         summary: "Discover Vietnam’s unique wooden puppetry art form",
-        description: "See skilled puppeteers bring folklore to life with water, music, and lights. Backstage access included.",
-
+        description:
+          "See skilled puppeteers bring folklore to life with water, music, and lights. Backstage access included.",
         rating: 4.8,
         reviewsCount: 85,
-        hostStatus: "Superhost",
-
-        location: "Hoan Kiem, Hanoi",
-        latitude: 21.0285,
-        longitude: 105.8542,
-
-        price: 550000,
-        priceUnit: "per guest",
-        currency: "₫",
-
-        dates: "Every evening • 6:00 PM",
-        mainImage: "/images/id101_img01.png",
-        photos: [
-          "/images/id101_img01.png",
-          "/images/id101_img02.png",
-          "/images/id101_img03.png",
-          "/images/id101_img04.png",
-          "/images/id101_img05.png",
-        ],
-
-        isGuestFavourite: true,
-        active: true,
-        createdAt: "2024-03-20T15:30:00Z",
-
         hostId: 2,
+        isActive: true,
+
+        durationHours: 1.5,
+
+        location: {
+          address: "Hoan Kiem",
+          city: "Hanoi",
+          country: "Vietnam",
+          lat: 21.0285,
+          lng: 105.8542
+        },
+
+        pricing: {
+          basePrice: 550000,
+          currency: "VND",
+          unit: "perPerson"
+        },
+
+        media: {
+          cover: "/images/id101_img01.png",
+          photos: [
+            { id: "p1", url: "/images/id101_img01.png" },
+            { id: "p2", url: "/images/id101_img02.png" },
+            { id: "p3", url: "/images/id101_img03.png" },
+            { id: "p4", url: "/images/id101_img04.png" },
+            { id: "p5", url: "/images/id101_img05.png" }
+          ]
+        },
 
         details: [
           {
-            image: "https://th.bing.com/th/id/R.5f2fbd65edb6deeedd6d1fa240b2edc7?rik=yfm5QAZJMK3TUw&riu=http%3a%2f%2fwtop.com%2fwp-content%2fuploads%2f2016%2f03%2fPSL-2-727x485.jpg&ehk=usCVZIoO0lQZE%2boksVa47s8ugJYQNv7HFt6xCsvu0Ow%3d&risl=&pid=ImgRaw&r=0",
+            id: "detail_1",
+            image:
+              "https://th.bing.com/th/id/R.5f2fbd65edb6deeedd6d1fa240b2edc7?rik=yfm5QAZJMK3TUw",
             title: "VIP Reserved Seat",
             description: "Enjoy clear views of the gorgeous water stage show."
           },
           {
-            image: "https://tse2.mm.bing.net/th/id/OIP.9w1LaxuM7tuD6p-9gYeFCAHaEl?rs=1&pid=ImgDetMain&o=7&rm=3",
+            id: "detail_2",
+            image:
+              "https://tse2.mm.bing.net/th/id/OIP.9w1LaxuM7tuD6p-9gYeFCAHaEl?rs=1",
             title: "Puppetry Folklore",
             description: "See legends of dragons, rice farming and festivals."
           },
           {
-            image: "https://static.mothership.sg/1/2024/03/puxian-women-ensemble.jpg",
+            id: "detail_3",
+            image:
+              "https://static.mothership.sg/1/2024/03/puxian-women-ensemble.jpg",
             title: "Live Traditional Music",
-            description: "Performed by Vietnamese instruments like Đàn bầu, Trống."
+            description:
+              "Performed by Vietnamese instruments like Đàn bầu, Trống."
           },
           {
-            image: "https://i.pinimg.com/originals/56/59/8f/56598fa2237e808b00eeca89f49fdbe0.jpg",
+            id: "detail_4",
+            image:
+              "https://i.pinimg.com/originals/56/59/8f/56598fa2237e808b00eeca89f49fdbe0.jpg",
             title: "Backstage Access",
             description: "Meet puppeteers & try controlling a puppet!"
           }
         ],
 
         booking: {
-          price: 550000,
-          currency: "₫",
+          maxGuests: 20,
           timeSlots: [
-            { time: "6:00 - 7:15 PM", spots: 20 },
-            { time: "7:45 - 9:00 PM", spots: 20 }
+            {
+              id: "slot_101_1",
+              date: "2025-03-20",
+              time: "18:00 - 19:15",
+              spotsAvailable: 20
+            },
+            {
+              id: "slot_101_2",
+              date: "2025-03-20",
+              time: "19:45 - 21:00",
+              spotsAvailable: 20
+            }
           ]
-        }
-      },
+        },
+
+        createdAt: "2024-03-20T15:30:00Z"
+      }
+      ,
       {
         id: 102,
         category: "experience",
 
-        duration: "~2 hours",
-        listingTitle: "Morning Yoga & Vegan Breakfast on Danang Beach",
+        title: "Morning Yoga & Vegan Breakfast on Danang Beach",
         summary: "Refresh your mind and body next to the ocean waves",
-        description: "Professional yoga instructors guide you in a sunrise meditation followed by a healthy vegan brunch.",
-
+        description:
+          "Professional yoga instructors guide you in a sunrise meditation followed by a healthy vegan brunch.",
         rating: 4.9,
         reviewsCount: 64,
-        hostStatus: "Superhost",
-
-        location: "My Khe Beach, Da Nang",
-        latitude: 16.0592,
-        longitude: 108.2455,
-
-        price: 620000,
-        priceUnit: "per guest",
-        currency: "₫",
-
-        dates: "Daily • 6:00 AM",
-        mainImage: "/images/id102_img01.png",
-        photos: [
-          "/images/id102_img01.png",
-          "/images/id102_img02.png",
-          "/images/id102_img03.png",
-          "/images/id102_img04.png",
-        ],
-
-        active: true,
-        createdAt: "2024-03-28T09:00:00Z",
         hostId: 3,
+        isActive: true,
+
+        durationHours: 2,
+
+        location: {
+          address: "My Khe Beach",
+          city: "Da Nang",
+          country: "Vietnam",
+          lat: 16.0592,
+          lng: 108.2455
+        },
+
+        pricing: {
+          basePrice: 620000,
+          currency: "VND",
+          unit: "perPerson"
+        },
+
+        media: {
+          cover: "/images/id102_img01.png",
+          photos: [
+            { id: "p1", url: "/images/id102_img01.png" },
+            { id: "p2", url: "/images/id102_img02.png" },
+            { id: "p3", url: "/images/id102_img03.png" },
+            { id: "p4", url: "/images/id102_img04.png" }
+          ]
+        },
 
         details: [
           {
-            image: "https://th.bing.com/th/id/R.7688470f902deb728f75797e290ed1fb?rik=uaKo1yzwvfjRBg&pid=ImgRaw&r=0",
+            id: "detail_1",
+            image:
+              "https://th.bing.com/th/id/R.7688470f902deb728f75797e290ed1fb?rik=uaKo1yzwvfjRBg",
             title: "Sunrise Meditation",
             description: "Breathe peacefully while the sun rises over the sea."
           },
           {
-            image: "https://kiddomag.com.au/wp-content/uploads/2022/10/Vacswim-3059-1-scaled-e1665631261799.jpg",
+            id: "detail_2",
+            image:
+              "https://kiddomag.com.au/wp-content/uploads/2022/10/Vacswim-3059-1-scaled-e1665631261799.jpg",
             title: "Experienced Guide",
             description: "Instructor with 10+ years of yoga training."
           },
           {
-            image: "https://tse4.mm.bing.net/th/id/OIP._LMJDLd9JDZQVRj8JQyx9gHaJ4?rs=1&pid=ImgDetMain&o=7&rm=3",
+            id: "detail_3",
+            image:
+              "https://tse4.mm.bing.net/th/id/OIP._LMJDLd9JDZQVRj8JQyx9gHaJ4?rs=1",
             title: "Vegan Brunch",
             description: "Fresh smoothies, tropical fruits & tofu dishes."
           }
         ],
 
         booking: {
-          price: 620000,
-          currency: "₫",
+          maxGuests: 12,
           timeSlots: [
-            { time: "6:00 - 8:00 AM", spots: 12 },
-            { time: "8:30 - 10:30 AM", spots: 12 }
+            {
+              id: "slot_102_1",
+              date: "2025-03-28",
+              time: "06:00 - 08:00",
+              spotsAvailable: 12
+            },
+            {
+              id: "slot_102_2",
+              date: "2025-03-28",
+              time: "08:30 - 10:30",
+              spotsAvailable: 12
+            }
           ]
-        }
-      },
+        },
+
+        createdAt: "2024-03-28T09:00:00Z"
+      }
+      ,
       {
         id: 103,
         category: "experience",
 
-        duration: "~6 hours",
-        listingTitle: "Cu Chi Tunnels War History Guided Tour",
+        title: "Cu Chi Tunnels War History Guided Tour",
         summary: "Walk through Vietnam War underground tunnels",
-        description: "See real tunnels, weapon traps and learn the story of soldiers who lived underground.",
-
+        description:
+          "See real tunnels, weapon traps and learn the story of soldiers who lived underground.",
         rating: 4.8,
         reviewsCount: 210,
-        hostStatus: "Superhost",
-
-        location: "Cu Chi District, Ho Chi Minh City",
-        latitude: 11.146,
-        longitude: 106.346,
-
-        price: 890000,
-        priceUnit: "per guest",
-        currency: "₫",
-
-        dates: "Everyday • 8:00 AM",
-        mainImage: "/images/id103_img01.png",
-        photos: [
-          "/images/id103_img01.png",
-          "/images/id103_img02.png",
-          "/images/id103_img03.png",
-          "/images/id103_img04.png",
-          "/images/id103_img05.png",
-        ],
-
-        active: true,
-        createdAt: "2024-02-08T10:00:00Z",
         hostId: 4,
+        isActive: true,
+
+        durationHours: 6,
+
+        location: {
+          address: "Cu Chi District",
+          city: "Ho Chi Minh City",
+          country: "Vietnam",
+          lat: 11.146,
+          lng: 106.346
+        },
+
+        pricing: {
+          basePrice: 890000,
+          currency: "VND",
+          unit: "perPerson"
+        },
+
+        media: {
+          cover: "/images/id103_img01.png",
+          photos: [
+            { id: "p1", url: "/images/id103_img01.png" },
+            { id: "p2", url: "/images/id103_img02.png" },
+            { id: "p3", url: "/images/id103_img03.png" },
+            { id: "p4", url: "/images/id103_img04.png" },
+            { id: "p5", url: "/images/id103_img05.png" }
+          ]
+        },
 
         details: [
           {
-            image: "https://sawasdee.thaiairways.com/wp-content/uploads/2023/04/shutterstock_1865107804-1160x775.jpg",
+            id: "detail_1",
+            image:
+              "https://sawasdee.thaiairways.com/wp-content/uploads/2023/04/shutterstock_1865107804-1160x775.jpg",
             title: "Tunnel Experience",
             description: "Crawl inside preserved underground pathways."
           },
           {
-            image: "https://c8.alamy.com/comp/2RH6AHY/cu-chi-vietnam-21st-aug-2014-the-cu-chi-tunnels-are-an-immense-network-of-underground-tunnels-used-by-viet-cong-soldiers-during-the-vietnam-war-2RH6AHY.jpg",
+            id: "detail_2",
+            image:
+              "https://c8.alamy.com/comp/2RH6AHY/cu-chi-vietnam-21st-aug-2014-the-cu-chi-tunnels-are-an-immense-network-of-underground-tunnels-used-by-viet-cong-soldiers-during-the-vietnam-war-2RH6AHY.jpg",
             title: "War Artifacts",
             description: "Original traps and handmade tools from soldiers."
           },
           {
-            image: "https://img.freepik.com/premium-photo/vietnam-war-soldier-menu-peanuts-cane-sugar-today-it-is-served-tourists-cu-chi-tunnel-vietnam_479694-10438.jpg?w=996",
+            id: "detail_3",
+            image:
+              "https://img.freepik.com/premium-photo/vietnam-war-soldier-menu-peanuts-cane-sugar-today-it-is-served-tourists-cu-chi-tunnel-vietnam_479694-10438.jpg?w=996",
             title: "Soldier Snacks",
-            description: "Try cassava with peanuts — meal from wartime era."
+            description:
+              "Try cassava with peanuts — meal from wartime era."
           }
         ],
 
         booking: {
-          price: 890000,
-          currency: "₫",
+          maxGuests: 20,
           timeSlots: [
-            { time: "8:00 AM - 2:00 PM", spots: 20 },
-            { time: "12:30 - 6:30 PM", spots: 20 }
+            {
+              id: "slot_103_1",
+              date: "2025-02-08",
+              time: "08:00 - 14:00",
+              spotsAvailable: 20
+            },
+            {
+              id: "slot_103_2",
+              date: "2025-02-08",
+              time: "12:30 - 18:30",
+              spotsAvailable: 20
+            }
           ]
-        }
-      },
+        },
+
+        createdAt: "2024-02-08T10:00:00Z"
+      }
+      ,
       {
         id: 104,
         category: "experience",
 
-        duration: "~4 hours",
-        listingTitle: "Ha Long Bay Sunset Kayak & Cave Adventure",
+        title: "Ha Long Bay Sunset Kayak & Cave Adventure",
         summary: "Explore emerald waters and limestone caves",
-        description: "Kayak through peaceful lagoons & hidden caves — best time to see the golden sunset on the bay.",
-
+        description:
+          "Kayak through peaceful lagoons & hidden caves — best time to see the golden sunset on the bay.",
         rating: 5.0,
         reviewsCount: 175,
-        hostStatus: "Superhost",
-
-        location: "Ha Long Bay, Quang Ninh",
-        latitude: 20.9101,
-        longitude: 107.1839,
-
-        price: 1250000,
-        priceUnit: "per guest",
-        currency: "₫",
-
-        dates: "Daily • 2:00 PM - Sunset",
-        mainImage: "/images/id104_img01.png",
-        photos: [
-          "/images/id104_img01.png",
-          "/images/id104_img02.png",
-          "/images/id104_img03.png",
-          "/images/id104_img04.png",
-        ],
-
-        active: true,
-        createdAt: "2024-04-01T13:30:00Z",
         hostId: 5,
+        isActive: true,
+
+        durationHours: 4,
+
+        location: {
+          address: "Ha Long Bay",
+          city: "Quang Ninh",
+          country: "Vietnam",
+          lat: 20.9101,
+          lng: 107.1839
+        },
+
+        pricing: {
+          basePrice: 1250000,
+          currency: "VND",
+          unit: "perPerson"
+        },
+
+        media: {
+          cover: "/images/id104_img01.png",
+          photos: [
+            { id: "p1", url: "/images/id104_img01.png" },
+            { id: "p2", url: "/images/id104_img02.png" },
+            { id: "p3", url: "/images/id104_img03.png" },
+            { id: "p4", url: "/images/id104_img04.png" }
+          ]
+        },
 
         details: [
           {
-            image: "https://vietnamtrips.com/files/photos/article1305/kayaking-in-halong-bay-1.jpg",
+            id: "detail_1",
+            image:
+              "https://vietnamtrips.com/files/photos/article1305/kayaking-in-halong-bay-1.jpg",
             title: "Kayak Adventure",
             description: "Paddle beside giant limestone towers."
           },
           {
-            image: "https://www.paradisevietnam.com/public/backend/uploads/images/ha-long-bay-cave-10.jpg",
+            id: "detail_2",
+            image:
+              "https://www.paradisevietnam.com/public/backend/uploads/images/ha-long-bay-cave-10.jpg",
             title: "Hidden Caves",
-            description: "Discover caves with glimmering rocks inside."
+            description:
+              "Discover caves with glimmering rocks inside."
           },
           {
+            id: "detail_3",
             image: "https://wallpaperaccess.com/full/3745010.jpg",
             title: "Sunset Viewpoint",
-            description: "Golden hour photos guaranteed — perfect for couples."
+            description:
+              "Golden hour photos guaranteed — perfect for couples."
           }
         ],
 
         booking: {
-          price: 1250000,
-          currency: "₫",
+          maxGuests: 14,
           timeSlots: [
-            { time: "2:00 - 6:00 PM", spots: 14 }
+            {
+              id: "slot_104_1",
+              date: "2025-04-01",
+              time: "14:00 - 18:00",
+              spotsAvailable: 14
+            }
           ]
-        }
-      },
+        },
+
+        createdAt: "2024-04-01T13:30:00Z"
+      }
+      ,
     ];
   }
 
@@ -896,36 +1241,39 @@ class MockAPIService {
     await this.delayResponse();
     let exps = this.getMockExperiences();
 
-    // 🔍 Filter by location
+    // 🔍 Filter by location text
     if (filters.location) {
       exps = exps.filter(e =>
-        e.location.toLowerCase().includes(filters.location.toLowerCase())
+        `${e.location.address}, ${e.location.city}, ${e.location.country}`
+          .toLowerCase()
+          .includes(filters.location.toLowerCase())
       );
     }
 
-    // Price filters
+    // 🔍 Filter by price
     if (filters.minPrice) {
-      exps = exps.filter(e => e.price >= filters.minPrice);
+      exps = exps.filter(e => e.pricing.basePrice >= filters.minPrice);
     }
     if (filters.maxPrice) {
-      exps = exps.filter(e => e.price <= filters.maxPrice);
+      exps = exps.filter(e => e.pricing.basePrice <= filters.maxPrice);
     }
 
-    // ✅ Return compact version for list display (TourPage / HomePage)
+    // ✅ Return new compact list format
     return exps.map(e => ({
       id: e.id,
-      title: e.listingTitle,
+      title: e.title,
       description: e.summary || e.description,
-      price: e.price,
+      price: e.pricing.basePrice,
       rating: e.rating,
       reviews: e.reviewsCount,
-      image: e.mainImage,
-      category: e.category || "experience",
-      duration: e.duration || "Flexible time",
-      location: e.location,
+      image: e.media.cover,
+      category: e.category,
+      duration: `${e.durationHours} hours`,
+      location: `${e.location.address}, ${e.location.city}`,
       isGuestFavourite: e.isGuestFavourite
     }));
   }
+
 
 
   // API Methods
@@ -1008,7 +1356,7 @@ class MockAPIService {
   async getExperienceById(id) {
     await this.delayResponse();
     const experiences = this.getMockExperiences();
-    const exp = experiences.find(e => e.id === parseInt(id));
+    const exp = experiences.find(e => e.id === Number(id));
 
     if (!exp) {
       throw new Error(`Experience with id ${id} not found`);
@@ -1016,25 +1364,26 @@ class MockAPIService {
 
     return {
       ...exp,
-      reviews: this.getMockReviews(exp.id) || [], // reuse reviews system
+      reviews: this.getMockReviews(exp.id) || [],
       host: this.getMockHost(exp.hostId) || null
     };
   }
+
   async searchExperiences(query, filters = {}) {
     await this.delayResponse();
     let exps = this.getMockExperiences();
 
     if (query) {
       exps = exps.filter(e =>
-        e.location.toLowerCase().includes(query.toLowerCase()) ||
-        e.listingTitle.toLowerCase().includes(query.toLowerCase())
+        `${e.location.address}, ${e.location.city}, ${e.location.country}`
+          .toLowerCase()
+          .includes(query.toLowerCase()) ||
+        e.title.toLowerCase().includes(query.toLowerCase())
       );
     }
 
     return this.getExperiences({ ...filters, location: query });
   }
-
-
 
   async getReviewsByPropertyId(propertyId) {
     await this.delayResponse();

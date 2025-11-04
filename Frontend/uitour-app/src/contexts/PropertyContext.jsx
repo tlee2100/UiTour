@@ -153,17 +153,75 @@ export const PropertyProvider = ({ children }) => {
     ]
   );
 
+  const normalizeProperty = (p) => ({
+    id: p.id,
+    category: "property",
+
+    listingTitle: p.listingTitle,
+    summary: p.summary,
+    description: p.description,
+    rating: p.rating,
+    reviewsCount: p.reviewsCount,
+
+    // ✅ Location chuẩn
+    locationObj: {
+      address: p.location?.address || p.location?.split(",")[0] || "",
+      city: p.location?.city || p.location?.split(",")[1] || "",
+      lat: p.latitude || p.location?.lat || 0,
+      lng: p.longitude || p.location?.lng || 0,
+    },
+
+    // ✅ Tối ưu Map + Text UI
+    location:
+      typeof p.location === "string"
+        ? p.location
+        : `${p.location?.address || ""}, ${p.location?.city || ""}`,
+
+    // ✅ Giá thống nhất format
+    pricing: {
+      basePrice: p.price || p.pricing?.basePrice || 0,
+      currency: p.currency || p.pricing?.currency || "USD"
+    },
+    price: p.pricing?.basePrice ?? p.price ?? 0,
+    currency: p.pricing?.currency ?? p.currency ?? "USD",
+
+    // ✅ Tối ưu Gallery
+    photos:
+      Array.isArray(p.photos)
+        ? p.photos
+        : p.media?.photos?.map((x) => x.url) || [],
+
+    mainImage: p.mainImage || p.media?.cover,
+
+    // ✅ Booking
+    booking: {
+      maxGuests: p.maxGuests || p.accommodates || 2,
+    },
+
+    amenities: p.amenities || [],
+    bedrooms: p.bedrooms,
+    beds: p.beds,
+    bathrooms: p.bathrooms,
+
+    reviews: p.reviews || [],
+    host: p.host,
+    createdAt: p.createdAt,
+  });
+
   // -----------------------------
   // API Methods (memoized with useCallback)
   // -----------------------------
   const fetchPropertyById = useCallback(
-    async (id) => {
+    async (propertyId) => {
       try {
         actions.setLoading(true);
         actions.clearError();
-        const property = await mockAPI.getPropertyById(id);
-        actions.setCurrentProperty(property);
-        return property;
+
+        const raw = await mockAPI.getPropertyById(propertyId);
+        const normalized = normalizeProperty(raw);
+        actions.setCurrentProperty(normalized);
+        return normalized;
+
       } catch (err) {
         actions.setError(err.message);
         throw err;
@@ -174,14 +232,16 @@ export const PropertyProvider = ({ children }) => {
     [actions]
   );
 
+
   const fetchProperties = useCallback(
     async (filters = {}) => {
       try {
         actions.setLoading(true);
         actions.clearError();
-        const properties = await mockAPI.getProperties(filters);
-        actions.setProperties(properties);
-        return properties;
+        const list = await mockAPI.getProperties(filters);
+        const normalizedList = list.map(normalizeProperty);
+        actions.setProperties(normalizedList);
+        return normalizedList;
       } catch (err) {
         actions.setError(err.message);
         throw err;
@@ -198,7 +258,10 @@ export const PropertyProvider = ({ children }) => {
         actions.setLoading(true);
         actions.clearError();
         const results = await mockAPI.searchProperties(query, filters);
-        actions.setSearchResults(results);
+        const normalizedResults = results.map(normalizeProperty);
+        actions.setSearchResults(normalizedResults);
+        actions.setSearchQuery(query);
+        return normalizedResults;
         actions.setSearchQuery(query);
         return results;
       } catch (err) {
