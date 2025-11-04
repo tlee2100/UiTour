@@ -84,8 +84,8 @@
 
   position: absolute;
   left: 50%;
-  top: 8%;                       /* ✅ đặt vị trí theo trục dọc */
-  transform: translate(-50%, -50%);
+                    /* ✅ đặt vị trí theo trục dọc */
+  transform: translate(-50%);
 }
 
 
@@ -94,8 +94,9 @@
   border: none;
   outline: none;
   font-size: 14px;
+  margin: 0 ;
   font-weight: 500;
-  height: 100%; /* ✅ không tràn lên */
+  height: 32px; /* ✅ không tràn lên */
 }
 
 .headerif_searchButton {
@@ -107,6 +108,7 @@
   border: none;
   border-radius: 50%;
   background: var(--uitour-color);
+
   color: #fff;
   cursor: pointer;
 }

@@ -2,30 +2,50 @@ import "./ExpAboutSection.css";
 import ButtonWhite from "../../components/ButtonWhite";
 import SvgIcon from "../../components/SvgIcon";
 
-export default function ExpAboutSection({ data }) {
-  if (!data) return null;
-
-  const host = data.host;
-
+export default function ExpAboutSection({
+  title,
+  summary,
+  description,
+  rating,
+  reviewsCount,
+  location,
+  duration,
+  price,
+  currency,
+  host
+}) {
   return (
     <div className="expAbout-container">
 
-      {/* Title */}
-      <h1 className="expAbout-listingTitle">{data.listingTitle}</h1>
+      {/* ✅ Title */}
+      <h1 className="expAbout-listingTitle">{title}</h1>
 
-      {/* Description */}
-      <p className="expAbout-description">{data.description}</p>
+      {/* ✅ Summary / Description */}
+      <p className="expAbout-description">{summary || description}</p>
 
-      {/* Rating + Reviews + Location */}
+      {/* ✅ Rating + Reviews + Location */}
       <div className="expAbout-details">
-        <span className="expAbout-rating">⭐ {data.rating}</span>
+        <span className="expAbout-rating">⭐ {rating}</span>
         <span className="expAbout-dot" />
-        <span className="expAbout-reviews">{data.reviewsCount} reviews</span>
+        <span className="expAbout-reviews">{reviewsCount} reviews</span>
         <span className="expAbout-dot" />
-        <span className="expAbout-location">{data.location}</span>
+        <span className="expAbout-location">{location}</span>
       </div>
 
-      {/* ✅ NEW — Share + Save Buttons */}
+      {/* ✅ Pricing + Duration */}
+      <div className="expAbout-priceTime">
+        <span className="expAbout-price">
+          {new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: currency || "VND"
+          }).format(price)}{" "}
+          / person
+        </span>
+
+        <span className="expAbout-duration">{duration}</span>
+      </div>
+
+      {/* ✅ Share + Save */}
       <div className="expAbout-rightButtons">
         <ButtonWhite
           className="expAbout-iconButton expAbout-shareButton"
@@ -42,10 +62,14 @@ export default function ExpAboutSection({ data }) {
         </ButtonWhite>
       </div>
 
-      {/* ✅ Host Section */}
+      {/* ✅ Host */}
       {host && (
         <div className="expAbout-hostWrapper">
-          <img src={host.avatar} className="expAbout-hostAvatar" alt={host.name} />
+          <img
+            src={host.avatar}
+            className="expAbout-hostAvatar"
+            alt={host.name}
+          />
           <div className="expAbout-hostBox">
             <h3 className="expAbout-hostName">Hosted by {host.name}</h3>
             <p className="expAbout-hostRole">
@@ -54,7 +78,6 @@ export default function ExpAboutSection({ data }) {
           </div>
         </div>
       )}
-
     </div>
   );
 }

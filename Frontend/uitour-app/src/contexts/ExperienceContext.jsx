@@ -6,7 +6,6 @@ import React, {
   useMemo,
   useCallback
 } from 'react';
-
 import mockAPI from '../services/mockAPI';
 
 // -----------------------------
@@ -98,136 +97,181 @@ export const ExperienceProvider = ({ children }) => {
   const [state, dispatch] = useReducer(experienceReducer, initialState);
 
   // -----------------------------
-  // Actions
+  // Dispatch Actions
   // -----------------------------
-  const setLoading = useCallback(
-    (loading) => dispatch({ type: ActionTypes.SET_LOADING, payload: loading }),
-    []
-  );
+  const setLoading = (val) =>
+    dispatch({ type: ActionTypes.SET_LOADING, payload: val });
+  const setError = (val) =>
+    dispatch({ type: ActionTypes.SET_ERROR, payload: val });
+  const clearError = () => dispatch({ type: ActionTypes.CLEAR_ERROR });
+  const setCurrentExperience = (val) =>
+    dispatch({ type: ActionTypes.SET_CURRENT_EXPERIENCE, payload: val });
+  const setExperiences = (val) =>
+    dispatch({ type: ActionTypes.SET_EXPERIENCES, payload: val });
+  const setSearchResults = (val) =>
+    dispatch({ type: ActionTypes.SET_SEARCH_RESULTS, payload: val });
+  const setSearchQuery = (val) =>
+    dispatch({ type: ActionTypes.SET_SEARCH_QUERY, payload: val });
 
-  const setError = useCallback(
-    (error) => dispatch({ type: ActionTypes.SET_ERROR, payload: error }),
-    []
-  );
+  // -----------------------------
+  // Helpers - Normalize API Data
+  // -----------------------------
+  // -----------------------------
+  // Helpers - Normalize API Data
+  // -----------------------------
+  const normalizeExperience = (exp) => {
+    if (!exp) return null;
 
-  const clearError = useCallback(
-    () => dispatch({ type: ActionTypes.CLEAR_ERROR }),
-    []
-  );
+    return {
+      id: exp.id,
+      category: exp.category,
 
-  const setCurrentExperience = useCallback(
-    (exp) => dispatch({ type: ActionTypes.SET_CURRENT_EXPERIENCE, payload: exp }),
-    []
-  );
+      // ✅ Đổi key theo UI đang dùng
+      listingTitle: exp.title,
 
-  const setExperiences = useCallback(
-    (list) => dispatch({ type: ActionTypes.SET_EXPERIENCES, payload: list }),
-    []
-  );
+      summary: exp.summary,
+      description: exp.description,
+      rating: exp.rating,
+      reviewsCount: exp.reviewsCount,
+      isActive: exp.isActive,
+      durationHours: exp.durationHours,
 
-  const setSearchResults = useCallback(
-    (results) => dispatch({ type: ActionTypes.SET_SEARCH_RESULTS, payload: results }),
-    []
-  );
+      // ✅ UI Map cần latitude / longitude
+      latitude: exp.location?.lat || 0,
+      longitude: exp.location?.lng || 0,
+      location: `${exp.location?.address || ""}, ${exp.location?.city || ""}`,
 
-  const setSearchQuery = useCallback(
-    (query) => dispatch({ type: ActionTypes.SET_SEARCH_QUERY, payload: query }),
-    []
-  );
+      // ✅ Price shortcut cho Booking UI
+      price: exp.pricing?.basePrice || 0,
+      pricePerNight: exp.pricing?.basePrice || exp.price || 0,
+      currency: exp.pricing?.currency || "VND",
 
-  const setFilters = useCallback(
-    (filters) => dispatch({ type: ActionTypes.SET_FILTERS, payload: filters }),
-    []
-  );
+      // ✅ Gallery cần array URL
+      photos: exp.media?.photos?.map(img => img.url) || [],
+      mainImage: exp.media?.cover || "",
 
-  const setPagination = useCallback(
-    (pagination) => dispatch({ type: ActionTypes.SET_PAGINATION, payload: pagination }),
-    []
-  );
+      // ✅ Booking UI dùng bookingInfo
+      bookingInfo: exp.booking || {},
 
-  const actions = useMemo(() => ({
-    setLoading,
-    setError,
-    clearError,
-    setCurrentExperience,
-    setExperiences,
-    setSearchResults,
-    setSearchQuery,
-    setFilters,
-    setPagination
-  }), [
-    setLoading, setError, clearError,
-    setCurrentExperience, setExperiences,
-    setSearchResults, setSearchQuery,
-    setFilters, setPagination
-  ]);
+      details: exp.details || [],
+      host: exp.host || null,
+      reviews: exp.reviews || [],
+      createdAt: exp.createdAt,
+    };
+  };
+
+
+  const normalizeExperienceList = (exps = []) =>
+  exps.map((e) => ({
+    id: e.id,
+
+    // Tiêu đề: giữ cả 2 khóa để không vỡ component khác
+    title: e.title,
+    listingTitle: e.listingTitle || e.title,
+
+    description: e.summary || e.description || "",
+    rating: e.rating ?? 0,
+
+    // Reviews: hỗ trợ cả reviews và reviewsCount
+    reviews: e.reviews ?? e.reviewsCount ?? 0,
+    reviewsCount: e.reviewsCount ?? e.reviews ?? 0,
+
+    // Ảnh: ưu tiên trường 'image' từ danh sách compact
+    image:
+      e.image ||
+      e.media?.cover ||
+      e.media?.photos?.[0]?.url ||
+      "",
+
+    category: e.category,
+
+    // Location: danh sách compact trả string sẵn
+    // fallback về object cũ nếu có
+    location:
+      typeof e.location === "string"
+        ? e.location
+        : `${e.location?.address || ""}, ${e.location?.city || ""}`.replace(/^, |, $/g, ""),
+
+    // Giá + tiền tệ: compact có 'price', schema cũ có pricing
+    price: e.price ?? e.pricing?.basePrice ?? 0,
+    pricePerNight: e.price ?? e.pricing?.basePrice ?? 0,
+    currency: e.currency ?? e.pricing?.currency ?? "VND",
+
+    // Thời lượng: compact có 'duration' (đã format), schema cũ có durationHours
+    duration: e.duration || (e.durationHours ? `~${e.durationHours} hours` : "Flexible"),
+
+    // Trạng thái
+    isActive: e.isActive ?? true,
+  }));
+
+
 
   // -----------------------------
   // API Calls
   // -----------------------------
   const fetchExperienceById = useCallback(async (id) => {
     try {
-      actions.setLoading(true);
-      actions.clearError();
-      const exp = await mockAPI.getExperienceById(id);
-      actions.setCurrentExperience(exp);
-      return exp;
+      setLoading(true);
+      clearError();
+      const data = await mockAPI.getExperienceById(id);
+      const normalized = normalizeExperience(data);
+      setCurrentExperience(normalized);
+      return normalized;
     } catch (err) {
-      actions.setError(err.message);
+      setError(err.message || "Failed to fetch experience");
       throw err;
     } finally {
-      actions.setLoading(false);
+      setLoading(false);
     }
-  }, [actions]);
+  }, []);
 
   const fetchExperiences = useCallback(async (filters = {}) => {
     try {
-      actions.setLoading(true);
-      actions.clearError();
+      setLoading(true);
+      clearError();
       const list = await mockAPI.getExperiences(filters);
-      actions.setExperiences(list);
-      return list;
+      const normalizedList = normalizeExperienceList(list);
+      setExperiences(normalizedList);
+      return normalizedList;
     } catch (err) {
-      actions.setError(err.message);
+      setError(err.message || "Failed to load experiences");
       throw err;
     } finally {
-      actions.setLoading(false);
+      setLoading(false);
     }
-  }, [actions]);
+  }, []);
 
   const searchExperiences = useCallback(async (query, filters = {}) => {
     try {
-      actions.setLoading(true);
-      actions.clearError();
+      setLoading(true);
+      clearError();
       const results = await mockAPI.searchExperiences(query, filters);
-      actions.setSearchResults(results);
-      actions.setSearchQuery(query);
-      return results;
+      const normalized = normalizeExperienceList(results);
+      setSearchResults(normalized);
+      setSearchQuery(query);
+      return normalized;
     } catch (err) {
-      actions.setError(err.message);
+      setError(err.message || "Search failed");
       throw err;
     } finally {
-      actions.setLoading(false);
+      setLoading(false);
     }
-  }, [actions]);
+  }, []);
 
-  // ✅ Auto fetch on first load
+  // ✅ Fetch on first load
   useEffect(() => {
     fetchExperiences();
   }, [fetchExperiences]);
 
-  const value = useMemo(() => ({
-    ...state,
-    ...actions,
-    fetchExperienceById,
-    fetchExperiences,
-    searchExperiences,
-  }), [
-    state, actions,
-    fetchExperienceById,
-    fetchExperiences,
-    searchExperiences,
-  ]);
+  const value = useMemo(
+    () => ({
+      ...state,
+      fetchExperienceById,
+      fetchExperiences,
+      searchExperiences,
+    }),
+    [state, fetchExperienceById, fetchExperiences, searchExperiences]
+  );
 
   return (
     <ExperienceContext.Provider value={value}>
@@ -236,12 +280,13 @@ export const ExperienceProvider = ({ children }) => {
   );
 };
 
-// Hook sử dụng
+// -----------------------------
+// Hook
+// -----------------------------
 export const useExperience = () => {
   const context = useContext(ExperienceContext);
-  if (!context) {
-    throw new Error("useExperience must be used within an ExperienceProvider");
-  }
+  if (!context)
+    throw new Error("useExperience must be used within ExperienceProvider");
   return context;
 };
 

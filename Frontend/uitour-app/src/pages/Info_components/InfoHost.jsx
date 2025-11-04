@@ -18,25 +18,25 @@ export default function InfoHost({ host }) {
     ...host
   };
 
-  const { 
-    name, 
-    avatar, 
-    joinedDate, 
-    responseRate, 
-    responseTime, 
-    isSuperhost, 
-    totalReviews, 
+  const {
+    name,
+    avatar,
+    joinedDate,
+    responseRate,
+    responseTime,
+    isSuperhost,
+    totalReviews,
     averageRating,
     languages,
-    description 
+    description
   } = defaultHost;
 
   // Format joined date
   const formatJoinedDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long'
     });
   };
 
@@ -48,10 +48,10 @@ export default function InfoHost({ host }) {
         <div className="ih-user">
           <div className="ih-avatar">
             <div className="ih-avatar-base" />
-            <img 
-              src={avatar} 
-              alt={`${name} Avatar`} 
-              className="ih-avatar-img" 
+            <img
+              src={avatar}
+              alt={`${name} Avatar`}
+              className="ih-avatar-img"
             />
             {isSuperhost && (
               <SvgIcon name="superhost" className="ih-badge"></SvgIcon>
@@ -71,7 +71,9 @@ export default function InfoHost({ host }) {
         <div className="ih-details">
           <div className="ih-icontext">
             <SvgIcon name="star" className="ih-icon ih-star"></SvgIcon>
-            <div className="ih-text">{totalReviews} reviews</div>
+            <div className="ih-text">
+              ⭐ {averageRating.toFixed(1)} ({totalReviews} reviews)
+            </div>
           </div>
           <div className="ih-icontext">
             <SvgIcon name="verified" className="ih-icon ih-shield"></SvgIcon>
