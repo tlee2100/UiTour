@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './HomePage.css';
 import { useProperty } from '../contexts/PropertyContext';
 import { Icon } from '@iconify/react';
@@ -9,6 +10,7 @@ import SearchDates from '../components/search/SearchDates';
 import SearchGuests from '../components/search/SearchGuests';
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const [searchLocation, setSearchLocation] = useState('');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
@@ -31,12 +33,15 @@ export default function HomePage() {
     loadProperties();
   }, [loadProperties]);
 
-  const handleSearch = async () => {
-    console.log('Search:', { searchLocation, checkIn, checkOut, guests });
-    await fetchProperties({
-      location: searchLocation,
-      guests: guests ? Number(guests) : null
-    });
+  const handleSearch = () => {
+    // Navigate to search results page with query parameters
+    const params = new URLSearchParams();
+    if (searchLocation) params.set('location', searchLocation);
+    if (checkIn) params.set('checkIn', checkIn);
+    if (checkOut) params.set('checkOut', checkOut);
+    if (guests) params.set('guests', guests);
+    
+    navigate(`/search?${params.toString()}`);
   };
 
 
