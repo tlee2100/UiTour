@@ -4,6 +4,7 @@ import InfoLayout from "../layouts/InfoLayout";
 import HomePage from "../pages/HomePage";
 import HomeInfoPage from "../pages/HomeInfoPage";
 import ToursPage from "../pages/ToursPage";
+import SearchResultsPage from "../pages/SearchResultsPage";
 import ExperienceInfoPage from "../pages/ExperienceInfoPage";
 import MapDemoPage from "../pages/MapDemoPage";
 import LoginPage from "../pages/LoginPage";
@@ -16,6 +17,7 @@ const AppRoutes = () => {
       {/* Main layout pages */}
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
+        <Route path="search" element={<SearchResultsPage />} />
         <Route path="demomap" element={<MapDemoPage />} />
         <Route path="tours" element={<ToursPage />} />
       </Route>
