@@ -70,11 +70,10 @@ export default function HeaderInfo() {
 
       {/* Right side */}
       <div className="headerif_right">
-        <button className="headerif_title">Become a Host</button>
+        <button className="headerif_title" onClick={() => navigate('/host/experience/create/choose')}>Become a Host</button>
         <button className="headerif_globe">
           <Icon icon="mdi:earth" width="24" height="24" />
         </button>
-
         {/* ✅ Dropdown Profile */}
         <div className="headerif_profile">
           <button
@@ -88,9 +87,9 @@ export default function HeaderInfo() {
           <div className="headerif_avatar">
             <button className="headerif_avatarButton">
               <Icon icon="mdi:account" width="32" height="32" />
+
             </button>
           </div>
-
           {menuOpen && (
             <div ref={menuRef}>
               <ProfileMenu onClose={closeMenu} />
