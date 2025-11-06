@@ -153,60 +153,91 @@ export const PropertyProvider = ({ children }) => {
     ]
   );
 
-  const normalizeProperty = (p) => ({
-    id: p.id,
-    category: "property",
+  const normalizeLocationString = (p) => {
+    if (typeof p.location === "string") return p.location;
 
-    listingTitle: p.listingTitle,
-    summary: p.summary,
-    description: p.description,
-    rating: p.rating,
-    reviewsCount: p.reviewsCount,
+    const address = p.location?.address || p.location?.addressLine || "";
+    const city = p.location?.city || "";
+    const country = p.location?.country || "";
 
-    // ✅ Location chuẩn
-    locationObj: {
-      address: p.location?.address || p.location?.split(",")[0] || "",
-      city: p.location?.city || p.location?.split(",")[1] || "",
-      lat: p.latitude || p.location?.lat || 0,
-      lng: p.longitude || p.location?.lng || 0,
-    },
+    const parts = [address, city, country].filter(Boolean);
+    return parts.length > 0 ? parts.join(", ") : "Unknown location";
+  };
 
-    // ✅ Tối ưu Map + Text UI
-    location:
+  const normalizeProperty = (p) => {
+    const displayLocation =
       typeof p.location === "string"
         ? p.location
-        : `${p.location?.address || ""}, ${p.location?.city || ""}`,
+        : `${p.location?.addressLine || ""}, ${p.location?.city || ""}`;
 
-    // ✅ Giá thống nhất format
-    pricing: {
-      basePrice: p.price || p.pricing?.basePrice || 0,
-      currency: p.currency || p.pricing?.currency || "USD"
-    },
-    price: p.pricing?.basePrice ?? p.price ?? 0,
-    currency: p.pricing?.currency ?? p.currency ?? "USD",
+    const fees = p.pricing?.fees || {};
 
-    // ✅ Tối ưu Gallery
-    photos:
-      Array.isArray(p.photos)
-        ? p.photos
-        : p.media?.photos?.map((x) => x.url) || [],
+    return {
+      id: p.id,
+      category: p.category || "property",
 
-    mainImage: p.mainImage || p.media?.cover,
+      title: p.title || p.listingTitle,
+      summary: p.summary,
+      description: p.description,
 
-    // ✅ Booking
-    booking: {
-      maxGuests: p.maxGuests || p.accommodates || 2,
-    },
+      location: displayLocation,
+      locationObj: {
+        address: p.location?.addressLine || "",
+        city: p.location?.city || "",
+        country: p.location?.country || "Vietnam",
+        lat: p.location?.lat ?? p.latitude ?? null,
+        lng: p.location?.lng ?? p.longitude ?? null,
+      },
 
-    amenities: p.amenities || [],
-    bedrooms: p.bedrooms,
-    beds: p.beds,
-    bathrooms: p.bathrooms,
+      pricing: p.pricing,
+      basePrice: p.pricing?.basePrice ?? p.price ?? 0,
+      currency: p.pricing?.currency ?? "USD",
 
-    reviews: p.reviews || [],
-    host: p.host,
-    createdAt: p.createdAt,
-  });
+      // ✅ Normalize fees
+      cleaningFee: fees.cleaning ?? 0,
+      serviceFee: fees.service ?? 0,
+      taxFee: fees.tax ?? 0,
+      extraGuestFee: fees.extraGuest ?? 0,
+
+      // ✅ Highlights / rules / safety
+      highlights: p.highlights || [],
+      houseRules: p.houseRules || [],
+      healthAndSafety: p.healthAndSafety || {},
+      cancellationPolicy: p.cancellationPolicy || {},
+
+      propertyType: p.propertyType,
+      roomType: p.roomType,
+
+      // ✅ Capacity
+      capacity: p.capacity,
+      maxGuests: p.capacity?.maxGuests ?? 1,
+
+      // ✅ Check-in/out
+      checkIn: p.booking?.checkInFrom || null,
+      checkOut: p.booking?.checkOutBefore || null,
+
+      media: {
+        cover: p.media?.cover ?? null,
+        photos: p.media?.photos ?? [],
+      },
+      photos: p.photos?.map(url => ({ url, alt: "Photo" })) ?? [],
+      
+      mainImage: p.media?.cover?.url || null,
+
+      amenities: p.amenities || [],
+
+      host: p.host,
+      rating: p.reviewSummary?.rating ?? 0,
+      reviewsCount: p.reviewSummary?.count ?? 0,
+      reviews: p.reviews || [],
+
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+    };
+  };
+
+
+
 
   // -----------------------------
   // API Methods (memoized with useCallback)

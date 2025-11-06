@@ -25,55 +25,138 @@ class MockAPIService {
         id: 1,
         category: "property",
 
-        // tên hiển thị
-        listingTitle: "Apartment in Quận Ba Đình",
-        title: "Apartment in Quận Ba Đình", // fallback cho nơi dùng 'title'
-
+        // DISPLAY
+        title: "Apartment in Quận Ba Đình",
         summary: "Beautiful apartment in historic Ba Dinh district",
-        description:
-          "Come and stay in this superb duplex T2, in the heart of the historic center of Ho Chi Minh City. Spacious and bright, in a real building in exposed stone, you will enjoy all the charms of the city thanks to its ideal location. Close to many shops, bars and restaurants, you can access the apartment by tram A and C and bus routes 27 and 44.",
+        description: "Come and stay in this superb duplex T2...",
 
-        rating: 5.0,
-        reviewsCount: 36,
+        // FROM HOST FLOW
+        propertyType: "Apartment",
+        roomType: "Entire place",
+
+        // STATUS
         isActive: true,
 
-        // ⬇ GIỮ location dạng string để KHÔNG phải sửa getProperties()
-        location: "Quận Ba Đình, Ho Chi Minh City",
-        // ⬇ THÊM location object để đồng bộ Experience
-        locationObj: {
-          address: "Quận Ba Đình",
+        // LOCATION (standardized)
+        location: {
+          addressLine: "Quận Ba Đình",
+          district: "Quận Ba Đình",
           city: "Ho Chi Minh City",
           country: "Vietnam",
           lat: 10.8231,
           lng: 106.6297
         },
-        // ⬇ Giữ fallback cũ để các component chưa đổi vẫn chạy
-        latitude: 10.8231,
-        longitude: 106.6297,
 
-        // ⬇ Đồng bộ pricing như Experience + giữ price cũ cho list
+        // HIGHLIGHTS (for quick badges below title)
+        highlights: [
+          { id: "entire_place", label: "Entire home" },
+          { id: "enhanced_clean", label: "Enhanced Clean" },
+          { id: "self_checkin", label: "Self check-in" },
+          { id: "free_cancellation", label: "Free cancellation" }
+        ],
+        selfCheckIn: true,
+        enhancedClean: true,
+        freeCancellation: true,
+
+        // PRICING
         pricing: {
           basePrice: 45,
-          currency: "USD"
+          currency: "USD",
+          priceUnit: "per night",
+          fees: {
+            cleaning: 8,
+            service: 0,
+            tax: 0,
+            extraGuest: 5
+          },
+          minNights: 1,
+          maxNights: 30
         },
-        price: 45, // fallback cho list
-        priceUnit: "cho 2 đêm",
-        currency: "USD",
 
-        dates: "18-25 Jun",
+        // CAPACITY
+        capacity: {
+          bedrooms: 1,
+          beds: 1,
+          bathrooms: 1,
+          maxGuests: 2,
+          squareFeet: 600
+        },
 
-        // Media đồng bộ: cover + photos {id,url}
+        // MEDIA
         media: {
-          cover: "/images/id1_img01.png",
+          cover: { url: "/images/id1_img01.png", alt: "Living room" },
           photos: [
-            { id: "p11", url: "/images/id1_img01.png" },
-            { id: "p12", url: "/images/id1_img02.png" },
-            { id: "p13", url: "/images/id1_img03.png" },
-            { id: "p14", url: "/images/id1_img04.png" },
-            { id: "p15", url: "/images/id1_img05.png" }
+            { id: "p11", url: "/images/id1_img01.png", alt: "Living room" },
+            { id: "p12", url: "/images/id1_img02.png", alt: "Bedroom" },
+            { id: "p13", url: "/images/id1_img03.png", alt: "Kitchen" },
+            { id: "p14", url: "/images/id1_img04.png", alt: "Bathroom" },
+            { id: "p15", url: "/images/id1_img05.png", alt: "Building facade" }
           ]
         },
-        // giữ các fallback cũ đang được một số UI dùng
+
+        // BOOKING / RULES
+        booking: {
+          checkInFrom: "15:00",
+          checkOutBefore: "11:00",
+          isInstantBookable: false
+        },
+
+        houseRules: [
+          { id: "checkin_after", value: "14:00", label: "Check-in after 2:00 PM" },
+          { id: "self_checkin", method: "lockbox" },
+          { id: "no_smoking", value: true },
+          { id: "no_open_flames", value: true },
+          { id: "pets_allowed", value: true },
+          { id: "no_parties", value: true }
+        ],
+
+        healthAndSafety: {
+          covidSafety: true,
+          surfacesSanitized: true,
+          smokeAlarm: false,
+          carbonMonoxideAlarm: false,
+          securityDepositRequired: true,
+          securityDepositAmount: 100
+        },
+
+        cancellationPolicy: {
+          type: "free_before_date",
+          freeUntil: "2025-11-14",
+          details: "Free cancellation before Nov 14"
+        },
+
+        // AVAILABILITY
+        availability: {
+          blockedDates: ["2025-11-10", "2025-11-11"]
+        },
+
+        // HOST & REVIEWS
+        host: { id: 1, status: "Superhost" },
+        reviewSummary: { rating: 5.0, count: 36 },
+
+        // AMENITIES
+        amenities: [
+          { id: 1, name: "WiFi", icon: "wifi" },
+          { id: 2, name: "Air Conditioning", icon: "ac" },
+          { id: 3, name: "Kitchen", icon: "kitchen" },
+          { id: 4, name: "TV", icon: "tv" },
+          { id: 5, name: "Free Parking", icon: "free_parking" }
+        ],
+
+        // META
+        slug: "apartment-quan-ba-dinh-1",
+        createdAt: "2024-01-15T10:30:00Z",
+        updatedAt: "2024-01-15T10:30:00Z",
+
+        // ===== Deprecated (legacy UI support) ===== //
+        listingTitle: "Apartment in Quận Ba Đình",
+        locationObj: { address: "Quận Ba Đình", city: "Ho Chi Minh City", country: "Vietnam", lat: 10.8231, lng: 106.6297 },
+        latitude: 10.8231,
+        longitude: 106.6297,
+        price: 45,
+        currency: "USD",
+        priceUnit: "cho 2 đêm",
+        dates: "18-25 Jun",
         mainImage: "/images/id1_img01.png",
         photos: [
           "/images/id1_img01.png",
@@ -82,56 +165,12 @@ class MockAPIService {
           "/images/id1_img04.png",
           "/images/id1_img05.png"
         ],
-
-        // phí đơn lẻ – HIBookingBox đang dùng các key này
-        cleaningFee: 8,
-        extraPeopleFee: 5,
-        serviceFee: 0,     // thêm để tính tổng không NaN
-        taxFee: 0,         // thêm để tính tổng không NaN
-
-        bedrooms: 1,
-        beds: 1,
-        bathrooms: 1,
-        accommodates: 2,
-        maxGuests: 2,
-        squareFeet: 600,
-        isBusinessReady: true,
-        active: true,
-
-        // đồng bộ details
-        details: [
-          {
-            id: "detail_1",
-            image: "/images/detail_placeholder.jpg",
-            title: "Modern living space",
-            description: "Fully equipped and comfortable"
-          }
-        ],
-
-        // đồng bộ booking (giữ timeSlots dạng Experience; property có thể để trống)
-        booking: {
-          maxGuests: 2,
-          timeSlots: [] // property thường đặt theo ngày – để trống vẫn OK với UI hiện tại
-        },
-
-        createdAt: "2024-01-15T10:30:00Z",
-        hostId: 1,
         roomTypeId: 1,
         bedTypeId: 1,
         cancellationId: 1,
         cityId: 1,
         countryId: 1,
-        neighbourhoodId: 1,
-
-        hostStatus: "Superhost",
-        amenities: [
-          { id: 1, name: "WiFi", icon: "wifi" },
-          { id: 2, name: "Air Conditioning", icon: "ac" },
-          { id: 3, name: "Kitchen", icon: "kitchen" },
-          { id: 4, name: "TV", icon: "tv" },
-          { id: 5, name: "Free Parking", icon: "free_parking" }
-        ]
-
+        neighbourhoodId: 1
       },
 
       {

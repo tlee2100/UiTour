@@ -81,13 +81,7 @@ export default function HomeInfoPage() {
         />
 
         {/* ✅ Gallery with fallback mapping */}
-        <Gallery
-          images={
-            Array.isArray(p.photos) && p.photos.length > 0
-              ? p.photos
-              : p.media?.photos?.map(img => img.url) || []
-          }
-        />
+        <Gallery images={p.media?.photos} />
 
         {/* ✅ Main layout */}
         <div className="homeinfo-main">
