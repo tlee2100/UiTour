@@ -1,13 +1,13 @@
-/* Tổng thể header */
-.headerinfo {
+/* ==========================
+✅ HEADER INFO WRAPPER
+========================== */
+.headerif {
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  position: relative;
 
   padding: 24px 160px;
-  gap: 24px;
-
   width: 100%;
   height: 96px;
 
@@ -16,288 +16,192 @@
   box-sizing: border-box;
 }
 
-/* Navigation */
-.header_nav {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  margin-left: 40px;
-}
 
-.nav_link {
-  text-decoration: none;
-  color: var(--black);
-  font-weight: 500;
-  font-size: 14px;
-  padding: 8px 16px;
-  border-radius: 20px;
-  transition: background-color 0.2s;
-}
-
-.nav_link:hover {
-  background-color: var(--hover-white);
-}
-
-.nav_link.active {
-  background-color: var(--uitour-color);
-  color: white;
-}
-
-/* Logo */
+/* ==========================
+✅ Logo
+========================== */
 .headerif_logo img {
   height: 45px;
-  width: auto;
-  max-width: 100%;
   object-fit: contain;
 }
 
 .headerif_logoButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  
   background: transparent;
   border: none;
-  border-radius: 20%;
-
   cursor: pointer;
 }
 
 .headerif_logoButton:hover {
-  background-color: transparent;
+  background: transparent;
 }
 
-/* Search box */
+
+/* ==========================
+✅ Search Box (center)
+========================== */
 .headerif_search {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
   display: flex;
   align-items: center;
   gap: 12px;
 
   width: 334px;
-  height: 48px; /* ✅ set cố định → không bị cao lung tung */
-
+  height: 48px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 1000px;
-  padding: 0 12px 0 20px; /* ✅ bỏ padding dọc */
-
-  position: absolute;
-  left: 50%;
-                    /* ✅ đặt vị trí theo trục dọc */
-  transform: translate(-50%);
+  padding: 8px 12px 8px 20px;
 }
-
 
 .headerif_searchInput {
   flex: 1;
   border: none;
   outline: none;
   font-size: 14px;
-  margin: 0 ;
   font-weight: 500;
-  height: 32px; /* ✅ không tràn lên */
+  padding-bottom: 0%;
 }
 
 .headerif_searchButton {
   width: 32px;
-  height: 32px; /* ✅ phù hợp chiều cao 48px của box */
+  height: 32px;
+  background: var(--uitour-color);
+  border: none;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  border-radius: 50%;
-  background: var(--uitour-color);
-
-  color: #fff;
   cursor: pointer;
 }
 
-/* Right side */
+.headerif_searchButton:hover {
+  background: #00a3c4;
+}
+
+
+/* ==========================
+✅ Right section
+========================== */
 .headerif_right {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 16px;
 }
 
 .headerif_title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-family: 'Inter', sans-serif;  
-  padding: 12px 12px 12px 12px;
-
-  width: fit-content;
-  height: fit-content;
   font-size: 14px;
-  font-weight: 500;
-  color: #000;
-  background-color: transparent;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  background: transparent;
+  padding: 10px 12px;
   border: none;
-  border-radius: 20px;
   cursor: pointer;
+  border-radius: 12px;
+  transition: color .25s ease, background .25s ease;
+}
+
+.headerif_title:hover {
+  background: #F3F4F6;
+  color: var(--uitour-color);
 }
 
 .headerif_globe {
+  width: 42px;
+  height: 42px;
+  background: transparent;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  font-size: 18px;
-  cursor: pointer;
 }
 
-/* Profile dropdown */
+.headerif_globe:hover {
+  background: #F3F4F6;
+  color: var(--uitour-color);
+}
+
+/* ==========================
+✅ Profile dropdown
+========================== */
 .headerif_profile {
   display: flex;
   align-items: center;
   gap: 8px;
-
-  padding: 8px 8px 8px 16px;
-  width: fit-content;
-  height: fit-content;
-
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  padding: 8px 12px;
   border-radius: 100px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.headerif_menu,
+.headerif_avatarButton {
+  width: 42px;
+  height: 42px;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .headerif_menu {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 42px;
-  height: 42px;
-  font-size: 18px;
-  color: #111827;
-  background-color: transparent;
-  border: none;
-  border-radius: 50%;
-
-  cursor: pointer;
-}
-
-.headerif_avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 42px;
-  height: 42px;
-
-
-  overflow: hidden;
-}
-
-.headerif_avatarButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 42px;
-  height: 42px;
   background: #e5e7eb;
-  border-radius: 50%;
-  border: none;
-
-  cursor: pointer;
+}
+.headerif_avatarButton {
+  background: #e5e7eb;
 }
 
-button:hover {
-  background-color: #f3f4f6;
+.headerif_menu:hover {
+  background: #d1d5db;
+  color: var(--uitour-color);
 }
-
 .headerif_avatarButton:hover {
-  background-color: #d1d5db;
+  background: #d1d5db;
+  color: var(--uitour-color);
 }
 
-.headerif_searchButton:hover {
-  background-color: #00a3c4;
-}
 
-/* Responsive Design */
+/* ==========================
+✅ Responsive
+========================== */
 @media (max-width: 1024px) {
-  .header {
+  .headerif {
     padding: 24px 40px;
-  }
-  
-  .header_search {
-    width: 280px;
-    margin-left: 20px;
-  }
-  
-  .header_nav {
-    margin-left: 20px;
-    gap: 20px;
   }
 }
 
 @media (max-width: 768px) {
-  .header {
+  .headerif {
     padding: 16px 20px;
     height: auto;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 12px;
   }
-  
-  .header_logo {
-    order: 1;
+
+  .headerif_search {
+    position: static;
+    transform: none;
+    margin: 0 auto;
+    max-width: 420px;
+    width: 100%;
   }
-  
-  .header_nav {
-    order: 3;
+
+  .headerif_right {
     width: 100%;
     justify-content: center;
-    margin: 16px 0 0 0;
-    gap: 16px;
-  }
-  
-  .header_search {
-    order: 2;
-    width: 100%;
-    margin: 0;
-    max-width: 400px;
-  }
-  
-  .header_right {
-    order: 4;
-    width: 100%;
-    justify-content: center;
-    margin-top: 16px;
   }
 }
 
 @media (max-width: 480px) {
-  .header {
-    padding: 12px 16px;
-  }
-  
-  .header_nav {
-    gap: 12px;
-  }
-  
-  .nav_link {
-    padding: 6px 12px;
+  .headerif_title {
     font-size: 13px;
-  }
-  
-  .header_search {
-    padding: 6px 6px 6px 16px;
-  }
-  
-  .header_searchInput {
-    font-size: 13px;
-  }
-  
-  .header_title {
-    font-size: 13px;
-    padding: 8px 12px;
+    padding: 8px 10px;
   }
 }
