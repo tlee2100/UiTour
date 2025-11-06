@@ -14,10 +14,10 @@ export default function Header() {
 
   const handleLogoClick = () => navigate('/');
 
-  // ✅ Kiểm tra tab active
+  // ✅ Xác định tab active
   const active = location.pathname.startsWith("/tours") ? "tours" : "stays";
 
-  // ✅ Update highlight position
+  // ✅ Cập nhật vị trí highlight
   const updateHighlight = () => {
     const activeLink = document.querySelector(".nav_link.active");
     const highlight = document.querySelector(".nav_highlight");
@@ -26,12 +26,10 @@ export default function Header() {
     highlight.style.transform = `translateX(${activeLink.offsetLeft}px)`;
   };
 
-  // ✅ Chạy khi active tab thay đổi
   useEffect(() => {
     updateHighlight();
   }, [active]);
 
-  // ✅ Update khi resize màn hình
   useEffect(() => {
     window.addEventListener("resize", updateHighlight);
     return () => window.removeEventListener("resize", updateHighlight);
@@ -42,7 +40,6 @@ export default function Header() {
 
   return (
     <header className="header">
-
       {/* Logo */}
       <div className="header_logo">
         <button className="header_logoButton" onClick={handleLogoClick}>
@@ -55,25 +52,31 @@ export default function Header() {
         <Link to="/" className={`nav_link ${active === "stays" ? "active" : ""}`}>
           Stays
         </Link>
-
         <Link to="/tours" className={`nav_link ${active === "tours" ? "active" : ""}`}>
           Experiences
         </Link>
-
         <span className="nav_highlight"></span>
       </nav>
 
-      {/* Right section */}
+      {/* Right side */}
       <div className="header_right">
-        <button className="header_title">Become a Host</button>
+        <button
+          className="header_title"
+          onClick={() => navigate('/host/experience/create/choose')}
+        >
+          Become a Host
+        </button>
+
         <button className="header_globe">
-          <Icon icon="mdi:earth" width="24" height="24" />
+          <Icon icon="mdi:earth" width="26" height="26" />
         </button>
 
         <div className="header_profile">
           <button
             ref={menuButtonRef}
             className="header_menu"
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
             onClick={toggleMenu}
           >
             <Icon icon="mdi:menu" width="24" height="24" />
@@ -81,42 +84,11 @@ export default function Header() {
 
           <div className="header_avatar">
             <button className="header_avatarButton">
-              <Icon icon="mdi:account" width="32" height="32" />
+              <Icon icon="mdi:account" width="28" height="28" />
             </button>
           </div>
-          {/* Navigation */}
-          <nav className="header_nav">
-            <Link to="/" className="nav_link active">Stays</Link>
-            <Link to="/tours" className="nav_link">Experiences</Link>
-          </nav>
-          {/* Right side */}
-          <div className="header_right">
-            <button className="header_title" onClick={() => navigate('/host/experience/create/choose')}>
-              Become a Host
-            </button>
-            <button className="header_globe">
-              <Icon icon="mdi:earth" width="24" height="24" />
-            </button>
-            <div className="header_profile">
-              <button
-                ref={menuButtonRef}
-                className="header_menu"
-                aria-haspopup="menu"
-                aria-expanded={menuOpen}
-                onClick={toggleMenu}
-              >
-                <Icon icon="mdi:menu" width="24" height="24" />
-              </button>
-              <div className="header_avatar">
-                <button className="header_avatarButton">
-                  <Icon icon="mdi:account" width="32" height="32" />
-                </button>
-              </div>
-              {menuOpen && (
-                <ProfileMenu ref={menuRef} onClose={closeMenu} />
-              )}
-            </div>
-          </div>
+
+          {menuOpen && <ProfileMenu ref={menuRef} onClose={closeMenu} />}
         </div>
       </div>
     </header>

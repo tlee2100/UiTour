@@ -15,9 +15,8 @@ export default function HeaderInfo() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      console.log('Searching for:', searchQuery);
-    }
+    if (!searchQuery.trim()) return;
+    console.log("Searching for:", searchQuery);
   };
 
   const handleLogoClick = () => navigate('/');
@@ -25,12 +24,10 @@ export default function HeaderInfo() {
   const toggleMenu = () => setMenuOpen(prev => !prev);
   const closeMenu = () => setMenuOpen(false);
 
-  // ✅ Đóng menu khi click ra ngoài
   useEffect(() => {
-    function handleClickOutside(e) {
-      if (!menuOpen) return;
-
+    const handleClickOutside = (e) => {
       if (
+        menuOpen &&
         menuRef.current &&
         !menuRef.current.contains(e.target) &&
         menuButtonRef.current &&
@@ -38,43 +35,48 @@ export default function HeaderInfo() {
       ) {
         closeMenu();
       }
-    }
-
+    };
+    
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
 
   return (
-    <header className="headerinfo">
-
+    <header className="headerif">
+      
       {/* Logo */}
       <div className="headerif_logo">
         <button className="headerif_logoButton" onClick={handleLogoClick}>
-          <img src={logo} alt="UiTour Logo" className="logo" />
+          <img src={logo} alt="UiTour Logo" />
         </button>
       </div>
 
-      {/* Search box */}
+      {/* Search */}
       <form className="headerif_search" onSubmit={handleSearch}>
-        <input 
-          type="text"
+        <input
           className="headerif_searchInput"
           placeholder="Start your search..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <button type="submit" className="headerif_searchButton">
-          <Icon icon="mdi:magnify" width="24" height="24" />
+          <Icon icon="mdi:magnify" width="20" height="20" color='#fff'/>
         </button>
       </form>
 
       {/* Right side */}
       <div className="headerif_right">
-        <button className="headerif_title" onClick={() => navigate('/host/experience/create/choose')}>Become a Host</button>
-        <button className="headerif_globe">
-          <Icon icon="mdi:earth" width="24" height="24" />
+        <button
+          className="headerif_title"
+          onClick={() => navigate('/host/experience/create/choose')}
+        >
+          Become a Host
         </button>
-        {/* ✅ Dropdown Profile */}
+
+        <button className="headerif_globe">
+          <Icon className='globe-icon' icon="mdi:earth" width="26" height="26"/>
+        </button>
+
         <div className="headerif_profile">
           <button
             ref={menuButtonRef}
@@ -84,12 +86,10 @@ export default function HeaderInfo() {
             <Icon icon="mdi:menu" width="24" height="24" />
           </button>
 
-          <div className="headerif_avatar">
-            <button className="headerif_avatarButton">
-              <Icon icon="mdi:account" width="32" height="32" />
+          <button className="headerif_avatarButton">
+            <Icon icon="mdi:account" width="28" height="28" />
+          </button>
 
-            </button>
-          </div>
           {menuOpen && (
             <div ref={menuRef}>
               <ProfileMenu onClose={closeMenu} />
@@ -97,6 +97,7 @@ export default function HeaderInfo() {
           )}
         </div>
       </div>
+
     </header>
   );
 }
