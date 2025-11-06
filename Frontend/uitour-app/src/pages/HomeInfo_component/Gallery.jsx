@@ -5,7 +5,10 @@ export default function Gallery({ images }) {
   const [showAll, setShowAll] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  if (!Array.isArray(images)) images = [];
+  // ✅ Normalize để hỗ trợ cả object[] hoặc string[]
+  const normalizedImages = Array.isArray(images)
+    ? images.map(img => typeof img === "string" ? img : img.url)
+    : [];
 
   const openModal = (index) => {
     setCurrentIndex(index);
@@ -38,8 +41,8 @@ export default function Gallery({ images }) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [showAll]);
 
-  const firstFive = images.slice(0, 5);
-  const extraCount = images.length - 5;
+  const firstFive = normalizedImages.slice(0, 5);
+  const extraCount = normalizedImages.length - 5;
 
   // ✅ FULLSCREEN MODAL VIEW
   if (showAll) {
@@ -51,7 +54,7 @@ export default function Gallery({ images }) {
 
         <div className="gallery-full-wrapper">
           <img
-            src={images[currentIndex]}
+            src={normalizedImages[currentIndex]}
             alt="full-view"
             className="gallery-full-image"
           />
@@ -72,7 +75,7 @@ export default function Gallery({ images }) {
             className={`gallery-item ${i === 0 ? "large" : ""}`}
             onClick={() => openModal(i)}
           >
-            <img src={src} alt={`photo-${i}`} />
+            <img src={src} alt={`photo-${i}`} loading="lazy" />
             {i === 4 && extraCount > 0 && (
               <div className="overlay">+{extraCount}</div>
             )}
