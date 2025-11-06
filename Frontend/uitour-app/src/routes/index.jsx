@@ -8,6 +8,14 @@ import ExperienceInfoPage from "../pages/ExperienceInfoPage";
 import MapDemoPage from "../pages/MapDemoPage";
 import LoginPage from "../pages/LoginPage";
 import SignUpPage from "../pages/SignUpPage";
+import HostExperienceCreateChoose from "../pages/HostExperience/HostExperienceCreateChoose";
+import HostExperienceCreateYears from "../pages/HostExperience/HostExperienceCreateYears";
+import HostExperienceCreateQualification from "../pages/HostExperience/HostExperienceCreateQualification";
+import HostExperienceCreateLocate from "../pages/HostExperience/HostExperienceCreateLocate";
+import HostExperienceCreatePhotos from "../pages/HostExperience/HostExperienceCreatePhotos";
+import HostExperienceDescribeTitle from "../pages/HostExperience/HostExperienceDescribeTitle";
+import HostExperienceCreateItinerary from "../pages/HostExperience/HostExperienceCreateItinerary";
+import HostExperienceCreateMaxGuests from "../pages/HostExperience/HostExperienceCreateMaxGuests";
 
 const AppRoutes = () => {
   return (
@@ -30,6 +38,16 @@ const AppRoutes = () => {
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} /> 
+
+      {/* Host Experience Creation (no shared site layout) */}
+      <Route path="/host/experience/create/choose" element={<HostExperienceCreateChoose />} />
+      <Route path="/host/experience/create/years" element={<HostExperienceCreateYears />} />
+      <Route path="/host/experience/create/qualification" element={<HostExperienceCreateQualification />} />
+      <Route path="/host/experience/create/locate" element={<HostExperienceCreateLocate />} />
+      <Route path="/host/experience/create/photos" element={<HostExperienceCreatePhotos />} />
+      <Route path="/host/experience/create/describe-title" element={<HostExperienceDescribeTitle />} />
+      <Route path="/host/experience/create/itinerary" element={<HostExperienceCreateItinerary />} />
+      <Route path="/host/experience/create/max-guests" element={<HostExperienceCreateMaxGuests />} />
 
     </Routes>
   );
