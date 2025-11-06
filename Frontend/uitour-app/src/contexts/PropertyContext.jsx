@@ -165,12 +165,26 @@ export const PropertyProvider = ({ children }) => {
   };
 
   const normalizeProperty = (p) => {
+    // 1) Location string an toàn cho cả dạng string và object
     const displayLocation =
       typeof p.location === "string"
         ? p.location
-        : `${p.location?.addressLine || ""}, ${p.location?.city || ""}`;
+        : `${p.location?.addressLine || p.location?.address || ""}, ${p.location?.city || ""}`.replace(/^, |, $/g, "");
 
-    const fees = p.pricing?.fees || {};
+    // 2) Chuẩn hóa cover: chấp nhận cả string hoặc object
+    const rawCover = p.media?.cover;
+    const coverUrl =
+      (typeof rawCover === "string" && rawCover) ||
+      rawCover?.url ||
+      p.mainImage || // ⚠️ FALLBACK từ list API rút gọn
+      (Array.isArray(p.media?.photos) && p.media.photos[0]?.url) ||
+      (Array.isArray(p.photos) && p.photos[0]) ||
+      null;
+
+    // 3) Giá, rating, reviews với fallback từ list rút gọn
+    const basePrice = p.pricing?.basePrice ?? p.price ?? 0;
+    const rating = p.reviewSummary?.rating ?? p.rating ?? 0;
+    const reviewsCount = p.reviewSummary?.count ?? p.reviewsCount ?? 0;
 
     return {
       id: p.id,
@@ -182,7 +196,7 @@ export const PropertyProvider = ({ children }) => {
 
       location: displayLocation,
       locationObj: {
-        address: p.location?.addressLine || "",
+        address: p.location?.addressLine || p.location?.address || "",
         city: p.location?.city || "",
         country: p.location?.country || "Vietnam",
         lat: p.location?.lat ?? p.latitude ?? null,
@@ -190,16 +204,26 @@ export const PropertyProvider = ({ children }) => {
       },
 
       pricing: p.pricing,
-      basePrice: p.pricing?.basePrice ?? p.price ?? 0,
-      currency: p.pricing?.currency ?? "USD",
+      basePrice,
+      currency: p.pricing?.currency ?? p.currency ?? "USD",
 
-      // ✅ Normalize fees
-      cleaningFee: fees.cleaning ?? 0,
-      serviceFee: fees.service ?? 0,
-      taxFee: fees.tax ?? 0,
-      extraGuestFee: fees.extraGuest ?? 0,
+      // Fees (nếu có)
+      cleaningFee: p.pricing?.fees?.cleaning ?? p.cleaningFee ?? 0,
+      serviceFee: p.pricing?.fees?.service ?? p.serviceFee ?? 0,
+      taxFee: p.pricing?.fees?.tax ?? p.taxFee ?? 0,
+      extraGuestFee: p.pricing?.fees?.extraGuest ?? p.extraPeopleFee ?? 0,
 
-      // ✅ Highlights / rules / safety
+      // Media
+      media: {
+        cover: coverUrl ? { url: coverUrl, alt: "Cover" } : null,
+        photos: Array.isArray(p.media?.photos) ? p.media.photos : [],
+      },
+      photos: Array.isArray(p.photos)
+        ? p.photos.map((url) => ({ url, alt: "Photo" }))
+        : [],
+      mainImage: coverUrl, // ⚠️ luôn set để HomePage dùng được
+
+      // Thông tin khác
       highlights: p.highlights || [],
       houseRules: p.houseRules || [],
       healthAndSafety: p.healthAndSafety || {},
@@ -208,36 +232,26 @@ export const PropertyProvider = ({ children }) => {
       propertyType: p.propertyType,
       roomType: p.roomType,
 
-      // ✅ Capacity
       capacity: p.capacity,
-      maxGuests: p.capacity?.maxGuests ?? 1,
+      maxGuests: p.capacity?.maxGuests ?? p.maxGuests ?? 1,
 
-      // ✅ Check-in/out
       checkIn: p.booking?.checkInFrom || null,
       checkOut: p.booking?.checkOutBefore || null,
-
-      media: {
-        cover: p.media?.cover ?? null,
-        photos: p.media?.photos ?? [],
-      },
-      photos: p.photos?.map(url => ({ url, alt: "Photo" })) ?? [],
-      
-      mainImage: p.media?.cover?.url || null,
 
       amenities: p.amenities || [],
 
       host: p.host,
-      rating: p.reviewSummary?.rating ?? 0,
-      reviewsCount: p.reviewSummary?.count ?? 0,
+      rating,
+      reviewsCount,
       reviews: p.reviews || [],
+
+      dates: p.dates, // để HomePage hiển thị fallback nếu có
+      isGuestFavourite: p.isGuestFavourite ?? false,
 
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
     };
   };
-
-
-
 
   // -----------------------------
   // API Methods (memoized with useCallback)
@@ -263,25 +277,68 @@ export const PropertyProvider = ({ children }) => {
     [actions]
   );
 
+  // ✅ Lightweight normalizer for HomePage list
+  // ✅ Normalize cho HomePage Grid
+  const normalizeHomeCard = (p) => {
+    const cover =
+      p.media?.cover?.url ||
+      (typeof p.media?.cover === "string" && p.media.cover) ||
+      p.mainImage ||
+      p.photos?.[0]?.url ||
+      "/fallback.png";
 
-  const fetchProperties = useCallback(
-    async (filters = {}) => {
-      try {
-        actions.setLoading(true);
-        actions.clearError();
-        const list = await mockAPI.getProperties(filters);
-        const normalizedList = list.map(normalizeProperty);
-        actions.setProperties(normalizedList);
-        return normalizedList;
-      } catch (err) {
-        actions.setError(err.message);
-        throw err;
-      } finally {
-        actions.setLoading(false);
+    return {
+      id: p.id,
+      title: p.title || p.listingTitle || "Untitled",
+      location: typeof p.location === "string"
+        ? p.location
+        : `${p.location?.addressLine || ""}, ${p.location?.city || ""}`.replace(/^, |, $/g, ""),
+
+      price: p.pricing?.basePrice ?? p.price ?? 0, // ✅ luôn có giá fallback
+      currency: p.pricing?.currency ?? p.currency ?? "USD",
+
+      rating: p.reviewSummary?.rating ?? p.rating ?? 0,
+      reviewsCount: p.reviewSummary?.count ?? p.reviewsCount ?? 0,
+
+      mainImage: cover,
+      isGuestFavourite: p.isGuestFavourite ?? false,
+      dates: p.dates ?? null,
+    };
+  };
+
+  const fetchProperties = useCallback(async (filters = {}) => {
+    try {
+      actions.setLoading(true);
+      actions.clearError();
+
+      let list = mockAPI.getMockProperties(); // ✅ lấy dữ liệu đầy đủ
+
+      // ✅ Nếu có filter thì áp dụng thủ công đúng field
+      if (filters.location) {
+        list = list.filter(p =>
+          normalizeLocationString(p).toLowerCase()
+            .includes(filters.location.toLowerCase())
+        );
       }
-    },
-    [actions]
-  );
+
+      if (filters.guests) {
+        list = list.filter(p =>
+          (p.capacity?.maxGuests ?? p.maxGuests ?? 1) >= filters.guests
+        );
+      }
+
+      const normalizedList = list.map(normalizeHomeCard);
+      actions.setProperties(normalizedList);
+      return normalizedList;
+
+    } catch (err) {
+      actions.setError(err.message);
+      throw err;
+    } finally {
+      actions.setLoading(false);
+    }
+  }, [actions]);
+
 
   const searchProperties = useCallback(
     async (query, filters = {}) => {
