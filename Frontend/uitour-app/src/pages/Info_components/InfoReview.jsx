@@ -5,11 +5,13 @@ import ButtonWhite from "../../components/ButtonWhite";
 
 /* ---------------- HEADER ---------------- */
 const InfoReviewHeader = ({ rating, reviewsCount }) => {
+  const safeRating = typeof rating === "number" ? rating : 0;
+
   return (
     <div className="inforeview">
       <div className="ir-icon-text">
         <SvgIcon name="review_star" className="ir-star-icon" />
-        <div className="ir-rating-text">{rating?.toFixed(1) || "0.0"}</div>
+        <div className="ir-rating-text">{safeRating.toFixed(1)}</div>
       </div>
 
       <div className="ir-dot"></div>
@@ -20,15 +22,25 @@ const InfoReviewHeader = ({ rating, reviewsCount }) => {
 };
 
 /* ---------------- REVIEW CARD ---------------- */
-const IrReviewCard = ({ review }) => {
-  const { userName, userAvatar, rating, comment, createdAt, location } = review;
+const IrReviewCard = ({ review = {} }) => {
+  const {
+    userName = "Guest",
+    userAvatar,
+    rating = 0,
+    comment = "",
+    createdAt,
+    location = "Unknown",
+  } = review;
+
   const [expanded, setExpanded] = useState(false);
+
+  const safeRating = Math.min(5, Math.max(0, Number(rating) || 0));
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
+    if (isNaN(date)) return "Unknown date";
     const now = new Date();
-    const diff = now - date;
-    const diffDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil((now - date) / (1000 * 60 * 60 * 24));
 
     if (diffDays <= 1) return "1 day ago";
     if (diffDays < 7) return `${diffDays} days ago`;
@@ -39,16 +51,27 @@ const IrReviewCard = ({ review }) => {
 
   const maxChars = 180;
   const isLong = comment.length > maxChars;
-  const displayedText = expanded ? comment : comment.slice(0, maxChars) + (isLong ? "..." : "");
+  const displayedText = expanded
+    ? comment
+    : comment.slice(0, maxChars) + (isLong ? "..." : "");
 
   return (
     <div className="ir-review-card">
+
+      {/* User Info */}
       <div className="ir-review-user">
         <div className="ir-review-avatar">
           <img
-            src={userAvatar}
+            src={
+              userAvatar ||
+              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80"
+            }
             alt={userName}
             className="ir-review-avatar-img"
+            onError={(e) =>
+              (e.target.src =
+                "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80")
+            }
           />
         </div>
 
@@ -60,17 +83,18 @@ const IrReviewCard = ({ review }) => {
         </div>
       </div>
 
-
+      {/* Rating stars */}
       <div className="ir-review-rating">
         {[...Array(5)].map((_, i) => (
           <SvgIcon
             key={i}
             name="review_star"
-            className={`ir-review-star ${i < rating ? "filled" : "empty"}`}
+            className={`ir-review-star ${i < safeRating ? "filled" : "empty"}`}
           />
         ))}
       </div>
 
+      {/* Comment */}
       <div className="ir-review-comment">
         {displayedText}
         {isLong && (
@@ -99,7 +123,7 @@ const IrReviewList = ({ reviews = [] }) => {
   return (
     <div className="ir-review-list">
       {reviews.slice(0, 6).map((review) => (
-        <IrReviewCard key={review.id} review={review} />
+        <IrReviewCard key={review.id || Math.random()} review={review} />
       ))}
     </div>
   );

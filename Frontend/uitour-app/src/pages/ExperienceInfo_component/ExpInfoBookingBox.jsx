@@ -2,10 +2,16 @@ import React from "react";
 import "./ExpInfoBookingBox.css";
 
 function ExpInfoBookingBox({ booking, price: propPrice, currency: propCurrency }) {
+  // ✅ Chuẩn hóa booking object
+  const safeBooking = booking && typeof booking === "object" ? booking : {};
 
-  const basePrice = Number(propPrice ?? booking?.pricing?.basePrice ?? 0);
-  const curr = propCurrency ?? booking?.pricing?.currency ?? "VND";
-  const timeSlots = booking?.timeSlots || [];
+  // ✅ Lấy giá từ props hoặc fallback từ pricing root của experience
+  const basePrice = Number(propPrice || 0);
+  const curr = propCurrency || "VND";
+
+  const timeSlots = Array.isArray(safeBooking.timeSlots)
+    ? safeBooking.timeSlots
+    : [];
 
   const handleBookNow = () => {
     alert("✅ Booking success! (demo action)");
@@ -13,7 +19,7 @@ function ExpInfoBookingBox({ booking, price: propPrice, currency: propCurrency }
 
   return (
     <div className="expib-box">
-
+      
       {/* ✅ Pricing */}
       <div className="expib-header">
         <div className="expib-price">

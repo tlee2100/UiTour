@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { useExperience } from "../contexts/ExperienceContext";
 import "./ExperienceInfoPage.css";
-
-import InfoHeader from "./Info_components/InfoHeader";
 import InfoReview from "./Info_components/InfoReview";
 import InfoHost from "./Info_components/InfoHost";
 import ExpGallery from "./ExperienceInfo_component/ExpGallery";
@@ -72,11 +70,7 @@ export default function ExperienceInfoPage() {
       <div className="expif-two-columns">
         <div className="expif-left-column">
           <ExpGallery
-            images={
-              Array.isArray(exp.photos) && exp.photos.length > 0
-                ? exp.photos // ✅ lấy đúng ảnh từ normalizeExperience()
-                : exp.media?.photos?.map(p => p.url) || [] // fallback để an toàn
-            }
+            images={exp.media?.photos?.map(p => p.url) || exp.photos || []}
           />
 
         </div>
@@ -87,10 +81,10 @@ export default function ExperienceInfoPage() {
             summary={exp.summary}
             rating={exp.rating}
             reviewsCount={exp.reviewsCount}
-            location={`${exp.location.address}, ${exp.location.city}`}
+            location={exp.location}
             duration={`${exp.durationHours} hours`}
-            price={exp.price}
-            currency={exp.currency}
+            price={exp.pricing?.basePrice}
+            currency={exp.pricing?.currency}
             host={exp.host}
           />
         </div>
@@ -101,15 +95,15 @@ export default function ExperienceInfoPage() {
         <div className="expif-details-left">
           <ExpDetails
             title="What you’ll do"
-            details={exp.details}
+            details={exp.experienceDetails}
           />
         </div>
 
         <div className="expif-details-right">
           <ExpInfoBookingBox
             booking={exp.bookingInfo}
-            price={exp.price}            // ✅ Thêm giá đúng UI cần
-            currency={exp.currency}      // ✅ Thêm tiền tệ
+            price={exp.pricing?.basePrice}         // ✅ Thêm giá đúng UI cần
+            currency={exp.pricing?.currency}      // ✅ Thêm tiền tệ
           />
         </div>
       </div>
