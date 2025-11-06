@@ -117,7 +117,7 @@ const PropertyMap = ({
   const openMapExternal = () => {
     if (!markerPos) return;
     window.open(
-      `https://www.openstreetmap.org/?mlat=${markerPos[0]}&mlon=${markerPos[1]}&zoom=16`,
+      `https://www.google.com/maps/search/?api=1&query=${markerPos[0]},${markerPos[1]}`,
       "_blank"
     );
   };
