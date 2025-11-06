@@ -48,7 +48,7 @@ export default function HeaderInfo() {
 
         {/* Right side */}
         <div className="headerif_right">
-            <button className="headerif_title">
+            <button className="headerif_title" onClick={() => navigate('/host/experience/create/choose')}>
                 Become a Host
             </button>
             <button className="headerif_globe">
