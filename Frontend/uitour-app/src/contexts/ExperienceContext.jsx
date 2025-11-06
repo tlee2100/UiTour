@@ -5,9 +5,8 @@ import React, {
   useEffect,
   useMemo,
   useCallback
-} from 'react';
-
-import mockAPI from '../services/mockAPI';
+} from "react";
+import mockAPI from "../services/mockAPI";
 
 // -----------------------------
 // Initial State
@@ -18,30 +17,26 @@ const initialState = {
   searchResults: [],
   loading: false,
   error: null,
-  searchQuery: '',
+  searchQuery: "",
   filters: {
-    location: '',
+    location: "",
     minPrice: null,
     maxPrice: null,
   },
-  currentPage: 1,
-  totalPages: 1,
-  totalResults: 0,
 };
 
 // -----------------------------
 // Action Types
 // -----------------------------
 const ActionTypes = {
-  SET_LOADING: 'SET_LOADING',
-  SET_ERROR: 'SET_ERROR',
-  CLEAR_ERROR: 'CLEAR_ERROR',
-  SET_CURRENT_EXPERIENCE: 'SET_CURRENT_EXPERIENCE',
-  SET_EXPERIENCES: 'SET_EXPERIENCES',
-  SET_SEARCH_RESULTS: 'SET_SEARCH_RESULTS',
-  SET_SEARCH_QUERY: 'SET_SEARCH_QUERY',
-  SET_FILTERS: 'SET_FILTERS',
-  SET_PAGINATION: 'SET_PAGINATION'
+  SET_LOADING: "SET_LOADING",
+  SET_ERROR: "SET_ERROR",
+  CLEAR_ERROR: "CLEAR_ERROR",
+  SET_CURRENT_EXPERIENCE: "SET_CURRENT_EXPERIENCE",
+  SET_EXPERIENCES: "SET_EXPERIENCES",
+  SET_SEARCH_RESULTS: "SET_SEARCH_RESULTS",
+  SET_SEARCH_QUERY: "SET_SEARCH_QUERY",
+  SET_FILTERS: "SET_FILTERS",
 };
 
 // -----------------------------
@@ -51,36 +46,20 @@ const experienceReducer = (state, action) => {
   switch (action.type) {
     case ActionTypes.SET_LOADING:
       return { ...state, loading: action.payload };
-
     case ActionTypes.SET_ERROR:
       return { ...state, error: action.payload, loading: false };
-
     case ActionTypes.CLEAR_ERROR:
       return { ...state, error: null };
-
     case ActionTypes.SET_CURRENT_EXPERIENCE:
       return { ...state, currentExperience: action.payload };
-
     case ActionTypes.SET_EXPERIENCES:
       return { ...state, experiences: action.payload };
-
     case ActionTypes.SET_SEARCH_RESULTS:
       return { ...state, searchResults: action.payload };
-
     case ActionTypes.SET_SEARCH_QUERY:
       return { ...state, searchQuery: action.payload };
-
     case ActionTypes.SET_FILTERS:
       return { ...state, filters: { ...state.filters, ...action.payload } };
-
-    case ActionTypes.SET_PAGINATION:
-      return {
-        ...state,
-        currentPage: action.payload.currentPage,
-        totalPages: action.payload.totalPages,
-        totalResults: action.payload.totalResults
-      };
-
     default:
       return state;
   }
@@ -91,143 +70,167 @@ const experienceReducer = (state, action) => {
 // -----------------------------
 const ExperienceContext = createContext();
 
+// Normalizer for tours list (lightweight)
+const normalizeExperienceListItem = (e) => ({
+  id: e.id,
+  title: e.title,
+  description: e.description,
+  image: e.image || null,
+  price: e.price ?? 0,
+  rating: e.rating ?? 0,
+  reviews: e.reviews ?? 0,
+  duration: e.duration || null,
+  location: e.location || "",
+  isGuestFavourite: e.isGuestFavourite || false,
+});
+
+
+// -----------------------------
+// Normalizer for unified UI
+// -----------------------------
+const normalizeExperience = (e) => {
+  const loc = e.location || {};
+
+  return {
+    id: e.id,
+    category: "experience",
+
+    title: e.title,
+    summary: e.summary,
+    description: e.description,
+
+    rating: e.rating ?? 0,
+    reviewsCount: e.reviewsCount ?? 0,
+
+    location: `${loc.addressLine || ""}, ${loc.city || ""}`.replace(/^, |, $/g, ""),
+    locationObj: {
+      address: loc.addressLine || "",
+      city: loc.city || "",
+      country: loc.country || "Vietnam",
+      lat: loc.lat ?? null,
+      lng: loc.lng ?? null,
+    },
+
+    pricing: e.pricing,
+    basePrice: e.pricing?.basePrice ?? 0,
+    currency: e.pricing?.currency ?? "VND",
+
+    media: e.media,
+    photos: e.media?.photos ?? [],
+    mainImage: e.media?.cover?.url ?? null,
+
+    capacity: e.capacity ?? { maxGuests: 1 },
+    bookingInfo: e.booking ?? {},  // ✅ trả tên đúng cho Booking Box
+    maxGuests: e.capacity?.maxGuests ?? 1,
+
+    durationHours: e.durationHours,
+    experienceDetails: e.experienceDetails || e.details || [],
+
+    // ✅ phần bị thiếu!
+    host: e.host ?? null,
+    hostId: e.hostId ?? null,
+
+    isActive: e.isActive,
+    createdAt: e.createdAt,
+    reviews: e.reviews ?? []
+  };
+};
+
+
 // -----------------------------
 // Provider Component
 // -----------------------------
 export const ExperienceProvider = ({ children }) => {
   const [state, dispatch] = useReducer(experienceReducer, initialState);
 
-  // -----------------------------
-  // Actions
-  // -----------------------------
   const setLoading = useCallback(
-    (loading) => dispatch({ type: ActionTypes.SET_LOADING, payload: loading }),
+    (v) => dispatch({ type: ActionTypes.SET_LOADING, payload: v }),
     []
   );
-
   const setError = useCallback(
-    (error) => dispatch({ type: ActionTypes.SET_ERROR, payload: error }),
+    (v) => dispatch({ type: ActionTypes.SET_ERROR, payload: v }),
     []
   );
-
   const clearError = useCallback(
     () => dispatch({ type: ActionTypes.CLEAR_ERROR }),
     []
   );
 
-  const setCurrentExperience = useCallback(
-    (exp) => dispatch({ type: ActionTypes.SET_CURRENT_EXPERIENCE, payload: exp }),
-    []
-  );
-
-  const setExperiences = useCallback(
-    (list) => dispatch({ type: ActionTypes.SET_EXPERIENCES, payload: list }),
-    []
-  );
-
-  const setSearchResults = useCallback(
-    (results) => dispatch({ type: ActionTypes.SET_SEARCH_RESULTS, payload: results }),
-    []
-  );
-
-  const setSearchQuery = useCallback(
-    (query) => dispatch({ type: ActionTypes.SET_SEARCH_QUERY, payload: query }),
-    []
-  );
-
-  const setFilters = useCallback(
-    (filters) => dispatch({ type: ActionTypes.SET_FILTERS, payload: filters }),
-    []
-  );
-
-  const setPagination = useCallback(
-    (pagination) => dispatch({ type: ActionTypes.SET_PAGINATION, payload: pagination }),
-    []
-  );
-
-  const actions = useMemo(() => ({
-    setLoading,
-    setError,
-    clearError,
-    setCurrentExperience,
-    setExperiences,
-    setSearchResults,
-    setSearchQuery,
-    setFilters,
-    setPagination
-  }), [
-    setLoading, setError, clearError,
-    setCurrentExperience, setExperiences,
-    setSearchResults, setSearchQuery,
-    setFilters, setPagination
-  ]);
+  const setCurrentExperience = (exp) =>
+    dispatch({ type: ActionTypes.SET_CURRENT_EXPERIENCE, payload: exp });
+  const setExperiences = (arr) =>
+    dispatch({ type: ActionTypes.SET_EXPERIENCES, payload: arr });
+  const setSearchResults = (arr) =>
+    dispatch({ type: ActionTypes.SET_SEARCH_RESULTS, payload: arr });
+  const setSearchQuery = (q) =>
+    dispatch({ type: ActionTypes.SET_SEARCH_QUERY, payload: q });
 
   // -----------------------------
   // API Calls
   // -----------------------------
   const fetchExperienceById = useCallback(async (id) => {
     try {
-      actions.setLoading(true);
-      actions.clearError();
-      const exp = await mockAPI.getExperienceById(id);
-      actions.setCurrentExperience(exp);
-      return exp;
+      setLoading(true);
+      clearError();
+      const raw = await mockAPI.getExperienceById(id);
+      const normalized = normalizeExperience(raw);
+      setCurrentExperience(normalized);
+      return normalized;
     } catch (err) {
-      actions.setError(err.message);
-      throw err;
+      setError(err.message);
     } finally {
-      actions.setLoading(false);
+      setLoading(false);
     }
-  }, [actions]);
+  }, []);
 
   const fetchExperiences = useCallback(async (filters = {}) => {
     try {
-      actions.setLoading(true);
-      actions.clearError();
+      setLoading(true);
+      clearError();
       const list = await mockAPI.getExperiences(filters);
-      actions.setExperiences(list);
-      return list;
+      const normalized = list.map(normalizeExperienceListItem); // ✅ dùng loại nhẹ
+      setExperiences(normalized);
+      return normalized;
     } catch (err) {
-      actions.setError(err.message);
-      throw err;
+      setError(err.message);
     } finally {
-      actions.setLoading(false);
+      setLoading(false);
     }
-  }, [actions]);
+  }, []);
 
   const searchExperiences = useCallback(async (query, filters = {}) => {
     try {
-      actions.setLoading(true);
-      actions.clearError();
-      const results = await mockAPI.searchExperiences(query, filters);
-      actions.setSearchResults(results);
-      actions.setSearchQuery(query);
-      return results;
+      setLoading(true);
+      clearError();
+      const result = await mockAPI.searchExperiences(query, filters);
+      const normalized = result.map(normalizeExperienceListItem); // ✅
+      setSearchResults(normalized);
+      setSearchQuery(query);
+      return normalized;
     } catch (err) {
-      actions.setError(err.message);
-      throw err;
+      setError(err.message);
     } finally {
-      actions.setLoading(false);
+      setLoading(false);
     }
-  }, [actions]);
+  }, []);
 
-  // ✅ Auto fetch on first load
+
+  // Auto Load
   useEffect(() => {
     fetchExperiences();
   }, [fetchExperiences]);
 
-  const value = useMemo(() => ({
-    ...state,
-    ...actions,
-    fetchExperienceById,
-    fetchExperiences,
-    searchExperiences,
-  }), [
-    state, actions,
-    fetchExperienceById,
-    fetchExperiences,
-    searchExperiences,
-  ]);
+  const value = useMemo(
+    () => ({
+      ...state,
+      fetchExperienceById,
+      fetchExperiences,
+      searchExperiences,
+      setFilters: (filters) =>
+        dispatch({ type: ActionTypes.SET_FILTERS, payload: filters }),
+    }),
+    [state, fetchExperienceById, fetchExperiences, searchExperiences]
+  );
 
   return (
     <ExperienceContext.Provider value={value}>
@@ -236,13 +239,12 @@ export const ExperienceProvider = ({ children }) => {
   );
 };
 
-// Hook sử dụng
+// Hook
 export const useExperience = () => {
-  const context = useContext(ExperienceContext);
-  if (!context) {
-    throw new Error("useExperience must be used within an ExperienceProvider");
-  }
-  return context;
+  const ctx = useContext(ExperienceContext);
+  if (!ctx)
+    throw new Error("useExperience must be used within ExperienceProvider");
+  return ctx;
 };
 
 export default ExperienceContext;

@@ -3,74 +3,89 @@
   flex-direction: column;
   width: 100%;
   max-width: 520px;
-  gap: 16px;
+  gap: 12px;
+  align-items: center; /* ✅ canh giữa */
+  text-align: center; /* ✅ chữ giữa */
 }
 
-/* TITLE */
-.expAbout-title {
+/* Title */
+.expAbout-listingTitle {
   font-size: 28px;
   font-weight: 600;
-  color: #000;
+  color: #111;
 }
 
-/* DESCRIPTION */
+/* Description */
 .expAbout-description {
-  font-size: 16px;
+  font-size: 15px;
   line-height: 22px;
-  color: #757575;
+  color: #555;
+  margin: 0 10px;
 }
 
-/* DETAILS */
+/* Details Row */
 .expAbout-details {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  gap: 8px;
+  font-size: 15px;
+  color: #333;
 }
 
-.expAbout-rating {
-  color: #000;
-  font-weight: 500;
-}
-.expAbout-reviews {
-  color: #000;
-  text-decoration: underline;
-  cursor: pointer;
-}
-.expAbout-location {
-  color: #6B7280;
-  text-decoration: underline;
-}
 .expAbout-dot {
-  background: #6B7280;
   width: 4px;
   height: 4px;
   border-radius: 50%;
+  background: #aaa;
 }
 
-/* HOST SECTION */
+/* Host section */
 .expAbout-hostWrapper {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 18px; /* ✅ Tăng khoảng cách để tách biệt rõ ràng */
+  padding-top: 6px; /* ✅ Nhẹ nhàng tạo không gian thở */
 }
 
 .expAbout-hostAvatar {
   width: 56px;
   height: 56px;
-  border-radius: 100%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
 .expAbout-hostName {
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 17px;
   margin: 0;
+  font-weight: 600;
 }
 
 .expAbout-hostRole {
   font-size: 14px;
-  color: #000;
+  color: #666;
   margin: 0;
 }
+
+.expAbout-rightButtons {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.expAbout-iconButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+}
+
+.expAbout-iconButton .icon {
+  width: 18px;
+  height: 18px;
+}
+

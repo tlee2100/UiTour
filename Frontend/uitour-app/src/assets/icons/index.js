@@ -32,39 +32,43 @@ import SuperHostBadge from './superhost-badge.svg?react';
 
 
 const icons = {
-    house:   House,
-    star:    StarIcon,
-    heart:   HeartIcon,
-    share:   ShareIcon,
-    badge:   BadgeIcon,
-    verified: VerifiedBadge,
-    calendar:CalendarIcon,
-    clean:   CleanIcon,
-    selfcheck: SelfCheckIcon,
-    superhost: SuperHostBadge,
+  /* ---- Common UI Icons ---- */
+  house:   House,           // Trang chủ, thông tin chung
+  star:    StarIcon,        // Đánh giá, rating
+  heart:   HeartIcon,       // Yêu thích
+  share:   ShareIcon,       // Chia sẻ
+  badge:   BadgeIcon,       // Huy hiệu chất lượng / điểm nổi bật
+  verified: VerifiedBadge,  // Đã xác minh chủ nhà
+  calendar: CalendarIcon,   // Ngày tháng, đặt lịch
+  clean:   CleanIcon,       // Vệ sinh, tiêu chuẩn sạch
+  selfcheck: SelfCheckIcon, // Tự nhận phòng
+  superhost: SuperHostBadge,// Chủ nhà tuyệt vời
 
-    amen_ac:        AmenAc,
-    amen_bbq:       AmenBBQ,
-    amen_heating:   AmenHeating,
-    amen_kitchen:   AmenKitchen,
-    amen_pool:      AmenPool,
-    amen_washer:    AmenWasher,
-    amen_hottub:    AmenHottub,
-    amen_wifi:      AmenWifi,
-    amen_breakfast: AmenBreakfast,
-    amen_dryer:     AmenDryer,
-    amen_ev_charger:AmenEVCharger,
-    amen_free_parking: AmenFreeParking,
-    amen_gym:       AmenGym,
-    amen_hair_dryer:AmenHairDryer,
-    amen_iron:      AmenIron,
-    amen_tv:        AmenTV,
-    amen_workspace: AmenWorkspace,
-    amen_king_bed:  AmenKingBed,
-    amen_smoke_alarm: AmenSmokeAlarm,
+  /* ---- Amenities Icons ---- */
+  amen_ac: AmenAc,                     // Điều hòa không khí / Air Conditioning
+  amen_bbq: AmenBBQ,                   // Khu vực BBQ / Grill
+  amen_heating: AmenHeating,           // Sưởi ấm (heater, fireplace)
+  amen_kitchen: AmenKitchen,           // Phòng bếp đầy đủ
+  amen_pool: AmenPool,                 // Hồ bơi
+  amen_washer: AmenWasher,             // Máy giặt / giặt tự phục vụ
+  amen_hottub: AmenHottub,             // Bồn tắm nóng / Jacuzzi
+  amen_wifi: AmenWifi,                 // Internet & WiFi
+  amen_breakfast: AmenBreakfast,       // Bữa sáng miễn phí
+  amen_dryer: AmenDryer,               // Máy sấy quần áo
+  amen_ev_charger: AmenEVCharger,      // Cổng sạc xe điện
+  amen_free_parking: AmenFreeParking,  // Bãi đỗ xe miễn phí
+  amen_gym: AmenGym,                   // Phòng gym / Fitness center
+  amen_hair_dryer: AmenHairDryer,      // Máy sấy tóc
+  amen_iron: AmenIron,                 // Bàn ủi & thiết bị ủi đồ
+  amen_tv: AmenTV,                     // TV, truyền hình
+  amen_workspace: AmenWorkspace,       // Bàn làm việc / Không gian làm việc
+  amen_king_bed: AmenKingBed,          // Giường king size
+  amen_smoke_alarm: AmenSmokeAlarm,    // Báo hiệu khói / An toàn cháy nổ
 
-    review_star:   ReviewStar,
-    avt:          Avatar,
+  /* ---- Misc ---- */
+  review_star: ReviewStar,  // Icon sao dùng riêng cho review UI
+  avt: Avatar,              // Ảnh đại diện mặc định
 };
+
 
 export default icons;
