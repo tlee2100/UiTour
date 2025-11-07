@@ -1,29 +1,34 @@
 import "./ExpDetails.css";
 
-export default function ExpDetails({ title, details }) {
-  if (!details || !Array.isArray(details)) return null;
+export default function ExpDetails({ title = "Details", details }) {
+  if (!Array.isArray(details) || details.length === 0) {
+    return null; // Không có data thì bỏ luôn component này
+  }
 
   return (
     <div className="expDetails-container">
-
-      {/* Title */}
+      
+      {/* ✅ Section Title */}
       <div className="expDetails-top">
         <h2 className="expDetails-title">{title}</h2>
       </div>
 
-      {/* List of What You'll Do details */}
+      {/* ✅ List */}
       <div className="expDetails-list">
-        {details.map((item, index) => (
-          <div className="expDetails-item" key={index}>
+        {details.map((item) => (
+          <div className="expDetails-item" key={item.id || item.title}>
             
-            {/* Icon */}
-            <img
-              src={item.image}
-              alt={item.title}
-              className="expDetails-image"
-            />
+            {/* ✅ Image */}
+            {item.image && (
+              <img
+                src={item.image}
+                alt={item.title}
+                className="expDetails-image"
+                loading="lazy"
+              />
+            )}
 
-            {/* Text Section */}
+            {/* ✅ Text */}
             <div className="expDetails-textBox">
               <h3 className="expDetails-itemTitle">{item.title}</h3>
               <p className="expDetails-itemDesc">{item.description}</p>

@@ -228,8 +228,8 @@ body {
 .content-image {
   width: 320px;
   height: 212px;
-  background: url(Bed.png);
   border-radius: 8px;
+  object-fit: cover;
 }
 
 /* content-title-subtitle */
@@ -411,4 +411,18 @@ body {
   color: black;
   text-decoration: underline;
   cursor: pointer;
+}
+
+.content-no-image {
+  width: 320px;
+  height: 212px;
+  border-radius: 8px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #d1d5db;
+  text-align: center;
 }
