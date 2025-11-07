@@ -202,7 +202,7 @@ export default function HostExperienceCreateDiscount() {
       </div>
 
       <div className="he-modal-body">
-        You have successfully hosted. Please check your information in your profile!.
+        You have successfully hosted. Please check your information in your profile!
       </div>
 
       <div className="he-modal-footer">
