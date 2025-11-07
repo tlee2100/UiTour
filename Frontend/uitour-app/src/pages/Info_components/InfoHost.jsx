@@ -3,7 +3,10 @@ import SvgIcon from "../../components/SvgIcon";
 import "./InfoHost.css";
 
 export default function InfoHost({ host }) {
-  // Default values nếu host không có data
+  // ✅ Chắc chắn host luôn là object
+  const safeHost = host && typeof host === "object" ? host : {};
+
+  // ✅ Merge default trước rồi override từ host
   const defaultHost = {
     name: "Host",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
@@ -15,28 +18,29 @@ export default function InfoHost({ host }) {
     averageRating: 0,
     languages: ["English"],
     description: "Experienced host committed to providing great stays for guests.",
-    ...host
+    ...safeHost
   };
 
-  const { 
-    name, 
-    avatar, 
-    joinedDate, 
-    responseRate, 
-    responseTime, 
-    isSuperhost, 
-    totalReviews, 
+  const {
+    name,
+    avatar,
+    joinedDate,
+    responseRate,
+    responseTime,
+    isSuperhost,
+    totalReviews,
     averageRating,
     languages,
-    description 
+    description
   } = defaultHost;
 
-  // Format joined date
+  // ✅ Prevent invalid date crash
   const formatJoinedDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long' 
+    if (isNaN(date)) return "Unknown";
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
     });
   };
 
@@ -48,10 +52,13 @@ export default function InfoHost({ host }) {
         <div className="ih-user">
           <div className="ih-avatar">
             <div className="ih-avatar-base" />
-            <img 
-              src={avatar} 
-              alt={`${name} Avatar`} 
-              className="ih-avatar-img" 
+            <img
+              src={avatar}
+              alt={`${name || "Host"} Avatar`}
+              className="ih-avatar-img"
+              onError={(e) => (e.target.src = 
+                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+              )}
             />
             {isSuperhost && (
               <SvgIcon name="superhost" className="ih-badge"></SvgIcon>
@@ -69,14 +76,20 @@ export default function InfoHost({ host }) {
 
         {/* Details */}
         <div className="ih-details">
-          <div className="ih-icontext">
-            <SvgIcon name="star" className="ih-icon ih-star"></SvgIcon>
-            <div className="ih-text">{totalReviews} reviews</div>
-          </div>
+          {(averageRating || totalReviews) > 0 && (
+            <div className="ih-icontext">
+              <SvgIcon name="star" className="ih-icon ih-star"></SvgIcon>
+              <div className="ih-text">
+                ⭐ {(averageRating || 0).toFixed(1)} ({totalReviews || 0} reviews)
+              </div>
+            </div>
+          )}
+
           <div className="ih-icontext">
             <SvgIcon name="verified" className="ih-icon ih-shield"></SvgIcon>
             <div className="ih-text">Identity verified</div>
           </div>
+
           {isSuperhost && (
             <div className="ih-icontext">
               <SvgIcon name="badge" className="ih-icon ih-badge-icon"></SvgIcon>
@@ -91,15 +104,18 @@ export default function InfoHost({ host }) {
         <div className="ih-line ih-line-title">
           {isSuperhost ? `${name} is a Superhost` : `Meet ${name}`}
         </div>
-        <div className="ih-line ih-line-desc">
-          {description}
-        </div>
-        {languages && languages.length > 0 && (
+
+        {description && (
+          <div className="ih-line ih-line-desc">{description}</div>
+        )}
+
+        {Array.isArray(languages) && languages.length > 0 && (
           <div className="ih-line ih-line-languages">
             <strong>Languages: </strong>
             {languages.join(", ")}
           </div>
         )}
+
         <div className="ih-line ih-line-response">
           <strong>Response rate: </strong>
           {responseRate}% • <strong>Response time: </strong>
