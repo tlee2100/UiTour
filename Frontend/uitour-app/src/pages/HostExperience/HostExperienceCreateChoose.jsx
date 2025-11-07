@@ -26,9 +26,8 @@ export default function HostExperienceCreateChoose() {
     <div className="he-page">
       <header className="he-header">
         <div className="he-brand">
-          <img src={logo} alt="UiTour Logo" className="he-logo-img" />
+          <img src={logo} alt="UiTour Logo" className="he-logo-img" onClick={() => navigate('/')} />
         </div>
-        <button className="he-tertiary-btn">Save & exit</button>
       </header>
 
       <main className="he-main">
@@ -52,7 +51,7 @@ export default function HostExperienceCreateChoose() {
 
       <footer className="he-footer">
         <div className="he-footer-left">
-          <button className="he-link-btn">Back</button>
+          <button className="he-link-btn" onClick={() => navigate(-1)}>Back</button>
         </div>
         <div className="he-footer-right">
           <button
