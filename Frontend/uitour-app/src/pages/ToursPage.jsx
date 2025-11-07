@@ -1,14 +1,20 @@
 import { useEffect, useCallback } from "react";
 import { Icon } from "@iconify/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "./ToursPage.css";
 import { useExperience } from "../contexts/ExperienceContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
+import ExperienceSearchBar from "../components/search/ExperienceSearchBar";
 
 export default function ToursPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { experiences, loading, error, fetchExperiences } = useExperience();
+  
+  const location = searchParams.get('location') || '';
+  const dates = searchParams.get('dates') || '';
+  const guests = searchParams.get('guests') || '1';
 
   const loadExperiences = useCallback(async () => {
     try {
@@ -32,12 +38,38 @@ export default function ToursPage() {
 
   return (
     <div className="tours-page">
-      <section className="tours-hero">
+      {/* Search Bar */}
+      <section className="tours-search-section">
         <div className="container">
-          <h1 className="tours-title">Discover Amazing Tours</h1>
-          <p className="tours-subtitle">
-            Experience Vietnam like never before with our curated selection of tours
-          </p>
+          <ExperienceSearchBar 
+            initialLocation={location}
+            initialDates={dates}
+            initialGuests={guests}
+          />
+        </div>
+      </section>
+
+      {/* Filter Bar */}
+      <section className="tours-filter-section">
+        <div className="container">
+          <div className="filter-bar">
+            <button className="filter-btn">
+              <Icon icon="mdi:leaf" width="16" height="16" />
+              <span>Original</span>
+            </button>
+            <button className="filter-btn">
+              <span>Type</span>
+              <Icon icon="mdi:chevron-down" width="16" height="16" />
+            </button>
+            <button className="filter-btn">
+              <span>Time of day</span>
+              <Icon icon="mdi:chevron-down" width="16" height="16" />
+            </button>
+            <button className="filter-btn">
+              <Icon icon="mdi:tune" width="16" height="16" />
+              <span>Filters</span>
+            </button>
+          </div>
         </div>
       </section>
 
