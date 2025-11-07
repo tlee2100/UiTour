@@ -21,7 +21,7 @@ export default function HomePage() {
 
   const { properties, loading, error, fetchProperties } = useProperty();
 
-  const navigate = useNavigate();
+  
 
   const loadProperties = useCallback(async () => {
     try {
