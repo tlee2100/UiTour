@@ -16,6 +16,15 @@ const Content = ({ property }) => {
         ...property
     };
 
+    const photos = property.media?.photos ?? [];
+
+    const bedroomPhoto = photos.find(
+        img => img.alt?.toLowerCase().includes("bedroom") ||
+            img.category === "bedroom" ||
+            img.type === "bedroom"
+    );
+
+
     const { host, accommodates, bedrooms, beds, bathrooms, description, amenities } = defaultProperty;
 
     return (
@@ -24,9 +33,9 @@ const Content = ({ property }) => {
                 <div className="content-top">
                     <div className="content-header">
                         <div className="content-title">
-                            <h2>Entire rental unit hosted by {host?.name || "Host"}</h2>
+                            <h2>{property.roomType || "Home"} hosted by {host?.name || "Host"}</h2>
                             <div className="content-meta">
-                                <span>{accommodates} guests</span>
+                                <span>{property.capacity?.maxGuests || accommodates} guests</span>
                                 <span className="content-dot" />
                                 <span>{bedrooms} bedroom{bedrooms !== 1 ? 's' : ''}</span>
                                 <span className="content-dot" />
@@ -37,9 +46,9 @@ const Content = ({ property }) => {
                         </div>
 
                         <div className="content-avatar-wrapper">
-                            <img 
-                                src={host?.avatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"} 
-                                className="content-avatar" 
+                            <img
+                                src={host?.avatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"}
+                                className="content-avatar"
                                 alt={host?.name || "Host"}
                             />
                             <SvgIcon name="superhost" className="content-badge" />
@@ -49,40 +58,60 @@ const Content = ({ property }) => {
                     <div className="content-divider" />
                 </div>
 
+                {/* ✅ Dynamic Highlights with icons */}
                 <div className="content-details">
-                    <div className="content-detail-item">
-                        <SvgIcon name="house" className="content-icon house-icon" />
-                        <div className="content-text">
-                            <div className="content-item-title">Entire home</div>
-                            <div className="content-subtitle">
-                                You'll have the apartment to yourself
-                            </div>
-                        </div>
-                    </div>
+                    {Array.isArray(property.highlights) && property.highlights.length > 0 ? (
+                        property.highlights.map((item) => {
+                            // ✅ Map highlight ID → Icon name
+                            const iconMap = {
+                                entire_place: "house",
+                                enhanced_clean: "clean",
+                                self_checkin: "selfcheck",
+                                free_cancellation: "calendar",
+                            };
 
-                    <div className="content-detail-item">
-                        <SvgIcon name="clean" className="content-icon clean-icon" />
-                        <div className="content-text">
-                            <div className="content-item-title">Enhanced Clean</div>
-                            <div className="content-subtitle">This Host committed to UiTour's 5-step enhanced cleaning process.</div>
-                        </div>
-                    </div>
+                            const iconName = iconMap[item.id];
 
-                    <div className="content-detail-item">
-                        <SvgIcon name="selfcheck" className="content-icon selfcheck-icon" />
-                        <div className="content-text">
-                            <div className="content-item-title">Self check-in</div>
-                            <div className="content-subtitle">Check yourself in with the smart lock</div>
-                        </div>
-                    </div>
+                            return (
+                                <div key={item.id} className="content-detail-item">
+                                    {iconName && <SvgIcon name={iconName} className="content-icon" />}
+                                    <div className="content-text">
+                                        <div className="content-item-title">{item.label}</div>
 
-                    <div className="content-detail-item">
-                        <SvgIcon name="calendar" className="content-icon calendar-icon" />
-                        <div className="content-text">
-                            <div className="content-item-title">Free cancellation</div>
-                        </div>
-                    </div>
+                                        {/* ✅ Subtitle logic */}
+                                        {item.id === "self_checkin" && (
+                                            <div className="content-subtitle">
+                                                Check yourself in with smart lock
+                                            </div>
+                                        )}
+
+                                        {item.id === "enhanced_clean" && (
+                                            <div className="content-subtitle">
+                                                This place follows enhanced cleaning
+                                            </div>
+                                        )}
+
+                                        {item.id === "free_cancellation" && property.cancellationPolicy?.details && (
+                                            <div className="content-subtitle">
+                                                {property.cancellationPolicy.details}
+                                            </div>
+                                        )}
+
+                                        {item.id === "entire_place" && (
+                                            <div className="content-subtitle">
+                                                You'll have the {property.propertyType?.toLowerCase() || "space"} to yourself
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <p>No highlights available</p>
+                    )}
                 </div>
+
+
 
                 <div className="content-divider" />
 
@@ -101,14 +130,25 @@ const Content = ({ property }) => {
                     <div className="content-title">Where you'll sleep</div>
 
                     <div className="content-thumbnail">
-                        <div className="content-image" />
+                        {bedroomPhoto ? (
+                            <img
+                                src={bedroomPhoto.url}
+                                alt="Bedroom"
+                                className="content-image"
+                            />
+                        ) : (
+                            <div className="content-no-image">No bedroom photo provided</div>
+                        )}
 
                         <div className="content-title-subtitle">
-                            <div className="content-subtitle-title">Bedroom 1</div>
-                            <div className="content-subtitle-text">1 Queen bed</div>
+                            <div className="content-subtitle-title">Bedroom</div>
+                            <div className="content-subtitle-text">
+                                {beds} bed{beds !== 1 ? "s" : ""}
+                            </div>
                         </div>
                     </div>
                 </div>
+
 
                 <div className="content-divider" />
 
@@ -142,9 +182,9 @@ const Content = ({ property }) => {
                     </div>
                     <ButtonWhite>Show all {amenities.length} amenities</ButtonWhite>
                 </section>
-                
+
                 <div className="content-divider" />
-                
+
                 <div className="content-calendar-section">
                     <div className="content-calendar-text">
                         <div className="content-calendar-title">Select check-in day</div>

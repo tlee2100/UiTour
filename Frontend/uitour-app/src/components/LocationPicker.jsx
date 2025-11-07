@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './LocationPicker.css';
@@ -55,15 +55,39 @@ const MapClickHandler = ({ onLocationSelect }) => {
   return null;
 };
 
+// Cập nhật center khi vị trí thay đổi từ bên ngoài
+const CenterUpdater = ({ position }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (position) {
+      map.setView(position);
+    }
+  }, [position, map]);
+  return null;
+};
+
 const LocationPicker = ({ 
   initialLocation = [10.8231, 106.6297], // [lat, lng]
   zoom = 13,
   height = '400px',
   onLocationChange = null,
-  disabled = false
+  disabled = false,
+  externalLocation = null,
+  showHeader = true,
+  showManualInputs = true,
+  showInfo = true,
+  showQuickButtons = true
 }) => {
   const [selectedLocation, setSelectedLocation] = useState(initialLocation);
   const [isValidLocation, setIsValidLocation] = useState(true);
+
+  // Nếu có externalLocation, đồng bộ vào state và map
+  useEffect(() => {
+    if (externalLocation && Array.isArray(externalLocation) && externalLocation.length === 2) {
+      setSelectedLocation(externalLocation);
+      setIsValidLocation(true);
+    }
+  }, [externalLocation]);
 
   // Handle location selection
   const handleLocationSelect = (lat, lng) => {
@@ -115,12 +139,14 @@ const LocationPicker = ({
 
   return (
     <div className="location-picker-container" style={{ height }}>
-      <div className="location-picker-header">
-        <h3>📍 Chọn vị trí chỗ ở</h3>
-        <p className="location-picker-subtitle">
-          Nhấn vào bản đồ để đặt marker hoặc nhập tọa độ thủ công
-        </p>
-      </div>
+      {showHeader && (
+        <div className="location-picker-header">
+          <h3>📍 Chọn vị trí chỗ ở</h3>
+          <p className="location-picker-subtitle">
+            Nhấn vào bản đồ để đặt marker hoặc nhập tọa độ thủ công
+          </p>
+        </div>
+      )}
 
       <div className="location-picker-map">
         <MapContainer
@@ -136,6 +162,7 @@ const LocationPicker = ({
           keyboard={false}
           attributionControl={true}
         >
+          <CenterUpdater position={selectedLocation} />
           {/* OpenStreetMap Tile Layer */}
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -154,89 +181,95 @@ const LocationPicker = ({
       </div>
 
       {/* Manual Input Section */}
-      <div className="location-picker-inputs">
-        <div className="input-group">
-          <label htmlFor="latitude">Vĩ độ (Latitude):</label>
-          <input
-            id="latitude"
-            type="number"
-            step="any"
-            value={selectedLocation[0].toFixed(6)}
-            onChange={(e) => handleManualInput('lat', e.target.value)}
-            disabled={disabled}
-            placeholder="10.8231"
-            min="-90"
-            max="90"
-          />
+      {showManualInputs && (
+        <div className="location-picker-inputs">
+          <div className="input-group">
+            <label htmlFor="latitude">Vĩ độ (Latitude):</label>
+            <input
+              id="latitude"
+              type="number"
+              step="any"
+              value={selectedLocation[0].toFixed(6)}
+              onChange={(e) => handleManualInput('lat', e.target.value)}
+              disabled={disabled}
+              placeholder="10.8231"
+              min="-90"
+              max="90"
+            />
+          </div>
+          
+          <div className="input-group">
+            <label htmlFor="longitude">Kinh độ (Longitude):</label>
+            <input
+              id="longitude"
+              type="number"
+              step="any"
+              value={selectedLocation[1].toFixed(6)}
+              onChange={(e) => handleManualInput('lng', e.target.value)}
+              disabled={disabled}
+              placeholder="106.6297"
+              min="-180"
+              max="180"
+            />
+          </div>
         </div>
-        
-        <div className="input-group">
-          <label htmlFor="longitude">Kinh độ (Longitude):</label>
-          <input
-            id="longitude"
-            type="number"
-            step="any"
-            value={selectedLocation[1].toFixed(6)}
-            onChange={(e) => handleManualInput('lng', e.target.value)}
-            disabled={disabled}
-            placeholder="106.6297"
-            min="-180"
-            max="180"
-          />
-        </div>
-      </div>
+      )}
 
       {/* Location Info */}
-      <div className="location-picker-info">
-        <div className="location-info-item">
-          <span className="info-label">📍 Vị trí đã chọn:</span>
-          <span className="info-value">
-            {selectedLocation[0].toFixed(6)}, {selectedLocation[1].toFixed(6)}
-          </span>
+      {showInfo && (
+        <div className="location-picker-info">
+          <div className="location-info-item">
+            <span className="info-label">📍 Vị trí đã chọn:</span>
+            <span className="info-value">
+              {selectedLocation[0].toFixed(6)}, {selectedLocation[1].toFixed(6)}
+            </span>
+          </div>
+          
+          <div className="location-info-item">
+            <span className="info-label">✅ Trạng thái:</span>
+            <span className={`info-value ${isValidLocation ? 'valid' : 'invalid'}`}>
+              {isValidLocation ? 'Hợp lệ' : 'Không hợp lệ'}
+            </span>
+          </div>
         </div>
-        
-        <div className="location-info-item">
-          <span className="info-label">✅ Trạng thái:</span>
-          <span className={`info-value ${isValidLocation ? 'valid' : 'invalid'}`}>
-            {isValidLocation ? 'Hợp lệ' : 'Không hợp lệ'}
-          </span>
-        </div>
-      </div>
+      )}
 
       {/* Quick Location Buttons */}
-      <div className="location-picker-quick">
-        <h4>Vị trí nhanh:</h4>
-        <div className="quick-buttons">
-          <button 
-            className="quick-btn"
-            onClick={() => handleLocationSelect(10.8231, 106.6297)}
-            disabled={disabled}
-          >
-            🏙️ TP.HCM
-          </button>
-          <button 
-            className="quick-btn"
-            onClick={() => handleLocationSelect(21.0285, 105.8542)}
-            disabled={disabled}
-          >
-            🏛️ Hà Nội
-          </button>
-          <button 
-            className="quick-btn"
-            onClick={() => handleLocationSelect(11.9404, 108.4583)}
-            disabled={disabled}
-          >
-            🌸 Đà Lạt
-          </button>
-          <button 
-            className="quick-btn"
-            onClick={() => handleLocationSelect(16.0544, 108.2022)}
-            disabled={disabled}
-          >
-            🏖️ Đà Nẵng
-          </button>
+      {showQuickButtons && (
+        <div className="location-picker-quick">
+          <h4>Vị trí nhanh:</h4>
+          <div className="quick-buttons">
+            <button 
+              className="quick-btn"
+              onClick={() => handleLocationSelect(10.8231, 106.6297)}
+              disabled={disabled}
+            >
+              🏙️ TP.HCM
+            </button>
+            <button 
+              className="quick-btn"
+              onClick={() => handleLocationSelect(21.0285, 105.8542)}
+              disabled={disabled}
+            >
+              🏛️ Hà Nội
+            </button>
+            <button 
+              className="quick-btn"
+              onClick={() => handleLocationSelect(11.9404, 108.4583)}
+              disabled={disabled}
+            >
+              🌸 Đà Lạt
+            </button>
+            <button 
+              className="quick-btn"
+              onClick={() => handleLocationSelect(16.0544, 108.2022)}
+              disabled={disabled}
+            >
+              🏖️ Đà Nẵng
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
