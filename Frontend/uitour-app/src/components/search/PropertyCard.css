@@ -1,0 +1,129 @@
+.property-card-result {
+  display: flex;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.property-card-result:hover {
+  border-color: var(--black);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.property-image-result {
+  position: relative;
+  width: 300px;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.property-image-result img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.favorite-button-result {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.favorite-button-result:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.property-info-result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.property-type-location {
+  font-size: 14px;
+  color: var(--subtitle-color);
+}
+
+.property-location-text {
+  font-weight: 500;
+  color: var(--black);
+}
+
+.property-title-result {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--black);
+  margin: 0;
+}
+
+.property-details-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--subtitle-color);
+  flex-wrap: wrap;
+}
+
+.property-rating-result {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--black);
+}
+
+.rating-value {
+  font-weight: 600;
+}
+
+.rating-count {
+  color: var(--subtitle-color);
+}
+
+.property-price-result {
+  margin-top: auto;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.price-value {
+  font-size: 18px;
+}
+
+.price-unit-result {
+  font-weight: 400;
+  color: var(--subtitle-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .property-card-result {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .property-image-result {
+    width: 100%;
+    height: 250px;
+  }
+}
+
