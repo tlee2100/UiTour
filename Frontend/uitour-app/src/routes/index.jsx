@@ -16,6 +16,7 @@ import HostExperienceCreatePhotos from "../pages/HostExperience/HostExperienceCr
 import HostExperienceDescribeTitle from "../pages/HostExperience/HostExperienceDescribeTitle";
 import HostExperienceCreateItinerary from "../pages/HostExperience/HostExperienceCreateItinerary";
 import HostExperienceCreateMaxGuests from "../pages/HostExperience/HostExperienceCreateMaxGuests";
+import HostExperienceCreateDiscount from "../pages/HostExperience/HostExperienceCreateDiscount";
 
 const AppRoutes = () => {
   return (
@@ -48,6 +49,7 @@ const AppRoutes = () => {
       <Route path="/host/experience/create/describe-title" element={<HostExperienceDescribeTitle />} />
       <Route path="/host/experience/create/itinerary" element={<HostExperienceCreateItinerary />} />
       <Route path="/host/experience/create/max-guests" element={<HostExperienceCreateMaxGuests />} />
+      <Route path="/host/experience/create/discount" element={<HostExperienceCreateDiscount />} />
 
     </Routes>
   );
