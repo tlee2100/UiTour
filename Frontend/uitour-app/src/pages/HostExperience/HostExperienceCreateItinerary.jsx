@@ -63,7 +63,7 @@ export default function HostExperienceCreateItinerary() {
     <div className="he-page">
       <header className="he-header">
         <div className="he-brand">
-          <img src={logo} alt="UiTour Logo" className="he-logo-img" />
+          <img src={logo} alt="UiTour Logo" className="he-logo-img" onClick={() => navigate('/')} />
         </div>
         <button className="he-tertiary-btn">Save & exit</button>
       </header>

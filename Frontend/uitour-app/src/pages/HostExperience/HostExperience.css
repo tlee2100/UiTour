@@ -17,7 +17,7 @@
   border-bottom: 1px solid #eee;
 }
 
-.he-logo-img { height: 28px; }
+.he-logo-img { height: 28px; cursor: pointer; }
 
 .he-tertiary-btn {
   height: 36px;
@@ -201,6 +201,10 @@
   position: fixed;
   inset: 0;
   z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
 }
 
 .he-modal-backdrop {
@@ -212,7 +216,7 @@
 .he-modal-card {
   position: relative;
   max-width: 640px;
-  margin: 10vh auto 0;
+  margin: 0 auto;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.15);
@@ -378,6 +382,8 @@
   font-size: 13px;
   color: #444;
   background: transparent;
+  height: 160px; /* lock height larger */
+  resize: none; /* prevent manual resize */
 }
 
 .he-describe-label {
@@ -450,5 +456,44 @@
 .he-time-ampm { font-size: 14px; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 10px; margin-left: 10px; }
 .he-time-sep { font-weight: 700; opacity: 0.5; }
 .he-time-actions { display: flex; justify-content: space-between; gap: 10px; padding-top: 10px; }
+
+/* Pricing/Capacity section */
+.he-price-card { width: 560px; max-width: 92%; margin: 20px auto 0; background: #fff; border: 1px solid #efefef; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.06); padding: 18px; }
+.he-price-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.he-field { display: flex; flex-direction: column; gap: 6px; }
+.he-field label { font-size: 12px; color: #666; }
+.he-input { height: 36px; border: 1px solid #e5e5e5; border-radius: 10px; padding: 0 10px; font-size: 14px; }
+
+@media (max-width: 720px) {
+  .he-price-grid { grid-template-columns: 1fr; }
+}
+
+/* Discounts */
+.he-discounts { text-align: center; }
+.he-discount-list { max-width: 640px; margin: 40px auto 0; display: flex; flex-direction: column; gap: 12px; }
+.he-discount-card {
+  display: grid;
+  grid-template-columns: 80px 1fr 40px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid #dedede;
+  border-radius: 16px;
+  background: #fff;
+  text-align: left;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+.he-discount-card.is-active { border-color: #111; box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+.he-discount-value { font-weight: 700; font-size: 18px; text-align: center; }
+.he-discount-title { font-weight: 600; font-size: 16px; }
+.he-discount-subtitle { font-size: 12px; color: #666; margin-top: 4px; }
+.he-discount-action { justify-self: end; }
+.he-discount-card button { border: none; background: transparent; cursor: pointer; }
+.he-discount-card.is-empty { border: 1px dashed #d5d5d5; color: #666; }
+.he-add-circle { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #d6d6d6; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; }
+.he-discount-modal { width: 480px; }
+.he-textarea { width: 100%; border: 1px solid #e5e5e5; border-radius: 10px; padding: 10px 12px; font-size: 14px; resize: vertical; }
+.he-error-text { color: #e11d48; font-size: 12px; margin-top: 8px; }
+.he-success-modal { width: 500px; }
 
 
