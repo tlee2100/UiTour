@@ -13,8 +13,8 @@ export default function HostExperienceCreateMaxGuests() {
   const [ampm, setAmpm] = useState(now.getHours() >= 12 ? 'PM' : 'AM');
 
   // Pricing / capacity state
-  const [maxGuests, setMaxGuests] = useState(4);
-  const [pricePerGuest, setPricePerGuest] = useState(25);
+  const [maxGuests, setMaxGuests] = useState(20);
+  const [pricePerGuest, setPricePerGuest] = useState(0);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [timeLocked, setTimeLocked] = useState(false);
 
