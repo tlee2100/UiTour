@@ -3,40 +3,34 @@ import "./HIBookingBox.css";
 
 function HIBookingBox({ property }) {
   // Nếu chưa có dữ liệu, tạo dữ liệu mặc định
-  if (!property) {
-    property = {
-      pricePerNight: 0,
-      nights: 1,
-      rating: 0,
-      reviewsCount: 0,
-      discount: 0,
-      cleaningFee: 0,
-      serviceFee: 0,
-      taxFee: 0,
-      checkIn: "Chọn ngày",
-      checkOut: "Chọn ngày",
-      guests: 2,
-    };
-  }
+  if (!property) return null;
 
-  // Giải nén dữ liệu từ property
-  const {
-    pricePerNight = 0,
-    nights = 1,
-    rating = 0,
-    reviewsCount = 0,
-    discount = 0,
-    cleaningFee = 0,
-    serviceFee = 0,
-    taxFee = 0,
-    checkIn = "Chọn ngày",
-    checkOut = "Chọn ngày",
-    guests = 2,
-  } = property;
+  // ✅ Mapping dữ liệu từ Experience format → Booking UI
+  const basePrice = property.pricing?.basePrice ?? property.price ?? 0;
+  const currency = property.pricing?.currency ?? "VND";
+  const pricePerNight = basePrice;
 
-  // Tính toán giá trị
-  const totalPrice = pricePerNight * nights;
-  const discountedTotal = totalPrice - discount + cleaningFee + serviceFee + taxFee;
+
+  const nights = property.nights ?? 1;
+  const rating = property.rating ?? 0;
+  const reviewsCount = property.reviewsCount ?? 0;
+  const guests = property.booking?.maxGuests ?? 2;
+
+  // ✅ fallback phí (nếu backend thật sẽ điều chỉnh sau)
+  const cleaningFee = property.cleaningFee ?? 0;
+  const serviceFee = property.serviceFee ?? 0;
+  const taxFee = property.taxFee ?? 0;
+  const discount = property.discount ?? 0;
+
+  // ✅ Tính tổng
+  const totalPrice = basePrice * nights;
+  const discountedTotal =
+    totalPrice - discount + cleaningFee + serviceFee + taxFee;
+
+  // ✅ Check-in/out fallback
+  const checkIn = property.checkIn || "Chọn ngày";
+  const checkOut = property.checkOut || "Chọn ngày";
+
 
   // Xử lý click "Book now"
   const handleBook = () => {

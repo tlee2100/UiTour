@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './PropertyMap.css';
+import SvgIcon from './SvgIcon';
 
 /* ---------------- FIX ICON MẶC ĐỊNH ---------------- */
 delete L.Icon.Default.prototype._getIconUrl;
@@ -20,158 +21,136 @@ const createCustomIcon = (color = '#FF5A5F') =>
   L.divIcon({
     className: 'custom-marker',
     html: `
-      <div style="
-        background-color: ${color};
-        width: 30px;
-        height: 30px;
-        border-radius: 50% 50% 50% 0;
-        transform: rotate(-45deg);
-        border: 3px solid white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      ">
-        <div style="
-          transform: rotate(45deg);
-          color: white;
-          font-weight: bold;
-          font-size: 14px;
-        ">🏠</div>
-      </div>
-    `,
+  <div style="
+    background-color: ${color};
+    width: 30px;
+    height: 30px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    border: 3px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  ">
+    <div style="
+      transform: rotate(45deg); /* ✅ Xoay ngược lại để icon không bị nghiêng */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+    ">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+        <path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1H4a 1 1 0 0 1-1-1v-10.5z"/>
+      </svg>
+    </div>
+  </div>
+`,
     iconSize: [30, 30],
     iconAnchor: [15, 30],
     popupAnchor: [0, -30],
   });
 
-/* ---------------- AUTO CENTER (chỉ khi property đổi) ---------------- */
+/* ---------------- MOVE MAP WHEN ID CHANGES ---------------- */
 const MapCenter = ({ lat, lng, zoom }) => {
   const map = useMap();
-  const prevCoords = useRef([null, null]);
+  const prev = useRef([null, null]);
 
   useEffect(() => {
     if (!lat || !lng) return;
-    const [prevLat, prevLng] = prevCoords.current;
-
-    // Chỉ flyTo nếu toạ độ thực sự thay đổi
+    const [prevLat, prevLng] = prev.current;
     if (lat !== prevLat || lng !== prevLng) {
-      map.flyTo([lat, lng], zoom, { animate: true, duration: 0.8 });
-      prevCoords.current = [lat, lng];
+      map.flyTo([lat, lng], zoom, { duration: 0.8 });
+      prev.current = [lat, lng];
     }
   }, [lat, lng, zoom, map]);
 
   return null;
 };
 
-/* ---------------- FIX MAP SIZE ---------------- */
-const MapFixSize = () => {
-  const map = useMap();
-  useEffect(() => {
-    const timeout = setTimeout(() => map.invalidateSize(), 300);
-    return () => clearTimeout(timeout);
-  }, [map]);
-  return null;
-};
-
-/* ---------------- MAIN COMPONENT ---------------- */
+/* ---------------- MAIN ---------------- */
 const PropertyMap = ({
-  property = null,
-  center = [10.8231, 106.6297],
+  property = null, // giữ nguyên
   zoom = 15,
   height = '500px',
   width = '100%',
   showPopup = true,
 }) => {
-  // Tạo center ban đầu
-  const [mapCenter, setMapCenter] = useState(center);
+  // ✅ CHỈ FIX TRUY XUẤT DATA — giữ logic cũ
+  // ✅ Ưu tiên locationObj mới — fallback vị trí cũ nếu có
+  const lat =
+    property?.locationObj?.lat ??
+    property?.location?.lat ??
+    property?.latitude ??
+    null;
 
-  useEffect(() => {
-    if (property?.latitude && property?.longitude) {
-      const newCenter = [property.latitude, property.longitude];
-      setMapCenter(prev => {
-        if (prev[0] === newCenter[0] && prev[1] === newCenter[1]) return prev; // 👈 không đổi
-        return newCenter;
-      });
-    } else {
-      setMapCenter(prev => {
-        if (prev[0] === center[0] && prev[1] === center[1]) return prev; // 👈 không đổi
-        return center;
-      });
-    }
-  }, [property?.latitude, property?.longitude, center[0], center[1]]);
+  const lng =
+    property?.locationObj?.lng ??
+    property?.location?.lng ??
+    property?.longitude ??
+    null;
+
+  const mapCenter = lat && lng ? [lat, lng] : [10.8231, 106.6297];
+  const markerPos = lat && lng ? [lat, lng] : null;
+
+  const displayName = property?.title || property?.listingTitle || "Experience";
+
+  const displayAddress =
+    property?.locationObj
+      ? `${property.locationObj.address || ""}, ${property.locationObj.city || ""}`
+      : (typeof property?.location === "string"
+        ? property.location
+        : "Location unavailable");
 
 
-  const markerPosition =
-    property?.latitude && property?.longitude
-      ? [property.latitude, property.longitude]
-      : null;
+  const displayPrice =
+    property?.pricing?.basePrice
+      ? new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: property?.pricing?.currency || "VND",
+      }).format(property.pricing.basePrice)
+      : property?.price
+        ? `${property.price}`
+        : null;
 
-  const handleDirections = () => {
-    if (!markerPosition) return;
-    const url = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${markerPosition[0]},${markerPosition[1]}`;
-    window.open(url, '_blank');
-  };
-
-  const handleOpenMap = () => {
-    if (!markerPosition) return;
-    const url = `https://www.openstreetmap.org/?mlat=${markerPosition[0]}&mlon=${markerPosition[1]}&zoom=16`;
-    window.open(url, '_blank');
+  const openMapExternal = () => {
+    if (!markerPos) return;
+    window.open(
+      `https://www.google.com/maps/search/?api=1&query=${markerPos[0]},${markerPos[1]}`,
+      "_blank"
+    );
   };
 
   return (
-    <div
-      className="property-map-container"
-      style={{ width, margin: '32px auto' }}
-    >
+    <div className="property-map-container" style={{ width }}>
       <div className="map-header">
-        <h3>Vị trí</h3>
-        <p className="map-subtitle">
-          {property?.location || 'Vị trí của chỗ ở'}
-        </p>
+        <h3>Location</h3>
+        <p className="map-subtitle">{displayAddress}</p>
       </div>
 
       <div className="map-wrapper" style={{ height }}>
         <MapContainer
           center={mapCenter}
           zoom={zoom}
-          style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: '12px',
-            zIndex: 1,
-          }}
           scrollWheelZoom
-          zoomControl
-          dragging
-          doubleClickZoom
-          touchZoom
+          style={{ width: "100%", height: "100%", borderRadius: "12px" }}
         >
-          <MapFixSize />
-          <MapCenter
-            lat={mapCenter[0]}
-            lng={mapCenter[1]}
-            zoom={zoom}
-          />
+          <MapCenter lat={mapCenter[0]} lng={mapCenter[1]} zoom={zoom} />
 
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution="© OpenStreetMap"
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          {markerPosition && (
-            <Marker position={markerPosition} icon={createCustomIcon()}>
+          {markerPos && (
+            <Marker position={markerPos} icon={createCustomIcon()}>
               {showPopup && (
                 <Popup>
-                  <div className="popup-content">
-                    <h4>{property?.listingTitle || 'Chỗ ở'}</h4>
-                    <p className="popup-address">
-                      {property?.location || 'Không rõ vị trí'}
-                    </p>
-                    {property?.price && (
-                      <p className="popup-price">₫{property.price}/đêm</p>
-                    )}
-                  </div>
+                  <strong>{displayName}</strong>
+                  <br />
+                  {displayAddress}
+                  {displayPrice && <p>From {displayPrice}/person</p>}
                 </Popup>
               )}
             </Marker>
@@ -179,22 +158,27 @@ const PropertyMap = ({
         </MapContainer>
       </div>
 
-      {/* Actions */}
       <div className="map-actions">
         <button
           className="map-action-btn"
-          onClick={handleDirections}
-          disabled={!markerPosition}
+          disabled={!markerPos}
+          onClick={openMapExternal}
         >
-          <span>🚗</span> Chỉ đường
+          📍 Open full map
         </button>
         <button
           className="map-action-btn"
-          onClick={handleOpenMap}
-          disabled={!markerPosition}
+          disabled={!markerPos}
+          onClick={() =>
+            window.open(
+              `https://www.google.com/maps/dir/?api=1&destination=${markerPos[0]},${markerPos[1]}`,
+              "_blank"
+            )
+          }
         >
-          <span>📍</span> Mở bản đồ
+          🚗 Directions
         </button>
+
       </div>
     </div>
   );

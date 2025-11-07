@@ -1,20 +1,17 @@
 import React from "react";
 import "./ExpInfoBookingBox.css";
 
-function ExpInfoBookingBox({ priceData }) {
-  if (!priceData) {
-    priceData = {
-      price: 730000,
-      timeSlots: [
-        { time: "1:00 - 5:00PM", spots: 10 },
-        { time: "5:00 - 9:00PM", spots: 10 },
-        { time: "5:30 - 9:30PM", spots: 10 },
-        { time: "6:00 - 10:00PM", spots: 10 },
-        { time: "1:00 - 5:00PM", spots: 10 },
-      ],
-      currency: "₫"
-    };
-  }
+function ExpInfoBookingBox({ booking, price: propPrice, currency: propCurrency }) {
+  // ✅ Chuẩn hóa booking object
+  const safeBooking = booking && typeof booking === "object" ? booking : {};
+
+  // ✅ Lấy giá từ props hoặc fallback từ pricing root của experience
+  const basePrice = Number(propPrice || 0);
+  const curr = propCurrency || "VND";
+
+  const timeSlots = Array.isArray(safeBooking.timeSlots)
+    ? safeBooking.timeSlots
+    : [];
 
   const handleBookNow = () => {
     alert("✅ Booking success! (demo action)");
@@ -23,10 +20,16 @@ function ExpInfoBookingBox({ priceData }) {
   return (
     <div className="expib-box">
       
-      {/* ✅ Header */}
+      {/* ✅ Pricing */}
       <div className="expib-header">
         <div className="expib-price">
-          <span className="expib-price-text">From {priceData.currency}{priceData.price.toLocaleString()}</span>
+          <span className="expib-price-text">
+            From{" "}
+            {new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: curr
+            }).format(basePrice)}
+          </span>
           <span className="expib-per">/ person</span>
         </div>
 
@@ -35,20 +38,30 @@ function ExpInfoBookingBox({ priceData }) {
         </button>
       </div>
 
-      {/* ✅ Timeslot Select */}
+      {/* ✅ Time Slots */}
       <div className="expib-slots">
-        {priceData.timeSlots.map((slot, i) => (
-          <div className="expib-slot-item" key={i}>
-            <div className="expib-slot-label">Today, September 23</div>
-            <div className="expib-slot-info">
-              {slot.time} — {slot.spots} spots available
+        {timeSlots.length > 0 ? (
+          timeSlots.map((slot) => (
+            <div className="expib-slot-item" key={slot.id}>
+              <div className="expib-slot-label">
+                {slot.date
+                  ? new Date(slot.date).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "Flexible"}
+              </div>
+              <div className="expib-slot-info">
+                {slot.time} — {slot.spotsAvailable} spots left
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="expib-no-slots">No time slots available</p>
+        )}
       </div>
 
-      {/* ✅ Divider */}
-      <div className="expib-divider"></div>
+      <div className="expib-divider" />
     </div>
   );
 }
