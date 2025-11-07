@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-<<<<<<< HEAD
-=======
 import { useNavigate } from 'react-router-dom';
->>>>>>> d0a681d0f02e21d9ba954a6e85661d83148d1284
 import './HomePage.css';
 import { useProperty } from '../contexts/PropertyContext';
 import { Icon } from '@iconify/react';
@@ -24,7 +21,7 @@ export default function HomePage() {
 
   const { properties, loading, error, fetchProperties } = useProperty();
 
-  const navigate = useNavigate();
+  
 
   const loadProperties = useCallback(async () => {
     try {

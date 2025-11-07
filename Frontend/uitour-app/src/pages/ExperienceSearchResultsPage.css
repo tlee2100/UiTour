@@ -1,0 +1,134 @@
+.experience-search-results-page {
+  min-height: 100vh;
+  background: white;
+}
+
+/* Search Header */
+.esr-search-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.esr-search-header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Filter Bar */
+.esr-filter-bar {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 0;
+}
+
+.esr-filter-bar .filter-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.esr-filter-bar .filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--black);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.esr-filter-bar .filter-btn:hover {
+  border-color: var(--black);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Main Content */
+.esr-content {
+  padding: 24px 0;
+}
+
+/* Category Section */
+.esr-category-section {
+  margin-bottom: 48px;
+}
+
+.esr-category-header {
+  margin-bottom: 20px;
+}
+
+.esr-category-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--black);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.esr-category-title:hover {
+  color: var(--uitour-color);
+}
+
+/* Experiences Scroll */
+.esr-experiences-scroll {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 8px 0;
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
+.esr-experiences-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.esr-experiences-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.esr-experiences-scroll::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+.esr-experiences-scroll::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}
+
+/* Container */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .esr-search-header-content,
+  .esr-filter-bar .container,
+  .esr-content .container {
+    padding: 0 16px;
+  }
+
+  .esr-category-title {
+    font-size: 18px;
+  }
+
+  .esr-experiences-scroll {
+    gap: 16px;
+  }
+}
+
