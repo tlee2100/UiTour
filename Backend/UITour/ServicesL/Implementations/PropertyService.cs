@@ -20,7 +20,10 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<IEnumerable<Property>> GetAllAsync()
         {
-            return await _unitOfWork.Properties.Query().Include(p => p.Photos).ToListAsync();
+            return await _unitOfWork.Properties.Query()
+                .Include(p => p.Photos)
+                .Include(p => p.Reviews)
+                .ToListAsync();
         }
 
         public async Task<Property> GetByIdAsync(int id)
@@ -28,6 +31,11 @@ namespace UITour.ServicesL.Implementations
             var property = await _unitOfWork.Properties.Query()
                 .Include(p => p.Photos)
                 .Include(p => p.Calendars)
+                .Include(p => p.RoomType)
+                .Include(p => p.BedType)
+                .Include(p => p.City)
+                .Include(p => p.Country)
+                .Include(p => p.Neighbourhood)
                 .Include(p => p.PropertyAmenities).ThenInclude(pa => pa.Amenity)
                 .Include(p => p.Bookings)
                 .Include(p => p.CancellationPolicy)
