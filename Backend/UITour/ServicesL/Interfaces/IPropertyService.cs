@@ -15,4 +15,5 @@ public interface IPropertyService
   Task<IEnumerable<Amenity>> GetAmenitiesByPropertyIdAsync(int propertyId);
   Task<RoomType> GetRoomTypeByPropertyIdAsync(int propertyId);
   Task<BedType> GetBedTypeByPropertyIdAsync(int propertyId);
+  Task<PropertyPhoto> GetPropertyPhotoByPropertyIdAsync(int propertyId);
 }

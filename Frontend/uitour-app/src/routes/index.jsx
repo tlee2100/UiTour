@@ -10,6 +10,7 @@ import ExperienceInfoPage from "../pages/ExperienceInfoPage";
 import MapDemoPage from "../pages/MapDemoPage";
 import LoginPage from "../pages/LoginPage";
 import SignUpPage from "../pages/SignUpPage";
+
 import HostExperienceCreateChoose from "../pages/HostExperience/HostExperienceCreateChoose";
 import HostExperienceCreateYears from "../pages/HostExperience/HostExperienceCreateYears";
 import HostExperienceCreateQualification from "../pages/HostExperience/HostExperienceCreateQualification";
@@ -19,6 +20,23 @@ import HostExperienceDescribeTitle from "../pages/HostExperience/HostExperienceD
 import HostExperienceCreateItinerary from "../pages/HostExperience/HostExperienceCreateItinerary";
 import HostExperienceCreateMaxGuests from "../pages/HostExperience/HostExperienceCreateMaxGuests";
 import HostExperienceCreateDiscount from "../pages/HostExperience/HostExperienceCreateDiscount";
+
+import HostStayCreateChoose from "../pages/HostStay/HostStayCreateChoose";
+import HostStayCreateTypeOfPlace from "../pages/HostStay/HostStayCreateTypeOfPlace";
+import HostStayCreateLocate from "../pages/HostStay/HostStayCreateLocate";
+import HostStayCreateDetails from "../pages/HostStay/HostStayCreateDetails";
+import HostStayCreateAmenities from "../pages/HostStay/HostStayCreateAmenities";
+import HostStayCreatePhotos from "../pages/HostStay/HostStayCreatePhotos";
+import HostStayCreateTitle from "../pages/HostStay/HostStayCreateTitle";
+import HostStayCreateDescription from "../pages/HostStay/HostStayCreateDescription";
+import HostStayCreateWeekdayPrice from "../pages/HostStay/HostStayCreateWeekdayPrice";
+import HostStayCreateWeekendPrice from "../pages/HostStay/HostStayCreateWeekendPrice";
+import HostStayCreateDiscount from "../pages/HostStay/HostStayCreateDiscount";
+
+import BecomeHost from "../pages/BecomeHost";
+
+import HostToday from "../pages/HostPage/HostToday";
+import HostListings from "../pages/HostPage/HostListings";
 
 const AppRoutes = () => {
   return (
@@ -43,6 +61,24 @@ const AppRoutes = () => {
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} /> 
+
+      <Route path="/host/becomehost" element={<BecomeHost />} />
+
+      <Route path="/host/today" element={<HostToday />} />
+      <Route path="/host/listings" element={<HostListings />} />
+
+      {/* Host Stay Creation (no shared site layout) */}
+      <Route path="/host/stay/create/choose" element={<HostStayCreateChoose />} />
+      <Route path="/host/stay/create/typeofplace" element={<HostStayCreateTypeOfPlace />} />
+      <Route path="/host/stay/create/location" element={<HostStayCreateLocate />} />
+      <Route path="/host/stay/create/details" element={<HostStayCreateDetails />} />
+      <Route path="/host/stay/create/amenities" element={<HostStayCreateAmenities />} />
+      <Route path="/host/stay/create/photos" element={<HostStayCreatePhotos />} />
+      <Route path="/host/stay/create/title" element={<HostStayCreateTitle />} />
+      <Route path="/host/stay/create/description" element={<HostStayCreateDescription />} />
+      <Route path="/host/stay/create/weekday-price" element={<HostStayCreateWeekdayPrice />} />
+      <Route path="/host/stay/create/weekend-price" element={<HostStayCreateWeekendPrice />} />
+      <Route path="/host/stay/create/discount" element={<HostStayCreateDiscount />} />
 
       {/* Host Experience Creation (no shared site layout) */}
       <Route path="/host/experience/create/choose" element={<HostExperienceCreateChoose />} />
