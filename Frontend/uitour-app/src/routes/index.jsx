@@ -20,6 +20,20 @@ import HostExperienceCreateItinerary from "../pages/HostExperience/HostExperienc
 import HostExperienceCreateMaxGuests from "../pages/HostExperience/HostExperienceCreateMaxGuests";
 import HostExperienceCreateDiscount from "../pages/HostExperience/HostExperienceCreateDiscount";
 
+import HostStayCreateChoose from "../pages/HostStay/HostStayCreateChoose";
+import HostStayCreateTypeOfPlace from "../pages/HostStay/HostStayCreateTypeOfPlace";
+import HostStayCreateLocate from "../pages/HostStay/HostStayCreateLocate";
+import HostStayCreateDetails from "../pages/HostStay/HostStayCreateDetails";
+import HostStayCreateAmenities from "../pages/HostStay/HostStayCreateAmenities";
+import HostStayCreatePhotos from "../pages/HostStay/HostStayCreatePhotos";
+import HostStayCreateTitle from "../pages/HostStay/HostStayCreateTitle";
+import HostStayCreateDescription from "../pages/HostStay/HostStayCreateDescription";
+import HostStayCreateWeekdayPrice from "../pages/HostStay/HostStayCreateWeekdayPrice";
+import HostStayCreateWeekendPrice from "../pages/HostStay/HostStayCreateWeekendPrice";
+import HostStayCreateDiscount from "../pages/HostStay/HostStayCreateDiscount";
+
+import BecomeHost from "../pages/BecomeHost";
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -43,6 +57,21 @@ const AppRoutes = () => {
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} /> 
+
+      <Route path="/host/becomehost" element={<BecomeHost />} />
+
+      {/* Host Stay Creation (no shared site layout) */}
+      <Route path="/host/stay/create/choose" element={<HostStayCreateChoose />} />
+      <Route path="/host/stay/create/typeofplace" element={<HostStayCreateTypeOfPlace />} />
+      <Route path="/host/stay/create/location" element={<HostStayCreateLocate />} />
+      <Route path="/host/stay/create/details" element={<HostStayCreateDetails />} />
+      <Route path="/host/stay/create/amenities" element={<HostStayCreateAmenities />} />
+      <Route path="/host/stay/create/photos" element={<HostStayCreatePhotos />} />
+      <Route path="/host/stay/create/title" element={<HostStayCreateTitle />} />
+      <Route path="/host/stay/create/description" element={<HostStayCreateDescription />} />
+      <Route path="/host/stay/create/weekday-price" element={<HostStayCreateWeekdayPrice />} />
+      <Route path="/host/stay/create/weekend-price" element={<HostStayCreateWeekendPrice />} />
+      <Route path="/host/stay/create/discount" element={<HostStayCreateDiscount />} />
 
       {/* Host Experience Creation (no shared site layout) */}
       <Route path="/host/experience/create/choose" element={<HostExperienceCreateChoose />} />
