@@ -176,5 +176,7 @@ namespace UITour.Controllers
 
             return Ok("Photo deleted successfully.");
         }
+
+
     }
 }
