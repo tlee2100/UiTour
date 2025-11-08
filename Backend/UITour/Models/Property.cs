@@ -36,6 +36,21 @@ namespace UITour.Models
         public DateTime CreatedAt { get; set; }
         public bool Active { get; set; }
         [ForeignKey("CancellationPolicy")] public int? CancellationID { get; set; }
+        
+        [StringLength(100)]
+        public string PropertyType { get; set; }
+        public bool selfCheckIn { get; set; } = true;
+        public bool enhancedClean { get; set; } = true;
+        public bool freeCancellation { get; set; } = true;
+        [StringLength(100)]
+        public string checkin_after { get; set; }
+        [StringLength(100)]
+        public string self_checkin_method { get; set; }
+        public bool no_smoking { get; set; } = true;
+        public bool no_open_flames { get; set; } = true;
+        public bool pets_allowed { get; set; } = true;
+        public string lat { get; set; }
+        public string lng { get; set; }
         public CancellationPolicy CancellationPolicy { get; set; }
         public ICollection<PropertyAmenity> PropertyAmenities { get; set; }
         public ICollection<Calendar> Calendars { get; set; }
