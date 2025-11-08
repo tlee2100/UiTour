@@ -25,7 +25,14 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<Property> GetByIdAsync(int id)
         {
-            var property = await _unitOfWork.Properties.Query().Include(p => p.Photos).FirstOrDefaultAsync(p => p.PropertyID == id);
+            var property = await _unitOfWork.Properties.Query()
+                .Include(p => p.Photos)
+                .Include(p => p.Calendars)
+                .Include(p => p.PropertyAmenities).ThenInclude(pa => pa.Amenity)
+                .Include(p => p.Bookings)
+                .Include(p => p.CancellationPolicy)
+                .Include(p => p.Reviews)
+                .FirstOrDefaultAsync(p => p.PropertyID == id);
             if (property == null)
                 throw new InvalidOperationException("Property not found");
 
