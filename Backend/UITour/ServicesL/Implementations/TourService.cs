@@ -42,6 +42,7 @@ namespace UITour.ServicesL.Implementations
             await _unitOfWork.Tours.AddAsync(tour);
             await _unitOfWork.SaveChangesAsync();
             return tour;
+
         }
 
         public async Task<bool> UpdateAsync(Tour tour)

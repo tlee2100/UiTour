@@ -40,7 +40,6 @@ namespace UITour.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
             var createdTour = await _tourService.CreateAsync(tour);
             return CreatedAtAction(nameof(GetTourById), new { id = createdTour.TourID }, createdTour);
         }
