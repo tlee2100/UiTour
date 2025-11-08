@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HomePage.css';
-import { useProperty } from '../contexts/PropertyContext';
 import { Icon } from '@iconify/react';
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
 import SearchWhere from '../components/search/SearchWhere';
 import SearchDates from '../components/search/SearchDates';
 import SearchGuests from '../components/search/SearchGuests';
+import authAPI from '../services/authAPI'; // ✅ import authAPI
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -19,33 +19,57 @@ export default function HomePage() {
   const [openDates, setOpenDates] = useState(false);
   const [openGuests, setOpenGuests] = useState(false);
 
-  const { properties, loading, error, fetchProperties } = useProperty();
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  
-
+  // -----------------------
+  // Load properties from API
+  // -----------------------
   const loadProperties = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      await fetchProperties(); // gọi mockAPI.getProperties()
+      const list = await authAPI.getProperties(); // ✅ gọi authAPI
+      // Normalize dữ liệu từ backend
+      const normalized = list.map(p => ({
+        id: p.propertyID,
+        title: p.listingTitle || 'Untitled',
+        location: p.location || '',
+        price: p.price ?? 0,
+        currency: p.currency ?? "USD",
+        rating: p.rating ?? 0,
+        reviewsCount: Array.isArray(p.reviews) ? p.reviews.length : 0,
+        // lấy ảnh đầu tiên từ mảng photos
+        mainImage: Array.isArray(p.photos) && p.photos.length > 0 ? p.photos[0].url : "/fallback.png",
+        isGuestFavourite: false,
+        dates: null
+      }));
+      setProperties(normalized);
     } catch (err) {
       console.error('Error fetching properties:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-  }, [fetchProperties]);
+  }, []);
 
   useEffect(() => {
     loadProperties();
   }, [loadProperties]);
 
+  // -----------------------
+  // Search handler
+  // -----------------------
   const handleSearch = () => {
-    // Navigate to search results page with query parameters
     const params = new URLSearchParams();
     if (searchLocation) params.set('location', searchLocation);
     if (checkIn) params.set('checkIn', checkIn);
     if (checkOut) params.set('checkOut', checkOut);
     if (guests) params.set('guests', guests);
-    
+
     navigate(`/search?${params.toString()}`);
   };
-
 
   const categories = [
     { name: "Amazing views", icon: "mdi:mountain" },
@@ -100,7 +124,6 @@ export default function HomePage() {
             </button>
           </div>
 
-          {/* Popovers */}
           <SearchWhere
             open={openWhere}
             onClose={() => setOpenWhere(false)}
@@ -123,8 +146,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Categories */}
-
       {/* Properties Grid */}
       <section className="properties-section">
         <div className="properties-grid">
@@ -138,14 +159,9 @@ export default function HomePage() {
               }}
             >
               <div className="property-image">
-                <img
-                  src={property.mainImage || "/fallback.png"}
-                  alt={property.title}
-                />
+                <img src={property.mainImage} alt={property.title} />
                 {property.isGuestFavourite && (
-                  <div className="guest-favourite-badge">
-                    Guest favourite
-                  </div>
+                  <div className="guest-favourite-badge">Guest favourite</div>
                 )}
                 <button className="favorite-button">
                   <Icon icon="mdi:heart-outline" width="20" height="20" />
@@ -160,9 +176,7 @@ export default function HomePage() {
                 </div>
                 <div className="property-dates">{property.dates || "Available ✅"}</div>
                 <div className="property-price">
-                  <span className="price">
-                    ₫{(property.price ?? 0).toLocaleString("vi-VN")}
-                  </span>
+                  <span className="price">₫{(property.price ?? 0).toLocaleString("vi-VN")}</span>
                   <span className="price-unit"> / đêm</span>
                 </div>
               </div>
@@ -170,7 +184,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
 
       {/* Continue Exploring */}
       <section className="continue-section">

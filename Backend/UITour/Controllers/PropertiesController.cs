@@ -127,5 +127,15 @@ namespace UITour.API.Controllers
                 return NotFound($"No BedType found for Property ID {id}");
             return Ok(bedType);
         }
+
+        //GET: api/properties/5/photo
+        [HttpGet("{id:int}/photo")]
+        public async Task<IActionResult> GetPropertyPhotoByPropertyId(int id)
+        {
+            var photo = await _propertyService.GetPropertyPhotoByPropertyIdAsync(id);
+            if (photo == null)
+                return NotFound($"No Photo found for Property ID {id}");
+            return Ok(photo);
+        }
     }
 }
