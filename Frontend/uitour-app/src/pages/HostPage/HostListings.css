@@ -1,0 +1,97 @@
+@import "./HostToday.css";
+
+/* =====================================
+   MAIN WRAPPER
+===================================== */
+.host-listings {
+    background: #f8f9fa;
+    min-height: 100vh;
+    font-family: "Inter", sans-serif;
+    color: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* =====================================
+   HEADER (reuse HostToday style)
+===================================== */
+
+
+/* =====================================
+   LISTINGS GRID
+===================================== */
+.listing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    padding: 120px 80px 40px;
+    /* space for header */
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* CARD */
+.listing-card {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, border 0.2s ease;
+    border: 1.5px dashed #1d4ed8;
+}
+
+.listing-card:hover {
+    transform: translateY(-4px);
+    border-color: #2563eb;
+}
+
+/* IMAGE */
+.listing-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+/* STATUS */
+.listing-status {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #34d399;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 12px;
+}
+
+/* INFO */
+.listing-info {
+    padding: 16px;
+}
+
+.listing-info h3 {
+    font-size: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+}
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+@media (max-width: 1024px) {
+    .listing-grid {
+        padding: 120px 40px 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .listing-grid {
+        padding: 120px 20px 40px;
+    }
+}

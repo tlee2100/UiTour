@@ -1,0 +1,386 @@
+/* =====================================
+   MAIN WRAPPER
+===================================== */
+.host-today {
+  background: #f8f9fa;
+  min-height: 100vh;
+  font-family: "Inter", sans-serif;
+  color: #111;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* =====================================
+   HEADER (MODERN STYLE)
+===================================== */
+.host-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+
+  padding: 24px 160px;
+  width: 100%;
+  height: 96px;
+
+  background: #ffffff;
+  box-shadow: inset 0px -1px 0px #f3f4f6;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+  z-index: 10;
+}
+
+/* ----------- LEFT: LOGO ----------- */
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-logo img {
+  height: 45px;
+  object-fit: contain;
+  cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+
+.header-logo img:hover {
+  opacity: 0.85;
+}
+
+/* ----------- CENTER: NAVBAR ----------- */
+.nav-tabs {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-tabs a {
+  text-decoration: none;
+  color: #111;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 8px 20px;
+  border-radius: 12px;
+  white-space: nowrap;
+  transition: color 0.25s ease, background 0.25s ease;
+}
+
+.nav-tabs a:hover {
+  background: #f3f4f6;
+  color: var(--uitour-color, #1d4ed8);
+}
+
+.nav-tabs a.active {
+  color: var(--uitour-color, #1d4ed8);
+  font-weight: 600;
+}
+
+/* Underline highlight (optional animation) */
+.nav-highlight {
+  position: absolute;
+  bottom: -4px;
+  height: 3px;
+  background: var(--uitour-color, #1d4ed8);
+  border-radius: 3px;
+  transition: transform 0.3s ease, width 0.3s ease;
+  pointer-events: none;
+}
+
+/* ----------- RIGHT: USER SECTION ----------- */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.switch-title {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: color 0.25s ease, background 0.25s ease;
+}
+
+.switch-title:hover {
+  background: #f3f4f6;
+  color: var(--uitour-color, #1d4ed8);
+}
+
+/* Globe button */
+.globe-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.globe-btn:hover {
+  background: #f3f4f6;
+}
+
+.globe-btn img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+/* Profile section */
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: border 0.25s ease, background 0.25s ease;
+}
+
+.user-menu:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.menu-icon,
+.user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e7eb;
+  transition: background 0.25s ease;
+}
+
+.menu-icon:hover,
+.user-avatar:hover {
+  background: #d1d5db;
+}
+
+.menu-icon img {
+  width: 20px;
+  height: 20px;
+}
+
+.user-avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* =====================================
+   MAIN CONTENT
+===================================== */
+.booking-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+  padding: 120px 80px 40px; /* space for header */
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.booking-card {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s;
+}
+
+.booking-card:hover {
+  transform: translateY(-4px);
+}
+
+.booking-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+/* Status badges */
+.status-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.status-badge.staying {
+  background: #56c596;
+}
+
+.status-badge.check-in-today {
+  background: #3a7bfd;
+}
+
+.status-badge.check-out-today {
+  background: #e74c3c;
+}
+
+.status-badge.upcoming {
+  background: #f4c542;
+  color: #333;
+}
+
+.booking-info {
+  padding: 16px;
+}
+
+.booking-info h3 {
+  font-size: 15px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.booking-info p {
+  margin: 2px 0;
+  font-size: 13px;
+  color: #555;
+}
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+@media (max-width: 1280px) {
+  .host-header {
+    padding: 24px 80px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .host-header {
+    padding: 24px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .host-header {
+    padding: 16px 20px;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .nav-tabs {
+    position: static;
+    transform: none;
+    margin: 0 auto;
+    max-width: 420px;
+    justify-content: center;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: center;
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-tabs a {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  .switch-title {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+}
+
+/* =====================================
+   RIGHT PROFILE SECTION (Modernized)
+===================================== */
+.header_profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 100px;
+  cursor: pointer;
+  position: relative;
+  transition: border 0.25s ease, background 0.25s ease;
+}
+
+.header_profile:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.header_menu,
+.header_avatarButton {
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease;
+  cursor: pointer;
+}
+
+.header_menu:hover,
+.header_avatarButton:hover {
+  background: #d1d5db;
+}
+
+/* Simple dropdown menu */
+.profile_dropdown {
+  position: absolute;
+  top: 56px;
+  right: 0;
+  width: 160px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 20;
+}
+
+.profile_dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+}
+
+.profile_dropdown li {
+  font-size: 14px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.profile_dropdown li:hover {
+  background: #f3f4f6;
+}
+
