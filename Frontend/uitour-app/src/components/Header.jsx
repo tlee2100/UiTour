@@ -62,7 +62,7 @@ export default function Header() {
       <div className="header_right">
         <button
           className="header_title"
-          onClick={() => navigate('/host/experience/create/choose')}
+          onClick={() => navigate('/host/becomehost')}
         >
           Become a Host
         </button>
