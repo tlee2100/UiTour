@@ -68,7 +68,7 @@ export default function HeaderInfo() {
       <div className="headerif_right">
         <button
           className="headerif_title"
-          onClick={() => navigate('/host/experience/create/choose')}
+          onClick={() => navigate('/host/becomehost')}
         >
           Become a Host
         </button>
