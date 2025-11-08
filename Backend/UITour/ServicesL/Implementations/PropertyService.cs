@@ -20,12 +20,12 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<IEnumerable<Property>> GetAllAsync()
         {
-            return await _unitOfWork.Properties.Query().ToListAsync();
+            return await _unitOfWork.Properties.Query().Include(p => p.Photos).ToListAsync();
         }
 
         public async Task<Property> GetByIdAsync(int id)
         {
-            var property = await _unitOfWork.Properties.GetByIdAsync(id);
+            var property = await _unitOfWork.Properties.Query().Include(p => p.Photos).FirstOrDefaultAsync(p => p.PropertyID == id);
             if (property == null)
                 throw new InvalidOperationException("Property not found");
 
@@ -126,6 +126,13 @@ namespace UITour.ServicesL.Implementations
                 .Include(p => p.BedType)
                 .FirstOrDefaultAsync(p => p.PropertyID == propertyId);
             return property?.BedType;
+        }
+
+        public async Task<PropertyPhoto> GetPropertyPhotoByPropertyIdAsync(int propertyId)
+        {
+            var photo = await _unitOfWork.PropertyPhotos.Query()
+                .FirstOrDefaultAsync(pp => pp.PropertyID == propertyId);
+            return photo;
         }
     }
 }

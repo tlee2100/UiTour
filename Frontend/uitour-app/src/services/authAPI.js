@@ -2,6 +2,7 @@
 // Kết nối với backend API cho login và register
 
 const API_BASE_URL = 'http://localhost:5069/api/user';
+const PROPERTY_BASE_URL = 'http://localhost:5069/api/properties';
 
 class AuthAPI {
   // Login user
@@ -55,6 +56,50 @@ class AuthAPI {
       return data; // Returns the registered user
     } catch (error) {
       throw error;
+    }
+  }
+  //get properties
+  async getProperties() {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(PROPERTY_BASE_URL, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(errText || 'Failed to fetch properties');
+    }
+
+    const data = await response.json();
+    return data; // [{ propertyID, listingTitle, location, price, ... }]
+  } catch (err) {
+    throw err;
+  }
+  }
+  //get property photos
+  async getPropertyPhotos(propertyId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${PROPERTY_BASE_URL}/${propertyId}/photo`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch property photos');
+      }
+
+      const data = await response.json();
+      return data; // [{ photoID, propertyID, url, caption, sortIndex }, ...]
+    } catch (err) {
+      throw err;
     }
   }
 }
