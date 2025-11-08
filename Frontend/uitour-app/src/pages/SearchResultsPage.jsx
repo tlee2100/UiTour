@@ -29,10 +29,10 @@ export default function SearchResultsPage() {
     });
   }, [location, guests, fetchProperties]);
 
-  const handleSearch = () => {
+  //const handleSearch = () => {
     // Navigate back to home with search params
-    navigate(`/?location=${location}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`);
-  };
+    //navigate(`/?location=${location}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`);
+  //};
 
   const handleFilter = () => {
     // TODO: Open filter modal

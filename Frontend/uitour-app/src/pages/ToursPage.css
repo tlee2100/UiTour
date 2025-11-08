@@ -37,6 +37,7 @@
   color: var(--black);
   cursor: pointer;
   transition: all 0.2s;
+  margin: 0 auto;
 }
 
 .filter-btn:hover {
