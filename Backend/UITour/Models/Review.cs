@@ -8,7 +8,7 @@ namespace UITour.Models
         [Key] public int ReviewID { get; set; }
         [ForeignKey("Property")] public int? PropertyID { get; set; }
         [ForeignKey("Booking")] public int? BookingID { get; set; }
-        [ForeignKey("Reviewer")] public int? ReviewerID { get; set; }
+        [ForeignKey("User")] public int? UserID { get; set; }
         [Range(1, 5)] public byte Rating { get; set; }
         [Range(1, 5)] public byte Cleanliness { get; set; }
         [Range(1, 5)] public byte Communication { get; set; }
