@@ -1,0 +1,1272 @@
+/* ===================================================
+   Shared styles for Host Stay creation flow
+   Based on Host Experience visual style
+=================================================== */
+
+/* ========== BASE LAYOUT ========== */
+.hs-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    color: #111;
+}
+
+/* ========== HEADER ========== */
+.hs-header {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+}
+
+.hs-header-logo img {
+    height: 28px;
+    cursor: pointer;
+}
+
+.hs-header-save {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 24px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ========== MAIN CONTENT ========== */
+.hs-main {
+    max-width: 1120px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 32px 24px 24px;
+}
+
+.hs-choose-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 16px 0 32px;
+}
+
+/* ========== CARD GRID ========== */
+.hs-choose-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    justify-items: center;
+}
+
+.hs-card {
+    width: 200px;
+    height: 140px;
+    border: 1px solid #e6e6e6;
+    border-radius: 12px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.hs-card:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.hs-card.hs-card--active {
+    border-color: #000;
+    box-shadow: 0 0 0 2px #000 inset;
+}
+
+.hs-card-icon svg {
+    color: #111;
+}
+
+.hs-card-label {
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Responsive grid for small screens */
+@media (max-width: 960px) {
+    .hs-choose-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* ========== FOOTER ========== */
+.hs-footer {
+    margin-top: auto;
+    height: 72px;
+    border-top: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: #fff;
+}
+
+.hs-footer-btn {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.hs-footer-btn--white {
+    background: transparent;
+    color: #111;
+    text-decoration: underline;
+}
+
+.hs-footer-btn--black {
+    background: #111;
+    color: #fff;
+}
+
+.hs-footer-btn--black:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ======================================
+   Host Stay – Type of Place (styled like Host Experience)
+====================================== */
+
+.hs-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    color: #111;
+}
+
+/* ===== Header ===== */
+.hs-header {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+}
+
+.hs-logo {
+    height: 28px;
+    cursor: pointer;
+}
+
+.hs-save-btn {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 24px;
+    border: 1px solid #ddd;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* ===== Main ===== */
+.hs-main {
+    max-width: 880px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 32px 24px 24px;
+    text-align: center;
+}
+
+.hs-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 40px;
+}
+
+/* ===== List ===== */
+.hs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.hs-list-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    border-radius: 12px;
+    border: 1.5px solid #e6e6e6;
+    background: #fff;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    text-align: left;
+}
+
+.hs-list-item:hover {
+    border-color: #000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.hs-list-item.is-selected {
+    border-color: #000;
+    box-shadow: 0 0 0 2px #000 inset;
+}
+
+.hs-list-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f9f9f9;
+}
+
+.hs-list-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.hs-list-subtitle {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.3;
+}
+
+/* ===== Footer ===== */
+.hs-footer {
+    margin-top: auto;
+    height: 72px;
+    border-top: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: #fff;
+}
+
+.hs-footer-btn {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.hs-footer-btn--white {
+    background: transparent;
+    color: #111;
+    text-decoration: underline;
+}
+
+.hs-footer-btn--black {
+    background: #111;
+    color: #fff;
+}
+
+.hs-footer-btn--black:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+    .hs-list-item {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+}
+
+/* ======================================
+   Host Stay – Locate (styled like Host Experience)
+====================================== */
+
+/* Map container card */
+.hs-map-card {
+    max-width: 960px;
+    margin: 0 auto;
+    background: #fff;
+    border: 1px solid #efefef;
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    padding: 8px 8px 0;
+}
+
+/* Search bar */
+.hs-map-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-start;
+    padding: 10px 14px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1000px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 600px;
+    height: 50px;
+    margin: 20px auto;
+}
+
+.hs-map-icon {
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hs-map-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    background: transparent;
+    color: #333;
+}
+
+/* Map styling */
+.hs-map-card .leaflet-container {
+    width: 100%;
+    height: 520px;
+    border-radius: 16px;
+}
+
+/* Footer spacing fix */
+.hs-footer {
+    margin-top: auto;
+    height: 72px;
+    border-top: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: #fff;
+}
+
+/* Buttons already defined */
+.hs-footer-btn--white,
+.hs-footer-btn--black {
+    transition: all 0.2s ease;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+    .hs-map-search {
+        width: 94%;
+    }
+}
+
+/* ======================================
+   Host Stay – Type of Place (Rooms & Beds)
+====================================== */
+
+.hs-room-section {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    background: #fff;
+}
+
+.hs-room-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 32px;
+    color: #111;
+}
+
+/* Controls container */
+.hs-room-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Each row */
+.hs-room-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.hs-room-control:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+/* Label */
+.hs-room-label {
+    font-size: 18px;
+    font-weight: 500;
+    color: #111;
+}
+
+/* Value & buttons */
+.hs-room-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.hs-room-value {
+    min-width: 32px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.hs-circle-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid #111;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.hs-circle-btn:hover {
+    background: #111;
+    color: #fff;
+}
+
+/* Responsive layout */
+@media (max-width: 720px) {
+    .hs-room-control {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+}
+
+/* ======================================
+   Host Stay – Create Amenities (Fixed layout like Figma)
+====================================== */
+
+.hs-amenities-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px;
+}
+
+/* CARD BASE */
+.hs-amenity-card {
+    box-sizing: border-box;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 210px;
+    height: 100px;
+    padding: 24px 20px;
+    border: 1.5px solid #d9d9d9;
+    border-radius: 8px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hs-amenity-card:hover {
+    border-color: #000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.hs-amenity-card.is-selected {
+    border: 2.5px solid #000;
+    background: #f6f6f6;
+}
+
+/* ICON + TEXT container */
+.hs-amenity-inner {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+}
+
+/* ICON STYLE */
+.hs-amenity-inner .hs-icon {
+    width: 32px;
+    height: 32px;
+    color: #000;
+    flex-shrink: 0;
+}
+
+/* TEXT STYLE */
+.hs-amenity-label {
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 20px;
+    color: #000;
+    text-align: left;
+}
+
+/* RESPONSIVE */
+@media (max-width: 960px) {
+    .hs-amenities-grid {
+        justify-content: center;
+        gap: 16px;
+    }
+
+    .hs-amenity-card {
+        width: 45%;
+        height: 90px;
+        padding: 20px;
+    }
+
+    .hs-amenity-inner {
+        gap: 12px;
+    }
+
+    .hs-amenity-label {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .hs-amenity-card {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ===========================================
+   Host Stay – Create Photos (Consistent Layout)
+=========================================== */
+
+/* Trang kế thừa .hs-page, .hs-header, .hs-footer có sẵn */
+
+.hs-photo-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  background: #fff;
+}
+
+/* ===== Title ===== */
+.hs-photo-title {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.3;
+  color: #000;
+  margin-bottom: 48px;
+}
+
+/* ===== Dropzone ===== */
+.hs-photo-dropzone {
+  width: 850px;
+  height: 500px;
+  background: #f6f6f6;
+  border: 1px dashed #d9d9d9;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hs-photo-dropzone:hover {
+  border-color: #000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== Center (camera + button) ===== */
+.hs-photo-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.hs-photo-add-btn {
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 8px;
+  width: 150px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hs-photo-add-btn:hover {
+  background: #000;
+  color: #fff;
+}
+
+/* ===== Preview grid ===== */
+.hs-photo-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+  justify-content: center;
+  max-width: 960px;
+}
+
+.hs-photo-thumb {
+  width: 160px;
+  height: 160px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.hs-photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .hs-photo-dropzone {
+    width: 90%;
+    height: 380px;
+  }
+
+  .hs-photo-title {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 720px) {
+  .hs-photo-main {
+    padding: 32px 16px;
+  }
+
+  .hs-photo-dropzone {
+    width: 100%;
+    height: 300px;
+  }
+
+  .hs-photo-title {
+    font-size: 20px;
+  }
+}
+
+/* ===========================================
+   Host Stay – Create Title (Consistent Layout)
+=========================================== */
+
+/* Trang này kế thừa .hs-page, .hs-header, .hs-footer có sẵn */
+
+.hs-title-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  background: #fff;
+}
+
+/* ===== Tiêu đề ===== */
+.hs-title-heading {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.3;
+  color: #000;
+  margin-bottom: 64px;
+  max-width: 800px;
+}
+
+/* ===== Ô nhập tiêu đề ===== */
+.hs-title-box {
+  position: relative;
+  width: 650px;
+  background: #fff;
+  border: 1.5px solid #000;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hs-title-input {
+  width: 100%;
+  min-height: 120px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: "Inter", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #000;
+  background: transparent;
+}
+
+.hs-title-input::placeholder {
+  color: #888;
+}
+
+.hs-title-count {
+  position: absolute;
+  bottom: 10px;
+  right: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 960px) {
+  .hs-title-heading {
+    font-size: 24px;
+  }
+
+  .hs-title-box {
+    width: 90%;
+  }
+}
+
+@media (max-width: 720px) {
+  .hs-title-main {
+    padding: 32px 16px;
+  }
+
+  .hs-title-heading {
+    font-size: 20px;
+    margin-bottom: 40px;
+  }
+
+  .hs-title-box {
+    width: 100%;
+  }
+}
+
+/* ===========================================
+   Host Stay – Create Description (Consistent Layout)
+=========================================== */
+
+/* Trang kế thừa .hs-page, .hs-header, .hs-footer có sẵn */
+
+.hs-desc-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  background: #fff;
+}
+
+/* ===== Tiêu đề ===== */
+.hs-desc-heading {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.3;
+  color: #000;
+  margin-bottom: 64px;
+  max-width: 800px;
+}
+
+/* ===== Ô nhập mô tả ===== */
+.hs-desc-box {
+  position: relative;
+  width: 650px;
+  background: #fff;
+  border: 1.5px solid #000;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hs-desc-input {
+  width: 100%;
+  min-height: 120px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: "Inter", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #000;
+  background: transparent;
+}
+
+.hs-desc-input::placeholder {
+  color: #717171;
+}
+
+.hs-desc-count {
+  position: absolute;
+  bottom: 10px;
+  right: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 960px) {
+  .hs-desc-heading {
+    font-size: 24px;
+  }
+
+  .hs-desc-box {
+    width: 90%;
+  }
+}
+
+@media (max-width: 720px) {
+  .hs-desc-main {
+    padding: 32px 16px;
+  }
+
+  .hs-desc-heading {
+    font-size: 20px;
+    margin-bottom: 40px;
+  }
+
+  .hs-desc-box {
+    width: 100%;
+  }
+}
+
+/* ===========================================
+   Host Stay – Create Weekday Price
+=========================================== */
+
+.hs-price-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  background: #fff;
+}
+
+/* ===== Tiêu đề ===== */
+.hs-price-heading {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.3;
+  color: #000;
+  margin-bottom: 64px;
+  max-width: 800px;
+}
+
+/* ===== Vùng nhập giá ===== */
+.hs-price-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+/* Ô chứa ký hiệu và input */
+.hs-price-box {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  color: #000;
+  gap: 4px;
+}
+
+/* Ký hiệu đ */
+.hs-price-symbol {
+  font-size: 50px;
+  text-decoration: underline;
+  line-height: 1;
+}
+
+/* Input nhập giá */
+.hs-price-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 50px;
+  font-weight: 600;
+  width: 220px;
+  text-align: left;
+  color: #000;
+}
+
+.hs-price-input::placeholder {
+  color: #aaa;
+}
+
+/* Dòng mô tả phụ */
+.hs-price-subtext {
+  font-family: "Inter", sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #000;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 960px) {
+  .hs-price-heading {
+    font-size: 24px;
+  }
+
+  .hs-price-input {
+    font-size: 42px;
+  }
+
+  .hs-price-subtext {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 720px) {
+  .hs-price-main {
+    padding: 32px 16px;
+  }
+
+  .hs-price-heading {
+    font-size: 20px;
+    margin-bottom: 40px;
+  }
+
+  .hs-price-input {
+    font-size: 36px;
+  }
+}
+
+/* ===========================================
+   Host Stay – Create Weekend Price
+=========================================== */
+
+.hs-weekend-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  background: #fff;
+}
+
+/* ===== Tiêu đề ===== */
+.hs-weekend-heading {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.3;
+  color: #000;
+  margin-bottom: 64px;
+  max-width: 800px;
+}
+
+/* ===== Giá hiển thị ===== */
+.hs-weekend-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.hs-weekend-box {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  color: #000;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+}
+
+.hs-weekend-symbol {
+  font-size: 50px;
+  text-decoration: underline;
+  line-height: 1;
+}
+
+.hs-weekend-price {
+  font-size: 50px;
+  font-weight: 600;
+}
+
+/* ===== Subtext ===== */
+.hs-weekend-subtext {
+  font-family: "Inter", sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #000;
+}
+
+/* ===== Premium control ===== */
+.hs-weekend-premium {
+  margin-top: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.hs-weekend-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000;
+}
+
+.hs-weekend-control {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hs-weekend-slider {
+  width: 280px;
+  appearance: none;
+  height: 6px;
+  border-radius: 8px;
+  background: linear-gradient(to right, #000 0%, #ddd 100%);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hs-weekend-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #000;
+  cursor: pointer;
+}
+
+.hs-weekend-percent {
+  width: 48px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #000;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 960px) {
+  .hs-weekend-heading {
+    font-size: 24px;
+  }
+
+  .hs-weekend-price {
+    font-size: 42px;
+  }
+
+  .hs-weekend-subtext {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 720px) {
+  .hs-weekend-main {
+    padding: 32px 16px;
+  }
+
+  .hs-weekend-heading {
+    font-size: 20px;
+    margin-bottom: 40px;
+  }
+
+  .hs-weekend-price {
+    font-size: 36px;
+  }
+}
+
+/* ===========================================
+   Host Stay – Create Discount (Fixed for layout consistency)
+=========================================== */
+
+.hs-discount-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: flex-start;
+  padding: 48px 24px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.hs-discount-heading {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.3;
+  color: #000;
+  margin-bottom: 64px;
+  margin-top: 32px; /* Đồng bộ khoảng cách với các trang khác */
+  max-width: 800px;
+}
+
+/* ===== List container ===== */
+.hs-discount-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 720px;
+  margin-bottom: 80px; /* Để footer không dính sát nội dung */
+}
+
+/* ===== Card ===== */
+.hs-discount-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1.5px solid #d9d9d9;
+  border-radius: 12px;
+  padding: 24px 20px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.hs-discount-card:hover {
+  border-color: #000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.hs-discount-card.is-selected {
+  border-color: var(--uitour-color);
+  box-shadow: 0 0 0 2px var(--uitour-color) inset;
+  background: #f9f9f9;
+}
+
+/* ===== Left side (percent) ===== */
+.hs-discount-value {
+  width: 64px;
+  height: 38px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Middle info ===== */
+.hs-discount-info {
+  flex: 1;
+  text-align: left;
+  padding: 0 16px;
+}
+
+.hs-discount-info h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: #000;
+  margin-bottom: 6px;
+}
+
+.hs-discount-info p {
+  font-size: 14px;
+  color: #717171;
+  line-height: 1.3;
+}
+
+/* ===== Checkbox ===== */
+.hs-discount-checkbox {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--uitour-color);
+  cursor: pointer;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 720px) {
+  .hs-discount-main {
+    padding: 32px 16px;
+  }
+
+  .hs-discount-heading {
+    font-size: 22px;
+    margin-top: 16px;
+    margin-bottom: 40px;
+  }
+
+  .hs-discount-list {
+    margin-bottom: 60px;
+  }
+
+  .hs-discount-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .hs-discount-value {
+    align-self: flex-end;
+  }
+}
+
+/* ===== Footer button (UITour primary style) ===== */
+.hs-footer-btn--uitour {
+  background: var(--uitour-color);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0 20px;
+  height: 44px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.hs-footer-btn--uitour:hover {
+  background: var(--hover-uitour);
+  transform: translateY(-1px);
+}
