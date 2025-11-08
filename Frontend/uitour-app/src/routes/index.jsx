@@ -10,6 +10,7 @@ import ExperienceInfoPage from "../pages/ExperienceInfoPage";
 import MapDemoPage from "../pages/MapDemoPage";
 import LoginPage from "../pages/LoginPage";
 import SignUpPage from "../pages/SignUpPage";
+
 import HostExperienceCreateChoose from "../pages/HostExperience/HostExperienceCreateChoose";
 import HostExperienceCreateYears from "../pages/HostExperience/HostExperienceCreateYears";
 import HostExperienceCreateQualification from "../pages/HostExperience/HostExperienceCreateQualification";
@@ -33,6 +34,9 @@ import HostStayCreateWeekendPrice from "../pages/HostStay/HostStayCreateWeekendP
 import HostStayCreateDiscount from "../pages/HostStay/HostStayCreateDiscount";
 
 import BecomeHost from "../pages/BecomeHost";
+
+import HostToday from "../pages/HostPage/HostToday";
+import HostListings from "../pages/HostPage/HostListings";
 
 const AppRoutes = () => {
   return (
@@ -59,6 +63,9 @@ const AppRoutes = () => {
       <Route path="/signup" element={<SignUpPage />} /> 
 
       <Route path="/host/becomehost" element={<BecomeHost />} />
+
+      <Route path="/host/today" element={<HostToday />} />
+      <Route path="/host/listings" element={<HostListings />} />
 
       {/* Host Stay Creation (no shared site layout) */}
       <Route path="/host/stay/create/choose" element={<HostStayCreateChoose />} />
