@@ -80,6 +80,29 @@ class AuthAPI {
     throw err;
   }
   }
+  //get property by id
+  async getPropertyById(propertyId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${PROPERTY_BASE_URL}/${propertyId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch property');
+      }
+
+      const data = await response.json();
+      return data; // Property object với đầy đủ thông tin
+    } catch (err) {
+      throw err;
+    }
+  }
+
   //get property photos
   async getPropertyPhotos(propertyId) {
     try {
