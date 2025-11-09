@@ -39,7 +39,8 @@ namespace UITour.ServicesL.Implementations
                 .Include(p => p.PropertyAmenities).ThenInclude(pa => pa.Amenity)
                 .Include(p => p.Bookings)
                 .Include(p => p.CancellationPolicy)
-                .Include(p => p.Reviews)
+                .Include(p => p.Reviews).ThenInclude(r => r.User)
+                .Include(p => p.Host).ThenInclude(h => h.User)
                 .FirstOrDefaultAsync(p => p.PropertyID == id);
             if (property == null)
                 throw new InvalidOperationException("Property not found");
