@@ -10,6 +10,34 @@ export default function HostExperienceCreateLocate() {
   const [query, setQuery] = useState("");
   const [center, setCenter] = useState([10.8231, 106.6297]);
 
+  // Reverse geocode coordinates to get address
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
+      );
+      const data = await res.json();
+      if (data && data.display_name) {
+        return data.display_name;
+      }
+    } catch (error) {
+      console.error("Reverse geocoding failed:", error);
+    }
+    return null;
+  };
+
+  // Handle location change from map selection
+  const handleLocationChange = async (loc) => {
+    setLocation(loc);
+    setCenter([loc.latitude, loc.longitude]);
+    
+    // Reverse geocode to get the address
+    const address = await reverseGeocode(loc.latitude, loc.longitude);
+    if (address) {
+      setQuery(address);
+    }
+  };
+
   const handleNext = () => {
     // TODO: persist selected location to context/store
     if (location) {
@@ -48,8 +76,11 @@ export default function HostExperienceCreateLocate() {
                     if (data && data[0]) {
                       const lat = parseFloat(data[0].lat);
                       const lon = parseFloat(data[0].lon);
+                      const address = data[0].display_name;
                       setCenter([lat, lon]);
-                      setLocation({ latitude: lat, longitude: lon, address: data[0].display_name });
+                      setLocation({ latitude: lat, longitude: lon, address });
+                      // Update query with the full address from geocoding
+                      setQuery(address);
                     }
                   } catch (_) {
                     // ignore
@@ -62,7 +93,7 @@ export default function HostExperienceCreateLocate() {
             initialLocation={[10.8231, 106.6297]}
             height="520px"
             zoom={10}
-            onLocationChange={setLocation}
+            onLocationChange={handleLocationChange}
             externalLocation={center}
             showHeader={false}
             showManualInputs={false}

@@ -42,14 +42,122 @@ const normalizeProperty = (p) => {
     lng: parseFloat(p.lng) || null
   };
 
-  // Xử lý amenities
-  const amenities = Array.isArray(p.propertyAmenities)
-    ? p.propertyAmenities.map(pa => ({
-        id: pa.amenity?.amenityID || pa.amenityID,
-        name: pa.amenity?.name || pa.name || "",
-        icon: pa.amenity?.icon || ""
-      }))
-    : [];
+  // Xử lý amenities - handle both propertyAmenities array and direct amenities
+  const amenities = (() => {
+    // Try propertyAmenities first (from Property.PropertyAmenities)
+    if (Array.isArray(p.propertyAmenities)) {
+      return p.propertyAmenities.map(pa => {
+        const amenity = pa.amenity || pa.Amenity || pa;
+        const amenityID = amenity?.amenityID || amenity?.AmenityID || pa.amenityID || pa.AmenityID;
+        const amenityName = amenity?.amenityName || amenity?.AmenityName || amenity?.name || amenity?.Name || pa.name || pa.Name || "";
+        
+        // Map amenity name to icon (normalize name to lowercase and match with available icons)
+        const iconMap = {
+          "wifi": "wifi",
+          "air conditioning": "ac",
+          "ac": "ac",
+          "kitchen": "kitchen",
+          "tv": "tv",
+          "television": "tv",
+          "free parking": "free_parking",
+          "parking": "free_parking",
+          "pool": "pool",
+          "swimming pool": "pool",
+          "gym": "gym",
+          "fitness": "gym",
+          "washer": "washer",
+          "washing machine": "washer",
+          "dryer": "dryer",
+          "hair dryer": "hair_dryer",
+          "iron": "iron",
+          "workspace": "workspace",
+          "work space": "workspace",
+          "breakfast": "breakfast",
+          "hot tub": "hottub",
+          "jacuzzi": "hottub",
+          "bbq": "bbq",
+          "barbecue": "bbq",
+          "heating": "heating",
+          "ev charger": "ev_charger",
+          "electric vehicle charger": "ev_charger",
+          "king bed": "king_bed",
+          "smoke alarm": "smoke_alarm",
+          "smoke detector": "smoke_alarm"
+        };
+        
+        const nameLower = amenityName.toLowerCase().trim();
+        const icon = iconMap[nameLower] || nameLower.replace(/\s+/g, "_");
+        
+        return {
+          id: amenityID,
+          name: amenityName,
+          icon: icon
+        };
+      });
+    }
+    
+    // Try direct amenities array (if backend returns it directly)
+    if (Array.isArray(p.amenities)) {
+      return p.amenities.map(a => {
+        const amenityID = a.amenityID || a.AmenityID || a.id || a.ID;
+        const amenityName = a.amenityName || a.AmenityName || a.name || a.Name || "";
+        
+        const iconMap = {
+          "wifi": "wifi",
+          "air conditioning": "ac",
+          "ac": "ac",
+          "kitchen": "kitchen",
+          "tv": "tv",
+          "television": "tv",
+          "free parking": "free_parking",
+          "parking": "free_parking",
+          "pool": "pool",
+          "swimming pool": "pool",
+          "gym": "gym",
+          "fitness": "gym",
+          "washer": "washer",
+          "washing machine": "washer",
+          "dryer": "dryer",
+          "hair dryer": "hair_dryer",
+          "iron": "iron",
+          "workspace": "workspace",
+          "work space": "workspace",
+          "breakfast": "breakfast",
+          "hot tub": "hottub",
+          "jacuzzi": "hottub",
+          "bbq": "bbq",
+          "barbecue": "bbq",
+          "heating": "heating",
+          "ev charger": "ev_charger",
+          "electric vehicle charger": "ev_charger",
+          "king bed": "king_bed",
+          "smoke alarm": "smoke_alarm",
+          "smoke detector": "smoke_alarm"
+        };
+        
+        const nameLower = amenityName.toLowerCase().trim();
+        const icon = iconMap[nameLower] || nameLower.replace(/\s+/g, "_");
+        
+        return {
+          id: amenityID,
+          name: amenityName,
+          icon: icon
+        };
+      });
+    }
+    
+    return [];
+  })();
+
+  // Debug: Log amenities to console (remove in production)
+  if (amenities.length > 0) {
+    console.log('Normalized amenities:', amenities);
+  } else {
+    console.log('No amenities found. Raw property data:', {
+      propertyAmenities: p.propertyAmenities,
+      amenities: p.amenities
+    });
+  }
 
   // ✅ Xử lý host với đầy đủ thông tin từ database
   const hostData = p.host || p.Host;
