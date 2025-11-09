@@ -155,32 +155,47 @@ const Content = ({ property }) => {
                 <section className="content-amen">
                     <h2 className="content-amen-title">What this place offers</h2>
 
-                    <div className="content-amen-body">
-                        {/* Column Left */}
-                        <div className="content-amen-column">
-                            {amenities.slice(0, Math.ceil(amenities.length / 2)).map((amenity, index) => (
-                                <div key={amenity.id || index} className="content-amen-item">
-                                    <SvgIcon name={`amen_${amenity.icon}`} className="content-icon" />
-                                    <div className="content-amen-text">
-                                        <div className="content-amen-item-title">{amenity.name}</div>
-                                    </div>
+                    {amenities && amenities.length > 0 ? (
+                        <>
+                            <div className="content-amen-body">
+                                {/* Column Left */}
+                                <div className="content-amen-column">
+                                    {amenities.slice(0, Math.ceil(amenities.length / 2)).map((amenity, index) => {
+                                        const iconName = amenity.icon ? `amen_${amenity.icon}` : null;
+                                        return (
+                                            <div key={amenity.id || `amenity-${index}`} className="content-amen-item">
+                                                {iconName && <SvgIcon name={iconName} className="content-icon" />}
+                                                {!iconName && <div className="content-icon-placeholder">•</div>}
+                                                <div className="content-amen-text">
+                                                    <div className="content-amen-item-title">{amenity.name || "Amenity"}</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            ))}
-                        </div>
 
-                        {/* Column Right */}
-                        <div className="content-amen-column">
-                            {amenities.slice(Math.ceil(amenities.length / 2)).map((amenity, index) => (
-                                <div key={amenity.id || index} className="content-amen-item">
-                                    <SvgIcon name={`amen_${amenity.icon}`} className="content-icon" />
-                                    <div className="content-amen-text">
-                                        <div className="content-amen-item-title">{amenity.name}</div>
-                                    </div>
+                                {/* Column Right */}
+                                <div className="content-amen-column">
+                                    {amenities.slice(Math.ceil(amenities.length / 2)).map((amenity, index) => {
+                                        const iconName = amenity.icon ? `amen_${amenity.icon}` : null;
+                                        return (
+                                            <div key={amenity.id || `amenity-${index}`} className="content-amen-item">
+                                                {iconName && <SvgIcon name={iconName} className="content-icon" />}
+                                                {!iconName && <div className="content-icon-placeholder">•</div>}
+                                                <div className="content-amen-text">
+                                                    <div className="content-amen-item-title">{amenity.name || "Amenity"}</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            ))}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="content-amen-empty">
+                            <p>No amenities listed for this property.</p>
                         </div>
-                    </div>
-                    <ButtonWhite>Show all {amenities.length} amenities</ButtonWhite>
+                    )}
                 </section>
 
                 <div className="content-divider" />
