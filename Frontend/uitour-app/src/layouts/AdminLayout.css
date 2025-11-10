@@ -1,0 +1,11 @@
+.admin-wrap { 
+  min-height: calc(100vh - 200px);
+  background: #f5f5f5;
+  padding: 24px 40px;
+}
+.admin-content { 
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+
