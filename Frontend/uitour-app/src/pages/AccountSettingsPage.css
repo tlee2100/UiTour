@@ -1,0 +1,23 @@
+.acct { 
+    grid-template-columns: 320px 1px 1fr;
+    gap: 0;
+    
+    margin: 0 auto;
+    padding: 32px 24px;
+    min-height: 100vh;
+    background: #fff;
+}
+.acct-title { font-size: 40px; font-weight: 700; margin-bottom: 24px; }
+.acct-layout { display: grid; grid-template-columns: 320px 1fr; gap: 28px; }
+.acct-sidebar { background: #fff; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); padding: 8px; display: flex; flex-direction: column; }
+.acct-item { text-align: left; padding: 14px 16px; border: 0; background: transparent; border-radius: 10px; cursor: pointer; }
+.acct-item.active { background: #f5f5f5; font-weight: 600; }
+.acct-main { background: #fff; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); padding: 20px; }
+.acct-section-title { font-size: 24px; margin-bottom: 16px; }
+.acct-field { display: grid; grid-template-columns: 200px 1fr 100px; align-items: center; padding: 14px 0; border-bottom: 1px solid #eee; }
+.acct-field:last-child { border-bottom: 0; }
+.acct-field-label { color: #555; }
+.acct-field-value { font-weight: 500; }
+.acct-link { background: none; border: none; color: #008489; cursor: pointer; }
+
+

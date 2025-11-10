@@ -12,6 +12,10 @@ import ProfilePage from "../pages/ProfilePage";
 import LoginPage from "../pages/LoginPage";
 import SignUpPage from "../pages/SignUpPage";
 import RequireAuth from "../components/RequireAuth";
+import WishlistPage from "../pages/WishlistPage";
+import TripsPage from "../pages/TripsPage";
+import NotificationsPage from "../pages/NotificationsPage";
+import AccountSettingsPage from "../pages/AccountSettingsPage";
 
 import HostExperienceCreateChoose from "../pages/HostExperience/HostExperienceCreateChoose";
 import HostExperienceCreateYears from "../pages/HostExperience/HostExperienceCreateYears";
@@ -52,6 +56,11 @@ const AppRoutes = () => {
         <Route path="experiences/search" element={<ExperienceSearchResultsPage />} />
         <Route path="demomap" element={<MapDemoPage />} />
         <Route path="tours" element={<ToursPage />} />
+        {/* Profile menu pages under MainLayout to include Header/Footer */}
+        <Route path="wishlist" element={<RequireAuth><WishlistPage /></RequireAuth>} />
+        <Route path="trips" element={<RequireAuth><TripsPage /></RequireAuth>} />
+        <Route path="notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+        <Route path="account" element={<RequireAuth><AccountSettingsPage /></RequireAuth>} />
         <Route
           path="profile"
           element={(
@@ -85,6 +94,8 @@ const AppRoutes = () => {
 
       <Route path="/host/today" element={<HostToday />} />
       <Route path="/host/listings" element={<HostListings />} />
+
+      {/* Profile menu pages (duplicated outside MainLayout) - removed */}
 
       {/* Host Stay Creation (no shared site layout) */}
       <Route path="/host/stay/create/choose" element={<HostStayCreateChoose />} />
