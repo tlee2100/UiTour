@@ -85,13 +85,27 @@ const IrReviewCard = ({ review = {} }) => {
 
       {/* Rating stars */}
       <div className="ir-review-rating">
-        {[...Array(5)].map((_, i) => (
-          <SvgIcon
-            key={i}
-            name="review_star"
-            className={`ir-review-star ${i < safeRating ? "filled" : "empty"}`}
-          />
-        ))}
+        {[...Array(5)].map((_, i) => {
+          const isFilled = i < safeRating;
+          const starClass = `ir-review-star ${isFilled ? "filled" : "empty"}`;
+          const starColor = isFilled ? "#222222" : "#d1d5db";
+          const starOpacity = isFilled ? 1 : 0.5;
+          
+          return (
+            <div key={i} className={starClass} style={{ display: 'inline-flex' }}>
+              <SvgIcon
+                name="review_star"
+                style={{ 
+                  fill: starColor, 
+                  color: starColor,
+                  opacity: starOpacity,
+                  width: '20px',
+                  height: '20px'
+                }}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Comment */}
