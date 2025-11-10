@@ -8,8 +8,10 @@ import SearchResultsPage from "../pages/SearchResultsPage";
 import ExperienceSearchResultsPage from "../pages/ExperienceSearchResultsPage";
 import ExperienceInfoPage from "../pages/ExperienceInfoPage";
 import MapDemoPage from "../pages/MapDemoPage";
+import ProfilePage from "../pages/ProfilePage";
 import LoginPage from "../pages/LoginPage";
 import SignUpPage from "../pages/SignUpPage";
+import RequireAuth from "../components/RequireAuth";
 
 import HostExperienceCreateChoose from "../pages/HostExperience/HostExperienceCreateChoose";
 import HostExperienceCreateYears from "../pages/HostExperience/HostExperienceCreateYears";
@@ -37,6 +39,7 @@ import BecomeHost from "../pages/BecomeHost";
 
 import HostToday from "../pages/HostPage/HostToday";
 import HostListings from "../pages/HostPage/HostListings";
+import ProfileEditPage from "../pages/ProfileEditPage";
 
 const AppRoutes = () => {
   return (
@@ -49,6 +52,22 @@ const AppRoutes = () => {
         <Route path="experiences/search" element={<ExperienceSearchResultsPage />} />
         <Route path="demomap" element={<MapDemoPage />} />
         <Route path="tours" element={<ToursPage />} />
+        <Route
+          path="profile"
+          element={(
+            <RequireAuth>
+              <ProfilePage />
+            </RequireAuth>
+          )}
+        />
+        <Route
+          path="profile/edit"
+          element={(
+            <RequireAuth>
+              <ProfileEditPage />
+            </RequireAuth>
+          )}
+        />
       </Route>
 
       {/* Info layout pages */}

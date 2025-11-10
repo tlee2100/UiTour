@@ -4,6 +4,7 @@ import { Icon } from '@iconify/react';
 import logo from '../assets/UiTour.png';
 import './Header.css';
 import ProfileMenu from './ProfileMenu';
+import { useApp } from '../contexts/AppContext';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -11,6 +12,7 @@ export default function Header() {
   const menuButtonRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, token } = useApp();
 
   const handleLogoClick = () => navigate('/');
 
@@ -62,7 +64,13 @@ export default function Header() {
       <div className="header_right">
         <button
           className="header_title"
-          onClick={() => navigate('/host/becomehost')}
+          onClick={() => {
+            if (!user || !token) {
+              navigate('/login');
+            } else {
+              navigate('/host/becomehost');
+            }
+          }}
         >
           Become a Host
         </button>
@@ -83,7 +91,7 @@ export default function Header() {
           </button>
 
           <div className="header_avatar">
-            <button className="header_avatarButton">
+            <button className="header_avatarButton" onClick={() => navigate('/profile')}>
               <Icon icon="mdi:account" width="28" height="28" />
             </button>
           </div>

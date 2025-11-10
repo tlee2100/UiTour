@@ -50,7 +50,7 @@ const SignUpPage = () => {
   return (
     <div className="login-container">
       <div className="login-box">
-        <button className="close-btn">×</button>
+        <button className="close-btn" onClick={() => navigate('/')}>×</button>
 
         <h2 className="login-title">Sign up</h2>
         <h3 className="welcome-text">Welcome to UiTour</h3>
