@@ -29,7 +29,11 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
             <Icon icon="mdi:airplane" width="20" height="20" />
             <span>Trips</span>
           </button>
-          <button className="profile-menu_item" onClick={onClose} role="menuitem">
+          <button
+            className="profile-menu_item"
+            onClick={() => { onClose(); navigate('/profile'); }}
+            role="menuitem"
+          >
             <Icon icon="mdi:account-outline" width="20" height="20" />
             <span>Profile</span>
           </button>
