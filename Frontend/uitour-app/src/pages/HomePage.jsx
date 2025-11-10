@@ -32,19 +32,25 @@ export default function HomePage() {
     try {
       const list = await authAPI.getProperties(); // ✅ gọi authAPI
       // Normalize dữ liệu từ backend
-      const normalized = list.map(p => ({
-        id: p.propertyID,
-        title: p.listingTitle || 'Untitled',
-        location: p.location || '',
-        price: p.price ?? 0,
-        currency: p.currency ?? "USD",
-        rating: p.rating ?? 0,
-        reviewsCount: Array.isArray(p.reviews) ? p.reviews.length : 0,
-        // lấy ảnh đầu tiên từ mảng photos
-        mainImage: Array.isArray(p.photos) && p.photos.length > 0 ? p.photos[0].url : "/fallback.png",
-        isGuestFavourite: false,
-        dates: null
-      }));
+      const normalized = list.map(p => {
+    const reviews = Array.isArray(p.reviews) ? p.reviews : [];
+    const avgRating = reviews.length > 0 
+      ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviews.length 
+      : 0;
+
+    return {
+      id: p.propertyID,
+      title: p.listingTitle || 'Untitled',
+      location: p.location || '',
+      price: p.price ?? 0,
+      currency: p.currency ?? "USD",
+      rating: avgRating, // ✅ lấy trung bình từ reviews
+      reviewsCount: reviews.length,
+      mainImage: Array.isArray(p.photos) && p.photos.length > 0 ? p.photos[0].url : "/fallback.png",
+      isGuestFavourite: false,
+      dates: null
+    };
+    });
       setProperties(normalized);
     } catch (err) {
       console.error('Error fetching properties:', err);
