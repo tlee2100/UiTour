@@ -323,27 +323,33 @@ const normalizeProperty = (p) => {
     rating: rating,
     reviewsCount: reviewsCount,
     reviews: reviews.map(r => {
-      const userData = r.user || r.User;
-      return {
-        id: r.reviewID || r.reviewId || r.ReviewID || r.ReviewId || r.id,
-        user: userData ? {
-          name: userData.fullName || userData.FullName || userData.name || userData.Name || "Guest",
-          avatar: userData.avatar || userData.Avatar || ""
-        } : {
-          name: "Guest",
-          avatar: ""
-        },
-        rating: r.rating || r.Rating || 0,
-        comment: r.comments || r.Comments || r.comment || r.Comment || "",
-        date: r.createdAt || r.CreatedAt || r.date || "",
-        cleanliness: r.cleanliness || r.Cleanliness || 0,
-        communication: r.communication || r.Communication || 0,
-        accuracy: r.accuracy || r.Accuracy || 0,
-        locationRating: r.locationRating || r.LocationRating || 0,
-        value: r.value || r.Value || 0
-      };
-    }),
+    // Bảo đảm userData là object chứ không phải ID
+    const userData = (typeof r.user === "object" && r.user) ||
+                    (typeof r.User === "object" && r.User) || null;
 
+    return {
+      id: r.reviewID || r.reviewId || r.ReviewID || r.ReviewId || r.id,
+      user: {
+        name:
+          userData?.fullName ||
+          userData?.FullName ||
+          userData?.name ||
+          userData?.Name ||
+          "Guest",
+        avatar: userData?.avatar || userData?.Avatar || ""
+      },
+      rating: r.rating || r.Rating || 0,
+      comment: r.comments || r.Comments || r.comment || r.Comment || "",
+      date: r.createdAt || r.CreatedAt || r.date || "",
+      cleanliness: r.cleanliness || r.Cleanliness || 0,
+      communication: r.communication || r.Communication || 0,
+      accuracy: r.accuracy || r.Accuracy || 0,
+      locationRating: r.locationRating || r.LocationRating || 0,
+      value: r.value || r.Value || 0
+    };
+  }),
+
+    
     // Booking
     checkIn: p.checkin_after || p.checkin_after || null,
     checkOut: null,
@@ -354,6 +360,7 @@ const normalizeProperty = (p) => {
     createdAt: p.createdAt || p.CreatedAt,
     updatedAt: p.updatedAt || p.UpdatedAt
   };
+  
 };
 
 export default function HomeInfoPage() {
@@ -373,6 +380,7 @@ export default function HomeInfoPage() {
     try {
       const property = await authAPI.getPropertyById(propertyId); // ✅ gọi authAPI
       const normalized = normalizeProperty(property); // ✅ normalize dữ liệu
+      console.log("✅ Normalized reviews:", normalized.reviews);
       setCurrentProperty(normalized);
     } catch (err) {
       console.error("Error loading property:", err);
