@@ -6,10 +6,12 @@ const AppContext = createContext();
 const getInitialState = () => {
   const storedUser = localStorage.getItem('user');
   const storedToken = localStorage.getItem('token');
+  const storedProfile = localStorage.getItem('uitour_profile');
   
   return {
     user: storedUser ? JSON.parse(storedUser) : null,
     token: storedToken || null,
+    profile: storedProfile ? JSON.parse(storedProfile) : null,
     favorites: [],
     searchHistory: [],
     isLoading: false,
@@ -38,11 +40,21 @@ function appReducer(state, action) {
         localStorage.removeItem('token');
       }
       return { ...state, token: action.payload };
+
+    case 'SET_PROFILE':
+      const profile = action.payload;
+      if (profile) {
+        localStorage.setItem('uitour_profile', JSON.stringify(profile));
+      } else {
+        localStorage.removeItem('uitour_profile');
+      }
+      return { ...state, profile: action.payload };
     
     case 'LOGOUT':
       localStorage.removeItem('user');
       localStorage.removeItem('token');
-      return { ...state, user: null, token: null };
+      localStorage.removeItem('uitour_profile');
+      return { ...state, user: null, token: null, profile: null };
     
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
