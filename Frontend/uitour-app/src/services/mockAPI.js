@@ -14,6 +14,44 @@ class MockAPIService {
     return new Promise(resolve => setTimeout(resolve, this.delay));
   }
 
+  // ----------------------
+  // Mock User Profile
+  // ----------------------
+  async getUserProfile(userId = 1) {
+    await this.delayResponse();
+    // Lấy từ localStorage trước (nếu đã lưu)
+    const stored = localStorage.getItem('uitour_profile');
+    if (stored) return JSON.parse(stored);
+
+    // Dữ liệu hồ sơ mẫu
+    const mock = {
+      userId,
+      displayName: 'Tân',
+      role: 'Khách',
+      email: 'lephuocngoctan555@gmail.com',
+      about: '',
+      funFact: '',
+      bornDecade: '',
+      spendsTooMuchTimeOn: '',
+      mostUselessSkill: '',
+      work: '',
+      pets: '',
+      studiedAt: '',
+      favoriteHighSchoolSong: '',
+      favoriteHistoryBook: '',
+      visitedTagsEnabled: false,
+      visitedTags: ['Điểm đến tiếp theo','Điểm đến tiếp theo','Điểm đến tiếp theo','Điểm đến tiếp theo'],
+      interests: ['Cà phê','Mua sắm','Nấu ăn','Thể thao trực tiếp','Lịch sử','Nhạc sống','Phim ảnh','Đọc'],
+    };
+    return mock;
+  }
+
+  async saveUserProfile(profile) {
+    await this.delayResponse();
+    localStorage.setItem('uitour_profile', JSON.stringify(profile));
+    return profile;
+  }
+
   // Mock Properties Data
   // Cách tuỳ biến nhanh:
   // - Thêm object mới vào mảng để có thêm chỗ ở
