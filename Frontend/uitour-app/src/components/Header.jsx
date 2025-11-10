@@ -65,6 +65,11 @@ export default function Header() {
         <button
           className="header_title"
           onClick={() => {
+            const isAdmin = !!user && !!token && (user.role === 'ADMIN' || user.Role === 'ADMIN');
+            if (isAdmin || location.pathname.startsWith('/admin')) {
+              navigate('/');
+              return;
+            }
             if (!user || !token) {
               navigate('/login');
             } else {
@@ -72,7 +77,9 @@ export default function Header() {
             }
           }}
         >
-          Become a Host
+          {((user && token && (user.role === 'ADMIN' || user.Role === 'ADMIN')) || location.pathname.startsWith('/admin'))
+            ? 'Switch to traveling'
+            : 'Become a Host'}
         </button>
 
         <button className="header_globe">

@@ -1,0 +1,26 @@
+.admin-page { padding: 12px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.kpi-card { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.05); }
+.kpi-title { color: #666; font-size: 14px; }
+.kpi-value { font-size: 24px; font-weight: 700; }
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.chart-card { background: #fff; border-radius: 12px; height: 220px; display: flex; align-items: center; justify-content: center; color: #888; box-shadow: 0 6px 18px rgba(0,0,0,0.05); }
+.table-card { background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.05); }
+.table-title { font-weight: 600; margin-bottom: 8px; }
+.table { width: 100%; }
+.row { display: grid; grid-template-columns: 80px 1.3fr 1fr 1fr 140px; gap: 8px; padding: 8px 6px; border-bottom: 1px solid #f0f0f0; }
+.row.head { font-weight: 600; background: #fafafa; }
+.admin-split { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+.detail-card { background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.05); height: fit-content; }
+.button-row { display: flex; gap: 8px; margin-top: 12px; }
+.primary { background: #00bcd4; color: #fff; border: 0; border-radius: 8px; padding: 10px 12px; cursor: pointer; }
+.ghost { background: #f5f5f5; border: 0; border-radius: 8px; padding: 10px 12px; cursor: pointer; }
+.small { padding: 8px 10px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.settings-card { background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.05); }
+.settings-title { font-weight: 600; margin-bottom: 8px; }
+.settings-row { display: grid; grid-template-columns: 160px 1fr; align-items: center; gap: 8px; margin-bottom: 8px; }
+.settings-row input { padding: 8px 10px; border: 1px solid #eee; border-radius: 8px; }
+.banner-item { background: #f5f5f5; padding: 10px; border-radius: 8px; margin-bottom: 8px; }
+
+
