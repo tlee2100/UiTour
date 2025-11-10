@@ -16,6 +16,14 @@ import WishlistPage from "../pages/WishlistPage";
 import TripsPage from "../pages/TripsPage";
 import NotificationsPage from "../pages/NotificationsPage";
 import AccountSettingsPage from "../pages/AccountSettingsPage";
+import AdminLayout from "../layouts/AdminLayout";
+import RequireAdmin from "../components/RequireAdmin";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminPosts from "../pages/admin/AdminPosts";
+import AdminUsers from "../pages/admin/AdminUsers";
+import AdminReports from "../pages/admin/AdminReports";
+import AdminTransactions from "../pages/admin/AdminTransactions";
+import AdminSettings from "../pages/admin/AdminSettings";
 
 import HostExperienceCreateChoose from "../pages/HostExperience/HostExperienceCreateChoose";
 import HostExperienceCreateYears from "../pages/HostExperience/HostExperienceCreateYears";
@@ -77,6 +85,16 @@ const AppRoutes = () => {
             </RequireAuth>
           )}
         />
+      </Route>
+
+      {/* Admin area */}
+      <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="posts" element={<AdminPosts />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="reports" element={<AdminReports />} />
+        <Route path="transactions" element={<AdminTransactions />} />
+        <Route path="settings" element={<AdminSettings />} />
       </Route>
 
       {/* Info layout pages */}
