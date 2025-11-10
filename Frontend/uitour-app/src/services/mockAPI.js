@@ -1431,7 +1431,7 @@ class MockAPIService {
           userId: 102,
           userName: "John Smith",
           userAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
-          rating: 5,
+          rating: 3,
           comment: "Good value for the price. The location is amazing and close to everything.",
           createdAt: "2024-01-15T14:20:00Z",
           location: "USA"
