@@ -9,6 +9,19 @@ import ExperienceSearchResultsPage from "../pages/ExperienceSearchResultsPage";
 import ExperienceInfoPage from "../pages/ExperienceInfoPage";
 import LoginPage from "../pages/LoginPage";
 import SignUpPage from "../pages/SignUpPage";
+import RequireAuth from "../components/RequireAuth";
+import WishlistPage from "../pages/WishlistPage";
+import TripsPage from "../pages/TripsPage";
+import NotificationsPage from "../pages/NotificationsPage";
+import AccountSettingsPage from "../pages/AccountSettingsPage";
+import AdminLayout from "../layouts/AdminLayout";
+import RequireAdmin from "../components/RequireAdmin";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminPosts from "../pages/admin/AdminPosts";
+import AdminUsers from "../pages/admin/AdminUsers";
+import AdminReports from "../pages/admin/AdminReports";
+import AdminTransactions from "../pages/admin/AdminTransactions";
+import AdminSettings from "../pages/admin/AdminSettings";
 
 import HostExperienceCreateChoose from "../pages/HostExperience/HostExperienceCreateChoose";
 import HostExperienceCreateYears from "../pages/HostExperience/HostExperienceCreateYears";
@@ -36,6 +49,7 @@ import BecomeHost from "../pages/BecomeHost";
 
 import HostToday from "../pages/HostPage/HostToday";
 import HostListings from "../pages/HostPage/HostListings";
+import ProfileEditPage from "../pages/ProfileEditPage";
 
 const AppRoutes = () => {
   return (
@@ -47,6 +61,37 @@ const AppRoutes = () => {
         <Route path="search" element={<SearchResultsPage />} />
         <Route path="experiences/search" element={<ExperienceSearchResultsPage />} />
         <Route path="tours" element={<ToursPage />} />
+        {/* Profile menu pages under MainLayout to include Header/Footer */}
+        <Route path="wishlist" element={<RequireAuth><WishlistPage /></RequireAuth>} />
+        <Route path="trips" element={<RequireAuth><TripsPage /></RequireAuth>} />
+        <Route path="notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+        <Route path="account" element={<RequireAuth><AccountSettingsPage /></RequireAuth>} />
+        <Route
+          path="profile"
+          element={(
+            <RequireAuth>
+              <ProfilePage />
+            </RequireAuth>
+          )}
+        />
+        <Route
+          path="profile/edit"
+          element={(
+            <RequireAuth>
+              <ProfileEditPage />
+            </RequireAuth>
+          )}
+        />
+      </Route>
+
+      {/* Admin area */}
+      <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="posts" element={<AdminPosts />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="reports" element={<AdminReports />} />
+        <Route path="transactions" element={<AdminTransactions />} />
+        <Route path="settings" element={<AdminSettings />} />
       </Route>
 
       {/* Info layout pages */}
@@ -64,6 +109,8 @@ const AppRoutes = () => {
 
       <Route path="/host/today" element={<HostToday />} />
       <Route path="/host/listings" element={<HostListings />} />
+
+      {/* Profile menu pages (duplicated outside MainLayout) - removed */}
 
       {/* Host Stay Creation (no shared site layout) */}
       <Route path="/host/stay/create/choose" element={<HostStayCreateChoose />} />

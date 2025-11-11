@@ -127,6 +127,36 @@
   gap: 4px;
 }
 
+.ir-review-star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.ir-review-star svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.ir-review-star.filled svg,
+.ir-review-star.filled svg * {
+  fill: #13a5ca !important;
+  color: #13a5ca !important;
+  stroke: #13a5ca !important;
+}
+
+.ir-review-star.empty svg,
+.ir-review-star.empty svg * {
+  fill: #d1d5db !important;
+  color: #d1d5db !important;
+  stroke: #d1d5db !important;
+  opacity: 0.5 !important;
+}
+
 /* Comment */
 .ir-review-comment {
   font-family: "Inter", sans-serif;

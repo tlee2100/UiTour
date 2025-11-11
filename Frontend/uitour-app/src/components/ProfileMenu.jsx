@@ -21,23 +21,27 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
     return (
       <div ref={ref} className="profile-menu" role="menu" aria-label="User menu">
         <div className="profile-menu_section">
-          <button className="profile-menu_item" onClick={onClose} role="menuitem">
+          <button className="profile-menu_item" onClick={() => { onClose(); navigate('/wishlist'); }} role="menuitem">
             <Icon icon="mdi:heart-outline" width="20" height="20" />
             <span>Wishlist</span>
           </button>
-          <button className="profile-menu_item" onClick={onClose} role="menuitem">
+          <button className="profile-menu_item" onClick={() => { onClose(); navigate('/trips'); }} role="menuitem">
             <Icon icon="mdi:airplane" width="20" height="20" />
             <span>Trips</span>
           </button>
-          <button className="profile-menu_item" onClick={onClose} role="menuitem">
+          <button
+            className="profile-menu_item"
+            onClick={() => { onClose(); navigate('/profile'); }}
+            role="menuitem"
+          >
             <Icon icon="mdi:account-outline" width="20" height="20" />
             <span>Profile</span>
           </button>
-          <button className="profile-menu_item" onClick={onClose} role="menuitem">
+          <button className="profile-menu_item" onClick={() => { onClose(); navigate('/notifications'); }} role="menuitem">
             <Icon icon="mdi:bell-outline" width="20" height="20" />
             <span>Notification</span>
           </button>
-          <button className="profile-menu_item" onClick={onClose} role="menuitem">
+          <button className="profile-menu_item" onClick={() => { onClose(); navigate('/account'); }} role="menuitem">
             <Icon icon="mdi:cog-outline" width="20" height="20" />
             <span>Account setting</span>
           </button>

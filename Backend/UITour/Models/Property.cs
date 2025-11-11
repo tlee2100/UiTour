@@ -36,7 +36,7 @@ namespace UITour.Models
         public DateTime CreatedAt { get; set; }
         public bool Active { get; set; }
         [ForeignKey("CancellationPolicy")] public int? CancellationID { get; set; }
-        
+
         [StringLength(100)]
         public string PropertyType { get; set; }
         public bool selfCheckIn { get; set; } = true;
@@ -51,6 +51,20 @@ namespace UITour.Models
         public bool pets_allowed { get; set; } = true;
         public string lat { get; set; }
         public string lng { get; set; }
+        public decimal ServiceFee { get; set; } = 0;
+        public decimal TaxFee { get; set; } = 0;
+        public decimal Discount { get; set; } = 0;
+        public decimal DiscountPercentage { get; set; } = 0;
+        [StringLength(100)] public string checkout_before { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public string HouseRules { get; set; }
+        // Health & Safety
+        public bool CovidSafety { get; set; } = false;
+        public bool SurfacesSanitized { get; set; } = false;
+        public bool CarbonMonoxideAlarm { get; set; } = false;
+        public bool SmokeAlarm { get; set; } = false;
+        public bool SecurityDepositRequired { get; set; } = false;
+        public decimal SecurityDepositAmount { get; set; } = 0;
         public CancellationPolicy CancellationPolicy { get; set; }
         public ICollection<PropertyAmenity> PropertyAmenities { get; set; }
         public ICollection<Calendar> Calendars { get; set; }
@@ -58,6 +72,6 @@ namespace UITour.Models
         public ICollection<PropertyPhoto> Photos { get; set; }
         public ICollection<SavedListing> SavedListings { get; set; }
         public ICollection<Review> Reviews { get; set; }
-        
+
     }
 }
