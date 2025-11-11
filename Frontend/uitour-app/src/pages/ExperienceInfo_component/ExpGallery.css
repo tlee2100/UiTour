@@ -3,18 +3,20 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 6px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .expGallery-item {
     position: relative;
     cursor: pointer;
     overflow: hidden;
-    border-radius: 10px;
 }
 
 .expGallery-item img {
     width: 100%;
-    height: 200px;
+    height: 250px;
     object-fit: cover;
     transition: scale 0.25s;
 }
@@ -34,7 +36,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
 }
 
 /* --- MODAL --- */

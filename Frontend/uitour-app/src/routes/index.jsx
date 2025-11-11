@@ -22,7 +22,7 @@ import AdminUsers from "../pages/admin/AdminUsers";
 import AdminReports from "../pages/admin/AdminReports";
 import AdminTransactions from "../pages/admin/AdminTransactions";
 import AdminSettings from "../pages/admin/AdminSettings";
-
+import ProfilePage from "../pages/ProfilePage";
 import HostExperienceCreateChoose from "../pages/HostExperience/HostExperienceCreateChoose";
 import HostExperienceCreateYears from "../pages/HostExperience/HostExperienceCreateYears";
 import HostExperienceCreateQualification from "../pages/HostExperience/HostExperienceCreateQualification";
