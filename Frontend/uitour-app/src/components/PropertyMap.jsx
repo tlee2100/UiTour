@@ -79,17 +79,50 @@ const PropertyMap = ({
 }) => {
   // ✅ CHỈ FIX TRUY XUẤT DATA — giữ logic cũ
   // ✅ Ưu tiên locationObj mới — fallback vị trí cũ nếu có
-  const lat =
+  let lat =
     property?.locationObj?.lat ??
     property?.location?.lat ??
     property?.latitude ??
     null;
 
-  const lng =
+  let lng =
     property?.locationObj?.lng ??
     property?.location?.lng ??
     property?.longitude ??
     null;
+
+  // Fallback: infer coordinates from location text when lat/lng are missing (common for tours)
+  if (lat == null || lng == null) {
+    const locText = `${property?.locationObj?.city || ''} ${property?.location || ''}`.toLowerCase();
+    const cityToCoords = [
+      { key: 'hoan kiem', coords: [21.0338, 105.8470] },
+      { key: 'hanoi', coords: [21.0278, 105.8342] },
+      { key: 'ha noi', coords: [21.0278, 105.8342] },
+      { key: 'ho chi minh', coords: [10.8231, 106.6297] },
+      { key: 'hcmc', coords: [10.8231, 106.6297] },
+      { key: 'district 1', coords: [10.7756, 106.7009] },
+      { key: 'da nang', coords: [16.0471, 108.2068] },
+      { key: 'my khe', coords: [16.0615, 108.2453] },
+      { key: 'ha long', coords: [20.9101, 107.1839] },
+      { key: 'quang ninh', coords: [21.0064, 107.2925] },
+      { key: 'can tho', coords: [10.0452, 105.7469] },
+      { key: 'nha trang', coords: [12.2388, 109.1967] },
+      { key: 'sapa', coords: [22.3350, 103.8430] },
+      { key: 'hue', coords: [16.4637, 107.5909] },
+      { key: 'singapore', coords: [1.3521, 103.8198] },
+      { key: 'marina bay', coords: [1.2834, 103.8607] },
+      { key: 'bangkok', coords: [13.7563, 100.5018] },
+      { key: 'old town', coords: [13.7526, 100.4946] },
+      { key: 'cu chi', coords: [11.146, 106.346] },
+    ];
+    for (const c of cityToCoords) {
+      if (locText.includes(c.key)) {
+        lat = c.coords[0];
+        lng = c.coords[1];
+        break;
+      }
+    }
+  }
 
   const mapCenter = lat && lng ? [lat, lng] : [10.8231, 106.6297];
   const markerPos = lat && lng ? [lat, lng] : null;

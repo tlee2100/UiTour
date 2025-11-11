@@ -3,6 +3,8 @@
 
  const API_BASE_URL = 'http://localhost:5069/api/user';
 const PROPERTY_BASE_URL = 'http://localhost:5069/api/properties';
+const TOUR_BASE_URL = 'http://localhost:5069/api/tour';
+const HOST_BASE_URL = 'http://localhost:5069/api/host';
 
 class AuthAPI {
    // Lấy thông tin user theo ID
@@ -148,6 +150,114 @@ class AuthAPI {
       throw err;
     }
   }
+
+
+  // ============ TOURS / EXPERIENCES ============
+  async getTours() {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${TOUR_BASE_URL}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch tours');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getTourById(tourId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${TOUR_BASE_URL}/${tourId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch tour');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getTourPhotos(tourId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${TOUR_BASE_URL}/${tourId}/photos`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch tour photos');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getTourReviews(tourId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${TOUR_BASE_URL}/${tourId}/reviews`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch tour reviews');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getHostById(hostId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${HOST_BASE_URL}/${hostId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch host');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
 }
 
 // Create singleton instance
