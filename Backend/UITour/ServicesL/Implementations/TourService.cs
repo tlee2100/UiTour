@@ -23,14 +23,18 @@ namespace UITour.ServicesL.Implementations
         {
             return await _unitOfWork.Tours.Query()
                 //.Include(t => t.Host)
-                //.Include(t => t.City)
-                //.Include(t => t.Country)
+                .Include(t => t.Photos)
+                .Include(t => t.Reviews)
                 .ToListAsync();
         }
 
         public async Task<Tour> GetByIdAsync(int id)
         {
-            var tour = await _unitOfWork.Tours.GetByIdAsync(id);
+            var tour = await _unitOfWork.Tours.Query()
+                .Include(t => t.Photos)
+                .Include(t => t.Participants)
+                .Include(t => t.Reviews).ThenInclude(r => r.User)
+                .FirstOrDefaultAsync(t => t.TourID == id);
             if (tour == null)
                 throw new InvalidOperationException("Tour not found");
             return tour;
