@@ -14,6 +14,82 @@ class MockAPIService {
     return new Promise(resolve => setTimeout(resolve, this.delay));
   }
 
+  // ----------------------
+  // Mock User Profile
+  // ----------------------
+  async getUserProfile(userId = 1) {
+    await this.delayResponse();
+    // Lấy từ localStorage trước (nếu đã lưu)
+    const stored = localStorage.getItem('uitour_profile');
+    if (stored) return JSON.parse(stored);
+
+    // Dữ liệu hồ sơ mẫu
+    const mock = {
+      userId,
+      displayName: 'Tân',
+      role: 'Khách',
+      email: 'lephuocngoctan555@gmail.com',
+      about: '',
+      funFact: '',
+      bornDecade: '',
+      spendsTooMuchTimeOn: '',
+      mostUselessSkill: '',
+      work: '',
+      pets: '',
+      studiedAt: '',
+      favoriteHighSchoolSong: '',
+      favoriteHistoryBook: '',
+      visitedTagsEnabled: false,
+      visitedTags: ['Điểm đến tiếp theo','Điểm đến tiếp theo','Điểm đến tiếp theo','Điểm đến tiếp theo'],
+      interests: ['Cà phê','Mua sắm','Nấu ăn','Thể thao trực tiếp','Lịch sử','Nhạc sống','Phim ảnh','Đọc'],
+    };
+    return mock;
+  }
+
+  async saveUserProfile(profile) {
+    await this.delayResponse();
+    localStorage.setItem('uitour_profile', JSON.stringify(profile));
+    return profile;
+  }
+
+  // ----------------------
+  // Mock Wishlist & Trips
+  // ----------------------
+  async getUserWishlist(userId = 1) {
+    await this.delayResponse();
+    // dữ liệu minh họa giống ảnh: vài collection card
+    return [
+      {
+        id: 'recent',
+        title: 'Đã xem gần đây',
+        itemsCount: 6,
+        cover: '/images/id1_img01.png'
+      },
+      {
+        id: 'tlee',
+        title: 'tlee',
+        itemsCount: 2,
+        cover: '/images/id100_img01.png'
+      }
+    ];
+  }
+
+  async getUserTrips(userId = 1) {
+    await this.delayResponse();
+    const stored = localStorage.getItem('uitour_trips');
+    if (stored) return JSON.parse(stored);
+    // mặc định: chưa có chuyến đi
+    return [];
+  }
+
+  async addTrip(trip) {
+    await this.delayResponse();
+    const stored = JSON.parse(localStorage.getItem('uitour_trips') || '[]');
+    stored.push({ id: Date.now(), ...trip });
+    localStorage.setItem('uitour_trips', JSON.stringify(stored));
+    return stored;
+  }
+
   // Mock Properties Data
   // Cách tuỳ biến nhanh:
   // - Thêm object mới vào mảng để có thêm chỗ ở
@@ -1355,7 +1431,7 @@ class MockAPIService {
           userId: 102,
           userName: "John Smith",
           userAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
-          rating: 5,
+          rating: 3,
           comment: "Good value for the price. The location is amazing and close to everything.",
           createdAt: "2024-01-15T14:20:00Z",
           location: "USA"

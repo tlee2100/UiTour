@@ -347,6 +347,29 @@ body {
   color: #000000; /* nếu SvgIcon nhận màu từ currentColor */
 }
 
+/* Icon placeholder when icon is missing */
+.content-icon-placeholder {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #6B7280;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Empty amenities state */
+.content-amen-empty {
+  padding: 24px 0;
+  color: var(--subtitle-color);
+  font-size: 16px;
+  text-align: center;
+}
+
 /* Text wrapper */
 .content-amen-text {
   display: flex;

@@ -37,7 +37,7 @@ const LoginPage = () => {
   return (
     <div className="login-container">
       <div className="login-box">
-        <button className="close-btn">×</button>
+        <button className="close-btn" onClick={() => navigate('/')}>×</button>
 
         <h2 className="login-title">Login</h2>
         <h3 className="welcome-text">Welcome to UiTour!</h3>

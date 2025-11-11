@@ -1,10 +1,33 @@
 // Authentication API Service
 // Kết nối với backend API cho login và register
 
-const API_BASE_URL = 'http://localhost:5069/api/user';
+ const API_BASE_URL = 'http://localhost:5069/api/user';
 const PROPERTY_BASE_URL = 'http://localhost:5069/api/properties';
 
 class AuthAPI {
+   // Lấy thông tin user theo ID
+   async getUserById(userId) {
+     try {
+       const token = localStorage.getItem('token');
+       const response = await fetch(`${API_BASE_URL}/${userId}`, {
+         headers: {
+           'Content-Type': 'application/json',
+           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+         }
+       });
+ 
+       if (!response.ok) {
+         const errText = await response.text();
+         throw new Error(errText || 'Failed to fetch user');
+       }
+ 
+       const data = await response.json();
+       return data;
+     } catch (err) {
+       throw err;
+     }
+   }
+ 
   // Login user
   async login(email, password) {
     try {
@@ -80,6 +103,29 @@ class AuthAPI {
     throw err;
   }
   }
+  //get property by id
+  async getPropertyById(propertyId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${PROPERTY_BASE_URL}/${propertyId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch property');
+      }
+
+      const data = await response.json();
+      return data; // Property object với đầy đủ thông tin
+    } catch (err) {
+      throw err;
+    }
+  }
+
   //get property photos
   async getPropertyPhotos(propertyId) {
     try {

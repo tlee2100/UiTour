@@ -4,6 +4,7 @@ import { Icon } from '@iconify/react';
 import ProfileMenu from './ProfileMenu';
 import logo from '../assets/UiTour.png';
 import './HeaderInfo.css';
+import { useApp } from '../contexts/AppContext';
 
 export default function HeaderInfo() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,6 +13,7 @@ export default function HeaderInfo() {
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
   const navigate = useNavigate();
+  const { user, token } = useApp();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -68,9 +70,22 @@ export default function HeaderInfo() {
       <div className="headerif_right">
         <button
           className="headerif_title"
-          onClick={() => navigate('/host/becomehost')}
+          onClick={() => {
+            const isAdmin = !!user && !!token && (user.role === 'ADMIN' || user.Role === 'ADMIN');
+            if (isAdmin || location.pathname.startsWith('/admin')) {
+              navigate('/');
+              return;
+            }
+            if (!user || !token) {
+              navigate('/login');
+            } else {
+              navigate('/host/becomehost');
+            }
+          }}
         >
-          Become a Host
+          {((user && token && (user.role === 'ADMIN' || user.Role === 'ADMIN')) || location.pathname.startsWith('/admin'))
+            ? 'Switch to traveling'
+            : 'Become a Host'}
         </button>
 
         <button className="headerif_globe">
