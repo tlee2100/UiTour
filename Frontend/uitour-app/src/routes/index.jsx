@@ -7,8 +7,6 @@ import ToursPage from "../pages/ToursPage";
 import SearchResultsPage from "../pages/SearchResultsPage";
 import ExperienceSearchResultsPage from "../pages/ExperienceSearchResultsPage";
 import ExperienceInfoPage from "../pages/ExperienceInfoPage";
-import MapDemoPage from "../pages/MapDemoPage";
-import ProfilePage from "../pages/ProfilePage";
 import LoginPage from "../pages/LoginPage";
 import SignUpPage from "../pages/SignUpPage";
 import RequireAuth from "../components/RequireAuth";
@@ -62,7 +60,6 @@ const AppRoutes = () => {
         <Route index element={<HomePage />} />
         <Route path="search" element={<SearchResultsPage />} />
         <Route path="experiences/search" element={<ExperienceSearchResultsPage />} />
-        <Route path="demomap" element={<MapDemoPage />} />
         <Route path="tours" element={<ToursPage />} />
         {/* Profile menu pages under MainLayout to include Header/Footer */}
         <Route path="wishlist" element={<RequireAuth><WishlistPage /></RequireAuth>} />
