@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useCallback
 } from "react";
-import mockAPI from "../services/mockAPI";
+import authAPI from "../services/authAPI";
 
 // -----------------------------
 // Initial State
@@ -89,7 +89,7 @@ const normalizeExperienceListItem = (e) => ({
 // Normalizer for unified UI
 // -----------------------------
 const normalizeExperience = (e) => {
-  const loc = e.location || {};
+  const locString = e.location || "";
 
   return {
     id: e.id,
@@ -102,31 +102,33 @@ const normalizeExperience = (e) => {
     rating: e.rating ?? 0,
     reviewsCount: e.reviewsCount ?? 0,
 
-    location: `${loc.addressLine || ""}, ${loc.city || ""}`.replace(/^, |, $/g, ""),
+    location: locString,
     locationObj: {
-      address: loc.addressLine || "",
-      city: loc.city || "",
-      country: loc.country || "Vietnam",
-      lat: loc.lat ?? null,
-      lng: loc.lng ?? null,
+      address: locString,
+      city: e.city || "",
+      country: e.country || "Vietnam",
+      lat: e.latitude ?? null,
+      lng: e.longitude ?? null,
     },
 
-    pricing: e.pricing,
-    basePrice: e.pricing?.basePrice ?? 0,
-    currency: e.pricing?.currency ?? "VND",
+    pricing: {
+      basePrice: e.price ?? 0,
+      currency: e.currency || "USD",
+    },
+    basePrice: e.price ?? 0,
+    currency: e.currency || "USD",
 
-    media: e.media,
-    photos: e.media?.photos ?? [],
+    media: e.media || {},
+    photos: e.media?.photos ?? e.photos ?? [],
     mainImage: e.media?.cover?.url ?? null,
 
-    capacity: e.capacity ?? { maxGuests: 1 },
-    bookingInfo: e.booking ?? {},  // ✅ trả tên đúng cho Booking Box
-    maxGuests: e.capacity?.maxGuests ?? 1,
+    capacity: { maxGuests: e.maxGuests ?? 1 },
+    bookingInfo: e.booking ?? {},
+    maxGuests: e.maxGuests ?? 1,
 
     durationHours: e.durationHours,
     experienceDetails: e.experienceDetails || e.details || [],
 
-    // ✅ phần bị thiếu!
     host: e.host ?? null,
     hostId: e.hostId ?? null,
 
@@ -172,8 +174,86 @@ export const ExperienceProvider = ({ children }) => {
     try {
       setLoading(true);
       clearError();
-      const raw = await mockAPI.getExperienceById(id);
-      const normalized = normalizeExperience(raw);
+      // Base tour
+      const tour = await authAPI.getTourById(id);
+
+      // Related resources
+      const [photos, reviews, host] = await Promise.all([
+        authAPI.getTourPhotos(id).catch(() => []),
+        authAPI.getTourReviews(id).catch(() => []),
+        tour?.hostID ? authAPI.getHostById(tour.hostID).catch(() => null) : Promise.resolve(null),
+      ]);
+
+      // Build media
+      const media = {
+        cover: photos?.[0]?.url ? { url: photos[0].url } : undefined,
+        photos: (photos || []).map(p => ({
+          id: p.photoID,
+          url: p.url,
+          alt: p.caption || "photo"
+        })),
+      };
+
+      // Map reviews
+      const mappedReviews = (reviews || []).map(r => ({
+        id: r.reviewID,
+        userId: r.userID,
+        userName: r.user?.fullName || "Guest",
+        userAvatar: r.user?.avatar,
+        rating: r.rating,
+        comment: r.comment,
+        createdAt: r.createdAt,
+      }));
+
+      const reviewsCount = mappedReviews.length;
+      const rating =
+        reviewsCount > 0
+          ? mappedReviews.reduce((acc, x) => acc + (Number(x.rating) || 0), 0) / reviewsCount
+          : 0;
+
+      // Host
+      let hostUi = null;
+      if (host) {
+        hostUi = {
+          id: host.hostID,
+          name: host.user?.fullName || "Host",
+          avatar: host.user?.avatar,
+          joinedDate: host.hostSince,
+          responseRate: host.hostResponseRate ?? 0,
+          responseTime: "within a few hours",
+          isSuperhost: !!host.isSuperHost,
+          totalReviews: reviewsCount,
+          averageRating: rating,
+          languages: [],
+          description: host.hostAbout,
+        };
+      }
+
+      const merged = {
+        id: tour?.tourID ?? Number(id),
+        title: tour?.tourName,
+        summary: tour?.description,
+        description: tour?.description,
+        rating,
+        reviewsCount,
+        location: tour?.location,
+        city: tour?.city?.cityName,
+        country: tour?.country?.countryName,
+        latitude: tour?.latitude,
+        longitude: tour?.longitude,
+        price: tour?.price,
+        currency: tour?.currency,
+        maxGuests: tour?.maxGuests,
+        durationHours: typeof tour?.durationDays === "number" ? tour.durationDays * 24 : undefined,
+        media,
+        reviews: mappedReviews,
+        host: hostUi,
+        hostId: tour?.hostID,
+        isActive: !!tour?.active,
+        createdAt: tour?.createdAt,
+      };
+
+      const normalized = normalizeExperience(merged);
       setCurrentExperience(normalized);
       return normalized;
     } catch (err) {
@@ -187,8 +267,37 @@ export const ExperienceProvider = ({ children }) => {
     try {
       setLoading(true);
       clearError();
-      const list = await mockAPI.getExperiences(filters);
-      const normalized = list.map(normalizeExperienceListItem); // ✅ dùng loại nhẹ
+      const tours = await authAPI.getTours();
+
+      // Load cover image per tour (first photo) in parallel
+      const coverPromises = (tours || []).map(async (t) => {
+        try {
+          const photos = await authAPI.getTourPhotos(t.tourID);
+          const first = Array.isArray(photos) && photos.length > 0 ? photos[0] : null;
+          return first ? { id: t.tourID, url: first.url } : { id: t.tourID, url: null };
+        } catch {
+          return { id: t.tourID, url: null };
+        }
+      });
+
+      const covers = await Promise.all(coverPromises);
+      const tourIdToCoverUrl = new Map(covers.map(c => [c.id, c.url]));
+
+      const normalized = (tours || []).map(t => {
+        const imageUrl = tourIdToCoverUrl.get(t.tourID) || null;
+        return normalizeExperienceListItem({
+          id: t.tourID,
+          title: t.tourName,
+          description: t.description,
+          image: imageUrl ? { url: imageUrl } : null,
+          price: t.price,
+          rating: 0,
+          reviews: 0,
+          duration: typeof t.durationDays === "number" ? `${t.durationDays} days` : null,
+          location: t.location || "",
+          isGuestFavourite: false,
+        });
+      });
       setExperiences(normalized);
       return normalized;
     } catch (err) {

@@ -110,7 +110,7 @@
 
 .tours-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 30px;
 }
 
@@ -288,7 +288,7 @@
 
 /* Container */
 .container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -321,6 +321,13 @@
   
   .book-button {
     width: 100%;
+  }
+}
+
+/* Tablet breakpoint: 2 columns */
+@media (max-width: 1024px) {
+  .tours-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
