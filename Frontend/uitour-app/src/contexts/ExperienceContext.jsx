@@ -264,47 +264,55 @@ export const ExperienceProvider = ({ children }) => {
   }, []);
 
   const fetchExperiences = useCallback(async (filters = {}) => {
-    try {
-      setLoading(true);
-      clearError();
-      const tours = await authAPI.getTours();
+  try {
+    setLoading(true);
+    clearError();
+    const tours = await authAPI.getTours();
 
-      // Load cover image per tour (first photo) in parallel
-      const coverPromises = (tours || []).map(async (t) => {
-        try {
-          const photos = await authAPI.getTourPhotos(t.tourID);
-          const first = Array.isArray(photos) && photos.length > 0 ? photos[0] : null;
-          return first ? { id: t.tourID, url: first.url } : { id: t.tourID, url: null };
-        } catch {
-          return { id: t.tourID, url: null };
-        }
+    // Load cover image per tour (first photo) in parallel
+    const coverPromises = (tours || []).map(async (t) => {
+      try {
+        const photos = await authAPI.getTourPhotos(t.tourID);
+        const first = Array.isArray(photos) && photos.length > 0 ? photos[0] : null;
+        return first ? { id: t.tourID, url: first.url } : { id: t.tourID, url: null };
+      } catch {
+        return { id: t.tourID, url: null };
+      }
+    });
+
+    const covers = await Promise.all(coverPromises);
+    const tourIdToCoverUrl = new Map(covers.map(c => [c.id, c.url]));
+
+    const normalized = (tours || []).map(t => {
+      const imageUrl = tourIdToCoverUrl.get(t.tourID) || null;
+
+      // ✅ Tính toán rating và reviewsCount
+      const reviewsCount = Array.isArray(t.reviews) ? t.reviews.length : 0;
+      const averageRating = reviewsCount > 0
+        ? t.reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewsCount
+        : 0;
+
+      return normalizeExperienceListItem({
+        id: t.tourID,
+        title: t.tourName,
+        description: t.description,
+        image: imageUrl ? { url: imageUrl } : null,
+        price: t.price,
+        rating: averageRating,
+        reviews: reviewsCount,
+        duration: typeof t.durationDays === "number" ? `${t.durationDays} days` : null,
+        location: t.location || "",
+        isGuestFavourite: false,
       });
+    });
 
-      const covers = await Promise.all(coverPromises);
-      const tourIdToCoverUrl = new Map(covers.map(c => [c.id, c.url]));
-
-      const normalized = (tours || []).map(t => {
-        const imageUrl = tourIdToCoverUrl.get(t.tourID) || null;
-        return normalizeExperienceListItem({
-          id: t.tourID,
-          title: t.tourName,
-          description: t.description,
-          image: imageUrl ? { url: imageUrl } : null,
-          price: t.price,
-          rating: 0,
-          reviews: 0,
-          duration: typeof t.durationDays === "number" ? `${t.durationDays} days` : null,
-          location: t.location || "",
-          isGuestFavourite: false,
-        });
-      });
-      setExperiences(normalized);
-      return normalized;
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    setExperiences(normalized);
+    return normalized;
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
   }, []);
 
   const searchExperiences = useCallback(async (query, filters = {}) => {
