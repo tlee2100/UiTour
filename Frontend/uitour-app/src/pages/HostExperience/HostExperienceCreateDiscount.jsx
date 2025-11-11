@@ -28,11 +28,6 @@ export default function HostExperienceCreateDiscount() {
 
   return (
     <div className="he-page">
-      <header className="he-header">
-        <div className="he-brand">
-          <img src={logo} alt="UiTour Logo" className="he-logo-img" onClick={() => navigate('/')} />
-        </div>
-      </header>
 
       <main className="he-main he-discounts">
         <h1 className="he-title">Add discounts</h1>
@@ -106,15 +101,6 @@ export default function HostExperienceCreateDiscount() {
           </button>
         </div>
       </main>
-
-      <footer className="he-footer">
-        <div className="he-footer-left">
-          <button className="he-link-btn" onClick={() => navigate(-1)}>Back</button>
-        </div>
-        <div className="he-footer-right">
-          <button className="he-primary-btn" onClick={handlePublish}>Publish</button>
-        </div>
-      </footer>
 
       {formOpen && (
         <div className="he-modal" role="dialog" aria-modal="true">
