@@ -5,7 +5,6 @@
 
 /* ========== BASE LAYOUT ========== */
 .hs-page {
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
     background: #ffffff;
@@ -143,14 +142,6 @@
 /* ======================================
    Host Stay – Type of Place (styled like Host Experience)
 ====================================== */
-
-.hs-page {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    color: #111;
-}
 
 /* ===== Header ===== */
 .hs-header {

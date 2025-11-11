@@ -3,37 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import logo from "../../assets/UiTour.png";
 import "./HostExperience.css";
+import { useHost } from "../../contexts/HostContext";
 
 export default function HostExperienceCreateQualification() {
   const navigate = useNavigate();
+  const { experienceData, updateField } = useHost();
+
   const [activeId, setActiveId] = useState(null);
   const [draftText, setDraftText] = useState("");
-  const [values, setValues] = useState({});
+  const [values, setValues] = useState(experienceData.qualifications || {});
 
   const items = [
-    {
-      id: "intro",
-      title: "Intro",
-      subtitle: "Intro",
-      icon: "mdi:cards-heart-outline",
-    },
-    {
-      id: "expertise",
-      title: "Expertise",
-      subtitle: "Expertise",
-      icon: "mdi:star-outline",
-    },
-    {
-      id: "recognition",
-      title: "Recognition",
-      subtitle: "Recognition",
-      icon: "mdi:certificate-outline",
-    },
+    { id: "intro", title: "Intro", subtitle: "Intro", icon: "mdi:cards-heart-outline" },
+    { id: "expertise", title: "Expertise", subtitle: "Expertise", icon: "mdi:star-outline" },
+    { id: "recognition", title: "Recognition", subtitle: "Recognition", icon: "mdi:certificate-outline" }
   ];
 
   const handleNext = () => {
-    // TODO: go to next step when available
-    console.log("Qualifications step continuing", values);
+    updateField("qualification", { qualifications: values });
     navigate("/host/experience/create/locate");
   };
 
@@ -54,15 +41,8 @@ export default function HostExperienceCreateQualification() {
 
   return (
     <div className="he-page">
-      <header className="he-header">
-        <div className="he-brand">
-          <img src={logo} alt="UiTour Logo" className="he-logo-img" onClick={() => navigate('/')} />
-        </div>
-      </header>
-
       <main className="he-main">
         <h1 className="he-title">Share your qualifications</h1>
-
         <div className="he-list">
           {items.map((it) => (
             <button key={it.id} className="he-list-item" onClick={() => openEditor(it.id)}>
@@ -79,7 +59,6 @@ export default function HostExperienceCreateQualification() {
             </button>
           ))}
         </div>
-
         {activeId && (
           <div className="he-modal" role="dialog" aria-modal="true">
             <div className="he-modal-backdrop" onClick={closeEditor} />
@@ -107,15 +86,6 @@ export default function HostExperienceCreateQualification() {
           </div>
         )}
       </main>
-
-      <footer className="he-footer">
-        <div className="he-footer-left">
-          <button className="he-link-btn" onClick={() => navigate(-1)}>Back</button>
-        </div>
-        <div className="he-footer-right">
-          <button className="he-primary-btn" onClick={handleNext}>Next</button>
-        </div>
-      </footer>
     </div>
   );
 }

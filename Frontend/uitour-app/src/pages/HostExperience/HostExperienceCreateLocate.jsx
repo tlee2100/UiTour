@@ -1,61 +1,60 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/UiTour.png";
 import LocationPicker from "../../components/LocationPicker";
 import "./HostExperience.css";
+import { useHost } from "../../contexts/HostContext";
 
 export default function HostExperienceCreateLocate() {
   const navigate = useNavigate();
-  const [location, setLocation] = useState(null);
-  const [query, setQuery] = useState("");
-  const [center, setCenter] = useState([10.8231, 106.6297]);
+  const { experienceData, updateField, setFlowType, type } = useHost();
 
-  // Reverse geocode coordinates to get address
+  // ✅ Đảm bảo context đang ở chế độ "experience"
+  useEffect(() => {
+    if (type !== "experience") setFlowType("experience");
+  }, [type, setFlowType]);
+
+  const [query, setQuery] = useState(experienceData.location.addressLine || "");
+  const [center, setCenter] = useState([
+    experienceData.location.lat || 10.8231,
+    experienceData.location.lng || 106.6297,
+  ]);
+
+  // 🔍 Reverse geocode
   const reverseGeocode = async (lat, lng) => {
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
       );
       const data = await res.json();
-      if (data && data.display_name) {
-        return data.display_name;
-      }
-    } catch (error) {
-      console.error("Reverse geocoding failed:", error);
+      return data?.display_name || "";
+    } catch {
+      return "";
     }
-    return null;
   };
 
-  // Handle location change from map selection
+  // ✅ Khi người dùng chọn vị trí mới
   const handleLocationChange = async (loc) => {
-    setLocation(loc);
-    setCenter([loc.latitude, loc.longitude]);
-    
-    // Reverse geocode to get the address
-    const address = await reverseGeocode(loc.latitude, loc.longitude);
-    if (address) {
-      setQuery(address);
-    }
-  };
+    const { latitude, longitude } = loc;
+    const address = await reverseGeocode(latitude, longitude);
 
-  const handleNext = () => {
-    // TODO: persist selected location to context/store
-    if (location) {
-      console.log("Selected location:", location);
-    }
-    navigate("/host/experience/create/photos");
+    // Lưu vào Context để Layout biết (validateStep mới pass)
+    updateField("location", {
+      lat: latitude,
+      lng: longitude,
+      addressLine: address,
+      city: "Ho Chi Minh",
+      country: "Vietnam",
+    });
+
+    setCenter([latitude, longitude]);
+    setQuery(address);
   };
 
   return (
     <div className="he-page">
-      <header className="he-header">
-        <div className="he-brand">
-          <img src={logo} alt="UiTour Logo" className="he-logo-img" onClick={() => navigate('/')} />
-        </div>
-      </header>
-
       <main className="he-main">
-        <h1 className="he-title">Where’s your place located?</h1>
+        <h1 className="he-title">Where’s your experience located?</h1>
 
         <div className="he-map-card">
           <div className="he-map-search">
@@ -69,28 +68,34 @@ export default function HostExperienceCreateLocate() {
                 if (e.key === "Enter") {
                   e.preventDefault();
                   if (!query.trim()) return;
-                  // Geocode using OpenStreetMap Nominatim
                   try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+                    const res = await fetch(
+                      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
+                    );
                     const data = await res.json();
-                    if (data && data[0]) {
+                    if (data?.[0]) {
                       const lat = parseFloat(data[0].lat);
                       const lon = parseFloat(data[0].lon);
                       const address = data[0].display_name;
                       setCenter([lat, lon]);
-                      setLocation({ latitude: lat, longitude: lon, address });
-                      // Update query with the full address from geocoding
                       setQuery(address);
+                      // ✅ Cập nhật luôn context
+                      updateField("location", {
+                        lat,
+                        lng: lon,
+                        addressLine: address,
+                        city: "Ho Chi Minh",
+                        country: "Vietnam",
+                      });
                     }
-                  } catch (_) {
-                    // ignore
-                  }
+                  } catch {}
                 }
               }}
             />
           </div>
+
           <LocationPicker
-            initialLocation={[10.8231, 106.6297]}
+            initialLocation={center}
             height="520px"
             zoom={10}
             onLocationChange={handleLocationChange}
@@ -102,17 +107,7 @@ export default function HostExperienceCreateLocate() {
           />
         </div>
       </main>
-
-      <footer className="he-footer">
-        <div className="he-footer-left">
-          <button className="he-link-btn" onClick={() => navigate(-1)}>Back</button>
-        </div>
-        <div className="he-footer-right">
-          <button className="he-primary-btn" onClick={handleNext}>Next</button>
-        </div>
-      </footer>
+      {/* ❌ Không cần nút Next ở đây — đã có trong HostFooter */}
     </div>
   );
 }
-
-

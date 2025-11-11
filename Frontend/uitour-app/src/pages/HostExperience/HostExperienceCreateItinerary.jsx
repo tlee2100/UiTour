@@ -61,12 +61,6 @@ export default function HostExperienceCreateItinerary() {
 
   return (
     <div className="he-page">
-      <header className="he-header">
-        <div className="he-brand">
-          <img src={logo} alt="UiTour Logo" className="he-logo-img" onClick={() => navigate('/')} />
-        </div>
-        <button className="he-tertiary-btn">Save & exit</button>
-      </header>
 
       <main className="he-main">
         <h1 className="he-title">Your itinerary</h1>
@@ -139,16 +133,6 @@ export default function HostExperienceCreateItinerary() {
           )}
         </div>
       </main>
-
-      <footer className="he-footer">
-        <div className="he-footer-left">
-          <button className="he-link-btn" onClick={() => navigate(-1)}>Back</button>
-        </div>
-        <div className="he-footer-right">
-          <button className="he-primary-btn" onClick={handleNext}>Next</button>
-        </div>
-      </footer>
-
       {confirmId && (
         <div className="he-modal" role="dialog" aria-modal="true">
           <div className="he-modal-backdrop" onClick={() => setConfirmId(null)} />
@@ -169,7 +153,6 @@ export default function HostExperienceCreateItinerary() {
           </div>
         </div>
       )}
-
       {toast && (
         <div className="he-toast" role="status">{toast}</div>
       )}

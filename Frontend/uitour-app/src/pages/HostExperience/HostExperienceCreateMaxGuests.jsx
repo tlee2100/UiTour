@@ -37,12 +37,6 @@ export default function HostExperienceCreateMaxGuests() {
   return (
     <>
     <div className="he-page">
-      <header className="he-header">
-        <div className="he-brand">
-          <img src={logo} alt="UiTour Logo" className="he-logo-img" onClick={() => navigate('/')} />
-        </div>
-        <button className="he-tertiary-btn">Save & exit</button>
-      </header>
 
       <main className="he-main he-time">
         <h1 className="he-title">Pick a time and number of</h1>
@@ -112,15 +106,6 @@ export default function HostExperienceCreateMaxGuests() {
           </div>
         </div>
       </main>
-
-      <footer className="he-footer">
-        <div className="he-footer-left">
-          <button className="he-link-btn" onClick={() => navigate(-1)}>Back</button>
-        </div>
-        <div className="he-footer-right">
-          <button className="he-primary-btn" onClick={() => navigate('/host/experience/create/discount')}>Next</button>
-        </div>
-      </footer>
     </div>
 
     {confirmOpen && (

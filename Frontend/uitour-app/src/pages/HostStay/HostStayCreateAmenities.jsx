@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import SvgIcon from "../../components/SvgIcon";
-import logo from "../../assets/UiTour.png";
+import { useNavigate } from "react-router-dom";
+import { useHost } from "../../contexts/HostContext";
 import "./HostStay.css";
 
 export default function HostStayCreateAmenities() {
     const navigate = useNavigate();
+    const { stayData, updateField, validateStep } = useHost();
+    const amenities = stayData.amenities || [];
 
     const amenitiesList = [
         { id: "wifi", label: "Wi-Fi", icon: "amen_wifi" },
@@ -26,46 +27,32 @@ export default function HostStayCreateAmenities() {
         { id: "breakfast", label: "Breakfast", icon: "amen_breakfast" },
         { id: "workspace", label: "Workspace", icon: "amen_workspace" },
         { id: "king_bed", label: "King bed", icon: "amen_king_bed" },
-        { id: "hair_dryer", label: "Hair dryer", icon: "amen_hair_dryer" },
+        { id: "hair_dryer", label: "Hair dryer", icon: "amen_hair_dryer" }
     ];
 
-    const [selected, setSelected] = useState([]);
-
     const toggleAmenity = (id) => {
-        setSelected((prev) =>
-            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-        );
+        const newAmenities = amenities.includes(id)
+            ? amenities.filter((i) => i !== id)
+            : [...amenities, id];
+        updateField("amenities", { amenities: newAmenities });
     };
 
     const handleNext = () => {
-        console.log("Selected amenities:", selected);
+        if (!validateStep("amenities")) return;
         navigate("/host/stay/create/photos");
     };
 
     return (
         <div className="hs-page">
-            {/* ===== HEADER ===== */}
-            <header className="hs-header">
-                <img
-                    src={logo}
-                    alt="UiTour Logo"
-                    className="hs-logo"
-                    onClick={() => navigate("/")}
-                />
-                <button className="hs-save-btn">Save & Exit</button>
-            </header>
-
-            {/* ===== MAIN ===== */}
             <main className="hs-main">
                 <h1 className="hs-title">What amenities does your place have?</h1>
-
                 <div className="hs-amenities-grid">
                     {amenitiesList.map((a) => (
                         <button
                             key={a.id}
-                            className={`hs-amenity-card ${selected.includes(a.id) ? "is-selected" : ""
-                                }`}
+                            className={`hs-amenity-card ${amenities.includes(a.id) ? "is-selected" : ""}`}
                             onClick={() => toggleAmenity(a.id)}
+                            type="button"
                         >
                             <div className="hs-amenity-inner">
                                 <SvgIcon name={a.icon} className="hs-icon" />
@@ -75,23 +62,6 @@ export default function HostStayCreateAmenities() {
                     ))}
                 </div>
             </main>
-
-            {/* ===== FOOTER ===== */}
-            <footer className="hs-footer">
-                <button
-                    className="hs-footer-btn hs-footer-btn--white"
-                    onClick={() => navigate(-1)}
-                >
-                    Back
-                </button>
-                <button
-                    className="hs-footer-btn hs-footer-btn--black"
-                    onClick={handleNext}
-                    disabled={selected.length === 0}
-                >
-                    Next
-                </button>
-            </footer>
         </div>
     );
 }
