@@ -6,7 +6,9 @@ export default function HostStayCreateWeekendPrice() {
   const navigate = useNavigate();
   const { stayData, updateField, validateStep } = useHost();
   const basePrice = Number(stayData.pricing?.basePrice) || 0;
-  const premium = Number(stayData.pricing?.weekendPremium) || 4;
+  const premium = stayData.pricing?.weekendPremium !== undefined
+    ? Number(stayData.pricing.weekendPremium)
+    : 0;
   const weekendPrice = Math.round(basePrice * (1 + premium / 100));
   const totalWithTax = Math.round(weekendPrice * 1.066);
 

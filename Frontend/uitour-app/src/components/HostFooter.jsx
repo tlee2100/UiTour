@@ -34,9 +34,11 @@ export default function HostFooter({ prevPath, nextPath, isLast, disabledNext, o
         </button>
       </div>
       {/* Optionally, show error/info below Next if disabledNext is true */}
-      {disabledNext && (
+      {disabledNext 
+      /*&& (
         <div className="hfooter-warning">Vui lòng nhập đầy đủ thông tin để tiếp tục!</div>
-      )}
+      )*/
+      }
     </footer>
   );
 }

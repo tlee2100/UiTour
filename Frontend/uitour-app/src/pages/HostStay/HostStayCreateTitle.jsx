@@ -1,14 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { useHost } from "../../contexts/HostContext";
 import "./HostStay.css";
+import { useHost } from "../../contexts/HostContext";
 
 export default function HostStayCreateTitle() {
   const navigate = useNavigate();
   const { stayData, updateField, validateStep } = useHost();
-  const title = stayData.title || "";
+  const title = stayData.listingTitle || ""; // ✅ đổi từ title → listingTitle
 
   const handleChange = (e) => {
-    updateField("title", { title: e.target.value });
+    updateField("title", { listingTitle: e.target.value }); // ✅ cập nhật đúng key backend
   };
 
   const handleNext = () => {
