@@ -1,15 +1,17 @@
 import { useNavigate } from "react-router-dom";
-import { useHost } from "../../contexts/HostContext";
 import "./HostStay.css";
+import { useHost } from "../../contexts/HostContext";
 
 export default function HostStayCreateDescription() {
   const navigate = useNavigate();
   const { stayData, updateField, validateStep } = useHost();
   const description = stayData.description || "";
-  const summary = stayData.summary || "";
 
   const handleChange = (e) => {
-    updateField("description", { description: e.target.value, summary: e.target.value });
+    updateField("description", {
+      description: e.target.value,
+      summary: e.target.value,
+    });
   };
 
   const handleNext = () => {

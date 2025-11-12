@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
-import logo from "../../assets/UiTour.png";
 import "./HostStay.css";
 import { useHost } from "../../contexts/HostContext";
 
@@ -10,22 +9,26 @@ export default function HostStayTypeOfPlace() {
 
   const options = [
     {
-      id: "entire",
+      id: 1,
       icon: "mdi:home-outline",
       title: "An entire place",
       desc: "Guests have the whole place to themselves.",
     },
     {
-      id: "room",
+      id: 2,
       icon: "fluent:door-32-regular",
       title: "A room",
       desc: "Guests have their own room plus access to shared spaces.",
     },
   ];
 
-  const handleSelect = (id) => {
-    updateField("typeofplace", { roomType: id });
+  const handleSelect = (option) => {
+    updateField("typeofplace", {
+      roomTypeID: option.id,     // ✅ dùng cho backend
+      roomType: option.title,    // ✅ dùng cho frontend hiển thị
+    });
   };
+
   const handleNext = () => {
     if (!validateStep("typeofplace")) return;
     navigate("/host/stay/create/location");
@@ -33,16 +36,17 @@ export default function HostStayTypeOfPlace() {
 
   return (
     <div className="hs-page">
-      {/* Header */}
-      {/* Main */}
       <main className="hs-main">
         <h1 className="hs-title">What type of place do guests have?</h1>
+
         <div className="hs-list">
           {options.map((opt) => (
             <button
               key={opt.id}
-              className={`hs-list-item ${stayData.roomType === opt.id ? "is-selected" : ""}`}
-              onClick={() => handleSelect(opt.id)}
+              className={`hs-list-item ${
+                stayData.roomTypeID === opt.id ? "is-selected" : ""
+              }`}
+              onClick={() => handleSelect(opt)}
             >
               <div className="hs-list-icon">
                 <Icon icon={opt.icon} width="32" height="32" />

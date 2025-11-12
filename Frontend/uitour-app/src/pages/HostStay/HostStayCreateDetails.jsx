@@ -6,50 +6,56 @@ export default function HostStayCreateDetails() {
   const navigate = useNavigate();
   const { stayData, updateField, validateStep } = useHost();
 
-  const { capacity = {} } = stayData;
+  // ✅ Truy cập trực tiếp dữ liệu ở root (không còn capacity)
+  const {
+    bedrooms = 1,
+    beds = 1,
+    bathrooms = 1,
+    accommodates = 1,
+  } = stayData;
 
   const handleChange = (field, value) => {
-    updateField("details", { capacity: { ...capacity, [field]: value } });
+    // ✅ Cập nhật trực tiếp từng field
+    updateField("details", { [field]: value });
   };
 
   const handleNext = () => {
-    // (Bạn có thể viết validate cụ thể hơn ở file context)
+    if (!validateStep("details")) return;
     navigate("/host/stay/create/amenities");
   };
 
   return (
     <div className="hs-page">
-      {/* ===== HEADER ===== */}
-
-      {/* ===== MAIN ===== */}
       <main className="hs-main">
         <h1 className="hs-title">Let’s start with the basics</h1>
+
         <div className="hs-room-section">
           <h2 className="hs-room-title">How many people can stay here?</h2>
+
           <div className="hs-room-controls">
             <RoomControl
               label="Guests"
-              value={capacity.maxGuests || 1}
-              onIncrease={() => handleChange("maxGuests", (capacity.maxGuests || 1) + 1)}
-              onDecrease={() => handleChange("maxGuests", Math.max(1, (capacity.maxGuests || 1) - 1))}
+              value={accommodates}
+              onIncrease={() => handleChange("accommodates", accommodates + 1)}
+              onDecrease={() => handleChange("accommodates", Math.max(1, accommodates - 1))}
             />
             <RoomControl
               label="Bedrooms"
-              value={capacity.bedrooms || 1}
-              onIncrease={() => handleChange("bedrooms", (capacity.bedrooms || 1) + 1)}
-              onDecrease={() => handleChange("bedrooms", Math.max(0, (capacity.bedrooms || 1) - 1))}
+              value={bedrooms}
+              onIncrease={() => handleChange("bedrooms", bedrooms + 1)}
+              onDecrease={() => handleChange("bedrooms", Math.max(0, bedrooms - 1))}
             />
             <RoomControl
               label="Beds"
-              value={capacity.beds || 1}
-              onIncrease={() => handleChange("beds", (capacity.beds || 1) + 1)}
-              onDecrease={() => handleChange("beds", Math.max(0, (capacity.beds || 1) - 1))}
+              value={beds}
+              onIncrease={() => handleChange("beds", beds + 1)}
+              onDecrease={() => handleChange("beds", Math.max(0, beds - 1))}
             />
             <RoomControl
               label="Bathrooms"
-              value={capacity.bathrooms || 1}
-              onIncrease={() => handleChange("bathrooms", (capacity.bathrooms || 1) + 1)}
-              onDecrease={() => handleChange("bathrooms", Math.max(0, (capacity.bathrooms || 1) - 1))}
+              value={bathrooms}
+              onIncrease={() => handleChange("bathrooms", bathrooms + 1)}
+              onDecrease={() => handleChange("bathrooms", Math.max(0, bathrooms - 1))}
             />
           </div>
         </div>
