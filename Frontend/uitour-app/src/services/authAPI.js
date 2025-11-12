@@ -257,6 +257,43 @@ class AuthAPI {
       throw err;
     }
   }
+  // ============ USER PROFILE / TRIPS / CONNECTIONS ============
+async getUserProfile(userId) {
+  const token = localStorage.getItem('token');
+  const res = await fetch(`${API_BASE_URL}/${userId}/profile`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    }
+  });
+  if (!res.ok) throw new Error(await res.text() || 'Failed to fetch profile');
+  return await res.json(); // { displayName, about, interests: [] }
+}
+
+async getUserTrips(userId) {
+  const token = localStorage.getItem('token');
+  const res = await fetch(`${API_BASE_URL}/${userId}/trips`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    }
+  });
+  if (!res.ok) throw new Error(await res.text() || 'Failed to fetch trips');
+  return await res.json(); // []
+}
+
+async getUserConnections(userId) {
+  const token = localStorage.getItem('token');
+  const res = await fetch(`${API_BASE_URL}/${userId}/connections`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    }
+  });
+  if (!res.ok) throw new Error(await res.text() || 'Failed to fetch connections');
+  return await res.json(); // []
+}
+
 
 }
 
