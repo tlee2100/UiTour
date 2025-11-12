@@ -294,6 +294,65 @@ async getUserConnections(userId) {
   return await res.json(); // []
 }
 
+// Chuẩn hoá dữ liệu gửi lên backend
+_toProfilePayload(form) {
+  // Backend mẫu bạn gửi có: fullName, email, userAbout, interests (string)
+  // Ta map displayName -> fullName, about -> userAbout
+  const interestsValue = Array.isArray(form?.interests)
+    ? form.interests.filter(Boolean).join(', ')
+    : (typeof form?.interests === 'string' ? form.interests : '');
+
+  return {
+    // chỉ gửi những field backend hỗ trợ; thêm field khác nếu BE cho phép
+    fullName: form?.displayName ?? form?.fullName ?? '',
+    email: form?.email ?? '',
+    userAbout: form?.about ?? '',
+    interests: interestsValue, // backend của bạn đang để là string
+    // visitedTags nếu BE có cột/endpoint riêng thì thêm vào đây
+    visitedTags: Array.isArray(form?.visitedTags) ? form.visitedTags : [],
+    // có thể bổ sung age, gender, nationality nếu BE hỗ trợ
+    age: form?.age ?? null,
+    gender: form?.gender ?? '',
+    nationality: form?.nationality ?? ''
+  };
+}
+
+// Cập nhật hồ sơ (ưu tiên endpoint /{id}/profile; fallback PUT /{id})
+async updateUserProfile(userId, form) {
+  const token = localStorage.getItem('token');
+  const payload = this._toProfilePayload(form);
+
+  // Thử endpoint RESTful chuyên cho profile trước
+  const tryProfile = await fetch(`${API_BASE_URL}/${userId}/profile`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (tryProfile.ok) return await tryProfile.json();
+
+  // Nếu BE chưa có /profile, fallback về PUT /{id}
+  if (tryProfile.status === 404) {
+    const tryUser = await fetch(`${API_BASE_URL}/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!tryUser.ok) throw new Error(await tryUser.text() || 'Failed to update user');
+    return await tryUser.json();
+  }
+
+  // Các lỗi khác
+  throw new Error(await tryProfile.text() || 'Failed to update profile');
+}
+
+
 
 }
 
