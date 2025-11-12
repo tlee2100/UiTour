@@ -4,12 +4,11 @@ import { Icon } from '@iconify/react';
 import { useApp } from '../contexts/AppContext';
 import authAPI from '../services/authAPI';
 import { useNavigate } from 'react-router-dom';
-import mockAPI from '../services/mockAPI';
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('about'); // about | trips | connections
   const { user, profile, dispatch } = useApp();
-  const [userData, setUserData] = useState(user || null);
+  const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -22,12 +21,26 @@ export default function ProfilePage() {
       setLoading(true);
       setError('');
       try {
-        const detail = await authAPI.getUserById(user.UserID);
-        if (isMounted) setUserData(detail);
-        if (!profile) {
-          const mock = await mockAPI.getUserProfile(user.UserID);
-          dispatch({ type: 'SET_PROFILE', payload: mock });
-        }
+        const detail = await authAPI.getUserById(user.UserID);   // 🟢 lấy trực tiếp
+        if (!isMounted) return;
+        setUserData(detail);                                      // 🟢 set trực tiếp
+        // đẩy vào context để các màn khác dùng (edit, v.v.)
+        const displayNameCtx = detail?.fullName ?? detail?.FullName ?? '';
+        const aboutCtx = detail?.userAbout ?? detail?.about ?? '';
+        const interestsRaw = detail?.interests;
+        const interestsCtx = Array.isArray(interestsRaw)
+          ? interestsRaw
+          : (typeof interestsRaw === 'string'
+              ? interestsRaw.split(',').map(s => s.trim()).filter(Boolean)
+              : []);
+        dispatch({
+          type: 'SET_PROFILE',
+          payload: {
+            displayName: displayNameCtx,
+            about: aboutCtx,
+            interests: interestsCtx,
+          },
+        });
       } catch (err) {
         if (isMounted) setError(err.message || 'Không thể tải thông tin người dùng');
       } finally {
@@ -35,22 +48,36 @@ export default function ProfilePage() {
       }
     }
     fetchUser();
-    return () => {
-      isMounted = false;
-    };
-  }, [user]);
+    return () => { isMounted = false; };
+  }, [user, dispatch]);
 
-  const displayName = userData?.FullName || userData?.fullName || 'Người dùng';
-  const email = userData?.Email || userData?.email || '';
-  const initial = useMemo(() => (displayName?.trim()?.charAt(0) || 'U').toUpperCase(), [displayName]);
-  const profileInterests = profile?.interests || [];
+  // ==== Lấy dữ liệu linh hoạt theo key hoa/thường (không normalize state) ====
+  const displayName = userData?.fullName ?? userData?.FullName ?? 'Người dùng';
+  const email = userData?.email ?? userData?.Email ?? '';
+  const about = userData?.userAbout ?? userData?.about ?? '';
+  const roleRaw = userData?.role ?? userData?.Role ?? 'Guest';
+  const roleLabel = roleRaw === 'Host' ? 'Chủ nhà' : roleRaw === 'Admin' ? 'Quản trị' : 'Khách';
+  const age = userData?.age ?? '';
+  const gender = userData?.gender ?? '';
+  const nationality = userData?.nationality ?? '';
+  const avatarUrl = userData?.avatarUrl ?? userData?.avatar ?? userData?.profilePicture ?? '';
+
+  const interestsRaw = userData?.interests;
+  const interests = Array.isArray(interestsRaw)
+    ? interestsRaw
+    : (typeof interestsRaw === 'string'
+        ? interestsRaw.split(',').map(s => s.trim()).filter(Boolean)
+        : []);
+
+  const initial = useMemo(
+    () => (displayName?.trim()?.charAt(0) || 'U').toUpperCase(),
+    [displayName]
+  );
+
   const hasProfileInfo = !!(
-    profile &&
-    (
-      (profile.about && profile.about.trim().length > 0) ||
-      (Array.isArray(profile.interests) && profile.interests.length > 0) ||
-      (profile.displayName && profile.displayName.trim().length > 0)
-    )
+    (about && about.trim()) ||
+    interests.length > 0 ||
+    (displayName && displayName.trim())
   );
 
   return (
@@ -94,27 +121,32 @@ export default function ProfilePage() {
 
       {/* Main */}
       <main className="profile-main">
-        {loading && (
-          <div className="profile-section" style={{ padding: '16px' }}>
-            Đang tải thông tin...
-          </div>
-        )}
-        {!!error && (
-          <div className="profile-section" style={{ padding: '16px', color: '#c00' }}>
-            {error}
-          </div>
-        )}
+        {loading && <div className="profile-section" style={{ padding: 16 }}>Đang tải thông tin...</div>}
+        {!!error && <div className="profile-section" style={{ padding: 16, color: '#c00' }}>{error}</div>}
+
         {activeTab === 'about' && (
           <section className="profile-section">
+            {/* Card thông tin cơ bản */}
             <div className="profile-card">
-              <div className="profile-avatar-large">{initial}</div>
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="avatar"
+                  className="profile-avatar-large"
+                  style={{ objectFit: 'cover' }}
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
+              ) : (
+                <div className="profile-avatar-large">{initial}</div>
+              )}
               <div className="profile-name-role">
                 <div className="profile-display-name">{displayName}</div>
                 {email && <div style={{ color: '#666', fontSize: 14 }}>{email}</div>}
-                <div className="profile-role">Khách</div>
+                <div className="profile-role">{roleLabel}</div>
               </div>
             </div>
 
+            {/* Hộp gợi ý hoàn tất hồ sơ */}
             <div className="profile-completion">
               <div className="profile-completion-title">Hoàn tất hồ sơ của bạn</div>
               <p className="profile-completion-text">
@@ -126,22 +158,37 @@ export default function ProfilePage() {
               </button>
             </div>
 
+            {/* Giới thiệu */}
             <div className="profile-subsection">
               <div className="profile-subtitle">
                 <Icon icon="mdi:chat-outline" width="18" height="18" />
-                <span>Đánh giá tôi đã viết</span>
+                <span>Giới thiệu</span>
               </div>
-              <div className="profile-empty">Bạn chưa có đánh giá nào.</div>
+              <div className="profile-empty">
+                {about || 'Bạn chưa viết phần giới thiệu.'}
+              </div>
             </div>
 
-            {profileInterests.length > 0 && (
+            {/* Thông tin cá nhân */}
+            <div className="profile-subsection profile-subsection-info">
+              <div className="profile-subtitle">
+                <Icon icon="mdi:account-outline" width="18" height="18" />
+                <span>Thông tin cá nhân</span>
+              </div>
+              <div className="info-grid">
+                <div><strong>Tuổi:</strong> {age || 'Chưa cập nhật'}</div>
+                <div><strong>Giới tính:</strong> {gender || 'Chưa cập nhật'}</div>
+                <div><strong>Quốc tịch:</strong> {nationality || 'Chưa cập nhật'}</div>
+              </div>
+            </div>
+
+            {/* Sở thích */}
+            {interests.length > 0 && (
               <div className="profile-subsection" style={{ marginTop: 16 }}>
                 <div className="profile-subtitle">Sở thích của tôi</div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {profileInterests.map((it, idx) => (
-                    <span key={idx} style={{ border: '1px solid #eee', borderRadius: 24, padding: '6px 12px', background: '#fafafa' }}>
-                      {it}
-                    </span>
+                  {interests.map((it, idx) => (
+                    <span key={idx} className="interest-chip">{it}</span>
                   ))}
                 </div>
               </div>
@@ -153,7 +200,7 @@ export default function ProfilePage() {
           <section className="profile-empty-state">
             <div className="empty-emoji suitcase" />
             <p className="empty-text">
-              Sau khi thực hiện chuyến đi đầu tiên trên Airbnb, bạn sẽ tìm thấy các đặt chỗ trước đây của mình tại đây.
+              Sau khi thực hiện chuyến đi đầu tiên, bạn sẽ tìm thấy các đặt chỗ trước đây của mình tại đây.
             </p>
             <button className="profile-primary-btn" onClick={goToHomeForBooking}>Đặt chuyến đi</button>
           </section>
@@ -172,5 +219,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-
