@@ -84,19 +84,59 @@ namespace UITour.API.Controllers
 
         // PUT: api/user/{id}/profile
         [HttpPut("{id}/profile")]
-        public async Task<IActionResult> UpdateProfile(int id, [FromBody] User user)
+        public async Task<IActionResult> UpdateProfile(int id, [FromBody] UpdateUserProfileDto dto)
         {
             try
             {
-                user.UserID = id; // Ensure the ID matches the route parameter
-                var result = await _userService.UpdateProfileAsync(user);
-                return result ? Ok(new { message = "Profile updated successfully" }) : BadRequest("Failed to update profile");
+                var result = await _userService.UpdateProfileAsync(id, dto);
+                return result
+                    ? Ok(new { message = "Profile updated successfully" })
+                    : BadRequest("Failed to update profile");
             }
             catch (InvalidOperationException ex)
             {
                 return NotFound(ex.Message);
             }
         }
+
+
+        // PUT: api/user/{id}/role
+        [HttpPut("{id}/role")]
+        public async Task<IActionResult> UpdateUserRole(int id, [FromBody] UpdateUserRoleDto dto)
+        {
+            try
+            {
+                // Optional: kiểm tra quyền admin ở đây nếu cần
+                // if (!User.IsInRole("Admin")) return Forbid();
+
+                var result = await _userService.UpdateUserRoleAsync(id, dto.Role);
+                return result
+                    ? Ok(new { message = "User role updated successfully" })
+                    : BadRequest("Failed to update role");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        // PUT: api/user/{id}/email
+        [HttpPut("{id}/email")]
+        public async Task<IActionResult> UpdateEmail(int id, [FromBody] UpdateUserEmailDto dto)
+        {
+            try
+            {
+                var result = await _userService.UpdateUserEmailAsync(id, dto.NewEmail);
+                return result
+                    ? Ok(new { message = "Email updated successfully" })
+                    : BadRequest("Failed to update email");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
 
         // PUT: api/user/{id}/change-password
         [HttpPut("{id}/change-password")]
