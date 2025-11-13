@@ -38,6 +38,7 @@ namespace UITour.DAL
             TourParticipants = new TourParticipantRepository(_context);
             TourPhotos = new TourPhotoRepository(_context);
             TourReviews = new TourReviewRepository(_context);
+            ExperienceDetails = new ExperienceDetailsRepository(_context);
         }
 
         public ICountryRepository Countries { get; }
@@ -65,6 +66,7 @@ namespace UITour.DAL
         public ITourParticipantRepository TourParticipants { get; }
         public ITourPhotoRepository TourPhotos { get; }
         public ITourRepository Tours { get; }
+        public IExperienceDetailsRepository ExperienceDetails { get; }
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

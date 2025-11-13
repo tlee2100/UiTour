@@ -34,6 +34,8 @@
          ITourPhotoRepository TourPhotos { get; }
          ITourReviewRepository TourReviews { get; }
 
+         IExperienceDetailsRepository ExperienceDetails { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
      }
  }

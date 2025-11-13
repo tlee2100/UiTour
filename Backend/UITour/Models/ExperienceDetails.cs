@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UITour.Models
 {
-    public class ExperienceDetail
+    public class ExperienceDetails
     {
         [Key]
         public int DetailID { get; set; }

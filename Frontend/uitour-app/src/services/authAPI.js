@@ -236,7 +236,27 @@ class AuthAPI {
       throw err;
     }
   }
+  async getTourExperienceDetails(tourId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${TOUR_BASE_URL}/${tourId}/experiencedetails`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
 
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch tour reviews');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+  
   async getHostById(hostId) {
     try {
       const token = localStorage.getItem('token');

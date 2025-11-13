@@ -54,7 +54,7 @@ namespace UITour.Models
         public ICollection<TourParticipant> Participants { get; set; }
         public ICollection<TourPhoto> Photos { get; set; }
         public ICollection<TourReview> Reviews { get; set; }
-        public ICollection<ExperienceDetail> ExperienceDetails { get; set; }
+        public ICollection<ExperienceDetails> ExperienceDetails { get; set; }
 
     }
 }
