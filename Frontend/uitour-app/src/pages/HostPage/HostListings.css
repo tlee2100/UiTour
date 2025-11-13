@@ -21,18 +21,60 @@
 /* =====================================
    LISTINGS GRID
 ===================================== */
+.listing-content {
+    padding: 120px 80px 40px;
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.listing-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.listing-header h1 {
+    font-size: 28px;
+    margin: 0 0 6px;
+}
+
+.listing-header p {
+    margin: 0;
+    color: #4b5563;
+    font-size: 15px;
+}
+
+.listing-create-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    background: #111827;
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.listing-create-btn:hover {
+    background: #000000;
+    transform: translateY(-1px);
+}
+
 .listing-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 24px;
-    padding: 120px 80px 40px;
-    /* space for header */
-    max-width: 1280px;
-    width: 100%;
-    margin: 0 auto;
 }
 
-/* CARD */
 .listing-card {
     position: relative;
     background: #fff;
@@ -48,14 +90,12 @@
     border-color: #2563eb;
 }
 
-/* IMAGE */
 .listing-img {
     width: 100%;
     height: 180px;
     object-fit: cover;
 }
 
-/* STATUS */
 .listing-status {
     position: absolute;
     top: 12px;
@@ -68,7 +108,6 @@
     border-radius: 12px;
 }
 
-/* INFO */
 .listing-info {
     padding: 16px;
 }
@@ -85,13 +124,23 @@
    RESPONSIVE
 ===================================== */
 @media (max-width: 1024px) {
-    .listing-grid {
+    .listing-content {
         padding: 120px 40px 40px;
     }
 }
 
 @media (max-width: 768px) {
-    .listing-grid {
+    .listing-content {
         padding: 120px 20px 40px;
+    }
+
+    .listing-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .listing-create-btn {
+        width: 100%;
+        justify-content: center;
     }
 }

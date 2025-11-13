@@ -67,9 +67,9 @@ export default function HeaderInfo() {
       </form>
 
       {/* Right side */}
-      <div className="headerif_right">
+      <div className="header_right">
         <button
-          className="headerif_title"
+          className="header_title"
           onClick={() => {
             const isAdmin = !!user && !!token && (user.role === 'ADMIN' || user.Role === 'ADMIN');
             if (isAdmin || location.pathname.startsWith('/admin')) {
@@ -79,7 +79,7 @@ export default function HeaderInfo() {
             if (!user || !token) {
               navigate('/login');
             } else {
-              navigate('/host/becomehost');
+              navigate('/host/today');
             }
           }}
         >

@@ -70,11 +70,7 @@ export default function Header() {
               navigate('/');
               return;
             }
-            if (!user || !token) {
-              navigate('/login');
-            } else {
-              navigate('/host/becomehost');
-            }
+            navigate('/host/today');
           }}
         >
           {((user && token && (user.role === 'ADMIN' || user.Role === 'ADMIN')) || location.pathname.startsWith('/admin'))
