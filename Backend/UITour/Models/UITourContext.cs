@@ -52,7 +52,7 @@ namespace UITour.Models
         public DbSet<TourParticipant> TourParticipants { get; set; } 
         public DbSet<TourReview> TourReviews { get; set; }   
         public DbSet<TourPhoto> TourPhotos { get; set; }
-        public DbSet<ExperienceDetail> ExperienceDetails { get; set; }
+        public DbSet<ExperienceDetails> ExperienceDetails { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -150,7 +150,7 @@ namespace UITour.Models
                 .HasForeignKey(tp => tp.TourID)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<ExperienceDetail>()
+            modelBuilder.Entity<ExperienceDetails>()
                 .HasOne(ed => ed.Tour)
                 .WithMany(t => t.ExperienceDetails)
                 .HasForeignKey(ed => ed.TourID)
