@@ -32,5 +32,6 @@ namespace UITour.ServicesL.Interfaces
         Task<IEnumerable<TourPhoto>> GetPhotosAsync(int tourId);
         Task<TourPhoto> AddPhotoAsync(TourPhoto photo);
         Task<bool> DeletePhotoAsync(int photoId);
+        Task<IEnumerable<ExperienceDetails>> GetExperienceDetailAsync(int tourId);
     }
 }

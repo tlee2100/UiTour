@@ -176,7 +176,13 @@ namespace UITour.Controllers
 
             return Ok("Photo deleted successfully.");
         }
-
+        
+        [HttpGet("{tourId}/experiencedetails")]
+        public async Task<ActionResult<IEnumerable<ExperienceDetails>>> GetExperienceDetails(int tourId)
+        {
+            var details = await _tourService.GetExperienceDetailAsync(tourId);
+            return Ok(details);
+        }
 
     }
 }
