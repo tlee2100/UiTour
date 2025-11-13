@@ -34,6 +34,7 @@ namespace UITour.ServicesL.Implementations
                 .Include(t => t.Photos)
                 .Include(t => t.Participants)
                 .Include(t => t.Reviews).ThenInclude(r => r.User)
+                .Include(t => t.ExperienceDetails)
                 .FirstOrDefaultAsync(t => t.TourID == id);
             if (tour == null)
                 throw new InvalidOperationException("Tour not found");
