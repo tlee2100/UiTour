@@ -67,9 +67,9 @@ export default function HeaderInfo() {
       </form>
 
       {/* Right side */}
-      <div className="header_right">
+      <div className="headerif_right">
         <button
-          className="header_title"
+          className="headerif_title"
           onClick={() => {
             const isAdmin = !!user && !!token && (user.role === 'ADMIN' || user.Role === 'ADMIN');
             if (isAdmin || location.pathname.startsWith('/admin')) {
