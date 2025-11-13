@@ -73,7 +73,7 @@ export default function Header() {
             if (!user || !token) {
               navigate('/login');
             } else {
-              navigate('/host/becomehost');
+              navigate('/host/today');
             }
           }}
         >
