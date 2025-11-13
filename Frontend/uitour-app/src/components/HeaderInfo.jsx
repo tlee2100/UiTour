@@ -79,7 +79,7 @@ export default function HeaderInfo() {
             if (!user || !token) {
               navigate('/login');
             } else {
-              navigate('/host/becomehost');
+              navigate('/host/today');
             }
           }}
         >
