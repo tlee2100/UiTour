@@ -49,6 +49,7 @@ import BecomeHost from "../pages/BecomeHost";
 
 import HostToday from "../pages/HostPage/HostToday";
 import HostListings from "../pages/HostPage/HostListings";
+import HostMessages from "../pages/HostPage/HostMessages";
 import ProfileEditPage from "../pages/ProfileEditPage";
 
 const AppRoutes = () => {
@@ -109,6 +110,7 @@ const AppRoutes = () => {
 
       <Route path="/host/today" element={<HostToday />} />
       <Route path="/host/listings" element={<HostListings />} />
+      <Route path="/host/messages" element={<HostMessages />} />
 
       {/* Profile menu pages (duplicated outside MainLayout) - removed */}
 
