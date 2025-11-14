@@ -137,6 +137,22 @@ namespace UITour.API.Controllers
             }
         }
 
+        // PUT: api/user/{id}/phone
+        [HttpPut("{id}/phone")]
+        public async Task<IActionResult> UpdatePhone(int id, [FromBody] UpdateUserPhoneDto dto)
+        {
+            try
+            {
+                var result = await _userService.UpdateUserPhoneAsync(id, dto.NewPhone);
+                return result
+                    ? Ok(new { message = "Phone number updated successfully" })
+                    : BadRequest("Failed to update phone number");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
 
         // PUT: api/user/{id}/change-password
         [HttpPut("{id}/change-password")]

@@ -3,7 +3,7 @@
 public class UpdateUserProfileDto
 {
     [StringLength(200)] public string FullName { get; set; }
-    [StringLength(20)] public string Phone { get; set; }
+    //[StringLength(20)] public string Phone { get; set; }
     public string UserAbout { get; set; }
     public int? Age { get; set; }
     [StringLength(20)] public string Gender { get; set; }
