@@ -381,8 +381,12 @@
 .hs-room-title {
     font-size: 20px;
     font-weight: 600;
-    margin-bottom: 32px;
+    margin-bottom: 12px;
     color: #111;
+    text-align: left;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Controls container */
@@ -1341,4 +1345,64 @@
   .hs-use-current-btn {
     width: 90%;
   }
+}
+
+/* ======================================
+   Host Stay – Nights (Min & Max Nights)
+====================================== */
+
+.hs-nights-section {
+    max-width: 900px;
+    margin: 40px auto 0;
+    text-align: center;
+}
+
+.hs-nights-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 32px;
+    color: #111;
+}
+
+.hs-nights-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.hs-room-subtitle {
+    font-size: 15px;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.5;
+    text-align: left;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* Dùng lại .hs-room-control cho style đồng bộ */
+/* .hs-room-control {...} đã định nghĩa từ trước */
+
+/* Responsive */
+@media (max-width: 720px) {
+    .hs-nights-section {
+        margin-top: 28px;
+    }
+}
+
+/* Cover badge */
+.hs-cover-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(0,0,0,0.65);
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
 }
