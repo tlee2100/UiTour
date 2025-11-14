@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Icon } from "@iconify/react";
 import "./BecomeHost.css";
 import houselogo from "../assets/UiTourHouse.png";
 import experienelogo from "../assets/UiTourExperience.png";
@@ -8,6 +9,14 @@ export default function BecomeHost() {
 
   return (
     <div className="become-host">
+      <button
+        className="bh-back-button"
+        onClick={() => navigate(-1)}
+        aria-label="Go back"
+      >
+        <Icon icon="mdi:arrow-left" width="20" height="20" />
+        Back
+      </button>
       <div className="bh-container">
         <h1 className="bh-title">What would you like to host?</h1>
 
