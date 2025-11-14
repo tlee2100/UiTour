@@ -4,6 +4,7 @@ import "./HostToday.css";
 import { Icon } from "@iconify/react";
 import sampleImg from "../../assets/sample-room.jpg";
 import logo from "../../assets/UiTour.png";
+import { useApp } from "../../contexts/AppContext";
     
 const bookings = [
   {
@@ -35,6 +36,7 @@ const bookings = [
 export default function HostToday() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { dispatch } = useApp();
 
   useEffect(() => {
     const handleEsc = (event) => {
@@ -52,6 +54,12 @@ export default function HostToday() {
 
   const closeMenu = () => setMenuOpen(false);
 
+  const handleLogout = () => {
+    dispatch({ type: 'LOGOUT' });
+    closeMenu();
+    navigate('/');
+  };
+
   return (
     <div className="host-today">
       {/* ================= HEADER ================= */}
@@ -66,9 +74,8 @@ export default function HostToday() {
           <Link to="/host/today" className="active">
             Today
           </Link>
-          <a href="#">Calendar</a>
           <Link to="/host/listings">Listings</Link>
-          <a href="#">Messages</a>
+          <Link to="/host/messages">Messages</Link>
         </nav>
 
         {/* RIGHT SIDE */}
@@ -169,7 +176,13 @@ export default function HostToday() {
                 <Icon icon="mdi:account-group-outline" width="20" height="20" />
                 <span>Find a co-host</span>
               </button>
-              <button className="host-menu-link">
+              <button 
+                className="host-menu-link"
+                onClick={() => {
+                  closeMenu();
+                  navigate("/host/becomehost");
+                }}
+              >
                 <Icon icon="mdi:plus-circle-outline" width="20" height="20" />
                 <span>Create a new listing</span>
               </button>
@@ -178,7 +191,10 @@ export default function HostToday() {
                 <span>Refer another host</span>
               </button>
               <div className="host-menu-divider" />
-              <button className="host-menu-link host-menu-link-secondary">
+              <button 
+                className="host-menu-link host-menu-link-secondary"
+                onClick={handleLogout}
+              >
                 <Icon icon="mdi:logout" width="20" height="20" />
                 <span>Log out</span>
               </button>
