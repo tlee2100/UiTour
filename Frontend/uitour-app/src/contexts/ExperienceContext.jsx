@@ -171,97 +171,110 @@ export const ExperienceProvider = ({ children }) => {
   // API Calls
   // -----------------------------
   const fetchExperienceById = useCallback(async (id) => {
-    try {
-      setLoading(true);
-      clearError();
-      // Base tour
-      const tour = await authAPI.getTourById(id);
+  try {
+    setLoading(true);
+    clearError();
 
-      // Related resources
-      const [photos, reviews, host] = await Promise.all([
-        authAPI.getTourPhotos(id).catch(() => []),
-        authAPI.getTourReviews(id).catch(() => []),
-        tour?.hostID ? authAPI.getHostById(tour.hostID).catch(() => null) : Promise.resolve(null),
-      ]);
+    // Base tour
+    const tour = await authAPI.getTourById(id);
 
-      // Build media
-      const media = {
-        cover: photos?.[0]?.url ? { url: photos[0].url } : undefined,
-        photos: (photos || []).map(p => ({
-          id: p.photoID,
-          url: p.url,
-          alt: p.caption || "photo"
-        })),
+    // Related resources
+    const [photos, reviews, host, details] = await Promise.all([
+      authAPI.getTourPhotos(id).catch(() => []),
+      authAPI.getTourReviews(id).catch(() => []),
+      tour?.hostID ? authAPI.getHostById(tour.hostID).catch(() => null) : Promise.resolve(null),
+      authAPI.getTourExperienceDetails(id).catch(() => []),   // ✅ thêm dòng này
+    ]);
+
+    // Build media
+    const media = {
+      cover: photos?.[0]?.url ? { url: photos[0].url } : undefined,
+      photos: (photos || []).map(p => ({
+        id: p.photoID,
+        url: p.url,
+        alt: p.caption || "photo"
+      })),
+    };
+
+    // Map reviews
+    const mappedReviews = (reviews || []).map(r => ({
+      id: r.reviewID,
+      userId: r.userID,
+      userName: r.user?.fullName || "Guest",
+      userAvatar: r.user?.avatar,
+      rating: r.rating,
+      comment: r.comment,
+      createdAt: r.createdAt,
+    }));
+
+    const reviewsCount = mappedReviews.length;
+    const rating =
+      reviewsCount > 0
+        ? mappedReviews.reduce((acc, x) => acc + (Number(x.rating) || 0), 0) / reviewsCount
+        : 0;
+
+    // Host
+    let hostUi = null;
+    if (host) {
+      hostUi = {
+        id: host.hostID,
+        name: host.user?.fullName || "Host",
+        avatar: host.user?.avatar,
+        joinedDate: host.hostSince,
+        responseRate: host.hostResponseRate ?? 0,
+        responseTime: "within a few hours",
+        isSuperhost: !!host.isSuperHost,
+        totalReviews: reviewsCount,
+        averageRating: rating,
+        languages: [],
+        description: host.hostAbout,
       };
-
-      // Map reviews
-      const mappedReviews = (reviews || []).map(r => ({
-        id: r.reviewID,
-        userId: r.userID,
-        userName: r.user?.fullName || "Guest",
-        userAvatar: r.user?.avatar,
-        rating: r.rating,
-        comment: r.comment,
-        createdAt: r.createdAt,
-      }));
-
-      const reviewsCount = mappedReviews.length;
-      const rating =
-        reviewsCount > 0
-          ? mappedReviews.reduce((acc, x) => acc + (Number(x.rating) || 0), 0) / reviewsCount
-          : 0;
-
-      // Host
-      let hostUi = null;
-      if (host) {
-        hostUi = {
-          id: host.hostID,
-          name: host.user?.fullName || "Host",
-          avatar: host.user?.avatar,
-          joinedDate: host.hostSince,
-          responseRate: host.hostResponseRate ?? 0,
-          responseTime: "within a few hours",
-          isSuperhost: !!host.isSuperHost,
-          totalReviews: reviewsCount,
-          averageRating: rating,
-          languages: [],
-          description: host.hostAbout,
-        };
-      }
-
-      const merged = {
-        id: tour?.tourID ?? Number(id),
-        title: tour?.tourName,
-        summary: tour?.description,
-        description: tour?.description,
-        rating,
-        reviewsCount,
-        location: tour?.location,
-        city: tour?.city?.cityName,
-        country: tour?.country?.countryName,
-        latitude: tour?.latitude,
-        longitude: tour?.longitude,
-        price: tour?.price,
-        currency: tour?.currency,
-        maxGuests: tour?.maxGuests,
-        durationHours: typeof tour?.durationDays === "number" ? tour.durationDays * 24 : undefined,
-        media,
-        reviews: mappedReviews,
-        host: hostUi,
-        hostId: tour?.hostID,
-        isActive: !!tour?.active,
-        createdAt: tour?.createdAt,
-      };
-
-      const normalized = normalizeExperience(merged);
-      setCurrentExperience(normalized);
-      return normalized;
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
     }
+
+    // ✅ Map experienceDetails
+    const mappedDetails = (details || []).map(d => ({
+      id: d.detailID,
+      image: d.imageUrl,
+      title: d.title,
+      description: d.description,
+      sortIndex: d.sortIndex
+    }));
+
+    const merged = {
+      id: tour?.tourID ?? Number(id),
+      title: tour?.tourName,
+      summary: tour?.description,
+      description: tour?.description,
+      rating,
+      reviewsCount,
+      location: tour?.location,
+      city: tour?.city?.cityName,
+      country: tour?.country?.countryName,
+      latitude: tour?.latitude,
+      longitude: tour?.longitude,
+      price: tour?.price,
+      currency: tour?.currency,
+      maxGuests: tour?.maxGuests,
+      durationHours: typeof tour?.durationDays === "number" ? tour.durationDays * 24 : undefined,
+      media,
+      reviews: mappedReviews,
+      host: hostUi,
+      hostId: tour?.hostID,
+      isActive: !!tour?.active,
+      createdAt: tour?.createdAt,
+      experienceDetails: mappedDetails,   // ✅ thêm vào object
+    };
+
+    const normalized = normalizeExperience(merged);
+    setCurrentExperience(normalized);
+    return normalized;
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
   }, []);
+
 
   const fetchExperiences = useCallback(async (filters = {}) => {
   try {

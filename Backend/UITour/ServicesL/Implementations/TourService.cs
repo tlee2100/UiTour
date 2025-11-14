@@ -34,6 +34,7 @@ namespace UITour.ServicesL.Implementations
                 .Include(t => t.Photos)
                 .Include(t => t.Participants)
                 .Include(t => t.Reviews).ThenInclude(r => r.User)
+                .Include(t => t.ExperienceDetails)
                 .FirstOrDefaultAsync(t => t.TourID == id);
             if (tour == null)
                 throw new InvalidOperationException("Tour not found");
@@ -43,8 +44,8 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<Tour> CreateAsync(Tour tour)
         {
-            await _unitOfWork.Tours.AddAsync(tour); 
-            await _unitOfWork.SaveChangesAsync(); 
+            await _unitOfWork.Tours.AddAsync(tour);
+            await _unitOfWork.SaveChangesAsync();
             return tour;
 
         }
@@ -171,7 +172,7 @@ namespace UITour.ServicesL.Implementations
             if (review == null) return false;
 
             _unitOfWork.TourReviews.Remove(review);
-            await _unitOfWork.SaveChangesAsync();   
+            await _unitOfWork.SaveChangesAsync();
             return true;
         }
 
@@ -197,8 +198,16 @@ namespace UITour.ServicesL.Implementations
             if (photo == null) return false;
 
             _unitOfWork.TourPhotos.Remove(photo);
-            await _unitOfWork.SaveChangesAsync();   
+            await _unitOfWork.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<IEnumerable<ExperienceDetails>> GetExperienceDetailAsync(int tourId)
+        {
+            return await _unitOfWork.ExperienceDetails.Query()
+                .Where(d => d.TourID == tourId)
+                .OrderBy(d => d.SortIndex)
+                .ToListAsync();
         }
     }
 }
