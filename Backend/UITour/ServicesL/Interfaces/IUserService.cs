@@ -17,6 +17,8 @@ namespace UITour.ServicesL.Interfaces
         Task<bool> ValidateTokenAsync(string token);
         Task<bool> UpdateUserRoleAsync(int userId, string newRole);
         Task<bool> UpdateUserEmailAsync(int userId, string newEmail);
+        Task<bool> UpdateUserPhoneAsync(int userId, string newPhone);
         Task<IEnumerable<SavedListing>> GetSavedListingsAsync(int userId);
+
     }
 }

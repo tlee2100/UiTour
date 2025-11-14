@@ -62,7 +62,6 @@ namespace UITour.ServicesL.Implementations
 
             // Cập nhật các trường từ DTO
             existingUser.FullName = dto.FullName;
-            existingUser.Phone = dto.Phone;
             existingUser.UserAbout = dto.UserAbout;
             existingUser.Age = dto.Age;
             existingUser.Gender = dto.Gender;
@@ -96,6 +95,16 @@ namespace UITour.ServicesL.Implementations
                 throw new InvalidOperationException("Email is already in use");
 
             user.Email = newEmail;
+            _unitOfWork.Users.Update(user);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateUserPhoneAsync(int userId, string newPhone)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null) throw new InvalidOperationException("User not found");
+            user.Phone = newPhone;
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync();
             return true;
