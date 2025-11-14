@@ -119,21 +119,64 @@ export function HostProvider({ children }) {
   // ============================================================
   function updateField(step, values) {
     if (type === "stay") {
+      // SPECIAL HANDLING: PHOTOS + COVER PHOTO
+      if (step === "photos") {
+        setStayData((prev) => {
+          const newPhotos = values.photos || prev.photos || [];
+
+          // 1. Nếu host chọn cover → dùng ảnh isCover = true
+          const selectedCover = newPhotos.find((p) => p.isCover);
+
+          let coverPhoto = selectedCover
+            ? selectedCover.preview || selectedCover.serverUrl || null
+            : prev.coverPhoto;
+
+          // 2. Nếu chưa có cover → chọn auto
+          if (!selectedCover && !prev.coverPhoto && newPhotos.length > 0) {
+            // Living Room → Bedroom → First
+            const living = newPhotos.find((p) => p.category === "livingroom");
+            const bed = newPhotos.find((p) => p.category === "bedroom");
+
+            const auto = living || bed || newPhotos[0];
+
+            coverPhoto = auto.preview || auto.serverUrl || null;
+
+            // gắn isCover vào ảnh auto
+            newPhotos.forEach((p) => (p.isCover = p === auto));
+          }
+
+          return {
+            ...prev,
+            photos: newPhotos,
+            coverPhoto,
+          };
+        });
+
+        setCompletedStep((prev) => ({ ...prev, [step]: true }));
+        return;
+      }
+
+      // LOCATION
       if (step === "location") {
         setStayData((prev) => ({
           ...prev,
           location: { ...prev.location, ...values },
         }));
-      } else if (step === "pricing") {
+      }
+      // PRICE
+      else if (step === "pricing") {
         setStayData((prev) => ({
           ...prev,
           pricing: { ...prev.pricing, ...values },
         }));
-      } else {
+      }
+      // OTHER
+      else {
         setStayData((prev) => ({ ...prev, ...values }));
       }
-    } else {
-      // experience flow
+    }
+    else {
+      // experience flow (giữ nguyên)
       if (step === "pricing") {
         setExperienceData((prev) => ({
           ...prev,
@@ -149,6 +192,7 @@ export function HostProvider({ children }) {
         setExperienceData((prev) => ({ ...prev, ...values }));
       }
     }
+
     setCompletedStep((prev) => ({ ...prev, [step]: true }));
   }
 
@@ -173,7 +217,9 @@ export function HostProvider({ children }) {
           stayData.bedrooms > 0 &&
           stayData.beds > 0 &&
           stayData.bathrooms > 0 &&
-          stayData.accommodates > 0
+          stayData.accommodates > 0 &&
+          stayData.pricing.minNights >= 1 &&
+          stayData.pricing.maxNights >= stayData.pricing.minNights
         );
       if (step === "title")
         return stayData.listingTitle.trim().length > 0;
@@ -187,6 +233,16 @@ export function HostProvider({ children }) {
         const price = Number(stayData.pricing.basePrice);
         return !isNaN(price) && price > 0;
       }
+      if (step === "photos") {
+        const photos = stayData.photos || [];
+
+        const hasBedroom = photos.some((p) => p.category === "bedroom");
+        const hasBathroom = photos.some((p) => p.category === "bathroom");
+
+        // Bắt buộc ít nhất 1 ảnh bedroom + 1 ảnh bathroom
+        return hasBedroom && hasBathroom;
+      }
+
       return true;
     } else {
       // ✅ Experience validation
@@ -296,6 +352,8 @@ function formatStayDataForAPI(stayData) {
     bathrooms: stayData.bathrooms,
     accommodates: stayData.accommodates,
     squareFeet: stayData.squareFeet,
+    minNights: stayData.pricing?.minNights || 1,
+    maxNights: stayData.pricing?.maxNights || 30,
 
     // Pricing (flatten)
     price: Number(stayData.pricing?.basePrice) || 0,
@@ -330,7 +388,11 @@ function formatStayDataForAPI(stayData) {
     active: stayData.active,
 
     // Media
-    photos: stayData.photos || [],
+    photos: stayData.photos.map((p, index) => ({
+      url: p.serverUrl || "",        // sau upload
+      caption: p.caption || "",
+      sortIndex: index + 1
+    })),
     coverPhoto: stayData.coverPhoto || (stayData.photos?.[0] || null),
   };
 }
