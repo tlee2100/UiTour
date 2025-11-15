@@ -7,6 +7,25 @@
   background: #fff;
  }
 
+ .wish-folder-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.wish-folder-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+.wish-back-btn {
+  border: none;
+  background: transparent;
+  color: #111827;
+  font-weight: 500;
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
 .wish-title { font-size: 40px; font-weight: 700; margin-bottom: 24px; }
 .wish-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 28px; }
 .wish-card { background: #fff; border-radius: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); overflow: hidden; }
