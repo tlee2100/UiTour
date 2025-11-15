@@ -169,9 +169,24 @@ export default function HomePage() {
                 {property.isGuestFavourite && (
                   <div className="guest-favourite-badge">Guest favourite</div>
                 )}
-                <button className="favorite-button">
+                <button
+                  className="favorite-button"
+                  onClick={async (e) => {
+                    e.stopPropagation(); // không mở property detail
+
+                    await mockAPI.addToWishlist({
+                      id: property.id,
+                      title: property.title,
+                      image: property.mainImage,
+                      price: property.price
+                    });
+
+                    alert("Đã thêm vào danh sách yêu thích!");
+                  }}
+                >
                   <Icon icon="mdi:heart-outline" width="20" height="20" />
                 </button>
+
               </div>
               <div className="property-info">
                 <div className="property-title">{property.title}</div>
