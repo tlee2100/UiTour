@@ -18,12 +18,20 @@ export default function ProfileEditPage() {
     const fullName = u.fullName ?? u.FullName ?? p?.displayName ?? '';
     const email = u.email ?? u.Email ?? p?.email ?? '';
     const about = u.userAbout ?? u.about ?? p?.about ?? '';
+
     // interests từ backend có thể là string "A, B, C"
     const interestsArr = Array.isArray(u.interests)
       ? u.interests
       : (typeof u.interests === 'string'
           ? u.interests.split(',').map(s => s.trim()).filter(Boolean)
           : (Array.isArray(p?.interests) ? p.interests : []));
+
+    // age: backend trả 0 khi chưa có -> convert thành ''
+    const ageValue =
+      typeof u.age === 'number' && u.age > 0
+        ? u.age
+        : (typeof p?.age === 'number' && p.age > 0 ? p.age : '');
+
     return {
       displayName: fullName,
       email,
@@ -31,7 +39,7 @@ export default function ProfileEditPage() {
       interests: interestsArr,
       visitedTagsEnabled: !!p?.visitedTagsEnabled, // nếu BE chưa có, vẫn giữ UI state
       visitedTags: Array.isArray(p?.visitedTags) ? p.visitedTags : [],
-      age: u.age ?? p?.age ?? '',
+      age: ageValue,
       gender: u.gender ?? p?.gender ?? '',
       nationality: u.nationality ?? p?.nationality ?? '',
     };
@@ -92,7 +100,10 @@ export default function ProfileEditPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const initial = useMemo(() => (form?.displayName?.charAt(0) || 'U').toUpperCase(), [form]);
+  const initial = useMemo(
+    () => (form?.displayName?.charAt(0) || 'U').toUpperCase(),
+    [form]
+  );
 
   const update = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
 
@@ -173,6 +184,7 @@ export default function ProfileEditPage() {
       <div className="profile-divider" />
 
       <main className="profile-main">
+        {/* Card avatar + tên hiển thị */}
         <section className="profile-section">
           <div className="profile-card">
             <div className="profile-avatar-large">{initial}</div>
@@ -181,7 +193,13 @@ export default function ProfileEditPage() {
                 value={form.displayName || ''}
                 onChange={e => update('displayName', e.target.value)}
                 placeholder="Tên hiển thị"
-                style={{ fontSize: 22, fontWeight: 600, border: '1px solid #eee', borderRadius: 8, padding: '8px 10px' }}
+                style={{
+                  fontSize: 22,
+                  fontWeight: 600,
+                  border: '1px solid #eee',
+                  borderRadius: 8,
+                  padding: '8px 10px'
+                }}
               />
               <div style={{ color: '#666', marginTop: 6 }}>
                 {form.email || 'email@example.com'}
@@ -190,21 +208,33 @@ export default function ProfileEditPage() {
           </div>
         </section>
 
+        {/* Giới thiệu bản thân */}
         <section className="profile-section">
           <div className="profile-completion-title">Giới thiệu bản thân</div>
           <textarea
             value={form.about || ''}
             onChange={e => update('about', e.target.value)}
             placeholder="Viết nội dung thú vị và ấn tượng"
-            style={{ width: '100%', minHeight: 120, border: '1px dashed #ccc', borderRadius: 12, padding: 12 }}
+            style={{
+              width: '100%',
+              minHeight: 120,
+              border: '1px dashed #ccc',
+              borderRadius: 12,
+              padding: 12
+            }}
           />
         </section>
 
+        {/* Nơi tôi từng đến */}
         <section className="profile-section">
           <div className="profile-completion-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span>Nơi tôi từng đến</span>
             <label style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input type="checkbox" checked={!!form.visitedTagsEnabled} onChange={toggleVisitedEnabled} />
+              <input
+                type="checkbox"
+                checked={!!form.visitedTagsEnabled}
+                onChange={toggleVisitedEnabled}
+              />
               <span>Hiển thị</span>
             </label>
           </div>
@@ -222,17 +252,79 @@ export default function ProfileEditPage() {
                       return { ...prev, visitedTags: arr };
                     });
                   }}
-                  style={{ border: '1px solid #eee', borderRadius: 20, padding: '8px 12px', minWidth: 160 }}
+                  style={{
+                    border: '1px solid #eee',
+                    borderRadius: 20,
+                    padding: '8px 12px',
+                    minWidth: 160
+                  }}
                 />
-                <button className="profile-primary-btn" style={{ background: '#ffecec', color: '#b40000' }} onClick={() => removeVisitedTag(idx)}>Xoá</button>
+                <button
+                  className="profile-primary-btn"
+                  style={{ background: '#ffecec', color: '#b40000' }}
+                  onClick={() => removeVisitedTag(idx)}
+                >
+                  Xoá
+                </button>
               </div>
             ))}
-            <button className="profile-primary-btn" style={{ background: '#f1f1f1', color: '#333' }} onClick={addVisitedTag}>
+            <button
+              className="profile-primary-btn"
+              style={{ background: '#f1f1f1', color: '#333' }}
+              onClick={addVisitedTag}
+            >
               + Thêm nơi đã đến
             </button>
           </div>
         </section>
 
+        {/* Thông tin cá nhân: Tuổi / Giới tính / Quốc tịch */}
+        <section className="profile-section">
+          <div className="profile-completion-title">Thông tin cá nhân</div>
+          <div className="info-grid info-grid-edit">
+            {/* Tuổi */}
+            <label>
+              <strong>Tuổi</strong>
+              <input
+                type="number"
+                min="0"
+                value={form.age ?? ''}
+                onChange={e => {
+                  const v = e.target.value;
+                  update('age', v === '' ? '' : Number(v));
+                }}
+                placeholder="VD: 21"
+              />
+            </label>
+
+            {/* Giới tính */}
+            <label>
+              <strong>Giới tính</strong>
+              <select
+                value={form.gender ?? ''}
+                onChange={e => update('gender', e.target.value)}
+              >
+                <option value="">-- Chọn giới tính --</option>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+                <option value="Khác">Khác</option>
+              </select>
+            </label>
+
+            {/* Quốc tịch */}
+            <label>
+              <strong>Quốc tịch</strong>
+              <input
+                type="text"
+                value={form.nationality ?? ''}
+                onChange={e => update('nationality', e.target.value)}
+                placeholder="VD: Việt Nam"
+              />
+            </label>
+          </div>
+        </section>
+
+        {/* Sở thích của tôi */}
         <section className="profile-section">
           <div className="profile-completion-title">Sở thích của tôi</div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
@@ -250,24 +342,44 @@ export default function ProfileEditPage() {
                   }}
                   style={{ border: '1px dashed #bbb', borderRadius: 24, padding: '8px 14px' }}
                 />
-                <button className="profile-primary-btn" style={{ background: '#ffecec', color: '#b40000' }} onClick={() => removeInterest(idx)}>Xoá</button>
+                <button
+                  className="profile-primary-btn"
+                  style={{ background: '#ffecec', color: '#b40000' }}
+                  onClick={() => removeInterest(idx)}
+                >
+                  Xoá
+                </button>
               </div>
             ))}
-            <button className="profile-primary-btn" style={{ background: '#f1f1f1', color: '#333' }} onClick={addInterest}>
+            <button
+              className="profile-primary-btn"
+              style={{ background: '#f1f1f1', color: '#333' }}
+              onClick={addInterest}
+            >
               + Thêm sở thích
             </button>
           </div>
         </section>
 
+        {/* Lỗi nếu có */}
         {!!error && (
           <div className="profile-section" style={{ color: '#c00' }}>{error}</div>
         )}
 
+        {/* Nút hành động */}
         <div className="profile-section" style={{ display: 'flex', gap: 12 }}>
-          <button className="profile-primary-btn" onClick={() => navigate(-1)} style={{ background: '#eee', color: '#333' }}>
+          <button
+            className="profile-primary-btn"
+            onClick={() => navigate(-1)}
+            style={{ background: '#eee', color: '#333' }}
+          >
             Hủy
           </button>
-          <button className="profile-primary-btn" onClick={handleSave} disabled={saving}>
+          <button
+            className="profile-primary-btn"
+            onClick={handleSave}
+            disabled={saving}
+          >
             {saving ? 'Đang lưu...' : 'Hoàn tất'}
           </button>
         </div>
