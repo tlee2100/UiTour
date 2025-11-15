@@ -10,6 +10,11 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [isSendingReset, setIsSendingReset] = useState(false);
+  const [forgotPasswordError, setForgotPasswordError] = useState("");
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
   const { dispatch } = useApp();
   const navigate = useNavigate();
 
@@ -58,6 +63,28 @@ const LoginPage = () => {
     }
   };
 
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotPasswordError("");
+    setIsSendingReset(true);
+
+    try {
+      await authAPI.forgotPassword(forgotPasswordEmail);
+      setForgotPasswordSuccess(true);
+    } catch (err) {
+      setForgotPasswordError(err.message || "Failed to send password reset email. Please try again.");
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
+
+  const closeForgotPasswordModal = () => {
+    setShowForgotPassword(false);
+    setForgotPasswordEmail("");
+    setForgotPasswordError("");
+    setForgotPasswordSuccess(false);
+  };
+
   return (
     <div className="login-container">
       <div className="login-box">
@@ -99,6 +126,17 @@ const LoginPage = () => {
             disabled={isLoading}
           />
 
+          <a
+            href="#"
+            className="forgot-password-link"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowForgotPassword(true);
+            }}
+          >
+            Forgot Password?
+          </a>
+
           <button
             type="submit"
             className="continue-btn"
@@ -115,6 +153,78 @@ const LoginPage = () => {
           Continue with Google
         </button>
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <div className="forgot-password-modal" onClick={closeForgotPasswordModal}>
+          <div className="forgot-password-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="forgot-password-modal-close" onClick={closeForgotPasswordModal}>
+              ×
+            </button>
+
+            {!forgotPasswordSuccess ? (
+              <>
+                <h2 className="login-title">Forgot Password</h2>
+                <h3 className="welcome-text">
+                  Enter your email address and we'll send you a link to reset your password.
+                </h3>
+
+                {forgotPasswordError && (
+                  <div style={{
+                    color: '#ff4444',
+                    fontSize: '14px',
+                    marginBottom: '15px',
+                    padding: '10px',
+                    backgroundColor: '#ffebee',
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    {forgotPasswordError}
+                  </div>
+                )}
+
+                <form onSubmit={handleForgotPassword}>
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    required
+                    disabled={isSendingReset}
+                    autoFocus
+                  />
+
+                  <button
+                    type="submit"
+                    className="continue-btn"
+                    disabled={isSendingReset}
+                  >
+                    {isSendingReset ? "Sending..." : "Send Reset Link"}
+                  </button>
+                </form>
+              </>
+            ) : (
+              <div className="forgot-password-success">
+                <div className="forgot-password-success-icon">✓</div>
+                <h2 className="login-title" style={{ marginBottom: '12px' }}>Check Your Email</h2>
+                <h3 className="welcome-text" style={{ marginBottom: '24px' }}>
+                  We've sent a password reset link to<br />
+                  <span style={{ color: 'var(--auth-primary)', fontWeight: 600 }}>
+                    {forgotPasswordEmail}
+                  </span>
+                </h3>
+                <button
+                  type="button"
+                  className="continue-btn"
+                  onClick={closeForgotPasswordModal}
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

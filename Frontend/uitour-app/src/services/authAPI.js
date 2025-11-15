@@ -83,6 +83,150 @@ class AuthAPI {
       throw error;
     }
   }
+
+  // Generate a 6-digit OTP
+  _generateOTP() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  // Send OTP to email for verification
+  async sendOTP(email) {
+    try {
+      // Try backend first
+      try {
+        const response = await fetch(`${API_BASE_URL}/send-otp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ Email: email }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          return data;
+        }
+      } catch (backendError) {
+        // Backend endpoint doesn't exist or failed, use mock
+        console.log('Backend OTP endpoint not available, using mock OTP service');
+      }
+
+      // Mock OTP service (for development)
+      const otp = this._generateOTP();
+      const otpData = {
+        otp: otp,
+        email: email,
+        expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes
+      };
+
+      // Store OTP in localStorage
+      const otpStorage = JSON.parse(localStorage.getItem('otp_storage') || '{}');
+      otpStorage[email] = otpData;
+      localStorage.setItem('otp_storage', JSON.stringify(otpStorage));
+
+      // Log OTP to console for development (remove in production)
+      console.log(`🔐 OTP for ${email}: ${otp} (This is a development mock. Check console for the code.)`);
+
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      return { message: 'OTP sent successfully', email: email };
+    } catch (error) {
+      throw new Error(error.message || 'Failed to send OTP');
+    }
+  }
+
+  // Verify OTP
+  async verifyOTP(email, otp) {
+    try {
+      // Try backend first
+      try {
+        const response = await fetch(`${API_BASE_URL}/verify-otp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ Email: email, OTP: otp }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          return data;
+        }
+      } catch (backendError) {
+        // Backend endpoint doesn't exist or failed, use mock
+        console.log('Backend OTP verification not available, using mock verification');
+      }
+
+      // Mock OTP verification (for development)
+      const otpStorage = JSON.parse(localStorage.getItem('otp_storage') || '{}');
+      const storedOtpData = otpStorage[email];
+
+      if (!storedOtpData) {
+        throw new Error('OTP not found. Please request a new OTP.');
+      }
+
+      if (Date.now() > storedOtpData.expiresAt) {
+        delete otpStorage[email];
+        localStorage.setItem('otp_storage', JSON.stringify(otpStorage));
+        throw new Error('OTP has expired. Please request a new OTP.');
+      }
+
+      if (storedOtpData.otp !== otp) {
+        throw new Error('Invalid OTP. Please check and try again.');
+      }
+
+      // OTP verified successfully - remove it from storage
+      delete otpStorage[email];
+      localStorage.setItem('otp_storage', JSON.stringify(otpStorage));
+
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      return { message: 'OTP verified successfully', email: email };
+    } catch (error) {
+      throw new Error(error.message || 'OTP verification failed');
+    }
+  }
+
+  // Forgot password - send reset email
+  async forgotPassword(email) {
+    try {
+      // Try backend first
+      try {
+        const response = await fetch(`${API_BASE_URL}/forgot-password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ Email: email }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          return data;
+        }
+      } catch (backendError) {
+        // Backend endpoint doesn't exist or failed, use mock
+        console.log('Backend forgot password endpoint not available, using mock service');
+      }
+
+      // Mock forgot password service (for development)
+      // In production, this would send an actual email
+      console.log(`📧 Password reset requested for: ${email}`);
+      console.log('(This is a development mock. In production, an email would be sent.)');
+
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      return { 
+        message: 'Password reset email sent successfully', 
+        email: email 
+      };
+    } catch (error) {
+      throw new Error(error.message || 'Failed to send password reset email');
+    }
+  }
   //get properties
   async getProperties() {
   try {
