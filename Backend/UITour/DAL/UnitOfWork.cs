@@ -33,6 +33,7 @@ namespace UITour.DAL
             Reviews = new ReviewRepository(_context);
             HostVerifications = new HostVerificationRepository(_context);
             SavedListings = new SavedListingRepository(_context);
+            FavoriteLists = new FavoriteListRepository(_context);
             Messages = new MessageRepository(_context);
             Tours = new TourRepository(_context);
             TourParticipants = new TourParticipantRepository(_context);
@@ -60,6 +61,7 @@ namespace UITour.DAL
         public IReviewRepository Reviews { get; }
         public IHostVerificationRepository HostVerifications { get; }
         public ISavedListingRepository SavedListings { get; }
+        public IFavoriteListRepository FavoriteLists { get; }
         public IMessageRepository Messages { get; }
 
         public ITourReviewRepository TourReviews { get; }
