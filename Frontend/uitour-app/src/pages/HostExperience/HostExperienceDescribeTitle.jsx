@@ -5,11 +5,16 @@ import "./HostExperience.css";
 export default function HostExperienceDescribeTitle() {
   const navigate = useNavigate();
   const { experienceData, updateField, validateStep } = useHost();
-  const title = experienceData.title || "";
+  const title = experienceData.tourName || "";
   const summary = experienceData.summary || "";
 
-  const handleTitle = (e) => updateField("describe-title", { title: e.target.value });
-  const handleSummary = (e) => updateField("describe-title", { summary: e.target.value });
+
+  const handleTitle = e => updateField("title", { tourName: e.target.value });
+  const handleSummary = (e) =>
+    updateField("description", {
+      summary: e.target.value,
+      description: e.target.value,
+    });
 
   const handleNext = () => {
     if (!validateStep("describe-title")) return;

@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
 
 // ============================================================
 // 1️⃣ DỮ LIỆU MẪU CHUẨN HÓA THEO BACKEND
@@ -81,27 +83,74 @@ const initialStayData = {
 const initialExperienceData = {
   tourID: null,
   hostID: null,
+
+  // BASIC INFO (FE + BE)
   tourName: "",
+  summary: "",
   description: "",
-  location: "",
+  mainCategory: "",   // chọn từ trang Choose
+  yearsOfExperience: 10,
+  qualifications: {
+    intro: "",
+    expertise: "",
+    recognition: ""
+  },
+
+  // LOCATION
+  location: {
+    addressLine: "",
+    city: "",
+    country: "",
+    lat: null,
+    lng: null,
+  },
   cityID: null,
-  city: null,
   countryID: null,
-  country: null,
+
+  // PRICING
+  pricing: {
+    basePrice: "",
+    currency: "USD",
+    priceUnit: "perPerson",
+  },
+
+  // GUEST CAPACITY
+  capacity: {
+    maxGuests: 1,
+  },
+
+  // BOOKING TIME SLOTS
+  booking: {
+    timeSlots: [],     // FE tự quản lý
+  },
+
+  // MEDIA
+  media: {
+    cover: null,
+    photos: [],
+  },
+
+  // DURATION
+  durationHours: 1,
   durationDays: 1,
-  maxGuests: 1,
-  price: "",
-  currency: "USD",
+
+  // DETAILS / WHAT INCLUDED
+  experienceDetails: [],
+
+  // STATUS
+  isActive: true,
+
   startDate: "",
   endDate: "",
   createdAt: null,
-  active: true,
+
+  // BACKEND-ONLY FIELDS (OPTIONAL)
   cancellationID: null,
   cancellationPolicy: null,
   participants: [],
-  photos: [],
   reviews: [],
 };
+
 
 // ============================================================
 // 2️⃣ TẠO CONTEXT
@@ -113,6 +162,23 @@ export function HostProvider({ children }) {
   const [stayData, setStayData] = useState(initialStayData);
   const [experienceData, setExperienceData] = useState(initialExperienceData);
   const [completedStep, setCompletedStep] = useState({});
+  const [loaded, setLoaded] = useState(false);
+  const [loadingDraft, setLoadingDraft] = useState(true);
+
+  const [photosReady, setPhotosReady] = useState(false);
+
+
+  const location = useLocation();
+
+  useEffect(() => {
+    // Tự động đặt flow type theo URL
+    if (location.pathname.startsWith("/host/experience")) {
+      setType("experience");
+    } else if (location.pathname.startsWith("/host/stay")) {
+      setType("stay");
+    }
+  }, [location.pathname]);
+
 
   // ============================================================
   // 3️⃣ CẬP NHẬT DỮ LIỆU THEO BƯỚC
@@ -176,20 +242,52 @@ export function HostProvider({ children }) {
       }
     }
     else {
-      // experience flow (giữ nguyên)
-      if (step === "pricing") {
-        setExperienceData((prev) => ({
+      // EXPERIENCE FLOW
+      if (step === "location") {
+        setExperienceData(prev => ({
           ...prev,
-          price: values.price ?? prev.price,
-          currency: values.currency ?? prev.currency,
+          location: { ...prev.location, ...values }
         }));
-      } else if (step === "photos") {
-        setExperienceData((prev) => ({
+      }
+      else if (step === "qualification") {
+        setExperienceData(prev => ({
           ...prev,
-          photos: values.photos ?? prev.photos,
+          qualifications: { ...prev.qualifications, ...values }   // values = { intro: "...", expertise: "..."}
         }));
-      } else {
-        setExperienceData((prev) => ({ ...prev, ...values }));
+      }
+      else if (step === "pricing") {
+        setExperienceData(prev => ({
+          ...prev,
+          pricing: { ...prev.pricing, ...values }
+        }));
+      }
+      else if (step === "capacity") {
+        setExperienceData(prev => ({
+          ...prev,
+          capacity: { ...prev.capacity, ...values }
+        }));
+      }
+      else if (step === "booking") {
+        setExperienceData(prev => ({
+          ...prev,
+          booking: { ...prev.booking, ...values }
+        }));
+      }
+      else if (step === "photos") {
+        setExperienceData(prev => ({
+          ...prev,
+          media: {
+            ...prev.media,
+            photos: values.photos,
+            cover: values.cover
+          }
+        }));
+
+        setCompletedStep(prev => ({ ...prev, photos: true, media: true }));
+        return;
+      }
+      else {
+        setExperienceData(prev => ({ ...prev, ...values }));
       }
     }
 
@@ -244,19 +342,49 @@ export function HostProvider({ children }) {
       }
 
       return true;
-    } else {
-      // ✅ Experience validation
-      if (step === "choose") return !!experienceData.tourName;
-      if (step === "locate") return !!experienceData.location;
-      if (step === "pricing")
-        return (
-          Number(experienceData.price) > 0 &&
-          experienceData.currency.trim() !== ""
-        );
-      if (step === "photos")
-        return Array.isArray(experienceData.photos) && experienceData.photos.length > 0;
+    }
+    else {
+      // EXPERIENCE VALIDATION
+
+      if (step === "choose")
+        return !!experienceData.mainCategory;
+
+      if (step === "years")
+        return Number(experienceData.yearsOfExperience) >= 0;
+
+      if (step === "qualification")
+        return true;
+
+      if (step === "title")
+        return experienceData.tourName.trim().length > 0;
+
       if (step === "description")
         return experienceData.description.trim().length > 0;
+
+      if (step === "locate")
+        return !!experienceData.location.lat && !!experienceData.location.lng;
+
+      if (step === "pricing")
+        return Number(experienceData.pricing.basePrice) > 0;
+
+      if (step === "capacity")
+        return Number(experienceData.capacity.maxGuests) >= 1;
+
+      if (step === "photos")
+        return experienceData.media.photos.length > 0;
+
+      if (step === "title") return experienceData.tourName.trim().length > 0;
+      if (step === "description") return experienceData.description.trim().length > 0;
+
+      if (step === "itinerary")
+        return experienceData.experienceDetails.length > 0;
+
+      if (step === "capacity")
+        return Number(experienceData.capacity.maxGuests) >= 1;
+
+      if (step === "timeslots")
+        return experienceData.booking.timeSlots.length > 0;
+
       return true;
     }
   }
@@ -272,12 +400,6 @@ export function HostProvider({ children }) {
     setType(_type);
   }
 
-  function reset() {
-    setStayData({ ...initialStayData });
-    setExperienceData({ ...initialExperienceData });
-    setCompletedStep({});
-  }
-
   async function sendHostData() {
     const data = getFinalData();
     try {
@@ -285,7 +407,7 @@ export function HostProvider({ children }) {
       if (type === "stay") {
         payload = formatStayDataForAPI(data);
       } else {
-        payload = data; // Experience có thể xử lý riêng sau
+        payload = formatExperienceDataForAPI(data);
       }
 
       console.log("[SEND TO BACKEND]", payload);
@@ -300,6 +422,100 @@ export function HostProvider({ children }) {
     }
   }
 
+  useEffect(() => {
+
+    const savedStay = localStorage.getItem("host_stay_draft");
+
+    if (savedStay) {
+      setStayData(JSON.parse(savedStay));
+    }
+
+    const savedExp = localStorage.getItem("host_exp_draft");
+
+    if (savedExp) {
+      const exp = JSON.parse(savedExp);
+
+      // normalize photos: đảm bảo không crash khi thiếu file
+      // --- Strong normalize ---
+      exp.media.photos = (exp.media?.photos || []).map(p => {
+        const preview = p.preview || p.serverUrl || "";
+
+        return {
+          file: null,                 // tránh UI crash
+          preview,
+          name: p.name || "",
+          caption: p.caption || "",
+          serverUrl: p.serverUrl || "",
+          isCover: preview === exp.media.cover
+        };
+      });
+
+      // Nếu cover rỗng thì đặt auto ảnh đầu
+      if (!exp.media.cover && exp.media.photos.length > 0) {
+        exp.media.cover = exp.media.photos[0].preview;
+      }
+
+
+      setExperienceData(exp);                 // ❗ chỉ set 1 lần duy nhất
+      setCompletedStep(prev => ({
+        ...prev,
+        photos: exp.media.photos.length > 0,
+        media: exp.media.photos.length > 0
+      }));
+    }
+
+    setPhotosReady(true);
+    setLoaded(true);
+    setLoadingDraft(false);
+  }, []);
+
+  useEffect(() => {
+    if (loaded) {
+      localStorage.setItem("host_stay_draft", JSON.stringify(stayData));
+    }
+  }, [stayData, loaded]);
+
+  useEffect(() => {
+    if (!loaded) return; // <— ngăn chạy save lúc mới load draft
+
+    const expForStorage = {
+      ...experienceData,
+      booking: {
+        ...experienceData.booking
+      },
+      media: {
+        ...experienceData.media,
+        photos: experienceData.media.photos.map(p => ({
+          preview: p.preview,
+          name: p.name,
+          caption: p.caption,
+          serverUrl: p.serverUrl
+        }))
+      }
+    };
+
+    localStorage.setItem("host_exp_draft", JSON.stringify(expForStorage));
+  }, [experienceData, loaded]);
+
+  function reset() {
+    localStorage.removeItem("host_stay_draft");
+    localStorage.removeItem("host_exp_draft");
+
+    setStayData({ ...initialStayData });
+    setExperienceData({ ...initialExperienceData });
+    setCompletedStep({});
+  }
+
+
+  function getDebugData() {
+    return {
+      raw: type === "stay" ? stayData : experienceData,
+      formatted:
+        type === "stay"
+          ? formatStayDataForAPI(stayData)
+          : formatExperienceDataForAPI(experienceData),
+    };
+  }
 
   // ============================================================
   // 7️⃣ EXPORT PROVIDER
@@ -320,6 +536,9 @@ export function HostProvider({ children }) {
         getFinalData,
         reset,
         sendHostData,
+        getDebugData,
+        loadingDraft,
+        photosReady,
       }}
     >
       {children}
@@ -394,6 +613,52 @@ function formatStayDataForAPI(stayData) {
       sortIndex: index + 1
     })),
     coverPhoto: stayData.coverPhoto || (stayData.photos?.[0] || null),
+  };
+}
+
+function formatExperienceDataForAPI(d) {
+  return {
+    tourID: d.tourID || null,
+    hostID: d.hostID,
+
+    tourName: d.tourName,
+    description: d.description,
+    summary: d.summary,
+    mainCategory: d.mainCategory,
+    qualifications: d.qualifications,
+
+    // Location
+    location: d.location.addressLine,
+    cityID: d.cityID,
+    countryID: d.countryID,
+    lat: d.location.lat,
+    lng: d.location.lng,
+
+    // Pricing
+    price: Number(d.pricing.basePrice),
+    currency: d.pricing.currency,
+
+    // Capacity
+    maxGuests: d.capacity.maxGuests,
+
+    // Duration
+    durationDays: d.durationDays,
+    durationHours: d.durationHours,
+
+    // Time slots (optional—tùy BE có hỗ trợ hay không)
+    timeSlots: d.booking.timeSlots,
+
+    // Photos
+    photos: d.media.photos.map((p, i) => ({
+      url: p.serverUrl || "",
+      caption: p.caption || "",
+      sortIndex: i + 1
+    })),
+    coverPhoto: d.media.cover,
+
+    startDate: d.startDate,
+    endDate: d.endDate,
+    active: d.isActive
   };
 }
 
