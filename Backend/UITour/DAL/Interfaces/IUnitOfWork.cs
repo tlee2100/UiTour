@@ -26,13 +26,16 @@
          ITransactionRepository Transactions { get; }
          IReviewRepository Reviews { get; }
          IHostVerificationRepository HostVerifications { get; }
-         ISavedListingRepository SavedListings { get; }
-         IMessageRepository Messages { get; }
+        ISavedListingRepository SavedListings { get; }
+        IFavoriteListRepository FavoriteLists { get; }
+        IMessageRepository Messages { get; }
 
          ITourRepository Tours { get; }
          ITourParticipantRepository TourParticipants { get; }
          ITourPhotoRepository TourPhotos { get; }
          ITourReviewRepository TourReviews { get; }
+
+         IExperienceDetailsRepository ExperienceDetails { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
      }

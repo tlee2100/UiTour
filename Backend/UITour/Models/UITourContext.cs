@@ -42,7 +42,7 @@ namespace UITour.Models
         public DbSet<HostVerification> HostVerifications { get; set; }
 
         // ================= Saved Listings =================
-        public DbSet<SavedListing> SavedListings { get; set; }
+        public DbSet<SavedListings> SavedListings { get; set; }
 
         // ================= Messages =================
         public DbSet<Message> Messages { get; set; }
@@ -52,6 +52,7 @@ namespace UITour.Models
         public DbSet<TourParticipant> TourParticipants { get; set; } 
         public DbSet<TourReview> TourReviews { get; set; }   
         public DbSet<TourPhoto> TourPhotos { get; set; }
+        public DbSet<ExperienceDetails> ExperienceDetails { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -60,7 +61,7 @@ namespace UITour.Models
             modelBuilder.Entity<PropertyAmenity>()
                 .HasKey(pa => new { pa.PropertyID, pa.AmenityID });
 
-            modelBuilder.Entity<SavedListing>()
+            modelBuilder.Entity<SavedListings>()
                 .HasKey(sl => new { sl.UserID, sl.PropertyID });
 
             // Nếu cần mapping thêm (ví dụ decimal precision)
@@ -148,6 +149,23 @@ namespace UITour.Models
                 .WithMany(t => t.Photos)
                 .HasForeignKey(tp => tp.TourID)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ExperienceDetails>()
+                .HasOne(ed => ed.Tour)
+                .WithMany(t => t.ExperienceDetails)
+                .HasForeignKey(ed => ed.TourID)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            modelBuilder.Entity<SavedListings>()
+                .HasKey(sl => new { sl.UserID, sl.PropertyID, sl.ListID });
+
+            modelBuilder.Entity<SavedListings>()
+                .HasOne(sl => sl.FavoriteList)
+                .WithMany(fl => fl.SavedListings)
+                .HasForeignKey(sl => sl.ListID);
+            modelBuilder.Entity<FavoriteList>()
+                .HasKey(fl => fl.ListID);        
+
         }
     }
 }

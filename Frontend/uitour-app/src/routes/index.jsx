@@ -27,7 +27,6 @@ import AdminUsers from "../pages/admin/AdminUsers";
 import AdminReports from "../pages/admin/AdminReports";
 import AdminTransactions from "../pages/admin/AdminTransactions";
 import AdminSettings from "../pages/admin/AdminSettings";
-
 import HostExperienceCreateChoose from "../pages/HostExperience/HostExperienceCreateChoose";
 import HostExperienceCreateYears from "../pages/HostExperience/HostExperienceCreateYears";
 import HostExperienceCreateQualification from "../pages/HostExperience/HostExperienceCreateQualification";
@@ -54,6 +53,7 @@ import BecomeHost from "../pages/BecomeHost";
 
 import HostToday from "../pages/HostPage/HostToday";
 import HostListings from "../pages/HostPage/HostListings";
+import HostMessages from "../pages/HostPage/HostMessages";
 import ProfileEditPage from "../pages/ProfileEditPage";
 
 import HostDemoPreview from "../pages/HostDemoPreview";
@@ -115,6 +115,9 @@ const AppRoutes = () => {
       <Route path="/signup" element={<SignUpPage />} />
 
       <Route path="/host/becomehost" element={<BecomeHost />} />
+      <Route path="/host/today" element={<HostToday />} />
+      <Route path="/host/listings" element={<HostListings />} />
+      <Route path="/host/messages" element={<HostMessages />} />
 
       <Route
         path="/host/*"
@@ -125,9 +128,8 @@ const AppRoutes = () => {
         }
       >
         {/* Các route con */}
-        <Route path="today" element={<HostToday />} />
-        <Route path="listings" element={<HostListings />} />
         <Route path="demo-preview" element={<HostDemoPreview />} />
+
 
         {/* Flow tạo Stay */}
         <Route path="stay/create">
