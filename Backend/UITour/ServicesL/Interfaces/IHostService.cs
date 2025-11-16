@@ -17,5 +17,8 @@ namespace UITour.ServicesL.Interfaces
         Task<decimal> GetEarningsAsync(int hostId, DateTime startDate, DateTime endDate);
         //Task<IEnumerable<Review>> GetHostReviewsAsync(int hostId);
         //Task<double> GetAverageRatingAsync(int hostId);
+        Task <IEnumerable<Property>> GetPropertiesAsync(int hostId);
+        Task<IEnumerable<Booking>> GetBookingsAsync(int hostId);
+        Task<IEnumerable<Tour>> GetToursAsync(int hostId);  
     }
 }
