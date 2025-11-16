@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/UiTour.png";
 import LocationPicker from "../../components/LocationPicker";
 import "./HostExperience.css";
 import { useHost } from "../../contexts/HostContext";
@@ -9,44 +8,71 @@ export default function HostExperienceCreateLocate() {
   const navigate = useNavigate();
   const { experienceData, updateField, setFlowType, type } = useHost();
 
-  // ✅ Đảm bảo context đang ở chế độ "experience"
+  // Đảm bảo đang ở flow "experience"
   useEffect(() => {
     if (type !== "experience") setFlowType("experience");
-  }, [type, setFlowType]);
+  }, [type]);
 
+  // LOCAL UI STATE
   const [query, setQuery] = useState(experienceData.location.addressLine || "");
   const [center, setCenter] = useState([
     experienceData.location.lat || 10.8231,
     experienceData.location.lng || 106.6297,
   ]);
 
-  // 🔍 Reverse geocode
+  // 🟢 Sync lại local state khi reload và context đã load xong
+  useEffect(() => {
+    const loc = experienceData.location;
+
+    if (loc.addressLine && loc.addressLine !== query) {
+      setQuery(loc.addressLine);
+    }
+
+    if (loc.lat && loc.lng) {
+      const next = [loc.lat, loc.lng];
+      if (next[0] !== center[0] || next[1] !== center[1]) {
+        setCenter(next);
+      }
+    }
+  }, [experienceData.location]);
+
+  // 🟢 Reverse geocode
   const reverseGeocode = async (lat, lng) => {
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
       );
       const data = await res.json();
-      return data?.display_name || "";
-    } catch {
-      return "";
+      return data;
+    } catch (err) {
+      return null;
     }
   };
 
-  // ✅ Khi người dùng chọn vị trí mới
+  // 🟢 Khi user chọn vị trí mới trên map
   const handleLocationChange = async (loc) => {
     const { latitude, longitude } = loc;
-    const address = await reverseGeocode(latitude, longitude);
 
-    // Lưu vào Context để Layout biết (validateStep mới pass)
+    const geo = await reverseGeocode(latitude, longitude);
+
+    const address = geo?.display_name || "";
+    const city =
+      geo?.address?.city ||
+      geo?.address?.town ||
+      geo?.address?.village ||
+      "";
+    const country = geo?.address?.country || "";
+
+    // Update context
     updateField("location", {
       lat: latitude,
       lng: longitude,
       addressLine: address,
-      city: "Ho Chi Minh",
-      country: "Vietnam",
+      city,
+      country,
     });
 
+    // Update UI state
     setCenter([latitude, longitude]);
     setQuery(address);
   };
@@ -64,33 +90,6 @@ export default function HostExperienceCreateLocate() {
               className="he-map-search-input"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={async (e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  if (!query.trim()) return;
-                  try {
-                    const res = await fetch(
-                      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
-                    );
-                    const data = await res.json();
-                    if (data?.[0]) {
-                      const lat = parseFloat(data[0].lat);
-                      const lon = parseFloat(data[0].lon);
-                      const address = data[0].display_name;
-                      setCenter([lat, lon]);
-                      setQuery(address);
-                      // ✅ Cập nhật luôn context
-                      updateField("location", {
-                        lat,
-                        lng: lon,
-                        addressLine: address,
-                        city: "Ho Chi Minh",
-                        country: "Vietnam",
-                      });
-                    }
-                  } catch {}
-                }
-              }}
             />
           </div>
 
@@ -107,7 +106,6 @@ export default function HostExperienceCreateLocate() {
           />
         </div>
       </main>
-      {/* ❌ Không cần nút Next ở đây — đã có trong HostFooter */}
     </div>
   );
 }
