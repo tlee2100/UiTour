@@ -70,7 +70,7 @@ namespace UITour.Models
         public ICollection<Calendar> Calendars { get; set; }
         public ICollection<Booking> Bookings { get; set; }
         public ICollection<PropertyPhoto> Photos { get; set; }
-        public ICollection<SavedListing> SavedListings { get; set; }
+        public ICollection<SavedListings> SavedListings { get; set; }
         public ICollection<Review> Reviews { get; set; }
 
     }

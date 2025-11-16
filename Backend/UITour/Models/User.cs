@@ -34,7 +34,7 @@ namespace UITour.Models
         public ICollection<Booking> Bookings { get; set; }
         public ICollection<Message> SentMessages { get; set; }
         public ICollection<Message> ReceivedMessages { get; set; }
-        public ICollection<SavedListing> SavedListings { get; set; }
+        public ICollection<SavedListings> SavedListings { get; set; }
         public ICollection<Review> Reviews { get; set; }
 
    
