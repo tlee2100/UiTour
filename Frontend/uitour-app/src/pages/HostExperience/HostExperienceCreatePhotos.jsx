@@ -1,151 +1,193 @@
-import { useRef, useState } from "react";
-import { Icon } from "@iconify/react";
+import { useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/UiTour.png";
+import { useHost } from "../../contexts/HostContext";
+import { Icon } from "@iconify/react";
+import Loading from "../../components/Loading";
 import "./HostExperience.css";
+
+function fileToBase64(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function HostExperienceCreatePhotos() {
   const navigate = useNavigate();
   const inputRef = useRef(null);
-  const [files, setFiles] = useState([]); // confirmed files
-  const [showModal, setShowModal] = useState(false);
-  const [pending, setPending] = useState([]); // files selected in modal, not yet uploaded
 
-  const openPicker = () => inputRef.current?.click();
+  const {
+    experienceData,
+    updateField,
+    validateStep,
+    loadingDraft,
+    photosReady,
+    setFlowType,
+    type,
+  } = useHost();
 
-  const onFiles = (fileList) => {
-    if (!fileList || fileList.length === 0) return;
-    const next = Array.from(fileList);
-    setPending((prev) => [...prev, ...next]);
+  // Optional: Set flow type correctly
+  useEffect(() => {
+    if (type !== "experience") {
+      setFlowType("experience");
+    }
+  }, [type, setFlowType]);
+
+  if (loadingDraft || !photosReady) {
+    return <Loading message="Loading your photos..." />;
+  }
+
+  const photos = experienceData.media?.photos || [];
+  const cover = experienceData.media?.cover || null;
+
+  const prepareFiles = async (fileList) =>
+    Promise.all(
+      fileList.map(async (file) => ({
+        file,
+        name: file.name,
+        preview: await fileToBase64(file),
+        isCover: false,
+      }))
+    );
+
+  // ADD FILES
+  const handleSelect = async (e) => {
+    const newPhotos = await prepareFiles(Array.from(e.target.files));
+    const combined = [...photos, ...newPhotos];
+
+    const newCover = cover || combined[0]?.preview || null;
+
+    const updated = combined.map((p) => ({
+      ...p,
+      isCover: p.preview === newCover,
+    }));
+
+    updateField("photos", { photos: updated, cover: newCover });
   };
 
-  const removePending = (idx) => {
-    setPending((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  const handleDrop = (e) => {
+  // DROP FILES
+  const handleDrop = async (e) => {
     e.preventDefault();
-    e.stopPropagation();
-    onFiles(e.dataTransfer.files);
+
+    const newPhotos = await prepareFiles(Array.from(e.dataTransfer.files));
+    const combined = [...photos, ...newPhotos];
+
+    const newCover = cover || combined[0]?.preview || null;
+
+    const updated = combined.map((p) => ({
+      ...p,
+      isCover: p.preview === newCover,
+    }));
+
+    updateField("photos", { photos: updated, cover: newCover });
   };
 
+  // REMOVE PHOTO
+  const removePhoto = (index) => {
+    const removed = photos[index];
+    const newPhotos = photos.filter((_, i) => i !== index);
+
+    let newCover = experienceData.media.cover;
+    if (removed.preview === newCover) {
+      newCover = newPhotos[0]?.preview || null;
+    }
+
+    const updated = newPhotos.map((p) => ({
+      ...p,
+      isCover: p.preview === newCover,
+    }));
+
+    updateField("photos", { photos: updated, cover: newCover });
+  };
+
+  // SET COVER
+  const setAsCover = (photo) => {
+    const updated = photos.map((p) => ({
+      ...p,
+      isCover: p.preview === photo.preview,
+    }));
+
+    updateField("photos", { photos: updated, cover: photo.preview });
+  };
+
+  // NEXT
   const handleNext = () => {
-    // TODO: persist uploaded files
+    if (!validateStep("photos")) return;
     navigate("/host/experience/create/describe-title");
   };
 
   return (
     <div className="he-page">
-      <header className="he-header">
-        <div className="he-brand">
-          <img src={logo} alt="UiTour Logo" className="he-logo-img" onClick={() => navigate('/')} />
-        </div>
-      </header>
-
       <main className="he-main">
         <h1 className="he-title">Add photos that showcase your skills</h1>
 
+        {/* DROPZONE */}
         <div
-          className="he-photos-dropzone"
-          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          className={`he-photos-dropzone ${
+            photos.length === 0 ? "large" : "small"
+          }`}
+          onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
         >
           <div className="he-photos-placeholder">
             <Icon icon="mdi:camera-outline" width="56" height="56" />
-            <button className="he-tertiary-btn" onClick={() => setShowModal(true)}>Add photos</button>
+            <button
+              className="he-tertiary-btn"
+              onClick={() => inputRef.current?.click()}
+            >
+              Add photos
+            </button>
+
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              style={{ display: "none" }}
+              onChange={handleSelect}
+            />
           </div>
         </div>
 
-        {showModal && (
-          <div className="he-modal" role="dialog" aria-modal="true">
-            <div className="he-modal-backdrop" onClick={() => setShowModal(false)} />
-            <div className="he-modal-card he-upload-modal">
-              <div className="he-modal-header">
-                <div className="he-modal-title">Upload photos</div>
-                <button className="he-modal-close" onClick={() => setShowModal(false)} aria-label="Close">
-                  <Icon icon="mdi:close" width="18" height="18" />
-                </button>
-              </div>
-              <div className="he-modal-body">
-                <div
-                  className="he-upload-dropzone"
-                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                  onDrop={(e) => { handleDrop(e); }}
-                >
-                  {pending.length === 0 && (
-                    <>
-                      <Icon icon="mdi:image-outline" width="36" height="36" />
-                      <div className="he-upload-hint">You need at least 5 photos</div>
-                      <button className="he-primary-btn" onClick={openPicker}>Browse</button>
-                      <input
-                        ref={inputRef}
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        style={{ display: 'none' }}
-                        onChange={(e) => onFiles(e.target.files)}
-                      />
-                    </>
-                  )}
-
-                  {pending.length > 0 && (
-                    <>
-                      <div className="he-upload-preview-grid">
-                        {pending.map((f, idx) => (
-                          <div key={idx} className="he-upload-item">
-                            <img src={URL.createObjectURL(f)} alt={f.name} />
-                            <button className="he-upload-remove" onClick={() => removePending(idx)} aria-label="Remove">×</button>
-                          </div>
-                        ))}
-                      </div>
-                      <button className="he-tertiary-btn" onClick={openPicker}>Add more</button>
-                      <input
-                        ref={inputRef}
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        style={{ display: 'none' }}
-                        onChange={(e) => onFiles(e.target.files)}
-                      />
-                    </>
-                  )}
-                </div>
-              </div>
-              <div className="he-modal-footer he-upload-footer">
-                <button className="he-link-btn" onClick={() => { setPending([]); setShowModal(false); }}>Done</button>
-                <button
-                  className="he-primary-btn"
-                  onClick={() => { setFiles((prev) => [...prev, ...pending]); setPending([]); setShowModal(false); }}
-                  disabled={pending.length === 0}
-                >
-                  Upload
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {files.length > 0 && (
+        {/* GRID */}
+        {photos.length > 0 && (
           <div className="he-photos-grid">
-            {files.map((f, idx) => (
-              <div key={idx} className="he-photo-thumb">
-                <img src={URL.createObjectURL(f)} alt={f.name} />
+            {photos.map((p, idx) => (
+              <div key={idx} className="he-photo-thumb-wrapper">
+                <button
+                  className="he-photo-remove-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removePhoto(idx);
+                  }}
+                >
+                  <Icon icon="mdi:close-circle" width="22" height="22" />
+                </button>
+
+                <div
+                  className="he-photo-thumb-click"
+                  onClick={() => setAsCover(p)}
+                >
+                  <div className="he-photo-thumb">
+                    <img src={p.preview} alt="photo" />
+                    {p.isCover && (
+                      <div className="he-photo-cover-badge">Cover</div>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         )}
-      </main>
 
-      <footer className="he-footer">
-        <div className="he-footer-left">
-          <button className="he-link-btn" onClick={() => navigate(-1)}>Back</button>
+        {/* NEXT */}
+        <div style={{ marginTop: 40, textAlign: "center" }}>
+          <button className="he-primary-btn" onClick={handleNext}>
+            Continue
+          </button>
         </div>
-        <div className="he-footer-right">
-          <button className="he-primary-btn" onClick={handleNext}>Next</button>
-        </div>
-      </footer>
+      </main>
     </div>
   );
 }
-
-

@@ -1,40 +1,43 @@
 import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import logo from "../../assets/UiTour.png";
+import { useState, useEffect } from "react";
 import "./HostExperience.css";
+import { useHost } from "../../contexts/HostContext";
 
 export default function HostExperienceCreateQualification() {
   const navigate = useNavigate();
+  const { experienceData, updateField, type, setFlowType } = useHost();
+
+  // Đặt flow là experience
+  useEffect(() => {
+    if (type !== "experience") setFlowType("experience");
+  }, [type]);
+
+  // Lấy giá trị ban đầu từ context
+  const [values, setValues] = useState(experienceData.qualifications || {});
   const [activeId, setActiveId] = useState(null);
   const [draftText, setDraftText] = useState("");
-  const [values, setValues] = useState({});
+
+  useEffect(() => {
+    setValues(experienceData.qualifications || {});
+  }, [experienceData.qualifications]);
 
   const items = [
-    {
-      id: "intro",
-      title: "Intro",
-      subtitle: "Intro",
-      icon: "mdi:cards-heart-outline",
-    },
-    {
-      id: "expertise",
-      title: "Expertise",
-      subtitle: "Expertise",
-      icon: "mdi:star-outline",
-    },
-    {
-      id: "recognition",
-      title: "Recognition",
-      subtitle: "Recognition",
-      icon: "mdi:certificate-outline",
-    },
+    { id: "intro", title: "Intro", subtitle: "Intro", icon: "mdi:cards-heart-outline" },
+    { id: "expertise", title: "Expertise", subtitle: "Expertise", icon: "mdi:star-outline" },
+    { id: "recognition", title: "Recognition", subtitle: "Recognition", icon: "mdi:certificate-outline" },
   ];
 
-  const handleNext = () => {
-    // TODO: go to next step when available
-    console.log("Qualifications step continuing", values);
-    navigate("/host/experience/create/locate");
+  // Khi bấm Save trong modal
+  const saveEditor = () => {
+    const newValues = { ...values, [activeId]: draftText };
+    setValues(newValues);
+
+    // 🔥 SAVE vào context ngay lập tức
+    updateField("qualification", newValues);
+
+    setActiveId(null);
+    setDraftText("");
   };
 
   const openEditor = (id) => {
@@ -47,19 +50,8 @@ export default function HostExperienceCreateQualification() {
     setDraftText("");
   };
 
-  const saveEditor = () => {
-    setValues((prev) => ({ ...prev, [activeId]: draftText }));
-    closeEditor();
-  };
-
   return (
     <div className="he-page">
-      <header className="he-header">
-        <div className="he-brand">
-          <img src={logo} alt="UiTour Logo" className="he-logo-img" onClick={() => navigate('/')} />
-        </div>
-      </header>
-
       <main className="he-main">
         <h1 className="he-title">Share your qualifications</h1>
 
@@ -69,10 +61,15 @@ export default function HostExperienceCreateQualification() {
               <span className="he-list-icon">
                 <Icon icon={it.icon} width="18" height="18" />
               </span>
+
               <span className="he-list-text">
                 <span className="he-list-title">{it.title}</span>
-                <span className="he-list-subtitle">{values[it.id] ? values[it.id].slice(0, 60) : it.subtitle}</span>
+
+                <span className="he-list-subtitle">
+                  {values[it.id] ? values[it.id].slice(0, 60) : it.subtitle}
+                </span>
               </span>
+
               <span className="he-list-chevron">
                 <Icon icon="mdi:chevron-right" width="18" height="18" />
               </span>
@@ -80,16 +77,20 @@ export default function HostExperienceCreateQualification() {
           ))}
         </div>
 
+        {/* MODAL */}
         {activeId && (
           <div className="he-modal" role="dialog" aria-modal="true">
             <div className="he-modal-backdrop" onClick={closeEditor} />
+
             <div className="he-modal-card">
               <div className="he-modal-header">
                 <div className="he-modal-title">Add details</div>
+
                 <button className="he-modal-close" onClick={closeEditor} aria-label="Close">
                   <Icon icon="mdi:close" width="18" height="18" />
                 </button>
               </div>
+
               <div className="he-modal-body">
                 <textarea
                   className="he-textarea"
@@ -99,6 +100,7 @@ export default function HostExperienceCreateQualification() {
                   onChange={(e) => setDraftText(e.target.value)}
                 />
               </div>
+
               <div className="he-modal-footer">
                 <button className="he-tertiary-btn" onClick={closeEditor}>Cancel</button>
                 <button className="he-primary-btn" onClick={saveEditor}>Save</button>
@@ -107,17 +109,6 @@ export default function HostExperienceCreateQualification() {
           </div>
         )}
       </main>
-
-      <footer className="he-footer">
-        <div className="he-footer-left">
-          <button className="he-link-btn" onClick={() => navigate(-1)}>Back</button>
-        </div>
-        <div className="he-footer-right">
-          <button className="he-primary-btn" onClick={handleNext}>Next</button>
-        </div>
-      </footer>
     </div>
   );
 }
-
-
