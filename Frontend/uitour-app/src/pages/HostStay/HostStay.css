@@ -81,8 +81,9 @@
 }
 
 .hs-card.hs-card--active {
-    border-color: #000;
-    box-shadow: 0 0 0 2px #000 inset;
+    border-color: var(--uitour-color);
+    box-shadow: 0 0 0 2px var(--uitour-color) inset;
+    background: rgba(0, 192, 232, 0.06); /* highlight nhẹ */
 }
 
 .hs-card-icon svg {
@@ -213,8 +214,9 @@
 }
 
 .hs-list-item.is-selected {
-    border-color: #000;
-    box-shadow: 0 0 0 2px #000 inset;
+    border-color: var(--uitour-color);
+    box-shadow: 0 0 0 2px var(--uitour-color) inset;
+    background: rgba(0, 192, 232, 0.06);
 }
 
 .hs-list-icon {
@@ -500,8 +502,8 @@
 }
 
 .hs-amenity-card.is-selected {
-    border: 2.5px solid #000;
-    background: #f6f6f6;
+    border: 2.5px solid var(--uitour-color);
+    background: rgba(0, 192, 232, 0.06);
 }
 
 /* ICON + TEXT container */
@@ -1172,9 +1174,9 @@
 }
 
 .hs-discount-card.is-selected {
-  border-color: var(--uitour-color);
-  box-shadow: 0 0 0 2px var(--uitour-color) inset;
-  background: #f9f9f9;
+    border-color: var(--uitour-color);
+    box-shadow: 0 0 0 2px var(--uitour-color) inset;
+    background: rgba(0, 192, 232, 0.06);
 }
 
 /* ===== Left side (percent) ===== */

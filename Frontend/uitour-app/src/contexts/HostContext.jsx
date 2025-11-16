@@ -130,6 +130,11 @@ const initialExperienceData = {
     photos: [],
   },
 
+  discounts: {
+    earlyBird: false,
+    custom: []
+  },
+
   // DURATION
   durationHours: 1,
   durationDays: 1,
@@ -272,6 +277,16 @@ export function HostProvider({ children }) {
           ...prev,
           booking: { ...prev.booking, ...values }
         }));
+      }
+      else if (step === "discounts") {
+        setExperienceData(prev => ({
+          ...prev,
+          discounts: {
+            ...prev.discounts,
+            ...values   // <-- CHỈ MERGE những gì được update
+          }
+        }));
+        return;
       }
       else if (step === "photos") {
         setExperienceData(prev => ({
@@ -435,6 +450,14 @@ export function HostProvider({ children }) {
     if (savedExp) {
       const exp = JSON.parse(savedExp);
 
+      exp.capacity = exp.capacity || { maxGuests: 1 };
+      exp.pricing = exp.pricing || { basePrice: "", currency: "USD" };
+      exp.booking = exp.booking || { timeSlots: [] };
+      exp.discounts = exp.discounts || {
+        earlyBird: false,
+        custom: []
+      };
+
       // normalize photos: đảm bảo không crash khi thiếu file
       // --- Strong normalize ---
       exp.media.photos = (exp.media?.photos || []).map(p => {
@@ -480,16 +503,31 @@ export function HostProvider({ children }) {
 
     const expForStorage = {
       ...experienceData,
+
+      capacity: {
+        ...experienceData.capacity
+      },
+
+      pricing: {
+        ...experienceData.pricing
+      },
+
       booking: {
         ...experienceData.booking
       },
+      discounts: {
+        earlyBird: experienceData.discounts?.earlyBird ?? false,
+        byDaysBefore: experienceData.discounts?.byDaysBefore ?? [],
+        byGroupSize: experienceData.discounts?.byGroupSize ?? []
+      },
+
       media: {
         ...experienceData.media,
         photos: experienceData.media.photos.map(p => ({
           preview: p.preview,
-          name: p.name,
           caption: p.caption,
-          serverUrl: p.serverUrl
+          serverUrl: p.serverUrl,
+          name: p.name,
         }))
       }
     };

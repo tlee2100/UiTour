@@ -16,7 +16,10 @@
   border-bottom: 1px solid #eee;
 }
 
-.he-logo-img { height: 28px; cursor: pointer; }
+.he-logo-img {
+  height: 28px;
+  cursor: pointer;
+}
 
 .he-tertiary-btn {
   height: 36px;
@@ -91,12 +94,13 @@
 }
 
 .he-card:hover {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .he-card.is-selected {
-  border-color: #000;
-  box-shadow: 0 0 0 2px #000 inset;
+  border-color: var(--uitour-color);
+  box-shadow: 0 0 0 2px var(--uitour-color) inset;
+  background: color-mix(in srgb, var(--uitour-color) 8%, white);
 }
 
 .he-card-icon svg {
@@ -151,36 +155,18 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 720px;
+  max-width: 760px;
+  /* tăng lên để bằng itinerary */
+  width: 100%;
   margin: 0 auto;
-}
-
-.he-list-item {
-  display: grid;
-  grid-template-columns: 40px 1fr 24px;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid #efefef;
-  background: #fff;
-  text-align: left;
-}
-
-.he-list-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #e5e5e5;
 }
 
 .he-list-text {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
+  text-align: left !important;
+  align-items: flex-start;
 }
 
 .he-list-title {
@@ -193,7 +179,9 @@
   color: #6b6b6b;
 }
 
-.he-list-chevron { justify-self: end; }
+.he-list-chevron {
+  justify-self: end;
+}
 
 /* Modal editor */
 .he-modal {
@@ -209,7 +197,7 @@
 .he-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .he-modal-card {
@@ -218,7 +206,7 @@
   margin: 0 auto;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
 }
@@ -231,7 +219,9 @@
   border-bottom: 1px solid #eee;
 }
 
-.he-modal-title { font-weight: 700; }
+.he-modal-title {
+  font-weight: 700;
+}
 
 .he-modal-close {
   border: 1px solid #e5e5e5;
@@ -244,7 +234,9 @@
   justify-content: center;
 }
 
-.he-modal-body { padding: 16px; }
+.he-modal-body {
+  padding: 16px;
+}
 
 .he-textarea {
   width: 100%;
@@ -271,20 +263,6 @@
   border-radius: 16px;
   overflow: hidden;
   padding: 8px 8px 0;
-}
-
-.he-map-search {
-  display: flex;
-  justify-content: center;
-  padding: 6px 8px 10px;
-}
-
-.he-map-search-input {
-  width: 90%;
-  height: 36px;
-  border-radius: 24px;
-  border: 1px solid #e1e1e1;
-  padding: 0 14px;
 }
 
 /* Photos */
@@ -331,7 +309,10 @@
 }
 
 /* Upload modal customizations */
-.he-upload-modal { width: 560px; }
+.he-upload-modal {
+  width: 560px;
+}
+
 .he-upload-dropzone {
   border: 2px dashed #d9d9d9;
   border-radius: 12px;
@@ -343,17 +324,59 @@
   flex-direction: column;
   background: #fafafa;
 }
-.he-upload-hint { color: #666; font-size: 12px; }
-.he-upload-footer { justify-content: space-between; }
+
+.he-upload-hint {
+  color: #666;
+  font-size: 12px;
+}
+
+.he-upload-footer {
+  justify-content: space-between;
+}
 
 /* Upload previews inside modal */
-.he-upload-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; width: 100%; }
-.he-upload-item { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #e5e5e5; }
-.he-upload-item img { width: 100%; height: 110px; object-fit: cover; display: block; }
-.he-upload-remove { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 50%; background: rgba(17,17,17,0.85); color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.he-upload-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.he-upload-item {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e5e5;
+}
+
+.he-upload-item img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  display: block;
+}
+
+.he-upload-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(17, 17, 17, 0.85);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
 /* Describe Title */
-.he-describe { text-align: center; }
+.he-describe {
+  text-align: center;
+}
+
 .he-describe-box {
   max-width: 900px;
   margin: 80px auto 0;
@@ -362,6 +385,7 @@
   border-radius: 16px;
   padding: 24px 28px 32px;
 }
+
 .he-title-input-large {
   width: 100%;
   border: none;
@@ -373,6 +397,7 @@
   margin-bottom: 32px;
   background: transparent;
 }
+
 .he-subtitle-input {
   width: 100%;
   border: none;
@@ -381,8 +406,10 @@
   font-size: 13px;
   color: #444;
   background: transparent;
-  height: 160px; /* lock height larger */
-  resize: none; /* prevent manual resize */
+  height: 160px;
+  /* lock height larger */
+  resize: none;
+  /* prevent manual resize */
 }
 
 .he-describe-label {
@@ -409,27 +436,141 @@
   margin-bottom: 10px;
 }
 
-.he-activity-thumb { width: 52px; height: 52px; border-radius: 10px; overflow: hidden; background: #f3f3f3; display:flex; align-items:center; justify-content:center; }
-.he-activity-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.he-activity-placeholder { color: #777; }
-.he-activity-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-.he-activity-content { font-size: 12px; color: #666; line-height: 1.4; }
+.he-activity-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f3f3f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-.he-add-activity { display: inline-flex; align-items: center; gap: 10px; background: #ffffff; padding: 10px 16px; border-radius: 12px; margin-top: 10px; border: 1px solid #ececec; box-shadow: 0 2px 8px rgba(0,0,0,0.04); cursor: pointer; margin-left: auto; margin-right: auto; }
-.he-add-icon { width: 28px; height: 28px; border-radius: 8px; background: #f5f5f5; display:inline-flex; align-items:center; justify-content:center; font-weight: 600; }
+.he-activity-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
-.he-activity-editor { display: grid; grid-template-columns: 80px 1fr; gap: 16px; padding: 14px; border: 1px dashed #d9d9d9; border-radius: 12px; background: #fafafa; }
-.he-editor-left { display:flex; align-items:flex-start; }
-.he-editor-thumb { width: 80px; height: 80px; border-radius: 10px; background:#f0f0f0; display:flex; align-items:center; justify-content:center; overflow:hidden; cursor: pointer; }
-.he-editor-thumb img { width: 100%; height: 100%; object-fit: cover; display:block; }
-.he-editor-right { display:flex; flex-direction: column; gap: 10px; }
-.he-editor-title { border: 1px solid #e3e3e3; border-radius: 8px; padding: 10px 12px; font-size: 14px; }
-.he-editor-content { border: 1px solid #e3e3e3; border-radius: 8px; padding: 10px 12px; font-size: 13px; resize: vertical; }
-.he-editor-actions { display:flex; justify-content:flex-end; gap: 8px; }
+.he-activity-placeholder {
+  color: #777;
+}
+
+.he-activity-title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.he-activity-content {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.he-add-activity {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  margin-top: 10px;
+  border: 1px solid #ececec;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.he-add-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.he-activity-editor {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 16px;
+  padding: 14px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.he-editor-left {
+  display: flex;
+  align-items: flex-start;
+}
+
+.he-editor-thumb {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.he-editor-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.he-editor-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.he-editor-title {
+  border: 1px solid #e3e3e3;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.he-editor-content {
+  border: 1px solid #e3e3e3;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  resize: vertical;
+}
+
+.he-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
 
 /* Confirm modal */
-.he-confirm-modal { width: 440px; }
-.he-danger-btn { background: #e11d48; color: #fff; border: none; height: 36px; padding: 0 14px; border-radius: 8px; cursor: pointer; }
+.he-confirm-modal {
+  width: 440px;
+}
+
+.he-danger-btn {
+  background: #e11d48;
+  color: #fff;
+  border: none;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
 
 /* Toast */
 .he-toast {
@@ -441,189 +582,674 @@
   color: #fff;
   padding: 10px 14px;
   border-radius: 10px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   z-index: 60;
   font-size: 13px;
 }
 
 /* Time picker */
-.he-time { text-align: center; }
-.he-time-card { width: 560px; max-width: 92%; margin: 20px auto 0; background: #fff; border: 1px solid #efefef; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.06); padding: 18px; text-align: left; }
-.he-time-label { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 12px; }
-.he-time-columns { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 20px 0; }
-.he-time-select { font-size: 18px; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 10px; }
-.he-time-ampm { font-size: 14px; padding: 8px 10px; border: 1px solid #e5e5e5; border-radius: 10px; margin-left: 10px; }
-.he-time-sep { font-weight: 700; opacity: 0.5; }
-.he-time-actions { display: flex; justify-content: space-between; gap: 10px; padding-top: 10px; }
+.he-time {
+  text-align: center;
+}
+
+.he-time-card {
+  width: 560px;
+  max-width: 92%;
+  margin: 20px auto 0;
+  background: #fff;
+  border: 1px solid #efefef;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+  padding: 18px;
+  text-align: left;
+}
+
+.he-time-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 12px;
+}
+
+.he-time-columns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 0;
+}
+
+.he-time-select {
+  font-size: 18px;
+  padding: 8px 10px;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+}
+
+.he-time-ampm {
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  margin-left: 10px;
+}
+
+.he-time-sep {
+  font-weight: 700;
+  opacity: 0.5;
+}
+
+.he-time-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+}
 
 /* Pricing/Capacity section */
-.he-price-card { width: 560px; max-width: 92%; margin: 20px auto 0; background: #fff; border: 1px solid #efefef; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.06); padding: 18px; }
-.he-price-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-.he-field { display: flex; flex-direction: column; gap: 6px; }
-.he-field label { font-size: 12px; color: #666; }
-.he-input { height: 36px; border: 1px solid #e5e5e5; border-radius: 10px; padding: 0 10px; font-size: 14px; }
+.he-price-card {
+  width: 560px;
+  max-width: 92%;
+  margin: 20px auto 0;
+  background: #fff;
+  border: 1px solid #efefef;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+  padding: 18px;
+}
+
+.he-price-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.he-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.he-field label {
+  font-size: 12px;
+  color: #666;
+}
+
+.he-input {
+  height: 36px;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 0 10px;
+  font-size: 14px;
+}
 
 @media (max-width: 720px) {
-  .he-price-grid { grid-template-columns: 1fr; }
+  .he-price-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* Discounts */
-.he-discounts { text-align: center; }
-.he-discount-list { max-width: 640px; margin: 40px auto 0; display: flex; flex-direction: column; gap: 12px; }
+.he-subsection-title {
+  max-width: 640px;
+  margin: 32px auto 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  color: #444;
+}
+
+.he-add-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid #d6d6d6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.he-error-text {
+  color: #e11d48;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* Section title */
+.he-subsection-title {
+  max-width: 640px;
+  margin: 32px auto 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  color: #444;
+}
+
+
+.he-error-text {
+  color: #e11d48;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* ==========================
+   DISCOUNTS — CLEAN VERSION
+   ========================== */
+
+.he-discounts {
+  text-align: center;
+}
+
+/* Section titles */
+.he-subsection-title {
+  max-width: 640px;
+  margin: 32px auto 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  color: #444;
+}
+
+/* ==========================
+   DISCOUNT CARD (ACTIVE / EXISTING)
+   ========================== */
+
 .he-discount-card {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto 12px;
   display: grid;
-  grid-template-columns: 80px 1fr 40px;
+  grid-template-columns: 80px 1fr 32px;
   align-items: center;
   gap: 16px;
-  padding: 16px 18px;
-  border: 1px solid #dedede;
+  padding: 16px 20px;
+  border: 1px solid #ddd;
   border-radius: 16px;
   background: #fff;
-  text-align: left;
-  transition: border 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  transition: 0.15s ease;
 }
-.he-discount-card.is-active { border-color: #111; box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
-.he-discount-value { font-weight: 700; font-size: 18px; text-align: center; }
-.he-discount-title { font-weight: 600; font-size: 16px; }
-.he-discount-subtitle { font-size: 12px; color: #666; margin-top: 4px; }
-.he-discount-action { justify-self: end; }
-.he-discount-card button { border: none; background: transparent; cursor: pointer; }
-.he-discount-card.is-empty { border: 1px dashed #d5d5d5; color: #666; }
-.he-add-circle { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #d6d6d6; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; }
-.he-discount-modal { width: 480px; }
-.he-textarea { width: 100%; border: 1px solid #e5e5e5; border-radius: 10px; padding: 10px 12px; font-size: 14px; resize: vertical; }
-.he-error-text { color: #e11d48; font-size: 12px; margin-top: 8px; }
-.he-success-modal { width: 500px; }
 
+.he-discount-card:hover {
+  border-color: #b5b5b5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.he-discount-card.is-active {
+  border-color: var(--uitour-color);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Left side: percent */
+.he-discount-value {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Middle side */
+.he-discount-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.he-discount-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.he-discount-subtitle {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Right side: close / check icon */
+.he-discount-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================
+   ADD DISCOUNT BUTTON
+   ========================== */
+
+.he-add-discount-card {
+  max-width: 640px;
+  width: 100%;
+  margin: 12px auto 0;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 22px;
+  border: 2px dashed #d5d5d5;
+  border-radius: 14px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.he-add-discount-card:hover {
+  background: #f0f0f0;
+}
+
+.he-add-discount-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #d5d5d5;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.he-add-discount-body {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+.he-add-discount-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.he-add-discount-subtitle {
+  font-size: 12px;
+  color: #777;
+  margin-top: 4px;
+}
+
+/* ==========================
+   MODAL CREATE DISCOUNT
+   ========================== */
+
+.he-discount-modal {
+  width: 480px;
+}
+
+.he-error-text {
+  color: #e11d48;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* ==========================
+   FIX EARLY BIRD CARD TO MATCH OTHERS
+   ========================== */
+
+/* Bỏ style riêng cũ (nếu có) */
+.he-discount-card-group {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto 20px;
+}
+
+/* Early Bird dùng cùng style .he-discount-card */
+.he-discount-card-group .he-discount-card {
+  width: 100%;
+  max-width: 640px;
+  margin-bottom: 12px;
+  display: grid;
+  grid-template-columns: 80px 1fr 32px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  background: #fff;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+/* Giống hover các card khác */
+.he-discount-card-group .he-discount-card:hover {
+  border-color: #b5b5b5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Giống active state */
+.he-discount-card-group .he-discount-card.is-active {
+  border-color: var(--uitour-color);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Giống body và title của card khác */
+.he-discount-card-group .he-discount-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.he-discount-card-group .he-discount-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.he-discount-card-group .he-discount-subtitle {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Photo wrapper */
 .he-photo-thumb-wrapper {
   position: relative;
-  display: inline-block;
-}
-
-.he-photo-thumb img {
-  width: 180px;
-  height: 180px;
-  object-fit: cover;
   border-radius: 10px;
-  cursor: pointer;
-  border: 2px solid transparent;
+  overflow: hidden;
 }
 
-.he-photo-thumb:hover img {
-  border-color: #000;
-}
-
+/* Remove button */
 .he-photo-remove-btn {
   position: absolute;
-  top: -8px;
-  left: -8px;
-  background: white;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+  background: rgba(17, 17, 17, 0.82);
   border-radius: 50%;
+  width: 26px;
+  height: 26px;
   border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  padding: 0;
-  z-index: 10;
 }
 
+.he-photo-remove-btn svg {
+  color: #fff;
+}
+
+/* "Cover" badge */
 .he-photo-cover-badge {
   position: absolute;
   bottom: 6px;
   left: 6px;
-  background: black;
-  color: white;
-  padding: 4px 10px;
-  font-size: 12px;
+  background: #111;
+  color: #fff;
+  padding: 4px 8px;
   border-radius: 6px;
-  opacity: 0.85;
+  font-size: 11px;
+  z-index: 3;
 }
 
-/* Activity hover highlight */
-.he-activity {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+/* ===============================
+   UPDATED PHOTO UPLOAD BEHAVIOR
+   =============================== */
+
+/* Khi chưa có ảnh → khung add lớn */
+.he-photos-dropzone.large {
+  height: 380px;
 }
 
-.he-activity:hover {
-  border-color: #ccc;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  cursor: pointer;
+/* Khi đã có ảnh → thu nhỏ lại */
+.he-photos-dropzone.small {
+  height: 180px;
+  background: #f9f9f9;
+  border: 1px dashed #d0d0d0;
 }
 
-/* Inline editor under activity */
-.he-editor-inline {
-  margin-top: -4px;
-  margin-bottom: 10px;
-  background: #fdfdfd;
-  border: 1px solid #e6e6e6;
-  border-radius: 12px;
-  padding: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-  animation: fadeSlide 0.25s ease;
+/* Ảnh preview lớn hơn */
+.he-photo-thumb img {
+  width: 100%;
+  height: 180px;
+  /* tăng từ 120 → 180 */
+  object-fit: cover;
+  display: block;
 }
 
-@keyframes fadeSlide {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Grid giữ ảnh to đồng đều */
+.he-photos-grid {
+  max-width: 980px;
+  margin: 16px auto 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  /* to hơn */
+  gap: 14px;
 }
 
-.he-editor-title,
-.he-editor-content {
-  background: #fff;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.he-editor-title:focus,
-.he-editor-content:focus {
-  border-color: #000;
-  box-shadow: 0 0 0 1px #000;
-  outline: none;
-}
-
-.he-editor-actions .he-danger-btn {
-  background: #e11d48;
-  border-radius: 8px;
-  padding: 0 14px;
-  height: 36px;
-  transition: background 0.2s ease;
-}
-
-.he-editor-actions .he-danger-btn:hover {
-  background: #be123c;
-}
-
-.he-editor-actions {
-  display: flex;
-  justify-content: space-between;
-}
-
-.he-editor-actions button:last-child {
-  margin-left: auto;
-}
-
-.he-activity-title {
-  font-weight: 700;
-  font-size: 14px;
-  margin-bottom: 4px;
+/* Wrapper để giữ border radius + remove button */
+.he-photo-thumb-wrapper {
+  position: relative;
+  border-radius: 10px;
   overflow: hidden;
-  text-overflow: ellipsis;
+  cursor: pointer;
+  /* click được */
+}
+
+/* Banner “Cover” vẫn giữ nguyên */
+.he-photo-cover-badge {
+  bottom: 8px;
+  left: 8px;
+  padding: 5px 10px;
+}
+
+/* Nút remove nhỏ gọn */
+.he-photo-remove-btn {
+  width: 28px;
+  height: 28px;
+  top: 8px;
+  right: 8px;
+}
+
+/* Khi Add Photos chuyển sang dạng nhỏ như ảnh */
+.he-photos-dropzone.small .he-photos-placeholder {
+  gap: 6px;
+}
+
+.he-photos-dropzone.small svg {
+  width: 30px !important;
+  height: 30px !important;
+}
+
+.he-photo-thumb-click {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===================================================
+   USE CURRENT LOCATION BUTTON (match Host Stay)
+=================================================== */
+
+.he-use-current-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 1000px;
+  background-color: var(--uitour-color);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  height: 42px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+  /* căn giữa + khoảng cách dưới */
+}
+
+.he-use-current-btn:hover {
+  background-color: var(--hover-uitour);
+  transform: translateY(-1px);
+}
+
+.he-use-current-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Position text under button for coordinates */
+.he-location-preview {
+  font-size: 13px;
+  color: #555;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ============================
+   CURRENT LOCATION BUTTON (EXPERIENCE)
+   ============================ */
+
+.he-use-current-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 1000px;
+  background-color: var(--uitour-color);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  height: 46px;
   white-space: nowrap;
 }
 
-.he-activity-content {
+.he-use-current-btn:hover {
+  background-color: var(--hover-uitour);
+  transform: translateY(-1px);
+}
+
+.he-use-current-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ======================================
+   Host Experience – Locate (Stay style)
+====================================== */
+
+.he-map-search-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin: 20px auto;
+  flex-wrap: wrap;
+}
+
+/* Container gồm icon + input */
+.he-map-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1000px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+  width: 90%;
+  max-width: 600px;
+  height: 50px;
+  margin: 20px auto;
+}
+
+/* Icon bên trái */
+.he-map-icon {
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Input */
+.he-map-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+  color: #333;
+}
+
+/* ==================================
+   Qualification – Larger Item Style
+================================== */
+
+/* Box lớn như itinerary */
+.he-list-item {
+  display: grid;
+  grid-template-columns: 56px 1fr 24px;
+  /* icon rộng hơn */
+  align-items: center;
+  gap: 16px;
+
+  padding: 16px 20px;
+  /* tăng padding */
+  border-radius: 14px;
+  /* bo góc lớn */
+  border: 1px solid #e9e9e9;
+  background: #fff;
+  width: 100%;
+  max-width: 760px !important;
+  /* bằng itinerary width */
+  margin: 0 auto;
+  /* căn giữa */
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+/* Hover effect đồng bộ style */
+.he-list-item:hover {
+  border-color: #d0d0d0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+/* Icon box lớn hơn giống hình thumbnail */
+.he-list-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  border: 1px solid #e3e3e3;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #fafafa;
+}
+
+/* Icon bên trong to hơn */
+.he-list-icon svg {
+  width: 24px !important;
+  height: 24px !important;
+  color: #333;
+}
+
+/* Title + subtitle spacing */
+.he-list-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.he-list-subtitle {
   font-size: 12px;
   color: #666;
-  line-height: 1.4;
-  max-height: 32px;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.he-add-activity:hover {
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-  border-color: #ccc;
+/* Chevron bên phải */
+.he-list-chevron svg {
+  width: 20px !important;
+  height: 20px !important;
+  color: #888;
 }
 
-.he-add-activity:active {
-  transform: scale(0.98);
+/* Hover effect for itinerary item (same as qualification) */
+.he-activity:hover {
+  border-color: #d0d0d0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
 }
-
-
