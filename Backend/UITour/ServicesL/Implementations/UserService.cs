@@ -138,7 +138,7 @@ namespace UITour.ServicesL.Implementations
             return true;
         }
 
-        public async Task<IEnumerable<SavedListing>> GetSavedListingsAsync(int userId)
+        public async Task<IEnumerable<SavedListings>> GetSavedListingsAsync(int userId)
         {
             return await _unitOfWork.SavedListings.Query().Where(sl => sl.UserID == userId).ToListAsync();
         }

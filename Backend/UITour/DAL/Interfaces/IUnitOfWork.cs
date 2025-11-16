@@ -26,7 +26,7 @@
          ITransactionRepository Transactions { get; }
          IReviewRepository Reviews { get; }
          IHostVerificationRepository HostVerifications { get; }
-        ISavedListingRepository SavedListings { get; }
+        ISavedListingsRepository SavedListings { get; }
         IFavoriteListRepository FavoriteLists { get; }
         IMessageRepository Messages { get; }
 

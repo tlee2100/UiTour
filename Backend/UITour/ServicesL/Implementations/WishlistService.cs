@@ -134,7 +134,7 @@ namespace UITour.ServicesL.Implementations
 
             if (existing == null)
             {
-                var savedListing = new SavedListing
+                var savedListing = new SavedListings
                 {
                     UserID = userId,
                     PropertyID = propertyId,
