@@ -17,13 +17,22 @@ export default function HostExperienceCreatePhotos() {
   const navigate = useNavigate();
   const inputRef = useRef(null);
 
-  const { experienceData, updateField, validateStep, loadingDraft, photosReady, setFlowType, type, } = useHost(); // 👈 LẤY THÊM HÀM NÀY
-/*
+  const {
+    experienceData,
+    updateField,
+    validateStep,
+    loadingDraft,
+    photosReady,
+    setFlowType,
+    type,
+  } = useHost();
+
+  // Optional: Set flow type correctly
   useEffect(() => {
     if (type !== "experience") {
       setFlowType("experience");
     }
-  }, [type, setFlowType]);*/
+  }, [type, setFlowType]);
 
   if (loadingDraft || !photosReady) {
     return <Loading message="Loading your photos..." />;
@@ -99,10 +108,10 @@ export default function HostExperienceCreatePhotos() {
       isCover: p.preview === photo.preview,
     }));
 
-    // ❗ FIX LỖI DUY NHẤT: dùng photo.preview thay vì biến không tồn tại
     updateField("photos", { photos: updated, cover: photo.preview });
   };
 
+  // NEXT
   const handleNext = () => {
     if (!validateStep("photos")) return;
     navigate("/host/experience/create/describe-title");
@@ -115,7 +124,9 @@ export default function HostExperienceCreatePhotos() {
 
         {/* DROPZONE */}
         <div
-          className="he-photos-dropzone"
+          className={`he-photos-dropzone ${
+            photos.length === 0 ? "large" : "small"
+          }`}
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
         >
@@ -127,6 +138,7 @@ export default function HostExperienceCreatePhotos() {
             >
               Add photos
             </button>
+
             <input
               ref={inputRef}
               type="file"
@@ -145,22 +157,36 @@ export default function HostExperienceCreatePhotos() {
               <div key={idx} className="he-photo-thumb-wrapper">
                 <button
                   className="he-photo-remove-btn"
-                  onClick={() => removePhoto(idx)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removePhoto(idx);
+                  }}
                 >
                   <Icon icon="mdi:close-circle" width="22" height="22" />
                 </button>
 
-                <div className="he-photo-thumb" onClick={() => setAsCover(p)}>
-                  <img src={p.preview} alt="photo" />
-
-                  {p.isCover && (
-                    <div className="he-photo-cover-badge">Cover</div>
-                  )}
+                <div
+                  className="he-photo-thumb-click"
+                  onClick={() => setAsCover(p)}
+                >
+                  <div className="he-photo-thumb">
+                    <img src={p.preview} alt="photo" />
+                    {p.isCover && (
+                      <div className="he-photo-cover-badge">Cover</div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        {/* NEXT */}
+        <div style={{ marginTop: 40, textAlign: "center" }}>
+          <button className="he-primary-btn" onClick={handleNext}>
+            Continue
+          </button>
+        </div>
       </main>
     </div>
   );

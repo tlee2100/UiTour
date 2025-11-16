@@ -1,207 +1,284 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
-import { useNavigate } from "react-router-dom";
-import logo from "../../assets/UiTour.png";
+import { useHost } from "../../contexts/HostContext";
 import "./HostExperience.css";
 
 export default function HostExperienceCreateDiscount() {
-  const navigate = useNavigate();
-  const [earlyBirdEnabled, setEarlyBirdEnabled] = useState(true);
-  const [customDiscounts, setCustomDiscounts] = useState([]);
-  const [selectedDiscounts, setSelectedDiscounts] = useState([]);
-  const [formOpen, setFormOpen] = useState(false);
-  const [formPercent, setFormPercent] = useState("");
-  const [formTitle, setFormTitle] = useState("");
-  const [formCondition, setFormCondition] = useState("");
-  const [error, setError] = useState("");
-  const [successOpen, setSuccessOpen] = useState(false);
+  const { updateField, experienceData, loadingDraft } = useHost();
 
-  const handlePublish = () => {
-    // TODO: persist discounts
-    console.log({
-      earlyBirdEnabled,
-      customDiscounts,
-      selectedDiscounts
-    });
-    setSuccessOpen(true);
+  // ---- LOAD FROM CONTEXT ----
+  const initEarlyBird = experienceData.discounts?.earlyBird ?? false;
+  const initDays = experienceData.discounts?.byDaysBefore ?? [];
+  const initGroups = experienceData.discounts?.byGroupSize ?? [];
+
+  const [earlyBird, setEarlyBird] = useState(initEarlyBird);
+  const [daysBefore, setDaysBefore] = useState(initDays);
+  const [groupSize, setGroupSize] = useState(initGroups);
+
+  const [formType, setFormType] = useState(null); // "days", "group"
+  const [percent, setPercent] = useState("");
+  const [value, setValue] = useState("");
+  const [error, setError] = useState("");
+
+  // ---- SYNC SAU KHI LOAD DRAFT ----
+  // ---- SYNC SAU KHI LOAD DRAFT ----
+  useEffect(() => {
+    if (loadingDraft) return;
+
+    const d = experienceData.discounts || {};
+
+    setEarlyBird(d.earlyBird ?? false);
+    setDaysBefore(d.byDaysBefore ?? []);
+    setGroupSize(d.byGroupSize ?? []);
+
+  }, [loadingDraft]);
+
+
+  useEffect(() => {
+    if (loadingDraft) return;
+
+    const old = experienceData.discounts || {};
+
+    const next = {
+      earlyBird,
+      byDaysBefore: daysBefore,
+      byGroupSize: groupSize
+    };
+
+    // 🛑 STOP nếu không thay đổi gì → tránh loop
+    if (
+      old.earlyBird === next.earlyBird &&
+      JSON.stringify(old.byDaysBefore) === JSON.stringify(next.byDaysBefore) &&
+      JSON.stringify(old.byGroupSize) === JSON.stringify(next.byGroupSize)
+    ) {
+      return;
+    }
+
+    updateField("discounts", next);
+
+  }, [loadingDraft, earlyBird, daysBefore, groupSize]);
+
+
+  // Reset modal fields
+  const resetForm = () => {
+    setPercent("");
+    setValue("");
+    setError("");
+  };
+
+  // ---- ADD DISCOUNT ----
+  const submitAdd = () => {
+    const p = Number(percent);
+    const v = Number(value);
+
+    if (isNaN(p) || p <= 0 || p > 100) {
+      setError("Percent must be 1–100");
+      return;
+    }
+
+    if (formType === "days") {
+      if (isNaN(v) || v <= 0) {
+        setError("Days must be > 0");
+        return;
+      }
+      setDaysBefore((prev) => [...prev, { days: v, percent: p }]);
+    }
+
+    if (formType === "group") {
+      if (isNaN(v) || v <= 1) {
+        setError("Group size must be > 1");
+        return;
+      }
+      setGroupSize((prev) => [...prev, { guests: v, percent: p }]);
+    }
+
+    setFormType(null);
+    resetForm();
   };
 
   return (
     <div className="he-page">
-
       <main className="he-main he-discounts">
         <h1 className="he-title">Add discounts</h1>
 
-        <div className="he-discount-list">
+        {/* -------- EARLY BIRD -------- */}
+        <div className="he-discount-card-group">
           <button
-            className={`he-discount-card ${earlyBirdEnabled ? 'is-active' : ''}`}
-            onClick={() => setEarlyBirdEnabled((prev) => !prev)}
+            className={`he-discount-card ${earlyBird ? "is-active" : ""}`}
+            onClick={() => setEarlyBird((p) => !p)}
           >
             <div className="he-discount-value">20%</div>
             <div className="he-discount-body">
               <div className="he-discount-title">Early bird discount</div>
-              <div className="he-discount-subtitle">Applies to all bookings made more than 2 weeks in advance.</div>
+              <div className="he-discount-subtitle">
+                Applies to bookings made 2+ weeks early.
+              </div>
             </div>
             <div className="he-discount-action">
-              {earlyBirdEnabled ? (
-                <Icon icon="mdi:check" width="20" height="20" />
+              {earlyBird ? (
+                <Icon icon="mdi:check" width="20" />
               ) : (
-                <Icon icon="mdi:checkbox-blank-outline" width="20" height="20" />
+                <Icon icon="mdi:checkbox-blank-outline" width="20" />
               )}
             </div>
           </button>
+        </div>
 
-          {customDiscounts.map((discount, index) => {
-            const isSelected = selectedDiscounts.includes(index);
-            return (
-              <button
-                key={index}
-                className={`he-discount-card ${isSelected ? 'is-active' : ''}`}
-                onClick={() => {
-                  setSelectedDiscounts((prev) =>
-                    prev.includes(index)
-                      ? prev.filter((i) => i !== index)
-                      : [...prev, index]
-                  );
-                }}
-              >
-                <div className="he-discount-value">{discount.percent}%</div>
-                <div className="he-discount-body">
-                  <div className="he-discount-title">{discount.title}</div>
-                  <div className="he-discount-subtitle">{discount.condition}</div>
-                </div>
-                <div className="he-discount-action">
-                  {isSelected ? (
-                    <Icon icon="mdi:check" width="18" height="18" />
-                  ) : (
-                    <Icon icon="mdi:checkbox-blank-outline" width="18" height="18" />
-                  )}
-                </div>
-              </button>
-            );
-          })}
+        {/* -------- BY DAYS BEFORE BOOKING -------- */}
+        <h2 className="he-subsection-title">Discount by days booked early</h2>
 
+        {daysBefore.map((d, i) => (
           <button
-            className="he-discount-card is-empty"
-            onClick={() => {
-              setFormPercent("");
-              setFormTitle("");
-              setFormCondition("");
-              setFormOpen(true);
-            }}
+            key={i}
+            className="he-discount-card is-active"
+            onClick={() =>
+              setDaysBefore((prev) => prev.filter((_, idx) => idx !== i))
+            }
           >
-            <div className="he-discount-value">--%</div>
+            <div className="he-discount-value">{d.percent}%</div>
             <div className="he-discount-body">
-              <div className="he-discount-title">Limited-time discount</div>
-              <div className="he-discount-subtitle">Add a promotional offer for your experience</div>
+              <div className="he-discount-title">
+                Book ≥ {d.days} days early
+              </div>
+              <div className="he-discount-subtitle">
+                Early booking discount
+              </div>
             </div>
             <div className="he-discount-action">
-              <span className="he-add-circle">+</span>
+              <Icon icon="mdi:close" width="18" />
             </div>
           </button>
-        </div>
+        ))}
+
+        {/* ADD BUTTON */}
+        <button
+          className="he-add-discount-card"
+          onClick={() => {
+            resetForm();
+            setFormType("days");
+          }}
+        >
+          <div className="he-add-discount-icon">+</div>
+
+          <div className="he-add-discount-body">
+            <div className="he-add-discount-title">Add early-booking discount</div>
+            <div className="he-add-discount-subtitle">
+              Give a discount for booking early
+            </div>
+          </div>
+        </button>
+
+        {/* -------- BY GROUP SIZE -------- */}
+        <h2 className="he-subsection-title">Discount by group size</h2>
+
+        {groupSize.map((g, i) => (
+          <button
+            key={i}
+            className="he-discount-card is-active"
+            onClick={() =>
+              setGroupSize((prev) => prev.filter((_, idx) => idx !== i))
+            }
+          >
+            <div className="he-discount-value">{g.percent}%</div>
+            <div className="he-discount-body">
+              <div className="he-discount-title">
+                Group of ≥ {g.guests} people
+              </div>
+              <div className="he-discount-subtitle">
+                Large group discount
+              </div>
+            </div>
+            <div className="he-discount-action">
+              <Icon icon="mdi:close" width="18" />
+            </div>
+          </button>
+        ))}
+
+        {/* ADD BUTTON */}
+        <button
+          className="he-add-discount-card"
+          onClick={() => {
+            resetForm();
+            setFormType("group");
+          }}
+        >
+          <div className="he-add-discount-icon">+</div>
+
+          <div className="he-add-discount-body">
+            <div className="he-add-discount-title">Add group discount</div>
+            <div className="he-add-discount-subtitle">
+              Give discount for large groups
+            </div>
+          </div>
+        </button>
       </main>
 
-      {formOpen && (
-        <div className="he-modal" role="dialog" aria-modal="true">
-          <div className="he-modal-backdrop" onClick={() => setFormOpen(false)} />
+      {/* -------- MODAL ADD DISCOUNT -------- */}
+      {formType && (
+        <div className="he-modal">
+          <div
+            className="he-modal-backdrop"
+            onClick={() => setFormType(null)}
+          />
+
           <div className="he-modal-card he-discount-modal">
             <div className="he-modal-header">
-              <div className="he-modal-title">Add limited-time discount</div>
-              <button className="he-modal-close" onClick={() => setFormOpen(false)} aria-label="Close">×</button>
+              <div className="he-modal-title">
+                {formType === "days"
+                  ? "Add early-booking discount"
+                  : "Add group discount"}
+              </div>
+              <button
+                className="he-modal-close"
+                onClick={() => setFormType(null)}
+              >
+                ×
+              </button>
             </div>
+
             <div className="he-modal-body">
               <div className="he-field">
-                <label>Discount percent (0-100)</label>
+                <label>Discount percent (%)</label>
                 <input
                   className="he-input"
                   type="number"
-                  min="0"
-                  max="100"
-                  value={formPercent}
-                  onChange={(e) => setFormPercent(e.target.value)}
+                  value={percent}
+                  onChange={(e) => setPercent(e.target.value)}
                 />
               </div>
+
               <div className="he-field">
-                <label>Title</label>
+                <label>
+                  {formType === "days"
+                    ? "Minimum days before booking"
+                    : "Minimum group size"}
+                </label>
                 <input
                   className="he-input"
-                  type="text"
-                  value={formTitle}
-                  onChange={(e) => setFormTitle(e.target.value)}
+                  type="number"
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
                 />
               </div>
-              <div className="he-field">
-                <label>Activation condition</label>
-                <textarea
-                  className="he-textarea"
-                  rows={3}
-                  value={formCondition}
-                  onChange={(e) => setFormCondition(e.target.value)}
-                />
-              </div>
+
               {error && <div className="he-error-text">{error}</div>}
             </div>
+
             <div className="he-modal-footer">
-              <button className="he-tertiary-btn" onClick={() => setFormOpen(false)}>Cancel</button>
               <button
-                className="he-primary-btn"
-                onClick={() => {
-                  const val = Number(formPercent);
-                  if (Number.isNaN(val) || val < 0 || val > 100) {
-                    setError('Discount percent must be between 0 and 100');
-                    return;
-                  }
-                  setError("");
-                  setCustomDiscounts((prev) => [
-                    ...prev,
-                    {
-                      percent: val,
-                      title: formTitle || 'Limited-time discount',
-                      condition: formCondition || 'Applies during the promotional window'
-                    }
-                  ]);
-                  setFormOpen(false);
-                }}
+                className="he-tertiary-btn"
+                onClick={() => setFormType(null)}
               >
+                Cancel
+              </button>
+
+              <button className="he-primary-btn" onClick={submitAdd}>
                 Save
               </button>
             </div>
           </div>
         </div>
       )}
-      {successOpen && (
-  <div className="he-modal" role="alertdialog" aria-modal="true">
-    
-    {/* Click ra ngoài → về trang chính */}
-    <div className="he-modal-backdrop" onClick={() => navigate('/')} />
-
-    <div
-      className="he-modal-card he-success-modal"
-      onClick={(e) => e.stopPropagation()} 
-    >
-      <div className="he-modal-header">
-        <div className="he-modal-title">Success!</div>
-
-        {/* Bấm dấu X → về trang chính */}
-        <button className="he-modal-close" onClick={() => navigate('/')} aria-label="Close">×</button>
-      </div>
-
-      <div className="he-modal-body">
-        You have successfully hosted. Please check your information in your profile!
-      </div>
-
-      <div className="he-modal-footer">
-        {/* Nút Done cũng → về trang chính */}
-        <button className="he-primary-btn" onClick={() => navigate('/')}>
-          Done
-        </button>
-      </div>
-    </div>
-  </div>
-)}
     </div>
   );
 }
-
-

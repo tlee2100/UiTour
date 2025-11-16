@@ -3,7 +3,7 @@ import { useHost } from "../../contexts/HostContext";
 import "./HostExperience.css";
 
 export default function HostExperienceCreateMaxGuests() {
-  const { updateField, experienceData } = useHost();
+  const { updateField, experienceData, loadingDraft } = useHost();
 
   // Load từ context
   const initialTime = experienceData.booking?.timeSlots?.[0]?.startTime || null;
@@ -23,6 +23,28 @@ export default function HostExperienceCreateMaxGuests() {
 
   const hours = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
   const minutesArr = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
+
+  // 🔄 Đồng bộ lại từ draft sau khi HostContext load xong
+  useEffect(() => {
+    if (loadingDraft) return; // chưa load xong thì kệ
+
+    // Lấy lại giá trị mới nhất từ context
+    const savedTime = experienceData.booking?.timeSlots?.[0]?.startTime || null;
+    const savedMax = experienceData.capacity?.maxGuests || 1;
+    const savedPrice = experienceData.pricing?.basePrice || 0;
+
+    // Sync maxGuests + price
+    setMaxGuests(savedMax);
+    setPricePerGuest(savedPrice);
+
+    // Nếu có time trong draft thì parse lại
+    if (savedTime) {
+      const parts = savedTime.split(/[: ]/); // ["HH","mm","AM/PM"]
+      setHour(parts[0] || "01");
+      setMinute(parts[1] || "00");
+      setAmpm(parts[2] || "AM");
+    }
+  }, [loadingDraft, experienceData]);
 
   // Auto save time
   useEffect(() => {

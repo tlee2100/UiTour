@@ -7,16 +7,19 @@ export default function HostStayCreateLocate() {
   const { stayData, updateField, setFlowType, type } = useHost();
   const location = stayData.location || {};
 
-  // ✅ Đảm bảo context đang ở chế độ "stay"
+  // Ensure correct flow
   useEffect(() => {
     if (type !== "stay") setFlowType("stay");
   }, [type, setFlowType]);
 
   const [query, setQuery] = useState(location.addressLine || "");
-  const [center, setCenter] = useState([location.lat || 10.8231, location.lng || 106.6297]);
+  const [center, setCenter] = useState([
+    location.lat || 10.8231,
+    location.lng || 106.6297,
+  ]);
   const [loading, setLoading] = useState(false);
 
-  // 🔍 Reverse geocode: từ lat, lng → địa chỉ cụ thể
+  // Reverse geocode
   const reverseGeocode = async (lat, lng) => {
     try {
       const res = await fetch(
@@ -29,9 +32,8 @@ export default function HostStayCreateLocate() {
     }
   };
 
-  // 📍 Khi người dùng chọn vị trí trên map
-  const handleMapChange = async (loc) => {
-    const { latitude, longitude } = loc;
+  // When map changes
+  const handleMapChange = async ({ latitude, longitude }) => {
     const address = await reverseGeocode(latitude, longitude);
 
     updateField("location", {
@@ -43,10 +45,10 @@ export default function HostStayCreateLocate() {
     });
 
     setCenter([latitude, longitude]);
-    setQuery(address);
+    setQuery(address); // readonly update only
   };
 
-  // 🧭 Khi người dùng bấm "Lấy vị trí hiện tại"
+  // Use current GPS
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
       alert("Trình duyệt không hỗ trợ định vị GPS.");
@@ -72,49 +74,11 @@ export default function HostStayCreateLocate() {
         setQuery(address);
         setLoading(false);
       },
-      (err) => {
-        console.error(err);
+      () => {
         alert("Không thể lấy vị trí hiện tại. Vui lòng thử lại.");
         setLoading(false);
       }
     );
-  };
-
-  // 🔎 Khi người dùng nhập và nhấn Enter để tìm kiếm
-  const handleSearch = async (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (!query.trim()) return;
-
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
-        );
-        const data = await res.json();
-
-        if (data?.[0]) {
-          const lat = parseFloat(data[0].lat);
-          const lon = parseFloat(data[0].lon);
-          const address = data[0].display_name;
-
-          updateField("location", {
-            lat,
-            lng: lon,
-            addressLine: address,
-            city: "Ho Chi Minh",
-            country: "Vietnam",
-          });
-
-          setCenter([lat, lon]);
-          setQuery(address);
-        } else {
-          alert("Không tìm thấy địa điểm phù hợp.");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Lỗi khi tìm kiếm địa điểm.");
-      }
-    }
   };
 
   return (
@@ -123,10 +87,12 @@ export default function HostStayCreateLocate() {
         <h1 className="hs-title">Where’s your place located?</h1>
 
         <div className="hs-map-card">
-          {/* Gộp input + button trong 1 hàng */}
+
+          {/* Input + Button row */}
           <div className="hs-map-search-row">
             <div className="hs-map-search">
               <div className="hs-map-icon">
+                {/* MAP PIN ICON */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -136,20 +102,24 @@ export default function HostStayCreateLocate() {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="lucide lucide-map-pin"
                 >
                   <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" />
                   <circle cx="12" cy="10" r="3" />
                 </svg>
               </div>
 
+              {/* READ ONLY INPUT */}
               <input
                 type="text"
-                placeholder="Enter your address"
+                placeholder="Move the map to select a location"
                 className="hs-map-search-input"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleSearch}
+                readOnly
+                style={{
+                  userSelect: "none",
+                  pointerEvents: "none",
+                  opacity: 0.9,
+                }}
               />
             </div>
 
@@ -174,7 +144,6 @@ export default function HostStayCreateLocate() {
             showQuickButtons={false}
           />
         </div>
-
       </main>
     </div>
   );
