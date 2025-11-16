@@ -8,5 +8,6 @@ namespace UITour.Models
         [Key, Column(Order = 1)][ForeignKey("User")] public int UserID { get; set; }
         [Key, Column(Order = 2)][ForeignKey("Property")] public int PropertyID { get; set; }
         public DateTime SavedAt { get; set; } = DateTime.Now;
+        [StringLength(50)] public string? ListID { get; set; }
     }
 }

@@ -43,6 +43,7 @@ namespace UITour.Models
 
         // ================= Saved Listings =================
         public DbSet<SavedListing> SavedListings { get; set; }
+        public DbSet<FavoriteList> FavoriteLists { get; set; }
 
         // ================= Messages =================
         public DbSet<Message> Messages { get; set; }
