@@ -174,6 +174,50 @@ namespace UITour.Controllers
                 return NotFound(ex.Message);
             }
         }
+
+        // GET: api/host/{id}/properties
+        [HttpGet("{id}/properties")]
+        public async Task<IActionResult> GetProperties(int id)
+        {
+            try
+            {
+                var properties = await _hostService.GetPropertiesAsync(id);
+                return Ok(properties);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // GET: api/host/{id}/bookings
+        [HttpGet("{id}/bookings")]
+        public async Task<IActionResult> GetBookings(int id)
+        {
+            try
+            {
+                var bookings = await _hostService.GetBookingsAsync(id);
+                return Ok(bookings);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        // GET: api/host/{id}/tours
+        [HttpGet("{id}/tours")]
+        public async Task<IActionResult> GetTours(int id)
+        {
+            try
+            {
+                var tours = await _hostService.GetToursAsync(id);
+                return Ok(tours);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 
     // DTOs for request/response
