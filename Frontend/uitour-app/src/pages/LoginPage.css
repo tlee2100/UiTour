@@ -234,6 +234,179 @@ form + p a:hover {
   text-decoration: underline;
 }
 
+/* OTP Verification Styles */
+.otp-container {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.otp-input {
+  width: 50px;
+  height: 60px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 600;
+  border: 2px solid var(--auth-input-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--auth-ink);
+  transition: all 0.25s ease;
+  outline: none;
+}
+
+.otp-input:focus {
+  border-color: var(--auth-primary);
+  box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.15);
+  transform: scale(1.05);
+}
+
+.otp-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.otp-resend {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.resend-otp-btn {
+  background: none;
+  border: none;
+  color: var(--auth-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  text-decoration: underline;
+}
+
+.resend-otp-btn:hover:not(:disabled) {
+  color: var(--auth-primary-600);
+  background: rgba(33, 150, 243, 0.08);
+  text-decoration: none;
+}
+
+.resend-otp-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.back-to-signup-btn {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--auth-input-border);
+  color: var(--auth-muted);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 16px;
+  transition: all 0.25s ease;
+}
+
+.back-to-signup-btn:hover:not(:disabled) {
+  border-color: var(--auth-primary);
+  color: var(--auth-primary);
+  background: rgba(33, 150, 243, 0.05);
+}
+
+.back-to-signup-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Forgot Password Styles */
+.forgot-password-link {
+  display: block;
+  text-align: right;
+  margin-top: -8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--auth-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.forgot-password-link:hover {
+  color: var(--auth-primary-600);
+  text-decoration: underline;
+}
+
+.forgot-password-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.forgot-password-modal-content {
+  background: var(--auth-surface);
+  border-radius: 24px;
+  padding: 40px;
+  width: min(420px, 100%);
+  max-width: 90vw;
+  box-shadow: 0 20px 55px var(--auth-card-shadow);
+  border: 1px solid var(--auth-border);
+  position: relative;
+  animation: floatIn 0.4s ease;
+}
+
+.forgot-password-modal-close {
+  position: absolute;
+  right: 18px;
+  top: 16px;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  color: rgba(10, 21, 30, 0.7);
+  font-size: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 18px rgba(9, 14, 20, 0.18);
+}
+
+.forgot-password-modal-close:hover {
+  transform: translateY(-2px);
+  background: var(--auth-primary);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(11, 18, 26, 0.22);
+}
+
+.forgot-password-success {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.forgot-password-success-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, var(--auth-primary-600), var(--auth-accent));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: white;
+}
+
 @media (max-width: 768px) {
   .login-container::before {
     background:
@@ -281,6 +454,20 @@ form + p a:hover {
   .google-btn {
     padding: 12px 14px;
     border-radius: 10px;
+  }
+
+  .otp-input {
+    width: 45px;
+    height: 55px;
+    font-size: 20px;
+  }
+
+  .otp-container {
+    gap: 8px;
+  }
+
+  .forgot-password-modal-content {
+    padding: 32px 28px;
   }
 }
 

@@ -3,6 +3,7 @@
 // - Cung cấp dữ liệu động (mock) để phát triển UI không cần backend thật
 // - Dễ thêm/sửa/xoá property, host, reviews theo ý muốn
 // - Mô phỏng độ trễ mạng (this.delay) để test loading
+const UITOUR_WISHLIST_KEY = "uitour_wishlist";
 class MockAPIService {
   constructor() {
     this.baseURL = 'http://localhost:5000/api'; // Backend URL (tham khảo)
@@ -1788,6 +1789,98 @@ class MockAPIService {
     await this.delayResponse();
     return this.getMockHost(hostId);
   }
+
+  // ----------------------
+  // Mock Wishlist (REAL) – lưu vào localStorage
+  // ----------------------
+  async getUserWishlist(userId = 1) {
+    await this.delayResponse();
+
+    const storedRaw = localStorage.getItem(UITOUR_WISHLIST_KEY);
+    if (storedRaw) {
+      const parsed = JSON.parse(storedRaw);
+      // nếu là mảng thì trả về phần tử đầu, nếu là object thì trả về luôn
+      return Array.isArray(parsed) ? parsed[0] : parsed;
+    }
+
+    // Seed 1 list có sẵn dữ liệu demo cho dễ thấy
+    const seedItems = [
+      {
+        id: 1,
+        title: "Apartment in Quận Ba Đình",
+        image: "/images/id1_img01.png",
+        price: 39,
+        type: "property",
+      },
+      {
+        id: 2,
+        title: "Luxury Apartment in District 1",
+        image:
+          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
+        price: 150,
+        type: "property",
+      },
+    ];
+
+    const defaultList = {
+      id: "default",
+      title: "Danh sách yêu thích",
+      cover: "/images/id1_img01.png",
+      itemsCount: seedItems.length,
+      items: seedItems,
+    };
+
+    // vẫn lưu dạng mảng để sau này support nhiều folder
+    localStorage.setItem(UITOUR_WISHLIST_KEY, JSON.stringify([defaultList]));
+    return defaultList; // ⬅️ trả về OBJECT cho WishlistPage
+  }
+
+  // ➕ Thêm vào wishlist
+  async addToWishlist(item, userId = 1) {
+    await this.delayResponse();
+
+    let lists = JSON.parse(localStorage.getItem(UITOUR_WISHLIST_KEY) || "[]");
+    if (!Array.isArray(lists) || lists.length === 0) {
+      lists = [
+        {
+          id: "default",
+          title: "Danh sách yêu thích",
+          cover: item.image || "",
+          itemsCount: 0,
+          items: [],
+        },
+      ];
+    }
+
+    const list = lists[0];
+
+    const exists = list.items.find((i) => i.id === item.id);
+    if (!exists) {
+      list.items.push(item);
+      list.itemsCount = list.items.length;
+      if (item.image) list.cover = item.image;
+    }
+
+    localStorage.setItem(UITOUR_WISHLIST_KEY, JSON.stringify(lists));
+    return list; // ⬅️ trả về OBJECT
+  }
+
+  // ❌ Xoá item khỏi wishlist
+  async removeFromWishlist(itemId, userId = 1) {
+    await this.delayResponse();
+
+    let lists = JSON.parse(localStorage.getItem(UITOUR_WISHLIST_KEY) || "[]");
+    if (!Array.isArray(lists) || !lists.length) return { items: [], itemsCount: 0 };
+
+    const list = lists[0];
+    list.items = list.items.filter((i) => i.id !== itemId);
+    list.itemsCount = list.items.length;
+
+    localStorage.setItem(UITOUR_WISHLIST_KEY, JSON.stringify(lists));
+    return list; // ⬅️ trả về OBJECT
+  }
+
+
 }
 
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -55,15 +55,57 @@ namespace UITour.ServicesL.Implementations
             return (user, token);
         }
 
-        public async Task<bool> UpdateProfileAsync(User user)
+        public async Task<bool> UpdateProfileAsync(int userId, UpdateUserProfileDto dto)
         {
-            var existingUser = await GetByIdAsync(user.UserID);
+            var existingUser = await GetByIdAsync(userId);
+            if (existingUser == null) throw new InvalidOperationException("User not found");
 
-            existingUser.FullName = user.FullName;
-            existingUser.Email = user.Email;
-            existingUser.Phone = user.Phone;
+            // Cập nhật các trường từ DTO
+            existingUser.FullName = dto.FullName;
+            existingUser.UserAbout = dto.UserAbout;
+            existingUser.Age = dto.Age;
+            existingUser.Gender = dto.Gender;
+            existingUser.Nationality = dto.Nationality;
+            existingUser.Interests = dto.Interests;
 
             _unitOfWork.Users.Update(existingUser);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateUserRoleAsync(int userId, string newRole)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null) throw new InvalidOperationException("User not found");
+
+            user.Role = newRole;
+            _unitOfWork.Users.Update(user);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateUserEmailAsync(int userId, string newEmail)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null) throw new InvalidOperationException("User not found");
+
+            // Optional: kiểm tra email đã tồn tại
+            var existing = await _unitOfWork.Users.FirstOrDefaultAsync(u => u.Email == newEmail);
+            if (existing != null && existing.UserID != userId)
+                throw new InvalidOperationException("Email is already in use");
+
+            user.Email = newEmail;
+            _unitOfWork.Users.Update(user);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateUserPhoneAsync(int userId, string newPhone)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null) throw new InvalidOperationException("User not found");
+            user.Phone = newPhone;
+            _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync();
             return true;
         }

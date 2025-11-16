@@ -33,11 +33,13 @@ namespace UITour.DAL
             Reviews = new ReviewRepository(_context);
             HostVerifications = new HostVerificationRepository(_context);
             SavedListings = new SavedListingRepository(_context);
+            FavoriteLists = new FavoriteListRepository(_context);
             Messages = new MessageRepository(_context);
             Tours = new TourRepository(_context);
             TourParticipants = new TourParticipantRepository(_context);
             TourPhotos = new TourPhotoRepository(_context);
             TourReviews = new TourReviewRepository(_context);
+            ExperienceDetails = new ExperienceDetailsRepository(_context);
         }
 
         public ICountryRepository Countries { get; }
@@ -59,12 +61,14 @@ namespace UITour.DAL
         public IReviewRepository Reviews { get; }
         public IHostVerificationRepository HostVerifications { get; }
         public ISavedListingRepository SavedListings { get; }
+        public IFavoriteListRepository FavoriteLists { get; }
         public IMessageRepository Messages { get; }
 
         public ITourReviewRepository TourReviews { get; }
         public ITourParticipantRepository TourParticipants { get; }
         public ITourPhotoRepository TourPhotos { get; }
         public ITourRepository Tours { get; }
+        public IExperienceDetailsRepository ExperienceDetails { get; }
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
