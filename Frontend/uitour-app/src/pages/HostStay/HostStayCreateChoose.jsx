@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
+import { Icon } from "@iconify/react";
 import logo from "../../assets/UiTour.png";
 import "./HostStay.css";
+import { useHost } from "../../contexts/HostContext";
 
 export default function HostStayCreateChoose() {
   const navigate = useNavigate();
-  const [selectedId, setSelectedId] = useState(null);
+  const { stayData, updateField, validateStep } = useHost();
 
   const categories = [
     { id: "house", label: "House", icon: "mdi:home-outline" },
@@ -15,23 +15,18 @@ export default function HostStayCreateChoose() {
     { id: "hotel", label: "Hotel", icon: "hugeicons:hotel-01" },
   ];
 
+  const handleSelect = (id) => {
+    updateField('choose', { propertyType: id });
+  };
+
   const handleNext = () => {
-    if (!selectedId) return;
+    if (!validateStep('choose')) return;
     navigate("/host/stay/create/typeofplace");
   };
 
   return (
     <div className="hs-page hs-choose">
       {/* Header */}
-      <header className="hs-header">
-        <div className="hs-header-logo" onClick={() => navigate("/")}>
-          <img src={logo} alt="UiTour logo" />
-        </div>
-        <div className="hs-header-actions">
-          <button className="hs-header-save">Save & Exit</button>
-        </div>
-      </header>
-
       {/* Main */}
       <main className="hs-main hs-choose-main">
         <h1 className="hs-choose-title">
@@ -42,8 +37,8 @@ export default function HostStayCreateChoose() {
           {categories.map((c) => (
             <button
               key={c.id}
-              className={`hs-card ${selectedId === c.id ? "hs-card--active" : ""}`}
-              onClick={() => setSelectedId(c.id)}
+              className={`hs-card ${stayData.propertyType === c.id ? "hs-card--active" : ""}`}
+              onClick={() => handleSelect(c.id)}
             >
               <Icon icon={c.icon} width="48" height="48" />
               <span>{c.label}</span>
@@ -51,20 +46,6 @@ export default function HostStayCreateChoose() {
           ))}
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="hs-footer">
-        <button className="hs-footer-btn hs-footer-btn--white" onClick={() => navigate(-1)}>
-          Back
-        </button>
-        <button
-          className="hs-footer-btn hs-footer-btn--black"
-          disabled={!selectedId}
-          onClick={handleNext}
-        >
-          Next
-        </button>
-      </footer>
     </div>
   );
 }

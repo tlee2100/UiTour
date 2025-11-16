@@ -1,0 +1,15 @@
+.host-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fff;
+}
+
+/* Main content */
+.host-main {
+  flex: 1;
+  padding-top: 120px;   /* Header height */
+  padding-bottom: 80px; /* Footer height */
+  box-sizing: border-box;
+  overflow-y: auto; /* Cho phép cuộn nếu nội dung dài */
+}
