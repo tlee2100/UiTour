@@ -22,5 +22,6 @@ button:focus, input:focus, textarea:focus {
   --hover-white: #F3F4F6;
   --hover-uitour: #00a3c4;
   --half-subtitle-color: #6B7280;
+  --active-border-color: var(--uitour-color);
 }
 
