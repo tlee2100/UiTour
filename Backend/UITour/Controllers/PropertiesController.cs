@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UITour.Models;
+using UITour.Models.DTO;
 using UITour.ServicesL.Interfaces;
 
 namespace UITour.API.Controllers
@@ -34,13 +35,36 @@ namespace UITour.API.Controllers
 
         // POST: api/properties
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Property property)
+        public async Task<IActionResult> CreateProperty([FromBody] CreatePropertyDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var created = await _propertyService.CreateAsync(property);
-            return CreatedAtAction(nameof(GetById), new { id = created.PropertyID }, created);
+            try
+            {
+                Property property = await _propertyService.CreateAsync(dto);
+
+                // Trả về dữ liệu gọn nhẹ sau khi tạo
+                return Ok(new
+                {
+                    property.PropertyID,
+                    property.ListingTitle,
+                    property.Location,
+                    property.Price,
+                    property.Currency,
+                    Photos = property.Photos?.Select(p => new
+                    {
+                        p.PhotoID,
+                        p.Url,
+                        p.Caption,
+                        p.SortIndex
+                    })
+                });
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         // PUT: api/properties/5

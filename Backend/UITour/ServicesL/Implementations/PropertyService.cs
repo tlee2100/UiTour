@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using UITour.Models;
 using UITour.DAL.Interfaces;
 using UITour.ServicesL.Interfaces;
+using UITour.Models.DTO;
 
 namespace UITour.ServicesL.Implementations
 {
@@ -48,10 +49,43 @@ namespace UITour.ServicesL.Implementations
             return property;
         }
 
-        public async Task<Property> CreateAsync(Property property)
+        public async Task<Property> CreateAsync(CreatePropertyDto dto)
         {
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+
+            var property = new Property
+            {
+                HostID = dto.HostID,
+                ListingTitle = dto.ListingTitle,
+                Description = dto.Description,
+                Location = dto.Location,
+                CityID = dto.CityID,
+                CountryID = dto.CountryID,
+                RoomTypeID = dto.RoomTypeID,
+                Bedrooms = dto.Bedrooms,
+                Beds = dto.Beds,
+                Bathrooms = dto.Bathrooms,
+                Accommodates = dto.Accommodates,
+                Price = dto.Price,
+                Currency = dto.Currency,
+                Active = dto.Active,
+                PropertyType = dto.PropertyType,
+                lat = dto.lat,
+                lng = dto.lng,
+                HouseRules = dto.HouseRules,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+                Photos = dto.Photos?.Select(p => new PropertyPhoto
+                {
+                    Url = p.Url,
+                    Caption = p.Caption,
+                    SortIndex = p.SortIndex
+                }).ToList()
+            };
+
             await _unitOfWork.Properties.AddAsync(property);
             await _unitOfWork.SaveChangesAsync();
+
             return property;
         }
 
