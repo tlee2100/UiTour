@@ -1,11 +1,12 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using UITour.Models;
+using UITour.Models.DTO;
 public interface IPropertyService
 {
   Task<IEnumerable<Property>> GetAllAsync();
   Task<Property> GetByIdAsync(int id);
-  Task<Property> CreateAsync(Property property);
+  Task<Property> CreateAsync(CreatePropertyDto dto);
   Task<Property> UpdateAsync(Property property);
   Task<bool> DeleteAsync(int id);
   Task<IEnumerable<Property>> GetByHostIdAsync(int hostId);
