@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Security.Claims;
 using UITour.Models;
+using UITour.Models.DTO;
 
 namespace UITour.ServicesL.Interfaces
 {
@@ -19,6 +20,10 @@ namespace UITour.ServicesL.Interfaces
         Task<bool> UpdateUserEmailAsync(int userId, string newEmail);
         Task<bool> UpdateUserPhoneAsync(int userId, string newPhone);
         Task<IEnumerable<SavedListings>> GetSavedListingsAsync(int userId);
+        Task<string> SendRegistrationOtpAsync(string email);
+        Task<bool> VerifyRegistrationOtpAsync(string email, string otp);
+        Task<bool> ForgotPasswordAsync(string email);
+        Task<bool> ResetPasswordAsync(string email, string otp, string newPassword);
 
     }
 }

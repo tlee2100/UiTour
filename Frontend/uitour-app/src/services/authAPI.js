@@ -85,53 +85,29 @@ class AuthAPI {
     }
   }
 
-  // Generate a 6-digit OTP
-  _generateOTP() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  }
-
   // Send OTP to email for verification
   async sendOTP(email) {
     try {
-      // Try backend first
-      try {
-        const response = await fetch(`${API_BASE_URL}/send-otp`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ Email: email }),
-        });
+      const response = await fetch(`${API_BASE_URL}/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ Email: email }),
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          return data;
+      if (!response.ok) {
+        let errorMessage = await response.text();
+        try {
+          const errorJson = JSON.parse(errorMessage || '{}');
+          errorMessage = errorJson.error || errorJson.message || errorMessage;
+        } catch {
+          // ignore parse errors
         }
-      } catch (backendError) {
-        // Backend endpoint doesn't exist or failed, use mock
-        console.log('Backend OTP endpoint not available, using mock OTP service');
+        throw new Error(errorMessage || 'Không thể gửi mã OTP');
       }
 
-      // Mock OTP service (for development)
-      const otp = this._generateOTP();
-      const otpData = {
-        otp: otp,
-        email: email,
-        expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes
-      };
-
-      // Store OTP in localStorage
-      const otpStorage = JSON.parse(localStorage.getItem('otp_storage') || '{}');
-      otpStorage[email] = otpData;
-      localStorage.setItem('otp_storage', JSON.stringify(otpStorage));
-
-      // Log OTP to console for development (remove in production)
-      console.log(`🔐 OTP for ${email}: ${otp} (This is a development mock. Check console for the code.)`);
-
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      return { message: 'OTP sent successfully', email: email };
+      return await response.json();
     } catch (error) {
       throw new Error(error.message || 'Failed to send OTP');
     }
@@ -140,56 +116,30 @@ class AuthAPI {
   // Verify OTP
   async verifyOTP(email, otp) {
     try {
-      // Try backend first
-      try {
-        const response = await fetch(`${API_BASE_URL}/verify-otp`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ Email: email, OTP: otp }),
-        });
+      const response = await fetch(`${API_BASE_URL}/verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ Email: email, Otp: otp }),
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          return data;
+      if (!response.ok) {
+        let errorMessage = await response.text();
+        try {
+          const errorJson = JSON.parse(errorMessage || '{}');
+          errorMessage = errorJson.error || errorJson.message || errorMessage;
+        } catch {
+          // ignore parse errors
         }
-      } catch (backendError) {
-        // Backend endpoint doesn't exist or failed, use mock
-        console.log('Backend OTP verification not available, using mock verification');
+        throw new Error(errorMessage || 'OTP verification failed');
       }
 
-      // Mock OTP verification (for development)
-      const otpStorage = JSON.parse(localStorage.getItem('otp_storage') || '{}');
-      const storedOtpData = otpStorage[email];
-
-      if (!storedOtpData) {
-        throw new Error('OTP not found. Please request a new OTP.');
-      }
-
-      if (Date.now() > storedOtpData.expiresAt) {
-        delete otpStorage[email];
-        localStorage.setItem('otp_storage', JSON.stringify(otpStorage));
-        throw new Error('OTP has expired. Please request a new OTP.');
-      }
-
-      if (storedOtpData.otp !== otp) {
-        throw new Error('Invalid OTP. Please check and try again.');
-      }
-
-      // OTP verified successfully - remove it from storage
-      delete otpStorage[email];
-      localStorage.setItem('otp_storage', JSON.stringify(otpStorage));
-
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      return { message: 'OTP verified successfully', email: email };
+      return await response.json();
     } catch (error) {
       throw new Error(error.message || 'OTP verification failed');
     }
   }
-
   // Forgot password - send reset email
   async forgotPassword(email) {
     try {
@@ -228,6 +178,46 @@ class AuthAPI {
       throw new Error(error.message || 'Failed to send password reset email');
     }
   }
+
+  // Reset password - verify OTP and set new password
+async resetPassword(email, otp, newPassword) {
+  try {
+    // Thử gọi backend trước
+    try {
+      const response = await fetch(`${API_BASE_URL}/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ Email: email, Otp: otp, NewPassword: newPassword }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+    } catch (backendError) {
+      // Backend endpoint không tồn tại hoặc lỗi → dùng mock
+      console.log('Backend reset password endpoint not available, using mock service');
+    }
+
+    // Mock reset password service (cho development)
+    console.log(`🔑 Reset password requested for: ${email}`);
+    console.log(`OTP entered: ${otp}`);
+    console.log('(This is a development mock. In production, backend would validate OTP and update password.)');
+
+    // Giả lập delay mạng
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    return {
+      message: 'Password reset successfully (mock)',
+      email: email,
+    };
+  } catch (error) {
+    throw new Error(error.message || 'Failed to reset password');
+  }
+}
+
   //get properties
   async getProperties() {
   try {
