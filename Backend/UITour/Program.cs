@@ -38,7 +38,8 @@ builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IHostVerificationRepository, HostVerificationRepository>();
-builder.Services.AddScoped<ISavedListingRepository, SavedListingRepository>();
+builder.Services.AddScoped<ISavedListingsRepository, SavedListingsRepository>();
+builder.Services.AddScoped<IFavoriteListRepository, FavoriteListRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<ITourRepository, TourRepository>();
 builder.Services.AddScoped<ITourParticipantRepository, TourParticipantRepository>();
@@ -53,6 +54,7 @@ builder.Services.AddScoped<ICountryService, CountryService>();
 builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<INeighbourhoodService, NeighbourhoodService>();
 builder.Services.AddScoped<ITourService, TourService>();
+builder.Services.AddScoped<IWishlistService, WishlistService>();
 
 // CORS for React dev servers
 const string CorsPolicy = "CorsPolicy";

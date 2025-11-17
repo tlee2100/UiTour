@@ -7,10 +7,12 @@ import ErrorMessage from "../components/ErrorMessage";
 import SearchWhere from '../components/search/SearchWhere';
 import SearchDates from '../components/search/SearchDates';
 import SearchGuests from '../components/search/SearchGuests';
-import authAPI from '../services/authAPI'; // ✅ import authAPI
+import authAPI from '../services/authAPI';
+import { useApp } from '../contexts/AppContext';
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { user } = useApp();
   const [searchLocation, setSearchLocation] = useState('');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
@@ -22,6 +24,25 @@ export default function HomePage() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [savedPropertyIds, setSavedPropertyIds] = useState(new Set());
+
+  // -----------------------
+  // Load saved property IDs from wishlist
+  // -----------------------
+  const loadSavedProperties = useCallback(async () => {
+    if (!user || !user.UserID) return;
+    
+    try {
+      const wishlist = await authAPI.getUserWishlist(user.UserID);
+      if (wishlist && wishlist.items) {
+        const savedIds = new Set(wishlist.items.map(item => item.id));
+        setSavedPropertyIds(savedIds);
+      }
+    } catch (err) {
+      // Silently fail - user might not have wishlist yet
+      console.error('Error loading saved properties:', err);
+    }
+  }, [user]);
 
   // -----------------------
   // Load properties from API
@@ -30,7 +51,7 @@ export default function HomePage() {
     setLoading(true);
     setError(null);
     try {
-      const list = await authAPI.getProperties(); // ✅ gọi authAPI
+      const list = await authAPI.getProperties();
       // Normalize dữ liệu từ backend
       const normalized = list.map(p => {
     const reviews = Array.isArray(p.reviews) ? p.reviews : [];
@@ -44,7 +65,7 @@ export default function HomePage() {
       location: p.location || '',
       price: p.price ?? 0,
       currency: p.currency ?? "USD",
-      rating: avgRating, // ✅ lấy trung bình từ reviews
+      rating: avgRating,
       reviewsCount: reviews.length,
       mainImage: Array.isArray(p.photos) && p.photos.length > 0 ? p.photos[0].url : "/fallback.png",
       isGuestFavourite: false,
@@ -62,7 +83,8 @@ export default function HomePage() {
 
   useEffect(() => {
     loadProperties();
-  }, [loadProperties]);
+    loadSavedProperties();
+  }, [loadProperties, loadSavedProperties]);
 
   // -----------------------
   // Search handler
@@ -172,19 +194,43 @@ export default function HomePage() {
                 <button
                   className="favorite-button"
                   onClick={async (e) => {
-                    e.stopPropagation(); // không mở property detail
+                    e.stopPropagation();
+                    
+                    if (!user || !user.UserID) {
+                      alert("Please log in to save properties to your wishlist");
+                      return;
+                    }
 
-                    await mockAPI.addToWishlist({
-                      id: property.id,
-                      title: property.title,
-                      image: property.mainImage,
-                      price: property.price
-                    });
-
-                    alert("Đã thêm vào danh sách yêu thích!");
+                    const isSaved = savedPropertyIds.has(property.id);
+                    
+                    try {
+                      if (isSaved) {
+                        // Remove from wishlist
+                        await authAPI.removeFromWishlist(user.UserID, property.id);
+                        setSavedPropertyIds(prev => {
+                          const newSet = new Set(prev);
+                          newSet.delete(property.id);
+                          return newSet;
+                        });
+                      } else {
+                        // Add to wishlist
+                        await authAPI.addToWishlist(user.UserID, property.id);
+                        setSavedPropertyIds(prev => new Set(prev).add(property.id));
+                      }
+                    } catch (error) {
+                      console.error('Error updating wishlist:', error);
+                      alert("Failed to update wishlist. Please try again.");
+                    }
                   }}
                 >
-                  <Icon icon="mdi:heart-outline" width="20" height="20" />
+                  <Icon 
+                    icon={savedPropertyIds.has(property.id) ? "mdi:heart" : "mdi:heart-outline"} 
+                    width="20" 
+                    height="20"
+                    style={{ 
+                      color: savedPropertyIds.has(property.id) ? '#ff385c' : 'currentColor' 
+                    }}
+                  />
                 </button>
 
               </div>

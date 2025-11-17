@@ -152,6 +152,26 @@ namespace UITour.ServicesL.Implementations
             return true;
         }
 
-        
+        public async Task<IEnumerable<Property>> GetPropertiesAsync(int hostId)
+        {
+            return await _unitOfWork.Properties.Query()
+                .Where(p => p.HostID == hostId)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Booking>> GetBookingsAsync(int hostId)
+        {
+            return await _unitOfWork.Bookings.Query()
+                .Where(p => p.HostID == hostId)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Tour>> GetToursAsync(int hostId)
+        {
+            return await _unitOfWork.Tours.Query()
+                .Where(p => p.HostID == hostId)
+                .ToListAsync();
+        }
+
     }
 }

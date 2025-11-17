@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { Icon } from "@iconify/react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./ToursPage.css";
@@ -6,15 +6,34 @@ import { useExperience } from "../contexts/ExperienceContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
 import ExperienceSearchBar from "../components/search/ExperienceSearchBar";
+import { useApp } from "../contexts/AppContext";
+import authAPI from "../services/authAPI";
 
 export default function ToursPage() {
   const navigate = useNavigate();
+  const { user } = useApp();
   const [searchParams] = useSearchParams();
   const { experiences, loading, error, fetchExperiences } = useExperience();
+  const [savedPropertyIds, setSavedPropertyIds] = useState(new Set());
   
   const location = searchParams.get('location') || '';
   const dates = searchParams.get('dates') || '';
   const guests = searchParams.get('guests') || '1';
+
+  // Load saved property IDs from wishlist
+  const loadSavedProperties = useCallback(async () => {
+    if (!user || !user.UserID) return;
+    
+    try {
+      const wishlist = await authAPI.getUserWishlist(user.UserID);
+      if (wishlist && wishlist.items) {
+        const savedIds = new Set(wishlist.items.map(item => item.id));
+        setSavedPropertyIds(savedIds);
+      }
+    } catch (err) {
+      console.error('Error loading saved properties:', err);
+    }
+  }, [user]);
 
   const loadExperiences = useCallback(async () => {
     try {
@@ -26,7 +45,8 @@ export default function ToursPage() {
 
   useEffect(() => {
     loadExperiences();
-  }, [loadExperiences]);
+    loadSavedProperties();
+  }, [loadExperiences, loadSavedProperties]);
 
   if (loading) {
     return <LoadingSpinner message="Loading tours..." />;
@@ -88,8 +108,46 @@ export default function ToursPage() {
                       src={tour.image?.url || tour.image || "/fallback.png"}
                       alt={tour.title || "Tour image"}
                     />
-                    <button className="favorite-button">
-                      <Icon icon="mdi:heart-outline" width="20" height="20" />
+                    <button 
+                      className="favorite-button"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        
+                        if (!user || !user.UserID) {
+                          alert("Please log in to save tours to your wishlist");
+                          return;
+                        }
+
+                        // Note: Tours are saved as properties in the current implementation
+                        // If you have a separate tours wishlist, you'll need to create a different API
+                        const isSaved = savedPropertyIds.has(tour.id);
+                        
+                        try {
+                          if (isSaved) {
+                            await authAPI.removeFromWishlist(user.UserID, tour.id);
+                            setSavedPropertyIds(prev => {
+                              const newSet = new Set(prev);
+                              newSet.delete(tour.id);
+                              return newSet;
+                            });
+                          } else {
+                            await authAPI.addToWishlist(user.UserID, tour.id);
+                            setSavedPropertyIds(prev => new Set(prev).add(tour.id));
+                          }
+                        } catch (error) {
+                          console.error('Error updating wishlist:', error);
+                          alert("Failed to update wishlist. Please try again.");
+                        }
+                      }}
+                    >
+                      <Icon 
+                        icon={savedPropertyIds.has(tour.id) ? "mdi:heart" : "mdi:heart-outline"} 
+                        width="20" 
+                        height="20"
+                        style={{ 
+                          color: savedPropertyIds.has(tour.id) ? '#ff385c' : 'currentColor' 
+                        }}
+                      />
                     </button>
 
                     {tour.duration && (

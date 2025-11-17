@@ -1,6 +1,11 @@
 import { Route, Routes } from "react-router-dom";
+
+
 import MainLayout from "../layouts/MainLayout";
 import InfoLayout from "../layouts/InfoLayout";
+import HostLayout from "../layouts/HostLayout";
+
+import ProfilePage from "../pages/ProfilePage";
 import HomePage from "../pages/HomePage";
 import HomeInfoPage from "../pages/HomeInfoPage";
 import ToursPage from "../pages/ToursPage";
@@ -22,7 +27,6 @@ import AdminUsers from "../pages/admin/AdminUsers";
 import AdminReports from "../pages/admin/AdminReports";
 import AdminTransactions from "../pages/admin/AdminTransactions";
 import AdminSettings from "../pages/admin/AdminSettings";
-import ProfilePage from "../pages/ProfilePage";
 import HostExperienceCreateChoose from "../pages/HostExperience/HostExperienceCreateChoose";
 import HostExperienceCreateYears from "../pages/HostExperience/HostExperienceCreateYears";
 import HostExperienceCreateQualification from "../pages/HostExperience/HostExperienceCreateQualification";
@@ -51,6 +55,10 @@ import HostToday from "../pages/HostPage/HostToday";
 import HostListings from "../pages/HostPage/HostListings";
 import HostMessages from "../pages/HostPage/HostMessages";
 import ProfileEditPage from "../pages/ProfileEditPage";
+
+import HostDemoPreview from "../pages/HostDemoPreview";
+import { HostProvider } from "../contexts/HostContext";
+
 
 const AppRoutes = () => {
   return (
@@ -104,39 +112,55 @@ const AppRoutes = () => {
       </Route>
 
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignUpPage />} /> 
+      <Route path="/signup" element={<SignUpPage />} />
 
       <Route path="/host/becomehost" element={<BecomeHost />} />
-
       <Route path="/host/today" element={<HostToday />} />
       <Route path="/host/listings" element={<HostListings />} />
       <Route path="/host/messages" element={<HostMessages />} />
 
-      {/* Profile menu pages (duplicated outside MainLayout) - removed */}
+      <Route
+        path="/host/*"
+        element={
+          <HostProvider>
+            <HostLayout />
+          </HostProvider>
+        }
+      >
+        {/* Các route con */}
+        <Route path="demo-preview" element={<HostDemoPreview />} />
 
-      {/* Host Stay Creation (no shared site layout) */}
-      <Route path="/host/stay/create/choose" element={<HostStayCreateChoose />} />
-      <Route path="/host/stay/create/typeofplace" element={<HostStayCreateTypeOfPlace />} />
-      <Route path="/host/stay/create/location" element={<HostStayCreateLocate />} />
-      <Route path="/host/stay/create/details" element={<HostStayCreateDetails />} />
-      <Route path="/host/stay/create/amenities" element={<HostStayCreateAmenities />} />
-      <Route path="/host/stay/create/photos" element={<HostStayCreatePhotos />} />
-      <Route path="/host/stay/create/title" element={<HostStayCreateTitle />} />
-      <Route path="/host/stay/create/description" element={<HostStayCreateDescription />} />
-      <Route path="/host/stay/create/weekday-price" element={<HostStayCreateWeekdayPrice />} />
-      <Route path="/host/stay/create/weekend-price" element={<HostStayCreateWeekendPrice />} />
-      <Route path="/host/stay/create/discount" element={<HostStayCreateDiscount />} />
 
-      {/* Host Experience Creation (no shared site layout) */}
-      <Route path="/host/experience/create/choose" element={<HostExperienceCreateChoose />} />
-      <Route path="/host/experience/create/years" element={<HostExperienceCreateYears />} />
-      <Route path="/host/experience/create/qualification" element={<HostExperienceCreateQualification />} />
-      <Route path="/host/experience/create/locate" element={<HostExperienceCreateLocate />} />
-      <Route path="/host/experience/create/photos" element={<HostExperienceCreatePhotos />} />
-      <Route path="/host/experience/create/describe-title" element={<HostExperienceDescribeTitle />} />
-      <Route path="/host/experience/create/itinerary" element={<HostExperienceCreateItinerary />} />
-      <Route path="/host/experience/create/max-guests" element={<HostExperienceCreateMaxGuests />} />
-      <Route path="/host/experience/create/discount" element={<HostExperienceCreateDiscount />} />
+        {/* Flow tạo Stay */}
+        <Route path="stay/create">
+          <Route path="choose" element={<HostStayCreateChoose />} />
+          <Route path="typeofplace" element={<HostStayCreateTypeOfPlace />} />
+          <Route path="location" element={<HostStayCreateLocate />} />
+          <Route path="details" element={<HostStayCreateDetails />} />
+          <Route path="amenities" element={<HostStayCreateAmenities />} />
+          <Route path="photos" element={<HostStayCreatePhotos />} />
+          <Route path="title" element={<HostStayCreateTitle />} />
+          <Route path="description" element={<HostStayCreateDescription />} />
+          <Route path="weekday-price" element={<HostStayCreateWeekdayPrice />} />
+          <Route path="weekend-price" element={<HostStayCreateWeekendPrice />} />
+          <Route path="discount" element={<HostStayCreateDiscount />} />
+        </Route>
+
+        {/* Flow tạo Experience */}
+        <Route path="experience/create">
+          <Route path="choose" element={<HostExperienceCreateChoose />} />
+          <Route path="years" element={<HostExperienceCreateYears />} />
+          <Route path="qualification" element={<HostExperienceCreateQualification />} />
+          <Route path="locate" element={<HostExperienceCreateLocate />} />
+          <Route path="photos" element={<HostExperienceCreatePhotos />} />
+          <Route path="describe-title" element={<HostExperienceDescribeTitle />} />
+          <Route path="itinerary" element={<HostExperienceCreateItinerary />} />
+          <Route path="max-guests" element={<HostExperienceCreateMaxGuests />} />
+          <Route path="discount" element={<HostExperienceCreateDiscount />} />
+        </Route>
+      </Route>
+
+
 
     </Routes>
   );
