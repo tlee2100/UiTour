@@ -5,7 +5,6 @@
 
 /* ========== BASE LAYOUT ========== */
 .hs-page {
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
     background: #ffffff;
@@ -82,8 +81,9 @@
 }
 
 .hs-card.hs-card--active {
-    border-color: #000;
-    box-shadow: 0 0 0 2px #000 inset;
+    border-color: var(--uitour-color);
+    box-shadow: 0 0 0 2px var(--uitour-color) inset;
+    background: rgba(0, 192, 232, 0.06); /* highlight nhẹ */
 }
 
 .hs-card-icon svg {
@@ -143,14 +143,6 @@
 /* ======================================
    Host Stay – Type of Place (styled like Host Experience)
 ====================================== */
-
-.hs-page {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    color: #111;
-}
 
 /* ===== Header ===== */
 .hs-header {
@@ -222,8 +214,9 @@
 }
 
 .hs-list-item.is-selected {
-    border-color: #000;
-    box-shadow: 0 0 0 2px #000 inset;
+    border-color: var(--uitour-color);
+    box-shadow: 0 0 0 2px var(--uitour-color) inset;
+    background: rgba(0, 192, 232, 0.06);
 }
 
 .hs-list-icon {
@@ -390,8 +383,12 @@
 .hs-room-title {
     font-size: 20px;
     font-weight: 600;
-    margin-bottom: 32px;
+    margin-bottom: 12px;
     color: #111;
+    text-align: left;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Controls container */
@@ -505,8 +502,8 @@
 }
 
 .hs-amenity-card.is-selected {
-    border: 2.5px solid #000;
-    background: #f6f6f6;
+    border: 2.5px solid var(--uitour-color);
+    background: rgba(0, 192, 232, 0.06);
 }
 
 /* ICON + TEXT container */
@@ -1177,9 +1174,9 @@
 }
 
 .hs-discount-card.is-selected {
-  border-color: var(--uitour-color);
-  box-shadow: 0 0 0 2px var(--uitour-color) inset;
-  background: #f9f9f9;
+    border-color: var(--uitour-color);
+    box-shadow: 0 0 0 2px var(--uitour-color) inset;
+    background: rgba(0, 192, 232, 0.06);
 }
 
 /* ===== Left side (percent) ===== */
@@ -1269,4 +1266,145 @@
 .hs-footer-btn--uitour:hover {
   background: var(--hover-uitour);
   transform: translateY(-1px);
+}
+
+.hs-use-current-btn {
+  margin-left: 10px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #2b6cb0;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.hs-use-current-btn:hover {
+  background-color: #2c5282;
+}
+
+.hs-use-current-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== Map search row (input + button cùng hàng) ===== */
+.hs-map-search-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin: 20px auto;
+  flex-wrap: wrap; /* giúp tự xuống hàng nếu màn hình nhỏ */
+}
+
+/* Giữ nguyên style cũ của hs-map-search */
+.hs-map-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1000px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  height: 50px;
+  padding: 10px 14px;
+  max-width: 600px;
+}
+
+.hs-use-current-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 1000px;
+  background-color: var(--uitour-color);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  height: 50px;
+  white-space: nowrap;
+}
+
+.hs-use-current-btn:hover {
+  background-color: var(--hover-uitour);
+  transform: translateY(-1px);
+}
+
+.hs-use-current-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .hs-map-search-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hs-use-current-btn {
+    width: 90%;
+  }
+}
+
+/* ======================================
+   Host Stay – Nights (Min & Max Nights)
+====================================== */
+
+.hs-nights-section {
+    max-width: 900px;
+    margin: 40px auto 0;
+    text-align: center;
+}
+
+.hs-nights-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 32px;
+    color: #111;
+}
+
+.hs-nights-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.hs-room-subtitle {
+    font-size: 15px;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.5;
+    text-align: left;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* Dùng lại .hs-room-control cho style đồng bộ */
+/* .hs-room-control {...} đã định nghĩa từ trước */
+
+/* Responsive */
+@media (max-width: 720px) {
+    .hs-nights-section {
+        margin-top: 28px;
+    }
+}
+
+/* Cover badge */
+.hs-cover-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(0,0,0,0.65);
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
 }

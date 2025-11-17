@@ -5,6 +5,7 @@
 const PROPERTY_BASE_URL = 'http://localhost:5069/api/properties';
 const TOUR_BASE_URL = 'http://localhost:5069/api/tour';
 const HOST_BASE_URL = 'http://localhost:5069/api/host';
+const WISHLIST_BASE_URL = 'http://localhost:5069/api/wishlist';
 
 class AuthAPI {
    // Lấy thông tin user theo ID
@@ -414,6 +415,72 @@ class AuthAPI {
       if (!response.ok) {
         const errText = await response.text();
         throw new Error(errText || 'Failed to fetch host');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // ============ WISHLIST ============
+  async getUserWishlist(userId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${WISHLIST_BASE_URL}/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch wishlist');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async addToWishlist(userId, propertyId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${WISHLIST_BASE_URL}/${userId}/add/${propertyId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to add to wishlist');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async removeFromWishlist(userId, propertyId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${WISHLIST_BASE_URL}/${userId}/remove/${propertyId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to remove from wishlist');
       }
 
       return await response.json();
