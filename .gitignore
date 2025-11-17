@@ -418,3 +418,4 @@ FodyWeavers.xsd
 *.msp
 Backend/UITour/appsettings.json
 
+/Backend/UITour/appsettings.json
