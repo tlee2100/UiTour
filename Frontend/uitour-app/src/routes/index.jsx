@@ -59,6 +59,7 @@ import ProfileEditPage from "../pages/ProfileEditPage";
 import HostDemoPreview from "../pages/HostDemoPreview";
 import { HostProvider } from "../contexts/HostContext";
 
+import ResetPasswordPage from "../pages/ResetPasswordPage";
 
 const AppRoutes = () => {
   return (
@@ -113,6 +114,7 @@ const AppRoutes = () => {
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />  
 
       <Route path="/host/becomehost" element={<BecomeHost />} />
       <Route path="/host/today" element={<HostToday />} />

@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UITour.Models;
+using UITour.Models.DTO;
 using UITour.ServicesL.Implementations;
 using UITour.ServicesL.Interfaces;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace UITour.API.Controllers
 {
@@ -10,9 +13,12 @@ namespace UITour.API.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly IWebHostEnvironment _environment;
+
+        public UserController(IUserService userService, IWebHostEnvironment environment)
         {
             _userService = userService;
+            _environment = environment;
         }
        
         // GET: api/user/5
@@ -64,6 +70,47 @@ namespace UITour.API.Controllers
             catch (InvalidOperationException ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("send-otp")]
+        public async Task<IActionResult> SendRegistrationOtp([FromBody] RegistrationOtpRequestDto dto)
+        {
+            try
+            {
+                var otp = await _userService.SendRegistrationOtpAsync(dto.Email);
+                return Ok(new
+                {
+                    message = "Verification code sent to email.",
+                    expiresInSeconds = 600,
+                    devOtp = _environment.IsDevelopment() ? otp : null
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyRegistrationOtp([FromBody] RegistrationOtpVerificationDto dto)
+        {
+            try
+            {
+                await _userService.VerifyRegistrationOtpAsync(dto.Email, dto.Otp);
+                return Ok(new { message = "Email verified successfully." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 
@@ -166,6 +213,44 @@ namespace UITour.API.Controllers
             catch (InvalidOperationException ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        // POST: api/user/forgot-password
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            try
+            {
+                await _userService.ForgotPasswordAsync(dto.Email);
+                return Ok(new { message = "OTP sent to email" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        // POST: api/auth/reset-password
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            try
+            {
+                await _userService.ResetPasswordAsync(dto.Email, dto.Otp, dto.NewPassword);
+                return Ok(new { message = "Password reset successfully" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 
