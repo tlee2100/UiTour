@@ -18,7 +18,6 @@ const SignUpPage = () => {
   const [otpError, setOtpError] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [devOTP, setDevOTP] = useState(""); // Store OTP for development display
   const otpInputRefs = useRef([]);
   const { dispatch } = useApp();
   const navigate = useNavigate();
@@ -57,13 +56,7 @@ const SignUpPage = () => {
     try {
       // Send OTP to email
       await authAPI.sendOTP(email);
-      
-      // Get OTP from localStorage for development display
-      const otpStorage = JSON.parse(localStorage.getItem('otp_storage') || '{}');
-      if (otpStorage[email]?.otp) {
-        setDevOTP(otpStorage[email].otp);
-      }
-      
+
       setShowOTP(true);
       setResendTimer(60); // 60 seconds countdown
     } catch (err) {
@@ -150,13 +143,7 @@ const SignUpPage = () => {
 
     try {
       await authAPI.sendOTP(email);
-      
-      // Get OTP from localStorage for development display
-      const otpStorage = JSON.parse(localStorage.getItem('otp_storage') || '{}');
-      if (otpStorage[email]?.otp) {
-        setDevOTP(otpStorage[email].otp);
-      }
-      
+
       setResendTimer(60);
       setOtp(["", "", "", "", "", ""]);
       otpInputRefs.current[0]?.focus();
@@ -268,43 +255,6 @@ const SignUpPage = () => {
               <span style={{ color: 'var(--auth-primary)', fontWeight: 600 }}>{email}</span>
             </h3>
 
-            {/* Development OTP Display */}
-            {devOTP && (
-              <div style={{
-                backgroundColor: '#e3f2fd',
-                border: '2px solid var(--auth-primary)',
-                borderRadius: '12px',
-                padding: '16px',
-                marginBottom: '20px',
-                textAlign: 'center'
-              }}>
-                <p style={{ 
-                  fontSize: '13px', 
-                  color: 'var(--auth-ink)', 
-                  margin: '0 0 8px 0',
-                  fontWeight: 500
-                }}>
-                  🧪 Development Mode - Your OTP Code:
-                </p>
-                <p style={{ 
-                  fontSize: '28px', 
-                  fontWeight: 700, 
-                  color: 'var(--auth-primary)',
-                  letterSpacing: '4px',
-                  margin: 0,
-                  fontFamily: 'monospace'
-                }}>
-                  {devOTP}
-                </p>
-                <p style={{ 
-                  fontSize: '11px', 
-                  color: 'var(--auth-muted)', 
-                  margin: '8px 0 0 0'
-                }}>
-                  (This will not appear in production)
-                </p>
-              </div>
-            )}
 
             {otpError && (
               <div style={{ 

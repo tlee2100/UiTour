@@ -71,6 +71,8 @@ const LoginPage = () => {
     try {
       await authAPI.forgotPassword(forgotPasswordEmail);
       setForgotPasswordSuccess(true);
+      // ✅ Điều hướng sang trang reset password, truyền email qua state
+      navigate("/reset-password", { state: { email: forgotPasswordEmail } });
     } catch (err) {
       setForgotPasswordError(err.message || "Failed to send password reset email. Please try again.");
     } finally {

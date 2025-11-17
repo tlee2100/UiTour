@@ -18,6 +18,8 @@ var connectionString = builder.Configuration.GetConnectionString("MyDB");
 builder.Services.AddDbContext<UITourContext>(options =>
     options.UseSqlServer(connectionString));
 
+builder.Services.AddMemoryCache();
+
 // DAL registrations
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ICountryRepository, CountryRepository>();
@@ -55,6 +57,7 @@ builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<INeighbourhoodService, NeighbourhoodService>();
 builder.Services.AddScoped<ITourService, TourService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // CORS for React dev servers
 const string CorsPolicy = "CorsPolicy";
