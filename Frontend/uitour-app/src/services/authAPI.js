@@ -605,6 +605,83 @@ async updateUserProfile(userId, form) {
   throw new Error(await tryProfile.text() || 'Failed to update profile');
 }
 
+  async updateUserEmail(userId, newEmail) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/${userId}/email`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ NewEmail: newEmail }),
+    });
+
+    if (!res.ok) throw new Error((await res.text()) || 'Failed to update email');
+    return await res.json();
+  }
+
+  async updateUserPhone(userId, newPhone) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/${userId}/phone`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ NewPhone: newPhone }),
+    });
+
+    if (!res.ok) throw new Error((await res.text()) || 'Failed to update phone');
+    return await res.json();
+  }
+
+  async changePassword(userId, currentPassword, newPassword) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/${userId}/change-password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        CurrentPassword: currentPassword,
+        NewPassword: newPassword,
+      }),
+    });
+
+    if (!res.ok) throw new Error((await res.text()) || 'Failed to change password');
+    return await res.json();
+  }
+
+  async sendProfileOtp(userId) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/${userId}/profile/send-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!res.ok) throw new Error((await res.text()) || 'Failed to send OTP');
+    return await res.json();
+  }
+
+  async verifyProfileOtp(userId, otp) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/${userId}/profile/verify-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ Otp: otp }),
+    });
+
+    if (!res.ok) throw new Error((await res.text()) || 'Failed to verify OTP');
+    return await res.json();
+  }
+
 
 
 }
