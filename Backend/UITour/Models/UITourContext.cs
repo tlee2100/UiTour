@@ -57,9 +57,18 @@ namespace UITour.Models
         {
             base.OnModelCreating(modelBuilder);
 
-            // Composite keys
             modelBuilder.Entity<PropertyAmenity>()
                 .HasKey(pa => new { pa.PropertyID, pa.AmenityID });
+
+            modelBuilder.Entity<PropertyAmenity>()
+                .HasOne(pa => pa.Property)
+                .WithMany(p => p.PropertyAmenities)
+                .HasForeignKey(pa => pa.PropertyID);
+
+            modelBuilder.Entity<PropertyAmenity>()
+                .HasOne(pa => pa.Amenity)
+                .WithMany(a => a.PropertyAmenities)
+                .HasForeignKey(pa => pa.AmenityID);
 
             modelBuilder.Entity<SavedListings>()
                 .HasKey(sl => new { sl.UserID, sl.PropertyID });

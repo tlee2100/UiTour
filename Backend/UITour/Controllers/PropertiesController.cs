@@ -58,7 +58,11 @@ namespace UITour.API.Controllers
                         p.Url,
                         p.Caption,
                         p.SortIndex
-                    })
+                    }),
+                     Amenities = property.PropertyAmenities?.Select(pa => new {
+                         pa.AmenityID,
+                         pa.Amenity?.AmenityName
+                     })
                 });
             }
             catch (System.Exception ex)
