@@ -286,6 +286,38 @@ async resetPassword(email, otp, newPassword) {
     }
   }
 
+  // Create new property
+  async createProperty(propertyData) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(PROPERTY_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(propertyData),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        let errorMessage = errText;
+        try {
+          const errorJson = JSON.parse(errText);
+          errorMessage = errorJson.error || errorJson.message || errText;
+        } catch {
+          // If parsing fails, use the raw text
+        }
+        throw new Error(errorMessage || 'Failed to create property');
+      }
+
+      const data = await response.json();
+      return data; // Returns created property with PropertyID
+    } catch (err) {
+      throw err;
+    }
+  }
+
 
   // ============ TOURS / EXPERIENCES ============
   async getTours() {
