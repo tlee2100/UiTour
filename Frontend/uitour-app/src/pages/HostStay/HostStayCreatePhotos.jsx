@@ -4,6 +4,15 @@ import { useHost } from "../../contexts/HostContext";
 import { Icon } from "@iconify/react";
 import "./HostStay.css";
 
+// --- CONVERT FILE → BASE64 ---
+function fileToBase64(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function HostStayCreatePhotos() {
   const navigate = useNavigate();
   const inputRef = useRef(null);
@@ -25,36 +34,42 @@ export default function HostStayCreatePhotos() {
     inputRef.current?.click();
   };
 
-  const handleSelect = (e) => {
+  // --- HANDLE SELECT WITH BASE64 ---
+  const handleSelect = async (e) => {
     if (!selectedCategory) return;
 
     const selectedFiles = Array.from(e.target.files);
 
-    const formatted = selectedFiles.map((file, index) => ({
-      file,
-      preview: URL.createObjectURL(file),
-      category: selectedCategory,
-      caption: "",
-      sortIndex: photos.length + index + 1,
-      isCover: false,
-    }));
+    const formatted = await Promise.all(
+      selectedFiles.map(async (file, index) => ({
+        file,
+        preview: await fileToBase64(file), // BASE64 HERE
+        category: selectedCategory,
+        caption: "",
+        sortIndex: photos.length + index + 1,
+        isCover: false,
+      }))
+    );
 
     updateField("photos", { photos: [...photos, ...formatted] });
   };
 
-  const handleDrop = (e, cat) => {
+  // --- HANDLE DROP WITH BASE64 ---
+  const handleDrop = async (e, cat) => {
     e.preventDefault();
 
     const dropped = Array.from(e.dataTransfer.files);
 
-    const formatted = dropped.map((file, index) => ({
-      file,
-      preview: URL.createObjectURL(file),
-      category: cat,
-      caption: "",
-      sortIndex: photos.length + index + 1,
-      isCover: false,
-    }));
+    const formatted = await Promise.all(
+      dropped.map(async (file, index) => ({
+        file,
+        preview: await fileToBase64(file), // BASE64 HERE
+        category: cat,
+        caption: "",
+        sortIndex: photos.length + index + 1,
+        isCover: false,
+      }))
+    );
 
     updateField("photos", { photos: [...photos, ...formatted] });
   };
@@ -97,7 +112,9 @@ export default function HostStayCreatePhotos() {
 
         {/* COVER PHOTO PREVIEW */}
         <div style={{ marginBottom: "40px", width: "100%", maxWidth: "900px" }}>
-          <h2 style={{ fontSize: "22px", fontWeight: 600, marginBottom: "16px" }}>Cover Photo</h2>
+          <h2 style={{ fontSize: "22px", fontWeight: 600, marginBottom: "16px" }}>
+            Cover Photo
+          </h2>
 
           {coverPhoto ? (
             <div style={{ display: "flex", gap: "18px", alignItems: "center" }}>
@@ -157,11 +174,7 @@ export default function HostStayCreatePhotos() {
                     >
                       <img src={f.preview} alt="photo" />
 
-                      {f.isCover && (
-                        <div className="hs-cover-badge">
-                          Cover Photo
-                        </div>
-                      )}
+                      {f.isCover && <div className="hs-cover-badge">Cover Photo</div>}
                     </div>
                   ))}
                 </div>
