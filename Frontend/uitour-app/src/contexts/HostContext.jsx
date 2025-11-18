@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-
 // ============================================================
 // 1️⃣ DỮ LIỆU MẪU CHUẨN HÓA THEO BACKEND
 // ============================================================
@@ -171,10 +170,10 @@ export function HostProvider({ children }) {
   const [loadingDraft, setLoadingDraft] = useState(true);
 
   const [photosReady, setPhotosReady] = useState(false);
-
+  
 
   const location = useLocation();
-
+  
   useEffect(() => {
     // Tự động đặt flow type theo URL
     if (location.pathname.startsWith("/host/experience")) {
@@ -226,7 +225,7 @@ export function HostProvider({ children }) {
         setCompletedStep((prev) => ({ ...prev, [step]: true }));
         return;
       }
-
+      
       // LOCATION
       if (step === "location") {
         setStayData((prev) => ({
@@ -420,19 +419,43 @@ export function HostProvider({ children }) {
     try {
       let payload;
       if (type === "stay") {
-        payload = formatStayDataForAPI(data);
+        // Get user from localStorage to get UserID
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        const userID = user?.UserID || user?.userID || user?.id || null;
+        
+        if (!userID) {
+          alert("Vui lòng đăng nhập để tạo property!");
+          return false;
+        }
+
+        // Set userID in data (backend sẽ tự động tạo Host nếu chưa có)
+        data.userID = userID;
+
+        // Format data for API (async function)
+        payload = await formatStayDataForAPI(data);
+
+        console.log("[SEND TO BACKEND]", JSON.stringify(payload, null, 2));
+
+        // Import authAPI dynamically to avoid circular dependency
+        const authAPI = (await import("../services/authAPI")).default;
+        
+        // Call API to create property
+        const result = await authAPI.createProperty(payload);
+        
+        console.log("[PROPERTY CREATED]", result);
+        alert("Tạo property thành công!");
+        
+        return true;
       } else {
         payload = formatExperienceDataForAPI(data);
+        // TODO: Implement experience creation API call
+        console.log("[SEND EXPERIENCE TO BACKEND]", payload);
+        return true;
       }
-
-      console.log("[SEND TO BACKEND]", payload);
-
-      // TODO: gọi API thực tế
-      // await api.post("/properties", payload);
-
-      return true;
     } catch (err) {
-      alert("Gửi dữ liệu thất bại: " + err.message);
+      console.error("[SEND HOST DATA ERROR]", err);
+      alert("Gửi dữ liệu thất bại: " + (err.message || "Có lỗi xảy ra"));
       return false;
     }
   }
@@ -536,12 +559,7 @@ export function HostProvider({ children }) {
   }, [experienceData, loaded]);
 
   function reset() {
-    localStorage.removeItem("host_stay_draft");
-    localStorage.removeItem("host_exp_draft");
-
-    setStayData({ ...initialStayData });
-    setExperienceData({ ...initialExperienceData });
-    setCompletedStep({});
+    resetAll();
   }
 
 
@@ -554,6 +572,19 @@ export function HostProvider({ children }) {
           : formatExperienceDataForAPI(experienceData),
     };
   }
+function resetStayData() {
+  setStayData(initialStayData);
+}
+
+function resetExperienceData() {
+  setExperienceData(initialExperienceData);
+}
+
+function resetAll() {
+  resetStayData();
+  resetExperienceData();
+  setCompletedStep({});
+}
 
   // ============================================================
   // 7️⃣ EXPORT PROVIDER
@@ -584,75 +615,111 @@ export function HostProvider({ children }) {
   );
 }
 
-function formatStayDataForAPI(stayData) {
+// Helper function to convert File to base64
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function formatStayDataForAPI(stayData) {
+  // ========== Helper Functions ==========
+  const truncate = (str, maxLength) => {
+    if (!str) return "";
+    return str.length > maxLength ? str.substring(0, maxLength) : str;
+  };
+
+  const toDecimal = (value) => {
+    const num = Number(value);
+    return isNaN(num) ? null : num;
+  };
+
+  // Convert photos safely
+  const photoPromises = (stayData.photos || []).map(async (p, index) => {
+    const url = truncate(
+      p.preview || p.serverUrl || `placeholder_photo_${index + 1}.jpg`,
+      500
+    );
+
+    return {
+      url,
+      caption: truncate(p.caption || "", 300),
+      sortIndex: p.sortIndex || index + 1,
+    };
+  });
+
+  const photos = (await Promise.all(photoPromises)).filter(
+    (p) => p.url && p.url.trim().length > 0
+  );
+
+  // ========== EXTRACT + VALIDATE MAIN FIELDS ==========
+  const listingTitle = truncate(stayData.listingTitle || "", 200);
+  const propertyType = truncate(stayData.propertyType || "", 100);
+  const price = toDecimal(stayData.pricing?.basePrice);
+  const bathrooms = toDecimal(stayData.bathrooms);
+
+  if (!stayData.userID && !stayData.hostID)
+    throw new Error("UserID is required");
+
+  if (!listingTitle.trim())
+    throw new Error("ListingTitle is required");
+
+  if (!price || price <= 0)
+    throw new Error("Price must be a positive number");
+
+  // ========== AMENITIES – FIXED 100% ==========
+  // Ensure valid, unique numeric IDs
+  const amenityIds = Array.from(
+    new Set(
+      (stayData.amenities || [])
+        .map((id) => Number(id))
+        .filter((id) => !isNaN(id))
+    )
+  );
+
+  // Convert to backend format
+  const formattedAmenities = amenityIds.map((id) => ({
+    amenityID: id,
+  }));
+
+  // ========== LAT / LNG ==========
+  const lat = stayData.location?.lat
+    ? stayData.location.lat.toString()
+    : null;
+  const lng = stayData.location?.lng
+    ? stayData.location.lng.toString()
+    : null;
+
+  // ========== FINAL PAYLOAD ==========
   return {
-    propertyID: stayData.propertyID || null,
-    hostID: stayData.hostID || null,
-    listingTitle: stayData.listingTitle,
-    description: stayData.description,
-    summary: stayData.summary,
-    propertyType: stayData.propertyType,
-    roomTypeID: stayData.roomTypeID,
-    bedTypeID: stayData.bedTypeID,
-
-    // Gộp location
+    userID: stayData.userID || stayData.hostID || null,
+    listingTitle,
+    description: stayData.description || "",
     location: stayData.location?.addressLine || "",
-    lat: stayData.location?.lat || null,
-    lng: stayData.location?.lng || null,
-
-    neighbourhoodID: stayData.neighbourhoodID,
-    cityID: stayData.cityID,
-    countryID: stayData.countryID,
-
-    bedrooms: stayData.bedrooms,
-    beds: stayData.beds,
-    bathrooms: stayData.bathrooms,
-    accommodates: stayData.accommodates,
-    squareFeet: stayData.squareFeet,
-    minNights: stayData.pricing?.minNights || 1,
-    maxNights: stayData.pricing?.maxNights || 30,
-
-    // Pricing (flatten)
-    price: Number(stayData.pricing?.basePrice) || 0,
+    cityID: stayData.cityID || null,
+    countryID: stayData.countryID || null,
+    roomTypeID: stayData.roomTypeID || null,
+    bedrooms: stayData.bedrooms || null,
+    beds: stayData.beds || null,
+    bathrooms,
+    accommodates: stayData.accommodates || null,
+    price,
     currency: stayData.pricing?.currency || "USD",
-    cleaningFee: stayData.pricing?.cleaningFee || 0,
-    serviceFee: stayData.pricing?.serviceFee || 0,
-    taxFee: stayData.pricing?.taxFee || 0,
-    extraPeopleFee: stayData.pricing?.extraPeopleFee || 0,
-    discount: stayData.pricing?.discount || 0,
-    discountPercentage: stayData.pricing?.discountPercentage || 0,
-
-    // Rules
-    checkin_after: stayData.checkin_after,
-    checkout_before: stayData.checkout_before,
-    selfCheckIn: stayData.selfCheckIn,
-    self_checkin_method: stayData.self_checkin_method,
-    no_smoking: stayData.no_smoking,
-    no_open_flames: stayData.no_open_flames,
-    pets_allowed: stayData.pets_allowed,
-    houseRules: JSON.stringify(stayData.houseRules || []),
-
-    // Safety
-    covidSafety: stayData.covidSafety,
-    surfacesSanitized: stayData.surfacesSanitized,
-    carbonMonoxideAlarm: stayData.carbonMonoxideAlarm,
-    smokeAlarm: stayData.smokeAlarm,
-    securityDepositRequired: stayData.securityDepositRequired,
-    securityDepositAmount: stayData.securityDepositAmount,
-
-    // Meta
-    isBusinessReady: stayData.isBusinessReady,
-    active: stayData.active,
-
-    // Media
-    photos: stayData.photos.map((p, index) => ({
-      url: p.serverUrl || "",        // sau upload
-      caption: p.caption || "",
-      sortIndex: index + 1
-    })),
-    coverPhoto: stayData.coverPhoto || (stayData.photos?.[0] || null),
+    active: stayData.active ?? true,
+    propertyType: propertyType || null,
+    lat,
+    lng,
+    houseRules: stayData.houseRules
+      ? JSON.stringify(stayData.houseRules)
+      : null,
+    photos,
+    amenities: formattedAmenities,
   };
 }
+
 
 function formatExperienceDataForAPI(d) {
   return {
