@@ -76,6 +76,9 @@ const initialStayData = {
   // MEDIA
   photos: [],
   coverPhoto: null,
+
+  // AMENITIES
+  amenities: [],
 };
 
 // 🧭 Experience / Tour
@@ -87,12 +90,12 @@ const initialExperienceData = {
   tourName: "",
   summary: "",
   description: "",
-  mainCategory: "",   // chọn từ trang Choose
+  mainCategory: "", // chọn từ trang Choose
   yearsOfExperience: 10,
   qualifications: {
     intro: "",
     expertise: "",
-    recognition: ""
+    recognition: "",
   },
 
   // LOCATION
@@ -120,7 +123,7 @@ const initialExperienceData = {
 
   // BOOKING TIME SLOTS
   booking: {
-    timeSlots: [],     // FE tự quản lý
+    timeSlots: [], // FE tự quản lý
   },
 
   // MEDIA
@@ -131,7 +134,7 @@ const initialExperienceData = {
 
   discounts: {
     earlyBird: false,
-    custom: []
+    custom: [],
   },
 
   // DURATION
@@ -155,7 +158,6 @@ const initialExperienceData = {
   reviews: [],
 };
 
-
 // ============================================================
 // 2️⃣ TẠO CONTEXT
 // ============================================================
@@ -170,10 +172,9 @@ export function HostProvider({ children }) {
   const [loadingDraft, setLoadingDraft] = useState(true);
 
   const [photosReady, setPhotosReady] = useState(false);
-  
 
   const location = useLocation();
-  
+
   useEffect(() => {
     // Tự động đặt flow type theo URL
     if (location.pathname.startsWith("/host/experience")) {
@@ -182,7 +183,6 @@ export function HostProvider({ children }) {
       setType("stay");
     }
   }, [location.pathname]);
-
 
   // ============================================================
   // 3️⃣ CẬP NHẬT DỮ LIỆU THEO BƯỚC
@@ -225,7 +225,7 @@ export function HostProvider({ children }) {
         setCompletedStep((prev) => ({ ...prev, [step]: true }));
         return;
       }
-      
+
       // LOCATION
       if (step === "location") {
         setStayData((prev) => ({
@@ -244,64 +244,56 @@ export function HostProvider({ children }) {
       else {
         setStayData((prev) => ({ ...prev, ...values }));
       }
-    }
-    else {
+    } else {
       // EXPERIENCE FLOW
       if (step === "location") {
-        setExperienceData(prev => ({
+        setExperienceData((prev) => ({
           ...prev,
-          location: { ...prev.location, ...values }
+          location: { ...prev.location, ...values },
         }));
-      }
-      else if (step === "qualification") {
-        setExperienceData(prev => ({
+      } else if (step === "qualification") {
+        setExperienceData((prev) => ({
           ...prev,
-          qualifications: { ...prev.qualifications, ...values }   // values = { intro: "...", expertise: "..."}
+          qualifications: { ...prev.qualifications, ...values },
         }));
-      }
-      else if (step === "pricing") {
-        setExperienceData(prev => ({
+      } else if (step === "pricing") {
+        setExperienceData((prev) => ({
           ...prev,
-          pricing: { ...prev.pricing, ...values }
+          pricing: { ...prev.pricing, ...values },
         }));
-      }
-      else if (step === "capacity") {
-        setExperienceData(prev => ({
+      } else if (step === "capacity") {
+        setExperienceData((prev) => ({
           ...prev,
-          capacity: { ...prev.capacity, ...values }
+          capacity: { ...prev.capacity, ...values },
         }));
-      }
-      else if (step === "booking") {
-        setExperienceData(prev => ({
+      } else if (step === "booking") {
+        setExperienceData((prev) => ({
           ...prev,
-          booking: { ...prev.booking, ...values }
+          booking: { ...prev.booking, ...values },
         }));
-      }
-      else if (step === "discounts") {
-        setExperienceData(prev => ({
+      } else if (step === "discounts") {
+        setExperienceData((prev) => ({
           ...prev,
           discounts: {
             ...prev.discounts,
-            ...values   // <-- CHỈ MERGE những gì được update
-          }
+            ...values, // <-- CHỈ MERGE những gì được update
+          },
         }));
         return;
-      }
-      else if (step === "photos") {
-        setExperienceData(prev => ({
+      } else if (step === "photos") {
+        setExperienceData((prev) => ({
           ...prev,
           media: {
             ...prev.media,
             photos: values.photos,
-            cover: values.cover
-          }
+            cover: values.cover,
+          },
         }));
 
-        setCompletedStep(prev => ({ ...prev, photos: true, media: true }));
+        setCompletedStep((prev) => ({ ...prev, photos: true, media: true }));
         return;
-      }
-      else {
-        setExperienceData(prev => ({ ...prev, ...values }));
+      } else {
+        setExperienceData((prev) => ({ ...prev, ...values }));
       }
     }
 
@@ -333,8 +325,7 @@ export function HostProvider({ children }) {
           stayData.pricing.minNights >= 1 &&
           stayData.pricing.maxNights >= stayData.pricing.minNights
         );
-      if (step === "title")
-        return stayData.listingTitle.trim().length > 0;
+      if (step === "title") return stayData.listingTitle.trim().length > 0;
       if (step === "description")
         return stayData.description.trim().length > 0;
       if (step === "weekday-price") {
@@ -356,21 +347,16 @@ export function HostProvider({ children }) {
       }
 
       return true;
-    }
-    else {
+    } else {
       // EXPERIENCE VALIDATION
-
-      if (step === "choose")
-        return !!experienceData.mainCategory;
+      if (step === "choose") return !!experienceData.mainCategory;
 
       if (step === "years")
         return Number(experienceData.yearsOfExperience) >= 0;
 
-      if (step === "qualification")
-        return true;
+      if (step === "qualification") return true;
 
-      if (step === "title")
-        return experienceData.tourName.trim().length > 0;
+      if (step === "title") return experienceData.tourName.trim().length > 0;
 
       if (step === "description")
         return experienceData.description.trim().length > 0;
@@ -384,17 +370,10 @@ export function HostProvider({ children }) {
       if (step === "capacity")
         return Number(experienceData.capacity.maxGuests) >= 1;
 
-      if (step === "photos")
-        return experienceData.media.photos.length > 0;
-
-      if (step === "title") return experienceData.tourName.trim().length > 0;
-      if (step === "description") return experienceData.description.trim().length > 0;
+      if (step === "photos") return experienceData.media.photos.length > 0;
 
       if (step === "itinerary")
         return experienceData.experienceDetails.length > 0;
-
-      if (step === "capacity")
-        return Number(experienceData.capacity.maxGuests) >= 1;
 
       if (step === "timeslots")
         return experienceData.booking.timeSlots.length > 0;
@@ -413,101 +392,138 @@ export function HostProvider({ children }) {
   function setFlowType(_type) {
     setType(_type);
   }
+  /*
+    async function sendHostData() {
+      const data = getFinalData();
+      try {
+        let payload;
+        if (type === "stay") {
+          // Get user from localStorage to get UserID
+          const userStr = localStorage.getItem("user");
+          const user = userStr ? JSON.parse(userStr) : null;
+          const userID = user?.UserID || user?.userID || user?.id || null;
+  
+          if (!userID) {
+            alert("Vui lòng đăng nhập để tạo property!");
+            return false;
+          }
+  
+          // Set userID in data (backend sẽ tự động tạo Host nếu chưa có)
+          data.userID = userID;
+  
+          // Format data for API (sync function)
+          payload = formatStayDataForAPI(data);
+  
+          console.log(
+            "[SEND TO BACKEND]",
+            JSON.stringify(payload, null, 2)
+          );
+  
+          // Import authAPI dynamically to avoid circular dependency
+          const authAPI = (await import("../services/authAPI")).default;
+  
+          // Call API to create property
+          const result = await authAPI.createProperty(payload);
+  
+          console.log("[PROPERTY CREATED]", result);
+          alert("Tạo property thành công!");
+  
+          return true;
+        } else {
+          payload = formatExperienceDataForAPI(data);
+          // TODO: Implement experience creation API call
+          console.log("[SEND EXPERIENCE TO BACKEND]", payload);
+          return true;
+        }
+      } catch (err) {
+        console.error("[SEND HOST DATA ERROR]", err);
+        alert("Gửi dữ liệu thất bại: " + (err.message || "Có lỗi xảy ra"));
+        return false;
+      }
+    }
+  
+    */
 
+  //DEV MODE: -------------------------File tạm để test---------------------------------------
   async function sendHostData() {
     const data = getFinalData();
-    try {
-      let payload;
-      if (type === "stay") {
-        // Get user from localStorage to get UserID
-        const userStr = localStorage.getItem('user');
-        const user = userStr ? JSON.parse(userStr) : null;
-        const userID = user?.UserID || user?.userID || user?.id || null;
-        
-        if (!userID) {
-          alert("Vui lòng đăng nhập để tạo property!");
-          return false;
-        }
 
-        // Set userID in data (backend sẽ tự động tạo Host nếu chưa có)
-        data.userID = userID;
+    // DEV MODE — không gửi API, không cần login
+    console.warn("⚠️ DEV MODE: sendHostData() tạm thời disabled");
+    console.log("📦 Payload sẽ gửi khi bật API:", {
+      type,
+      formatted:
+        type === "stay"
+          ? formatStayDataForAPI(data)
+          : formatExperienceDataForAPI(data),
+    });
 
-        // Format data for API (async function)
-        payload = await formatStayDataForAPI(data);
-
-        console.log("[SEND TO BACKEND]", JSON.stringify(payload, null, 2));
-
-        // Import authAPI dynamically to avoid circular dependency
-        const authAPI = (await import("../services/authAPI")).default;
-        
-        // Call API to create property
-        const result = await authAPI.createProperty(payload);
-        
-        console.log("[PROPERTY CREATED]", result);
-        alert("Tạo property thành công!");
-        
-        return true;
-      } else {
-        payload = formatExperienceDataForAPI(data);
-        // TODO: Implement experience creation API call
-        console.log("[SEND EXPERIENCE TO BACKEND]", payload);
-        return true;
-      }
-    } catch (err) {
-      console.error("[SEND HOST DATA ERROR]", err);
-      alert("Gửi dữ liệu thất bại: " + (err.message || "Có lỗi xảy ra"));
-      return false;
-    }
+    // báo thành công giả để UI flow không bị chặn
+    alert("DEV MODE: Dữ liệu CHƯA được gửi đến backend.");
+    return true;
   }
 
-  useEffect(() => {
 
+  // ============================================================
+  // 7️⃣ LOAD DRAFT TỪ LOCALSTORAGE
+  // ============================================================
+  useEffect(() => {
     const savedStay = localStorage.getItem("host_stay_draft");
 
     if (savedStay) {
-      setStayData(JSON.parse(savedStay));
+      try {
+        const stay = JSON.parse(savedStay);
+        setStayData({ ...initialStayData, ...stay });
+      } catch {
+        // nếu lỗi parse thì bỏ qua draft
+      }
     }
 
     const savedExp = localStorage.getItem("host_exp_draft");
 
     if (savedExp) {
-      const exp = JSON.parse(savedExp);
+      try {
+        const exp = JSON.parse(savedExp);
 
-      exp.capacity = exp.capacity || { maxGuests: 1 };
-      exp.pricing = exp.pricing || { basePrice: "", currency: "USD" };
-      exp.booking = exp.booking || { timeSlots: [] };
-      exp.discounts = exp.discounts || {
-        earlyBird: false,
-        custom: []
-      };
-
-      // normalize photos: đảm bảo không crash khi thiếu file
-      // --- Strong normalize ---
-      exp.media.photos = (exp.media?.photos || []).map(p => {
-        const preview = p.preview || p.serverUrl || "";
-
-        return {
-          file: null,                 // tránh UI crash
-          preview,
-          name: p.name || "",
-          caption: p.caption || "",
-          serverUrl: p.serverUrl || "",
-          isCover: preview === exp.media.cover
+        exp.capacity = exp.capacity || { maxGuests: 1 };
+        exp.pricing = exp.pricing || { basePrice: "", currency: "USD" };
+        exp.booking = exp.booking || { timeSlots: [] };
+        exp.discounts = exp.discounts || {
+          earlyBird: false,
+          custom: [],
         };
-      });
 
-      // Nếu cover rỗng thì đặt auto ảnh đầu
-      if (!exp.media.cover && exp.media.photos.length > 0) {
-        exp.media.cover = exp.media.photos[0].preview;
+        // đảm bảo media tồn tại trước khi truy cập photos
+        exp.media = exp.media || { cover: null, photos: [] };
+
+        // normalize photos: đảm bảo không crash khi thiếu file
+        exp.media.photos = (exp.media.photos || []).map((p) => {
+          const preview = p.preview || p.serverUrl || "";
+
+          return {
+            file: null, // tránh UI crash
+            preview,
+            name: p.name || "",
+            caption: p.caption || "",
+            serverUrl: p.serverUrl || "",
+            isCover: preview === exp.media.cover,
+          };
+        });
+
+        // Nếu cover rỗng thì đặt auto ảnh đầu
+        if (!exp.media.cover && exp.media.photos.length > 0) {
+          exp.media.cover = exp.media.photos[0].preview;
+        }
+
+        setExperienceData({ ...initialExperienceData, ...exp });
+        setCompletedStep((prev) => ({
+          ...prev,
+          photos: exp.media.photos.length > 0,
+          media: exp.media.photos.length > 0,
+        }));
+      } catch {
+        // lỗi parse thì bỏ qua draft
       }
-
-
-      setExperienceData(exp);                 // ❗ chỉ set 1 lần duy nhất
-      setCompletedStep(prev => ({
-        ...prev,
-        photos: exp.media.photos.length > 0,
-        media: exp.media.photos.length > 0
-      }));
     }
 
     setPhotosReady(true);
@@ -515,12 +531,14 @@ export function HostProvider({ children }) {
     setLoadingDraft(false);
   }, []);
 
+  // SAVE STAY DRAFT
   useEffect(() => {
     if (loaded) {
       localStorage.setItem("host_stay_draft", JSON.stringify(stayData));
     }
   }, [stayData, loaded]);
 
+  // SAVE EXPERIENCE DRAFT
   useEffect(() => {
     if (!loaded) return; // <— ngăn chạy save lúc mới load draft
 
@@ -528,40 +546,48 @@ export function HostProvider({ children }) {
       ...experienceData,
 
       capacity: {
-        ...experienceData.capacity
+        ...experienceData.capacity,
       },
 
       pricing: {
-        ...experienceData.pricing
+        ...experienceData.pricing,
       },
 
       booking: {
-        ...experienceData.booking
+        ...experienceData.booking,
       },
       discounts: {
         earlyBird: experienceData.discounts?.earlyBird ?? false,
         byDaysBefore: experienceData.discounts?.byDaysBefore ?? [],
-        byGroupSize: experienceData.discounts?.byGroupSize ?? []
+        byGroupSize: experienceData.discounts?.byGroupSize ?? [],
       },
 
       media: {
         ...experienceData.media,
-        photos: experienceData.media.photos.map(p => ({
+        photos: experienceData.media.photos.map((p) => ({
           preview: p.preview,
           caption: p.caption,
           serverUrl: p.serverUrl,
           name: p.name,
-        }))
-      }
+        })),
+      },
     };
 
     localStorage.setItem("host_exp_draft", JSON.stringify(expForStorage));
   }, [experienceData, loaded]);
 
+  // RESET
+  function resetAll() {
+    localStorage.removeItem("host_stay_draft");
+    localStorage.removeItem("host_exp_draft");
+    setStayData(initialStayData);
+    setExperienceData(initialExperienceData);
+    setCompletedStep({});
+  }
+
   function reset() {
     resetAll();
   }
-
 
   function getDebugData() {
     return {
@@ -572,22 +598,9 @@ export function HostProvider({ children }) {
           : formatExperienceDataForAPI(experienceData),
     };
   }
-function resetStayData() {
-  setStayData(initialStayData);
-}
-
-function resetExperienceData() {
-  setExperienceData(initialExperienceData);
-}
-
-function resetAll() {
-  resetStayData();
-  resetExperienceData();
-  setCompletedStep({});
-}
 
   // ============================================================
-  // 7️⃣ EXPORT PROVIDER
+  // 8️⃣ EXPORT PROVIDER
   // ============================================================
   return (
     <HostContext.Provider
@@ -615,17 +628,10 @@ function resetAll() {
   );
 }
 
-// Helper function to convert File to base64
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-async function formatStayDataForAPI(stayData) {
+// ============================================================
+// 9️⃣ FORMATTER STAY / EXPERIENCE
+// ============================================================
+function formatStayDataForAPI(stayData) {
   // ========== Helper Functions ==========
   const truncate = (str, maxLength) => {
     if (!str) return "";
@@ -637,23 +643,21 @@ async function formatStayDataForAPI(stayData) {
     return isNaN(num) ? null : num;
   };
 
-  // Convert photos safely
-  const photoPromises = (stayData.photos || []).map(async (p, index) => {
-    const url = truncate(
-      p.preview || p.serverUrl || `placeholder_photo_${index + 1}.jpg`,
-      500
-    );
+  // Convert photos safely (sync – không cần async)
+  const photos = (stayData.photos || [])
+    .map((p, index) => {
+      const url = truncate(
+        p.preview || p.serverUrl || `placeholder_photo_${index + 1}.jpg`,
+        500
+      );
 
-    return {
-      url,
-      caption: truncate(p.caption || "", 300),
-      sortIndex: p.sortIndex || index + 1,
-    };
-  });
-
-  const photos = (await Promise.all(photoPromises)).filter(
-    (p) => p.url && p.url.trim().length > 0
-  );
+      return {
+        url,
+        caption: truncate(p.caption || "", 300),
+        sortIndex: p.sortIndex || index + 1,
+      };
+    })
+    .filter((p) => p.url && p.url.trim().length > 0);
 
   // ========== EXTRACT + VALIDATE MAIN FIELDS ==========
   const listingTitle = truncate(stayData.listingTitle || "", 200);
@@ -661,11 +665,11 @@ async function formatStayDataForAPI(stayData) {
   const price = toDecimal(stayData.pricing?.basePrice);
   const bathrooms = toDecimal(stayData.bathrooms);
 
-  if (!stayData.userID && !stayData.hostID)
-    throw new Error("UserID is required");
+  // DEV MODE: Temporarily disable UserID validation
+  // if (!stayData.userID && !stayData.hostID)
+  //   throw new Error("UserID is required");
 
-  if (!listingTitle.trim())
-    throw new Error("ListingTitle is required");
+  if (!listingTitle.trim()) throw new Error("ListingTitle is required");
 
   if (!price || price <= 0)
     throw new Error("Price must be a positive number");
@@ -720,7 +724,6 @@ async function formatStayDataForAPI(stayData) {
   };
 }
 
-
 function formatExperienceDataForAPI(d) {
   return {
     tourID: d.tourID || null,
@@ -757,19 +760,18 @@ function formatExperienceDataForAPI(d) {
     photos: d.media.photos.map((p, i) => ({
       url: p.serverUrl || "",
       caption: p.caption || "",
-      sortIndex: i + 1
+      sortIndex: i + 1,
     })),
     coverPhoto: d.media.cover,
 
     startDate: d.startDate,
     endDate: d.endDate,
-    active: d.isActive
+    active: d.isActive,
   };
 }
 
-
 // ============================================================
-// 8️⃣ HOOK TIỆN DỤNG
+// 🔟 HOOK TIỆN DỤNG
 // ============================================================
 export function useHost() {
   return useContext(HostContext);
