@@ -180,13 +180,6 @@ export default function HostExperienceCreatePhotos() {
             ))}
           </div>
         )}
-
-        {/* NEXT */}
-        <div style={{ marginTop: 40, textAlign: "center" }}>
-          <button className="he-primary-btn" onClick={handleNext}>
-            Continue
-          </button>
-        </div>
       </main>
     </div>
   );
