@@ -2,7 +2,7 @@
 {
     public class CreatePropertyDto
     {
-        public int HostID { get; set; }
+        public int UserID { get; set; } // UserID - sẽ tự động tạo Host nếu chưa có
         public string ListingTitle { get; set; }
         public string Description { get; set; }
         public string Location { get; set; }
@@ -21,7 +21,7 @@
         public string lng { get; set; }
         public string HouseRules { get; set; }
 
-       
+        public List<PropertyAmenityDto> Amenities { get; set; }
         public List<PropertyPhotoDto> Photos { get; set; }
     }
     public class PropertyPhotoDto
@@ -29,6 +29,10 @@
         public string Url { get; set; }
         public string Caption { get; set; }
         public int SortIndex { get; set; }
+    }
+    public class PropertyAmenityDto
+    {
+        public int AmenityID { get; set; }
     }
 }
 

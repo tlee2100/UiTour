@@ -7,16 +7,19 @@ using UITour.Models;
 using UITour.DAL.Interfaces;
 using UITour.ServicesL.Interfaces;
 using UITour.Models.DTO;
+using Host = UITour.Models.Host;
 
 namespace UITour.ServicesL.Implementations
 {
     public class PropertyService : IPropertyService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IHostService _hostService;
 
-        public PropertyService(IUnitOfWork unitOfWork)
+        public PropertyService(IUnitOfWork unitOfWork, IHostService hostService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _hostService = hostService ?? throw new ArgumentNullException(nameof(hostService));
         }
 
         public async Task<IEnumerable<Property>> GetAllAsync()
@@ -53,9 +56,17 @@ namespace UITour.ServicesL.Implementations
         {
             if (dto == null) throw new ArgumentNullException(nameof(dto));
 
+            // Tìm hoặc tạo Host cho UserID
+            int hostID = await GetOrCreateHostAsync(dto.UserID);
+
+            var distinctAmenityIds = dto.Amenities?
+                .Select(a => a.AmenityID)
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList() ?? new List<int>();
             var property = new Property
             {
-                HostID = dto.HostID,
+                HostID = hostID,
                 ListingTitle = dto.ListingTitle,
                 Description = dto.Description,
                 Location = dto.Location,
@@ -80,13 +91,46 @@ namespace UITour.ServicesL.Implementations
                     Url = p.Url,
                     Caption = p.Caption,
                     SortIndex = p.SortIndex
-                }).ToList()
-            };
+                }).ToList(),
+                PropertyAmenities = distinctAmenityIds
+                    .Select(id => new PropertyAmenity { AmenityID = id })
+                    .ToList()
+                };
 
             await _unitOfWork.Properties.AddAsync(property);
             await _unitOfWork.SaveChangesAsync();
 
             return property;
+        }
+
+        
+        /// Tìm Host theo UserID, nếu chưa có thì tạo mới
+  
+        private async Task<int> GetOrCreateHostAsync(int userID)
+        {
+            // Tìm Host theo UserID
+            var existingHost = await _unitOfWork.Hosts.Query()
+                .FirstOrDefaultAsync(h => h.UserID == userID);
+
+            if (existingHost != null)
+            {
+                return existingHost.HostID;
+            }
+
+            // Nếu chưa có Host, tạo mới
+            var newHost = new Host
+            {
+                UserID = userID,
+                HostSince = DateTime.UtcNow,
+                IsSuperHost = false,
+                HostAbout = null,
+                HostResponseRate = null
+            };
+
+            await _unitOfWork.Hosts.AddAsync(newHost);
+            await _unitOfWork.SaveChangesAsync();
+
+            return newHost.HostID;
         }
 
         public async Task<Property> UpdateAsync(Property property)
