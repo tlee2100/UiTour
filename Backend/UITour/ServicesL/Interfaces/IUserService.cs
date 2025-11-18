@@ -22,6 +22,8 @@ namespace UITour.ServicesL.Interfaces
         Task<IEnumerable<SavedListings>> GetSavedListingsAsync(int userId);
         Task<string> SendRegistrationOtpAsync(string email);
         Task<bool> VerifyRegistrationOtpAsync(string email, string otp);
+        Task<string> SendProfileOtpAsync(int userId);
+        Task<bool> VerifyProfileOtpAsync(int userId, string otp);
         Task<bool> ForgotPasswordAsync(string email);
         Task<bool> ResetPasswordAsync(string email, string otp, string newPassword);
 
