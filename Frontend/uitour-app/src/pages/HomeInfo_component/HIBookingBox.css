@@ -118,6 +118,19 @@
   color: #6b7280;
 }
 
+.hib-input {
+  border: none;
+  font-size: 14px;
+  color: #111827;
+  background: transparent;
+  padding: 4px 0;
+  width: 100%;
+}
+
+.hib-input:focus {
+  outline: none;
+}
+
 /* Guests */
 .hib-guests {
   display: flex;
@@ -164,6 +177,26 @@
   font-size: 14px;
   color: #6b7280;
   text-align: center;
+}
+
+.hib-feedback {
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.hib-feedback.success {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.hib-feedback.error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
 }
 
 /* Price Details */

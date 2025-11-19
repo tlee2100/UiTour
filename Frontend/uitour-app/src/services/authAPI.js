@@ -1,11 +1,12 @@
 // Authentication API Service
 // Kết nối với backend API cho login và register
 
- const API_BASE_URL = 'http://localhost:5069/api/user';
+const API_BASE_URL = 'http://localhost:5069/api/user';
 const PROPERTY_BASE_URL = 'http://localhost:5069/api/properties';
 const TOUR_BASE_URL = 'http://localhost:5069/api/tour';
 const HOST_BASE_URL = 'http://localhost:5069/api/host';
 const WISHLIST_BASE_URL = 'http://localhost:5069/api/wishlist';
+const BOOKING_BASE_URL = 'http://localhost:5069/api/booking';
 
 class AuthAPI {
    // Lấy thông tin user theo ID
@@ -651,6 +652,29 @@ async updateUserProfile(userId, form) {
 
     if (!res.ok) throw new Error((await res.text()) || 'Failed to change password');
     return await res.json();
+  }
+
+  async createBooking(bookingPayload) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(BOOKING_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(bookingPayload),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to create booking');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw new Error(error.message || 'Failed to create booking');
+    }
   }
 
   async sendProfileOtp(userId) {
