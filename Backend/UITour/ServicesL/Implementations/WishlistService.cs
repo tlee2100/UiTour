@@ -15,32 +15,44 @@ namespace UITour.ServicesL.Implementations
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
 
+        private static string BuildDefaultListId(int userId) => $"default_{userId}";
+
+        private async Task<FavoriteList> GetOrCreateDefaultFavoriteListAsync(int userId)
+        {
+            var preferredId = BuildDefaultListId(userId);
+
+            var favoriteList = await _unitOfWork.FavoriteLists.Query()
+                .FirstOrDefaultAsync(fl => fl.UserID == userId && fl.ListID == preferredId);
+
+            if (favoriteList != null)
+                return favoriteList;
+
+            // Fallback to any existing list for this user (legacy data may use "default")
+            favoriteList = await _unitOfWork.FavoriteLists.Query()
+                .FirstOrDefaultAsync(fl => fl.UserID == userId);
+
+            if (favoriteList != null)
+                return favoriteList;
+
+            // Create a brand-new list with a user-specific key to avoid PK collisions
+            favoriteList = new FavoriteList
+            {
+                ListID = preferredId,
+                UserID = userId,
+                Title = "Danh sách yêu thích",
+                CoverImage = string.Empty,
+                ItemsCount = 0
+            };
+
+            await _unitOfWork.FavoriteLists.AddAsync(favoriteList);
+            await _unitOfWork.SaveChangesAsync();
+
+            return favoriteList;
+        }
+
         public async Task<WishlistDto> GetUserWishlistAsync(int userId)
         {
-            // First, get the default FavoriteList for the user (or create one if it doesn't exist)
-            var favoriteList = await _unitOfWork.FavoriteLists.Query()
-                .FirstOrDefaultAsync(fl => fl.UserID == userId && fl.ListID == "default");
-
-            // If no default list exists, try to get the first list for the user
-            if (favoriteList == null)
-            {
-                favoriteList = await _unitOfWork.FavoriteLists.Query()
-                    .FirstOrDefaultAsync(fl => fl.UserID == userId);
-            }
-
-            // If still no list exists, return empty wishlist
-            if (favoriteList == null)
-            {
-                Console.WriteLine($"No FavoriteList found for user {userId}");
-                return new WishlistDto
-                {
-                    Id = "default",
-                    Title = "Danh sách yêu thích",
-                    Cover = string.Empty,
-                    ItemsCount = 0,
-                    Items = new List<WishlistItemDto>()
-                };
-            }
+            var favoriteList = await GetOrCreateDefaultFavoriteListAsync(userId);
 
             Console.WriteLine($"Found FavoriteList: {favoriteList.ListID} for user {userId}");
 
@@ -110,23 +122,7 @@ namespace UITour.ServicesL.Implementations
         public async Task<WishlistDto> AddToWishlistAsync(int userId, int propertyId)
         {
             // Get or create default FavoriteList for the user
-            var favoriteList = await _unitOfWork.FavoriteLists.Query()
-                .FirstOrDefaultAsync(fl => fl.UserID == userId && fl.ListID == "default");
-
-            if (favoriteList == null)
-            {
-                // Create default list if it doesn't exist
-                favoriteList = new FavoriteList
-                {
-                    ListID = "default",
-                    UserID = userId,
-                    Title = "Danh sách yêu thích",
-                    CoverImage = string.Empty,
-                    ItemsCount = 0
-                };
-                await _unitOfWork.FavoriteLists.AddAsync(favoriteList);
-                await _unitOfWork.SaveChangesAsync();
-            }
+            var favoriteList = await GetOrCreateDefaultFavoriteListAsync(userId);
 
             // Check if already saved
             var existing = await _unitOfWork.SavedListings.Query()
