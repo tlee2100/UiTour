@@ -11,9 +11,16 @@ const InfoHeaderTitle = ({title}) =>
   );
 }
 
-const InfoHeaderDetails = ({info}) =>
+const InfoHeaderDetails = ({ info, actions = {} }) =>
 {
   const {rating, reviews, hostStatus, location} = info;
+  const {
+    onShareClick,
+    onSaveClick,
+    isSaved = false,
+    saveLoading = false
+  } = actions;
+
   return(
       <div className="iheader-details">
         {/* Bên trái */}
@@ -42,22 +49,32 @@ const InfoHeaderDetails = ({info}) =>
 
         {/* Bên phải */}
         <div className="iheader-right">
-          <ButtonWhite className="iheader-icon-button iheader-share-button" leftIcon={<SvgIcon name="share" className="icon share-icon"/>}>
+          <ButtonWhite
+            className="iheader-icon-button iheader-share-button"
+            leftIcon={<SvgIcon name="share" className="icon share-icon"/>}
+            onClick={onShareClick}
+          >
             Share
           </ButtonWhite>
-          <ButtonWhite className="iheader-icon-button iheader-save-button" leftIcon={<SvgIcon name="heart" className="icon heart-icon"/>}>
-            Save
+          <ButtonWhite
+            className={`iheader-icon-button iheader-save-button ${isSaved ? "saved" : ""}`}
+            leftIcon={<SvgIcon name="heart" className="icon heart-icon"/>}
+            onClick={onSaveClick}
+            aria-pressed={isSaved}
+            disabled={saveLoading}
+          >
+            {isSaved ? "Saved" : "Save"}
           </ButtonWhite>
         </div>
       </div>
   );
 }
 
-const InfoHeader = ({title, info}) => {
+const InfoHeader = ({ title, info, actions }) => {
   return (
     <header className="info-header">
         <InfoHeaderTitle title={title}/>
-        <InfoHeaderDetails info={info}/>
+        <InfoHeaderDetails info={info} actions={actions}/>
     </header>
   );
 };
