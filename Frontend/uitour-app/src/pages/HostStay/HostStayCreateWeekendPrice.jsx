@@ -5,16 +5,26 @@ import "./HostStay.css";
 export default function HostStayCreateWeekendPrice() {
   const navigate = useNavigate();
   const { stayData, updateField, validateStep } = useHost();
-  const basePrice = Number(stayData.pricing?.basePrice) || 0;
-  const premium = stayData.pricing?.weekendPremium !== undefined
-    ? Number(stayData.pricing.weekendPremium)
-    : 0;
+
+  const pricing = stayData.pricing || {};
+  const basePrice = Number(pricing.basePrice) || 0;
+
+  const premium = pricing.weekendPremium || 0;
+
+  // LẤY FEE TỪ CONTEXT
+  const servicePercent = pricing.serviceFee?.percent || 0;
+  const taxPercent = pricing.taxFee?.percent || 0;
+  const feeRate = (servicePercent + taxPercent) / 100;
+
+  // TÍNH GIÁ WEEKEND
   const weekendPrice = Math.round(basePrice * (1 + premium / 100));
-  const totalWithTax = Math.round(weekendPrice * 1.066);
+
+  // GIÁ KHÁCH PHẢI TRẢ
+  const finalCustomerPrice = Math.round(weekendPrice * (1 + feeRate));
 
   const handlePremiumChange = (value) => {
     updateField("weekend-price", {
-      pricing: { ...stayData.pricing, weekendPremium: value }
+      pricing: { ...pricing, weekendPremium: Number(value) }
     });
   };
 
@@ -27,19 +37,28 @@ export default function HostStayCreateWeekendPrice() {
     <div className="hs-page">
       <main className="hs-weekend-main">
         <h1 className="hs-weekend-heading">
-          Now, set your <br /> weekend base price
+          Now, set your weekend base price
         </h1>
+
         <div className="hs-weekend-center">
+
           <div className="hs-weekend-box">
-            <span className="hs-weekend-symbol">đ</span>
+            <span className="hs-weekend-symbol">$</span>
             <span className="hs-weekend-price">
-              {weekendPrice.toLocaleString("vi-VN")}
+              {weekendPrice.toLocaleString("en-US")}
             </span>
           </div>
+
           <div className="hs-weekend-subtext">
-            Guest price before taxes <strong>đ{totalWithTax.toLocaleString("vi-VN")}</strong>
+            Guest price including fees:{" "}
+            <strong>${finalCustomerPrice.toLocaleString("en-US")}</strong>
+            <br />
+            <small>
+              (Service {servicePercent}% + Tax {taxPercent}%)
+            </small>
           </div>
         </div>
+
         <div className="hs-weekend-premium">
           <span className="hs-weekend-label">Weekend premium</span>
           <div className="hs-weekend-control">
@@ -48,12 +67,13 @@ export default function HostStayCreateWeekendPrice() {
               min="0"
               max="100"
               value={premium}
-              onChange={e => handlePremiumChange(Number(e.target.value))}
+              onChange={e => handlePremiumChange(e.target.value)}
               className="hs-weekend-slider"
             />
             <span className="hs-weekend-percent">{premium}%</span>
           </div>
         </div>
+
       </main>
     </div>
   );

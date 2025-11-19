@@ -1,25 +1,25 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useHost } from "../../contexts/HostContext";
 import { Icon } from "@iconify/react";
 import "./HostStay.css";
 
-// --- CONVERT FILE → BASE64 ---
-function fileToBase64(file) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.readAsDataURL(file);
-  });
-}
-
 export default function HostStayCreatePhotos() {
   const navigate = useNavigate();
   const inputRef = useRef(null);
-  const { stayData, updateField, validateStep } = useHost();
 
-  const photos = stayData.photos || [];
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  // CHỖ SỬA: dùng ref để giữ category qua re-renders
+  const selectedCategoryRef = useRef(null);
+
+  // lấy từ Context (RAM ONLY)
+  const {
+    stayPhotosRAM,
+    setStayPhotosRAM,
+    updateField,
+    validateStep,
+  } = useHost();
+
+  const photos = stayPhotosRAM || [];
 
   const CATEGORIES = [
     { key: "bedroom", label: "Bedroom", required: true },
@@ -29,62 +29,115 @@ export default function HostStayCreatePhotos() {
     { key: "other", label: "Other", required: false },
   ];
 
+  // open picker for given category => set ref then open file input
   const openPickerFor = (cat) => {
-    setSelectedCategory(cat);
+    selectedCategoryRef.current = cat;
     inputRef.current?.click();
   };
 
-  // --- HANDLE SELECT WITH BASE64 ---
-  const handleSelect = async (e) => {
-    if (!selectedCategory) return;
+  // --------------------------
+  // ADD PHOTOS (from input)
+  // --------------------------
+  const handleSelect = (e) => {
+    const cat = selectedCategoryRef.current;
+    // nếu không có category thì bỏ qua (an toàn)
+    if (!cat) {
+      // reset input so user can pick again
+      e.target.value = "";
+      return;
+    }
 
-    const selectedFiles = Array.from(e.target.files);
+    const selected = Array.from(e.target.files || []);
 
-    const formatted = await Promise.all(
-      selectedFiles.map(async (file, index) => ({
-        file,
-        preview: await fileToBase64(file), // BASE64 HERE
-        category: selectedCategory,
-        caption: "",
-        sortIndex: photos.length + index + 1,
-        isCover: false,
-      }))
-    );
+    const formatted = selected.map((file, index) => ({
+      file,
+      preview: URL.createObjectURL(file),
+      category: cat,
+      caption: "",
+      sortIndex: photos.length + index + 1,
+      isCover: false,
+    }));
 
-    updateField("photos", { photos: [...photos, ...formatted] });
+    const newList = [...photos, ...formatted];
+
+    // RAM ONLY
+    setStayPhotosRAM(newList);
+
+    // metadata only → context (stayData.photos)
+    updateField("photos", {
+      photos: newList.map((p) => ({
+        name: p.file?.name || "",
+        caption: p.caption,
+        category: p.category,
+        sortIndex: p.sortIndex,
+        isCover: p.isCover,
+        serverUrl: "",
+        // note: we intentionally do NOT include preview here to keep payload small
+      })),
+    });
+
+    // cleanup
+    selectedCategoryRef.current = null;
+    e.target.value = ""; // allow re-select same file if needed
   };
 
-  // --- HANDLE DROP WITH BASE64 ---
-  const handleDrop = async (e, cat) => {
+  // --------------------------
+  // DROP PHOTOS
+  // --------------------------
+  const handleDrop = (e, cat) => {
     e.preventDefault();
 
-    const dropped = Array.from(e.dataTransfer.files);
+    const dropped = Array.from(e.dataTransfer.files || []);
 
-    const formatted = await Promise.all(
-      dropped.map(async (file, index) => ({
-        file,
-        preview: await fileToBase64(file), // BASE64 HERE
-        category: cat,
-        caption: "",
-        sortIndex: photos.length + index + 1,
-        isCover: false,
-      }))
-    );
+    const formatted = dropped.map((file, index) => ({
+      file,
+      preview: URL.createObjectURL(file),
+      category: cat,
+      caption: "",
+      sortIndex: photos.length + index + 1,
+      isCover: false,
+    }));
 
-    updateField("photos", { photos: [...photos, ...formatted] });
+    const newList = [...photos, ...formatted];
+
+    setStayPhotosRAM(newList);
+
+    updateField("photos", {
+      photos: newList.map((p) => ({
+        name: p.file?.name || "",
+        caption: p.caption,
+        category: p.category,
+        sortIndex: p.sortIndex,
+        isCover: p.isCover,
+        serverUrl: "",
+      })),
+    });
   };
 
+  // rest of file unchanged...
   const setAsCover = (photo) => {
+    const newList = photos.map((p) => ({
+      ...p,
+      isCover: p === photo,
+    }));
+
+    setStayPhotosRAM(newList);
+
     updateField("photos", {
-      photos: photos.map((p) => ({
-        ...p,
-        isCover: p === photo,
+      photos: newList.map((p) => ({
+        name: p.file?.name || "",
+        caption: p.caption,
+        category: p.category,
+        sortIndex: p.sortIndex,
+        isCover: p.isCover,
+        serverUrl: "",
       })),
     });
   };
 
   const autoSelectCover = () => {
-    if (photos.some((p) => p.isCover)) return;
+    const hasCover = photos.some((p) => p.isCover);
+    if (hasCover) return;
 
     const living = photos.find((p) => p.category === "livingroom");
     if (living) return setAsCover(living);
@@ -99,18 +152,38 @@ export default function HostStayCreatePhotos() {
     if (!validateStep("photos")) return;
 
     autoSelectCover();
-
     navigate("/host/stay/create/title");
   };
 
   const coverPhoto = photos.find((p) => p.isCover);
+
+  // Auto-select cover whenever photos change, 
+  // BUT ONLY IF user has not chosen any cover manually
+  useEffect(() => {
+    if (!photos || photos.length === 0) return;
+
+    const hasCover = photos.some((p) => p.isCover);
+    if (hasCover) return; // user already picked → do not override
+
+    // auto pick:
+    const living = photos.find((p) => p.category === "livingroom");
+    if (living) return setAsCover(living);
+
+    const bed = photos.find((p) => p.category === "bedroom");
+    if (bed) return setAsCover(bed);
+
+    // fallback
+    setAsCover(photos[0]);
+
+  }, [photos]);
+
 
   return (
     <div className="hs-page">
       <main className="hs-photo-main" style={{ textAlign: "left", width: "100%" }}>
         <h1 className="hs-photo-title">Add photos for each part of your property</h1>
 
-        {/* COVER PHOTO PREVIEW */}
+        {/* COVER PHOTO */}
         <div style={{ marginBottom: "40px", width: "100%", maxWidth: "900px" }}>
           <h2 style={{ fontSize: "22px", fontWeight: 600, marginBottom: "16px" }}>
             Cover Photo
@@ -133,13 +206,11 @@ export default function HostStayCreatePhotos() {
               </p>
             </div>
           ) : (
-            <p style={{ fontSize: "14px", color: "#666" }}>
-              No cover photo selected. A cover will be auto-selected.
-            </p>
+            <p>No cover photo selected yet.</p>
           )}
         </div>
 
-        {/* CATEGORY SECTIONS */}
+        {/* CATEGORIES */}
         {CATEGORIES.map((cat) => {
           const filtered = photos.filter((p) => p.category === cat.key);
 
@@ -157,7 +228,10 @@ export default function HostStayCreatePhotos() {
               >
                 <div className="hs-photo-center">
                   <Icon icon="solar:camera-outline" width="64" height="64" />
-                  <button className="hs-photo-add-btn" onClick={() => openPickerFor(cat.key)}>
+                  <button
+                    className="hs-photo-add-btn"
+                    onClick={() => openPickerFor(cat.key)}
+                  >
                     Add {cat.label} photos
                   </button>
                 </div>
@@ -173,7 +247,6 @@ export default function HostStayCreatePhotos() {
                       onClick={() => setAsCover(f)}
                     >
                       <img src={f.preview} alt="photo" />
-
                       {f.isCover && <div className="hs-cover-badge">Cover Photo</div>}
                     </div>
                   ))}
