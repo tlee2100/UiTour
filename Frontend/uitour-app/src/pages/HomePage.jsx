@@ -26,23 +26,33 @@ export default function HomePage() {
   const [error, setError] = useState(null);
   const [savedPropertyIds, setSavedPropertyIds] = useState(new Set());
 
+  const deriveIdsFromWishlist = useCallback((wishlistPayload) => {
+    if (!wishlistPayload) return;
+    const items = wishlistPayload.items || wishlistPayload.Items || [];
+    const ids = items
+      .map((item) => Number(item.id ?? item.Id ?? item.propertyId ?? item.PropertyID))
+      .filter((id) => !Number.isNaN(id));
+    setSavedPropertyIds(new Set(ids));
+  }, []);
+
   // -----------------------
   // Load saved property IDs from wishlist
   // -----------------------
   const loadSavedProperties = useCallback(async () => {
-    if (!user || !user.UserID) return;
+    if (!user || !user.UserID) {
+      setSavedPropertyIds(new Set());
+      return;
+    }
     
     try {
       const wishlist = await authAPI.getUserWishlist(user.UserID);
-      if (wishlist && wishlist.items) {
-        const savedIds = new Set(wishlist.items.map(item => item.id));
-        setSavedPropertyIds(savedIds);
-      }
+      deriveIdsFromWishlist(wishlist);
     } catch (err) {
       // Silently fail - user might not have wishlist yet
       console.error('Error loading saved properties:', err);
+      setSavedPropertyIds(new Set());
     }
-  }, [user]);
+  }, [deriveIdsFromWishlist, user]);
 
   // -----------------------
   // Load properties from API
@@ -204,19 +214,13 @@ export default function HomePage() {
                     const isSaved = savedPropertyIds.has(property.id);
                     
                     try {
+                      let updatedWishlist;
                       if (isSaved) {
-                        // Remove from wishlist
-                        await authAPI.removeFromWishlist(user.UserID, property.id);
-                        setSavedPropertyIds(prev => {
-                          const newSet = new Set(prev);
-                          newSet.delete(property.id);
-                          return newSet;
-                        });
+                        updatedWishlist = await authAPI.removeFromWishlist(user.UserID, property.id);
                       } else {
-                        // Add to wishlist
-                        await authAPI.addToWishlist(user.UserID, property.id);
-                        setSavedPropertyIds(prev => new Set(prev).add(property.id));
+                        updatedWishlist = await authAPI.addToWishlist(user.UserID, property.id);
                       }
+                      deriveIdsFromWishlist(updatedWishlist);
                     } catch (error) {
                       console.error('Error updating wishlist:', error);
                       alert("Failed to update wishlist. Please try again.");
