@@ -654,6 +654,27 @@ async updateUserProfile(userId, form) {
     return await res.json();
   }
 
+  async getUserBookings(userId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${BOOKING_BASE_URL}/user/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch trips');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async createBooking(bookingPayload) {
     try {
       const token = localStorage.getItem('token');
