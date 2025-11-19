@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import './ProfilePage.css';
 import { Icon } from '@iconify/react';
 import { useApp } from '../contexts/AppContext';
@@ -11,8 +11,77 @@ export default function ProfilePage() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [trips, setTrips] = useState([]);
+  const [tripsLoading, setTripsLoading] = useState(false);
+  const [tripsError, setTripsError] = useState('');
   const navigate = useNavigate();
   const goToHomeForBooking = () => navigate('/');
+
+  const formatDateRange = useCallback((checkIn, checkOut) => {
+    if (!checkIn || !checkOut) return 'Chưa có lịch';
+    try {
+      const inDate = new Date(checkIn);
+      const outDate = new Date(checkOut);
+      const fmt = (date) =>
+        date.toLocaleDateString('vi-VN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        });
+      return `${fmt(inDate)} - ${fmt(outDate)}`;
+    } catch {
+      return `${checkIn} - ${checkOut}`;
+    }
+  }, []);
+
+  const statusLabel = useCallback((statusRaw) => {
+    const status = (statusRaw || '').toLowerCase();
+    switch (status) {
+      case 'confirmed':
+        return 'Đã xác nhận';
+      case 'completed':
+        return 'Hoàn tất';
+      case 'cancelled':
+      case 'canceled':
+        return 'Đã hủy';
+      case 'pending':
+      default:
+        return 'Đang chờ';
+    }
+  }, []);
+
+  const enrichTrips = useCallback(async (bookings) => {
+    return Promise.all(
+      bookings.map(async (booking) => {
+        let propertyInfo = null;
+        let tourInfo = null;
+
+        if (booking.propertyID || booking.PropertyID) {
+          try {
+            propertyInfo = await authAPI.getPropertyById(
+              booking.propertyID ?? booking.PropertyID
+            );
+          } catch (err) {
+            console.error('Failed to fetch property for booking', err);
+          }
+        } else if (booking.tourID || booking.TourID) {
+          try {
+            tourInfo = await authAPI.getTourById(
+              booking.tourID ?? booking.TourID
+            );
+          } catch (err) {
+            console.error('Failed to fetch tour for booking', err);
+          }
+        }
+
+        return {
+          ...booking,
+          propertyInfo,
+          tourInfo,
+        };
+      })
+    );
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -50,6 +119,32 @@ export default function ProfilePage() {
     fetchUser();
     return () => { isMounted = false; };
   }, [user, dispatch]);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchTrips() {
+      if (!user || !user.UserID) return;
+      setTripsLoading(true);
+      setTripsError('');
+      try {
+        const bookings = await authAPI.getUserBookings(user.UserID);
+        const normalized = await enrichTrips(bookings ?? []);
+        if (!isMounted) return;
+        setTrips(normalized);
+      } catch (err) {
+        if (isMounted) {
+          setTripsError(err.message || 'Không thể tải danh sách chuyến đi');
+          setTrips([]);
+        }
+      } finally {
+        if (isMounted) setTripsLoading(false);
+      }
+    }
+    fetchTrips();
+    return () => {
+      isMounted = false;
+    };
+  }, [user, enrichTrips]);
 
   // ==== Lấy dữ liệu linh hoạt theo key hoa/thường (không normalize state) ====
   const displayName = userData?.fullName ?? userData?.FullName ?? 'Người dùng';
@@ -197,12 +292,109 @@ export default function ProfilePage() {
         )}
 
         {activeTab === 'trips' && (
-          <section className="profile-empty-state">
-            <div className="empty-emoji suitcase" />
-            <p className="empty-text">
-              Sau khi thực hiện chuyến đi đầu tiên, bạn sẽ tìm thấy các đặt chỗ trước đây của mình tại đây.
-            </p>
-            <button className="profile-primary-btn" onClick={goToHomeForBooking}>Đặt chuyến đi</button>
+          <section className="profile-trips-section">
+            {tripsLoading && (
+              <div className="profile-trips-feedback">Đang tải chuyến đi...</div>
+            )}
+            {!!tripsError && (
+              <div className="profile-trips-feedback error">{tripsError}</div>
+            )}
+            {!tripsLoading && !tripsError && trips.length === 0 && (
+              <div className="profile-empty-state">
+                <div className="empty-emoji suitcase" />
+                <p className="empty-text">
+                  Sau khi thực hiện chuyến đi đầu tiên, bạn sẽ tìm thấy các đặt chỗ trước đây của mình tại đây.
+                </p>
+                <button className="profile-primary-btn" onClick={goToHomeForBooking}>Đặt chuyến đi</button>
+              </div>
+            )}
+            {!tripsLoading && !tripsError && trips.length > 0 && (
+              <div className="profile-trips-list">
+                {trips.map((trip) => {
+                  const propertyInfo = trip.propertyInfo;
+                  const tourInfo = trip.tourInfo;
+                  const isTour = !!tourInfo && !propertyInfo;
+                  const coverImage =
+                    propertyInfo?.photos?.[0]?.url ||
+                    propertyInfo?.media?.photos?.[0]?.url ||
+                    tourInfo?.media?.cover?.url ||
+                    tourInfo?.image?.url ||
+                    '/fallback.png';
+                  const title =
+                    propertyInfo?.listingTitle ||
+                    propertyInfo?.title ||
+                    tourInfo?.tourName ||
+                    tourInfo?.title ||
+                    `Đặt chỗ #${trip.bookingID || trip.BookingID}`;
+                  const location =
+                    propertyInfo?.location ||
+                    propertyInfo?.Location ||
+                    tourInfo?.location ||
+                    '';
+                  const detailLink = propertyInfo
+                    ? `/property/${propertyInfo.PropertyID || propertyInfo.id || trip.propertyID || trip.PropertyID}`
+                    : tourInfo
+                    ? `/experience/${tourInfo.tourID || tourInfo.id || trip.tourID || trip.TourID}`
+                    : null;
+
+                  const checkIn = trip.checkIn || trip.CheckIn;
+                  const checkOut = trip.checkOut || trip.CheckOut;
+                  const totalPrice = trip.totalPrice ?? trip.TotalPrice ?? 0;
+                  const guestsCount =
+                    trip.guestsCount ?? trip.GuestsCount ?? 1;
+                  const status = trip.status || trip.Status;
+
+                  return (
+                    <div
+                      key={trip.bookingID || trip.BookingID || trip.id}
+                      className="profile-trip-card"
+                    >
+                      <div className="trip-thumb">
+                        <img src={coverImage} alt={title} />
+                        <span className="trip-type-badge">
+                          {isTour ? 'Trải nghiệm' : 'Chỗ ở'}
+                        </span>
+                      </div>
+                      <div className="trip-info">
+                        <div className="trip-title">{title}</div>
+                        <div className="trip-location">{location}</div>
+                        <div className="trip-dates">
+                          {formatDateRange(checkIn, checkOut)}
+                        </div>
+                        <div className="trip-meta">
+                          <span>{guestsCount} khách</span>
+                          <span className={`trip-status ${status?.toLowerCase()}`}>
+                            {statusLabel(status)}
+                          </span>
+                        </div>
+                        <div className="trip-price">
+                          {totalPrice
+                            ? `₫${Number(totalPrice).toLocaleString('vi-VN')}`
+                            : ''}
+                        </div>
+                        <div className="trip-actions">
+                          {detailLink ? (
+                            <button
+                              className="profile-secondary-btn"
+                              onClick={() => navigate(detailLink)}
+                            >
+                              Xem chi tiết
+                            </button>
+                          ) : (
+                            <button
+                              className="profile-secondary-btn"
+                              onClick={goToHomeForBooking}
+                            >
+                              Đặt chuyến đi khác
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
         )}
 
