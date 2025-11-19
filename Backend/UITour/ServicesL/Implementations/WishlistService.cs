@@ -54,19 +54,12 @@ namespace UITour.ServicesL.Implementations
         {
             var favoriteList = await GetOrCreateDefaultFavoriteListAsync(userId);
 
-            Console.WriteLine($"Found FavoriteList: {favoriteList.ListID} for user {userId}");
-
-            // Get all saved listings for this user and list
             var savedListings = await _unitOfWork.SavedListings.Query()
                 .Where(sl => sl.UserID == userId && (sl.ListID == favoriteList.ListID || string.IsNullOrEmpty(sl.ListID)))
+                .OrderByDescending(sl => sl.SavedAt)
                 .ToListAsync();
 
-            Console.WriteLine($"Found {savedListings.Count} saved listings for user {userId} in list {favoriteList.ListID}");
-
-            // Get properties with their details
-            var propertyIds = savedListings.Select(sl => sl.PropertyID).ToList();
-            
-            if (!propertyIds.Any())
+            if (!savedListings.Any())
             {
                 return new WishlistDto
                 {
@@ -78,35 +71,67 @@ namespace UITour.ServicesL.Implementations
                 };
             }
 
-            Console.WriteLine($"Looking for properties with IDs: {string.Join(", ", propertyIds)}");
-            
-            var properties = await _unitOfWork.Properties.Query()
-                .Where(p => propertyIds.Contains(p.PropertyID))
-                .Include(p => p.Photos)
-                .Include(p => p.Reviews)
-                .ToListAsync();
+            var propertyIds = savedListings
+                .Where(sl => sl.PropertyID.HasValue && sl.ItemType == "property")
+                .Select(sl => sl.PropertyID.Value)
+                .Distinct()
+                .ToList();
 
-            Console.WriteLine($"Found {properties.Count} properties");
+            var tourIds = savedListings
+                .Where(sl => sl.TourID.HasValue && sl.ItemType == "tour")
+                .Select(sl => sl.TourID.Value)
+                .Distinct()
+                .ToList();
 
-            // Map to DTO
-            var items = properties.Select(p =>
+            var properties = propertyIds.Any()
+                ? await _unitOfWork.Properties.Query()
+                    .Where(p => propertyIds.Contains(p.PropertyID))
+                    .Include(p => p.Photos)
+                    .ToListAsync()
+                : new List<Property>();
+
+            var tours = tourIds.Any()
+                ? await _unitOfWork.Tours.Query()
+                    .Where(t => tourIds.Contains(t.TourID))
+                    .Include(t => t.Photos)
+                    .ToListAsync()
+                : new List<Tour>();
+
+            var propertyLookup = properties.ToDictionary(p => p.PropertyID);
+            var tourLookup = tours.ToDictionary(t => t.TourID);
+
+            var items = new List<WishlistItemDto>();
+
+            foreach (var saved in savedListings)
             {
-                var firstPhoto = p.Photos?.OrderBy(pp => pp.SortIndex).FirstOrDefault();
-                var imageUrl = firstPhoto?.Url ?? string.Empty;
-
-                return new WishlistItemDto
+                if (saved.ItemType == "tour" && saved.TourID.HasValue && tourLookup.TryGetValue(saved.TourID.Value, out var tour))
                 {
-                    Id = p.PropertyID,
-                    Title = p.ListingTitle ?? p.Location ?? "Untitled Property",
-                    Image = imageUrl,
-                    Price = p.Price,
-                    Type = "property"
-                };
-            }).ToList();
+                    var firstPhoto = tour.Photos?.OrderBy(tp => tp.SortIndex).FirstOrDefault();
+                    items.Add(new WishlistItemDto
+                    {
+                        Id = tour.TourID,
+                        Title = tour.TourName ?? "Tour",
+                        Image = firstPhoto?.Url ?? string.Empty,
+                        Price = tour.Price,
+                        Type = "tour"
+                    });
+                }
+                else if (saved.PropertyID.HasValue && propertyLookup.TryGetValue(saved.PropertyID.Value, out var property))
+                {
+                    var firstPhoto = property.Photos?.OrderBy(pp => pp.SortIndex).FirstOrDefault();
+                    items.Add(new WishlistItemDto
+                    {
+                        Id = property.PropertyID,
+                        Title = property.ListingTitle ?? property.Location ?? "Untitled Property",
+                        Image = firstPhoto?.Url ?? string.Empty,
+                        Price = property.Price,
+                        Type = "property"
+                    });
+                }
+            }
 
-            // Use cover image from FavoriteList, or first item's image, or empty
-            var cover = !string.IsNullOrEmpty(favoriteList.CoverImage) 
-                ? favoriteList.CoverImage 
+            var cover = !string.IsNullOrEmpty(favoriteList.CoverImage)
+                ? favoriteList.CoverImage
                 : (items.FirstOrDefault()?.Image ?? string.Empty);
 
             return new WishlistDto
@@ -119,43 +144,67 @@ namespace UITour.ServicesL.Implementations
             };
         }
 
-        public async Task<WishlistDto> AddToWishlistAsync(int userId, int propertyId)
+        public async Task<WishlistDto> AddToWishlistAsync(int userId, int itemId, string itemType)
         {
-            // Get or create default FavoriteList for the user
             var favoriteList = await GetOrCreateDefaultFavoriteListAsync(userId);
+            var normalizedType = (itemType ?? "property").ToLowerInvariant();
 
-            // Check if already saved
-            var existing = await _unitOfWork.SavedListings.Query()
-                .FirstOrDefaultAsync(sl => sl.UserID == userId && sl.PropertyID == propertyId);
+            var query = _unitOfWork.SavedListings.Query();
+            SavedListings existing;
+
+            if (normalizedType == "tour")
+            {
+                existing = await query.FirstOrDefaultAsync(sl =>
+                    sl.UserID == userId && sl.ItemType == "tour" && sl.TourID == itemId);
+            }
+            else
+            {
+                existing = await query.FirstOrDefaultAsync(sl =>
+                    sl.UserID == userId && sl.ItemType == "property" && sl.PropertyID == itemId);
+                normalizedType = "property";
+            }
 
             if (existing == null)
             {
                 var savedListing = new SavedListings
                 {
                     UserID = userId,
-                    PropertyID = propertyId,
+                    PropertyID = normalizedType == "property" ? itemId : null,
+                    TourID = normalizedType == "tour" ? itemId : null,
+                    ItemType = normalizedType,
                     SavedAt = DateTime.Now,
                     ListID = favoriteList.ListID
                 };
 
                 await _unitOfWork.SavedListings.AddAsync(savedListing);
-                
-                // Update ItemsCount in FavoriteList
+
                 favoriteList.ItemsCount = await _unitOfWork.SavedListings.Query()
                     .CountAsync(sl => sl.UserID == userId && (sl.ListID == favoriteList.ListID || string.IsNullOrEmpty(sl.ListID)));
-                
+
                 _unitOfWork.FavoriteLists.Update(favoriteList);
                 await _unitOfWork.SaveChangesAsync();
             }
 
-            // Return updated wishlist
             return await GetUserWishlistAsync(userId);
         }
 
-        public async Task<WishlistDto> RemoveFromWishlistAsync(int userId, int propertyId)
+        public async Task<WishlistDto> RemoveFromWishlistAsync(int userId, int itemId, string itemType)
         {
-            var savedListing = await _unitOfWork.SavedListings.Query()
-                .FirstOrDefaultAsync(sl => sl.UserID == userId && sl.PropertyID == propertyId);
+            var normalizedType = (itemType ?? "property").ToLowerInvariant();
+            var query = _unitOfWork.SavedListings.Query();
+
+            SavedListings savedListing;
+
+            if (normalizedType == "tour")
+            {
+                savedListing = await query.FirstOrDefaultAsync(sl =>
+                    sl.UserID == userId && sl.ItemType == "tour" && sl.TourID == itemId);
+            }
+            else
+            {
+                savedListing = await query.FirstOrDefaultAsync(sl =>
+                    sl.UserID == userId && sl.ItemType == "property" && sl.PropertyID == itemId);
+            }
 
             if (savedListing != null)
             {
@@ -163,7 +212,6 @@ namespace UITour.ServicesL.Implementations
                 await _unitOfWork.SaveChangesAsync();
             }
 
-            // Return updated wishlist
             return await GetUserWishlistAsync(userId);
         }
     }

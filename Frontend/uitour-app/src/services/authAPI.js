@@ -468,10 +468,10 @@ async resetPassword(email, otp, newPassword) {
     }
   }
 
-  async addToWishlist(userId, propertyId) {
+  async addToWishlist(userId, itemId, itemType = 'property') {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${WISHLIST_BASE_URL}/${userId}/add/${propertyId}`, {
+      const response = await fetch(`${WISHLIST_BASE_URL}/${userId}/add/${itemId}?type=${itemType}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -490,10 +490,10 @@ async resetPassword(email, otp, newPassword) {
     }
   }
 
-  async removeFromWishlist(userId, propertyId) {
+  async removeFromWishlist(userId, itemId, itemType = 'property') {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${WISHLIST_BASE_URL}/${userId}/remove/${propertyId}`, {
+      const response = await fetch(`${WISHLIST_BASE_URL}/${userId}/remove/${itemId}?type=${itemType}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

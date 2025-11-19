@@ -462,8 +462,8 @@ export default function HomeInfoPage() {
     setSaveState((prev) => ({ ...prev, loading: true }));
     try {
       const response = saveState.isSaved
-        ? await authAPI.removeFromWishlist(user.UserID, currentProperty.id)
-        : await authAPI.addToWishlist(user.UserID, currentProperty.id);
+        ? await authAPI.removeFromWishlist(user.UserID, currentProperty.id, 'property')
+        : await authAPI.addToWishlist(user.UserID, currentProperty.id, 'property');
       const saved = isPropertySaved(response, currentProperty.id);
       setSaveState({ isSaved: saved, loading: false });
     } catch (err) {
