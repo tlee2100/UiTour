@@ -15,6 +15,15 @@ export default function ToursPage() {
   const [searchParams] = useSearchParams();
   const { experiences, loading, error, fetchExperiences } = useExperience();
   const [savedPropertyIds, setSavedPropertyIds] = useState(new Set());
+
+  const deriveIdsFromWishlist = useCallback((wishlistPayload) => {
+    if (!wishlistPayload) return;
+    const items = wishlistPayload.items || wishlistPayload.Items || [];
+    const ids = items
+      .map((item) => Number(item.id ?? item.Id ?? item.propertyId ?? item.PropertyID))
+      .filter((id) => !Number.isNaN(id));
+    setSavedPropertyIds(new Set(ids));
+  }, []);
   
   const location = searchParams.get('location') || '';
   const dates = searchParams.get('dates') || '';
@@ -22,18 +31,19 @@ export default function ToursPage() {
 
   // Load saved property IDs from wishlist
   const loadSavedProperties = useCallback(async () => {
-    if (!user || !user.UserID) return;
+    if (!user || !user.UserID) {
+      setSavedPropertyIds(new Set());
+      return;
+    }
     
     try {
       const wishlist = await authAPI.getUserWishlist(user.UserID);
-      if (wishlist && wishlist.items) {
-        const savedIds = new Set(wishlist.items.map(item => item.id));
-        setSavedPropertyIds(savedIds);
-      }
+      deriveIdsFromWishlist(wishlist);
     } catch (err) {
       console.error('Error loading saved properties:', err);
+      setSavedPropertyIds(new Set());
     }
-  }, [user]);
+  }, [deriveIdsFromWishlist, user]);
 
   const loadExperiences = useCallback(async () => {
     try {
@@ -123,17 +133,13 @@ export default function ToursPage() {
                         const isSaved = savedPropertyIds.has(tour.id);
                         
                         try {
+                          let updatedWishlist;
                           if (isSaved) {
-                            await authAPI.removeFromWishlist(user.UserID, tour.id);
-                            setSavedPropertyIds(prev => {
-                              const newSet = new Set(prev);
-                              newSet.delete(tour.id);
-                              return newSet;
-                            });
+                            updatedWishlist = await authAPI.removeFromWishlist(user.UserID, tour.id);
                           } else {
-                            await authAPI.addToWishlist(user.UserID, tour.id);
-                            setSavedPropertyIds(prev => new Set(prev).add(tour.id));
+                            updatedWishlist = await authAPI.addToWishlist(user.UserID, tour.id);
                           }
+                          deriveIdsFromWishlist(updatedWishlist);
                         } catch (error) {
                           console.error('Error updating wishlist:', error);
                           alert("Failed to update wishlist. Please try again.");
