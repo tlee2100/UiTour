@@ -1,7 +1,17 @@
 import React from "react";
 import "./HIBookingBox.css";
 
-function HIBookingBox({ property }) {
+function HIBookingBox({
+  property,
+  checkInDate,
+  checkOutDate,
+  guests,
+  onDatesChange,
+  onGuestsChange,
+  onBook,
+  bookingLoading = false,
+  bookingFeedback = null,
+}) {
   // Nếu chưa có dữ liệu, tạo dữ liệu mặc định
   if (!property) return null;
 
@@ -11,10 +21,19 @@ function HIBookingBox({ property }) {
   const pricePerNight = basePrice;
 
 
-  const nights = property.nights ?? 1;
+  const nights =
+    checkInDate && checkOutDate
+      ? Math.max(
+          1,
+          Math.round(
+            (new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) /
+              (1000 * 60 * 60 * 24)
+          )
+        )
+      : property.nights ?? 1;
   const rating = property.rating ?? 0;
   const reviewsCount = property.reviewsCount ?? 0;
-  const guests = property.booking?.maxGuests ?? 2;
+  const maxGuests = property.maxGuests ?? property.booking?.maxGuests ?? 2;
 
   // ✅ fallback phí (nếu backend thật sẽ điều chỉnh sau)
   const cleaningFee = property.cleaningFee ?? 0;
@@ -28,13 +47,16 @@ function HIBookingBox({ property }) {
     totalPrice - discount + cleaningFee + serviceFee + taxFee;
 
   // ✅ Check-in/out fallback
-  const checkIn = property.checkIn || "Chọn ngày";
-  const checkOut = property.checkOut || "Chọn ngày";
+  const checkIn = checkInDate || property.checkIn || "";
+  const checkOut = checkOutDate || property.checkOut || "";
 
+  const handleDateChange = (field, value) => {
+    onDatesChange?.(field, value);
+  };
 
-  // Xử lý click "Book now"
-  const handleBook = () => {
-    alert("Booking confirmed! (Bạn có thể thay bằng xử lý thực tế sau)");
+  const handleGuestsChange = (value) => {
+    const parsed = Number(value) || 1;
+    onGuestsChange?.(Math.min(Math.max(parsed, 1), maxGuests));
   };
 
   return (
@@ -59,11 +81,23 @@ function HIBookingBox({ property }) {
         <div className="hib-details-row">
           <div className="hib-attribute">
             <span className="hib-attribute-label">CHECK-IN</span>
-            <span className="hib-attribute-value">{checkIn}</span>
+            <input
+              type="date"
+              className="hib-input"
+              value={checkIn}
+              min={new Date().toISOString().split("T")[0]}
+              onChange={(e) => handleDateChange("checkIn", e.target.value)}
+            />
           </div>
           <div className="hib-attribute">
             <span className="hib-attribute-label">CHECKOUT</span>
-            <span className="hib-attribute-value">{checkOut}</span>
+            <input
+              type="date"
+              className="hib-input"
+              value={checkOut}
+              min={checkIn || new Date().toISOString().split("T")[0]}
+              onChange={(e) => handleDateChange("checkOut", e.target.value)}
+            />
           </div>
         </div>
 
@@ -71,19 +105,38 @@ function HIBookingBox({ property }) {
           <div className="hib-guests">
             <div className="hib-guests-label">
               <span className="hib-guests-title">KHÁCH</span>
-              <span className="hib-guests-value">{guests} khách</span>
+              <input
+                type="number"
+                className="hib-input"
+                value={guests}
+                min={1}
+                max={maxGuests}
+                onChange={(e) => handleGuestsChange(e.target.value)}
+              />
             </div>
-            <div className="hib-chevron">⌄</div>
+            <div className="hib-chevron">tối đa {maxGuests}</div>
           </div>
         </div>
       </div>
 
       {/* Button */}
-      <button className="hib-book-button" onClick={handleBook}>
-        <span className="hib-book-text">Đặt ngay</span>
+      <button
+        className="hib-book-button"
+        onClick={onBook}
+        disabled={bookingLoading}
+      >
+        <span className="hib-book-text">
+          {bookingLoading ? "Đang xử lý..." : "Đặt ngay"}
+        </span>
       </button>
 
       <div className="hib-note">Bạn chưa bị trừ tiền</div>
+
+      {bookingFeedback?.message && (
+        <div className={`hib-feedback ${bookingFeedback.type}`}>
+          {bookingFeedback.message}
+        </div>
+      )}
 
       {/* Price Details */}
       <div className="hib-price-details">

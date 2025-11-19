@@ -110,3 +110,14 @@
   margin: 0;
   /*background-color: #6B7280; /* block display check*/
 }
+
+.info-header .iheader-save-button.saved {
+  background: #111827;
+  color: #fff;
+  border-color: #111827;
+}
+
+.info-header .iheader-save-button.saved .heart-icon path {
+  stroke: #fff;
+  fill: #fff;
+}

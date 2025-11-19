@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using UITour.Models;
+using UITour.Models.DTO;
 using UITour.ServicesL.Interfaces;
 
 namespace UITour.Controllers
@@ -17,10 +18,19 @@ namespace UITour.Controllers
 
         // POST: api/booking
         [HttpPost]
-        public async Task<IActionResult> CreateBooking([FromBody] Booking request)
+        public async Task<IActionResult> CreateBooking([FromBody] CreateBookingDto request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
+                var nights = request.Nights > 0
+                    ? request.Nights
+                    : Math.Max(1, (request.CheckOut - request.CheckIn).Days);
+
                 var booking = new Booking
                 {
                     PropertyID = request.PropertyID,
@@ -29,6 +39,12 @@ namespace UITour.Controllers
                     CheckIn = request.CheckIn,
                     CheckOut = request.CheckOut,
                     GuestsCount = request.GuestsCount,
+                    Nights = nights,
+                    BasePrice = request.BasePrice,
+                    CleaningFee = request.CleaningFee,
+                    ServiceFee = request.ServiceFee,
+                    TotalPrice = request.TotalPrice,
+                    Currency = request.Currency ?? "USD",
                     Status = "Pending"
                 };
 
