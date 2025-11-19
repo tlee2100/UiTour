@@ -298,6 +298,11 @@ namespace UITour.ServicesL.Implementations
             return await _unitOfWork.SavedListings.Query().Where(sl => sl.UserID == userId).ToListAsync();
         }
 
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return await _unitOfWork.Users.Query().ToListAsync();
+        }
+
         private string GenerateToken(User user)
         {
             // Token generation logic here
