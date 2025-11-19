@@ -26,10 +26,11 @@ export default function HomePage() {
   const [error, setError] = useState(null);
   const [savedPropertyIds, setSavedPropertyIds] = useState(new Set());
 
-  const deriveIdsFromWishlist = useCallback((wishlistPayload) => {
+  const deriveIdsFromWishlist = useCallback((wishlistPayload, targetType = 'property') => {
     if (!wishlistPayload) return;
     const items = wishlistPayload.items || wishlistPayload.Items || [];
     const ids = items
+      .filter((item) => (item.type || item.Type || 'property') === targetType)
       .map((item) => Number(item.id ?? item.Id ?? item.propertyId ?? item.PropertyID))
       .filter((id) => !Number.isNaN(id));
     setSavedPropertyIds(new Set(ids));
@@ -46,7 +47,7 @@ export default function HomePage() {
     
     try {
       const wishlist = await authAPI.getUserWishlist(user.UserID);
-      deriveIdsFromWishlist(wishlist);
+      deriveIdsFromWishlist(wishlist, 'property');
     } catch (err) {
       // Silently fail - user might not have wishlist yet
       console.error('Error loading saved properties:', err);
@@ -93,7 +94,7 @@ export default function HomePage() {
 
   useEffect(() => {
     loadProperties();
-    loadSavedProperties();
+      loadSavedProperties();
   }, [loadProperties, loadSavedProperties]);
 
   // -----------------------
@@ -216,11 +217,11 @@ export default function HomePage() {
                     try {
                       let updatedWishlist;
                       if (isSaved) {
-                        updatedWishlist = await authAPI.removeFromWishlist(user.UserID, property.id);
+                        updatedWishlist = await authAPI.removeFromWishlist(user.UserID, property.id, 'property');
                       } else {
-                        updatedWishlist = await authAPI.addToWishlist(user.UserID, property.id);
+                        updatedWishlist = await authAPI.addToWishlist(user.UserID, property.id, 'property');
                       }
-                      deriveIdsFromWishlist(updatedWishlist);
+                      deriveIdsFromWishlist(updatedWishlist, 'property');
                     } catch (error) {
                       console.error('Error updating wishlist:', error);
                       alert("Failed to update wishlist. Please try again.");

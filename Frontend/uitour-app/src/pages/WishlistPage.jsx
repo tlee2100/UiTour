@@ -152,7 +152,7 @@ export default function WishlistPage() {
             <div className="wishlist-items-header">
               <h2>{wishlist.title}</h2>
               <span className="wishlist-items-count">
-                {wishlist.items?.length || 0} {wishlist.items?.length === 1 ? 'property' : 'properties'}
+                {wishlist.items?.length || 0} {wishlist.items?.length === 1 ? 'saved item' : 'saved items'}
               </span>
             </div>
             <div className="wishlist-items-grid">
@@ -160,7 +160,14 @@ export default function WishlistPage() {
                 <div 
                   key={item.id} 
                   className="wishlist-item-card"
-                  onClick={() => navigate(`/property/${item.id}`)}
+                  onClick={() => {
+                    const itemType = item.type || item.Type || 'property';
+                    if (itemType === 'tour') {
+                      navigate(`/experience/${item.id}`);
+                    } else {
+                      navigate(`/property/${item.id}`);
+                    }
+                  }}
                 >
                   <div className="wishlist-item-image">
                     <img 
@@ -175,7 +182,8 @@ export default function WishlistPage() {
                       onClick={async (e) => {
                         e.stopPropagation();
                         try {
-                          await authAPI.removeFromWishlist(user.UserID, item.id);
+                          const itemType = item.type || item.Type || 'property';
+                          await authAPI.removeFromWishlist(user.UserID, item.id, itemType);
                           const updated = await authAPI.getUserWishlist(user.UserID);
                           setWishlist(updated);
                         } catch (error) {
@@ -187,9 +195,19 @@ export default function WishlistPage() {
                     </button>
                   </div>
                   <div className="wishlist-item-info">
-                    <h3 className="wishlist-item-title">{item.title}</h3>
+                    <h3 className="wishlist-item-title">
+                      {item.title}
+                      <span className="wishlist-item-type">
+                        {item.type === 'tour' || item.Type === 'tour' ? 'Tour' : 'Property'}
+                      </span>
+                    </h3>
                     <div className="wishlist-item-price">
-                      ${item.price?.toLocaleString('en-US')} <span className="price-unit">/ night</span>
+                      {item.price
+                        ? `₫${Number(item.price).toLocaleString('vi-VN')}`
+                        : '—'}
+                      <span className="price-unit">
+                        {(item.type || item.Type || 'property') === 'tour' ? '/ person' : '/ night'}
+                      </span>
                     </div>
                   </div>
                 </div>

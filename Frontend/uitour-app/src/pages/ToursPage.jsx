@@ -14,15 +14,17 @@ export default function ToursPage() {
   const { user } = useApp();
   const [searchParams] = useSearchParams();
   const { experiences, loading, error, fetchExperiences } = useExperience();
-  const [savedPropertyIds, setSavedPropertyIds] = useState(new Set());
+  const [savedTourIds, setSavedTourIds] = useState(new Set());
 
-  const deriveIdsFromWishlist = useCallback((wishlistPayload) => {
-    if (!wishlistPayload) return;
+  const deriveIdsFromWishlist = useCallback((wishlistPayload, targetType = 'property') => {
+    if (!wishlistPayload) return new Set();
     const items = wishlistPayload.items || wishlistPayload.Items || [];
-    const ids = items
-      .map((item) => Number(item.id ?? item.Id ?? item.propertyId ?? item.PropertyID))
-      .filter((id) => !Number.isNaN(id));
-    setSavedPropertyIds(new Set(ids));
+    return new Set(
+      items
+        .filter((item) => (item.type || item.Type || 'property') === targetType)
+        .map((item) => Number(item.id ?? item.Id ?? item.propertyId ?? item.PropertyID))
+        .filter((id) => !Number.isNaN(id))
+    );
   }, []);
   
   const location = searchParams.get('location') || '';
@@ -32,16 +34,16 @@ export default function ToursPage() {
   // Load saved property IDs from wishlist
   const loadSavedProperties = useCallback(async () => {
     if (!user || !user.UserID) {
-      setSavedPropertyIds(new Set());
+      setSavedTourIds(new Set());
       return;
     }
     
     try {
       const wishlist = await authAPI.getUserWishlist(user.UserID);
-      deriveIdsFromWishlist(wishlist);
+      setSavedTourIds(deriveIdsFromWishlist(wishlist, 'tour'));
     } catch (err) {
       console.error('Error loading saved properties:', err);
-      setSavedPropertyIds(new Set());
+      setSavedTourIds(new Set());
     }
   }, [deriveIdsFromWishlist, user]);
 
@@ -130,16 +132,16 @@ export default function ToursPage() {
 
                         // Note: Tours are saved as properties in the current implementation
                         // If you have a separate tours wishlist, you'll need to create a different API
-                        const isSaved = savedPropertyIds.has(tour.id);
+                        const isSaved = savedTourIds.has(tour.id);
                         
                         try {
                           let updatedWishlist;
                           if (isSaved) {
-                            updatedWishlist = await authAPI.removeFromWishlist(user.UserID, tour.id);
+                            updatedWishlist = await authAPI.removeFromWishlist(user.UserID, tour.id, 'tour');
                           } else {
-                            updatedWishlist = await authAPI.addToWishlist(user.UserID, tour.id);
+                            updatedWishlist = await authAPI.addToWishlist(user.UserID, tour.id, 'tour');
                           }
-                          deriveIdsFromWishlist(updatedWishlist);
+                          setSavedTourIds(deriveIdsFromWishlist(updatedWishlist, 'tour'));
                         } catch (error) {
                           console.error('Error updating wishlist:', error);
                           alert("Failed to update wishlist. Please try again.");
@@ -147,11 +149,11 @@ export default function ToursPage() {
                       }}
                     >
                       <Icon 
-                        icon={savedPropertyIds.has(tour.id) ? "mdi:heart" : "mdi:heart-outline"} 
+                        icon={savedTourIds.has(tour.id) ? "mdi:heart" : "mdi:heart-outline"} 
                         width="20" 
                         height="20"
                         style={{ 
-                          color: savedPropertyIds.has(tour.id) ? '#ff385c' : 'currentColor' 
+                          color: savedTourIds.has(tour.id) ? '#ff385c' : 'currentColor' 
                         }}
                       />
                     </button>
