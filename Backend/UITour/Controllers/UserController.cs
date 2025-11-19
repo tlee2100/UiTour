@@ -331,6 +331,21 @@ namespace UITour.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        // GET: api/user/all (Admin only)
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            try
+            {
+                var users = await _userService.GetAllUsersAsync();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
     }
 
     // DTOs for request/response

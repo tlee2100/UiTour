@@ -26,6 +26,7 @@ namespace UITour.ServicesL.Interfaces
         Task<bool> VerifyProfileOtpAsync(int userId, string otp);
         Task<bool> ForgotPasswordAsync(string email);
         Task<bool> ResetPasswordAsync(string email, string otp, string newPassword);
+        Task<IEnumerable<User>> GetAllUsersAsync();
 
     }
 }
