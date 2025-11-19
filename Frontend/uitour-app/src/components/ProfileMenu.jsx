@@ -1,7 +1,8 @@
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useApp } from '../contexts/AppContext';
+import authAPI from '../services/authAPI';
 import './ProfileMenu.css';
 
 // Accessible dropdown menu shown under the profile/hamburger button
@@ -9,6 +10,31 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
   const { user, dispatch } = useApp();
   const navigate = useNavigate();
   const isLoggedIn = !!user;
+  const [tripCount, setTripCount] = useState(null);
+  const [tripLoading, setTripLoading] = useState(false);
+  useEffect(() => {
+    let mounted = true;
+    async function loadTrips() {
+      if (!isLoggedIn || !user?.UserID) {
+        if (mounted) setTripCount(null);
+        return;
+      }
+      setTripLoading(true);
+      try {
+        const data = await authAPI.getUserBookings(user.UserID);
+        if (mounted) setTripCount((data || []).length);
+      } catch {
+        if (mounted) setTripCount(0);
+      } finally {
+        if (mounted) setTripLoading(false);
+      }
+    }
+    loadTrips();
+    return () => {
+      mounted = false;
+    };
+  }, [isLoggedIn, user?.UserID]);
+
 
   const handleLogout = () => {
     dispatch({ type: 'LOGOUT' });
@@ -27,7 +53,16 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
           </button>
           <button className="profile-menu_item" onClick={() => { onClose(); navigate('/trips'); }} role="menuitem">
             <Icon icon="mdi:airplane" width="20" height="20" />
-            <span>Trips</span>
+            <span className="profile-menu_item-label">
+              Trips
+              {tripLoading ? (
+                <span className="profile-menu_item-badge">...</span>
+              ) : (
+                typeof tripCount === 'number' && (
+                  <span className="profile-menu_item-badge">{tripCount}</span>
+                )
+              )}
+            </span>
           </button>
           <button
             className="profile-menu_item"
