@@ -33,13 +33,13 @@ namespace UITour.API.Controllers
             }
         }
 
-        // POST: api/wishlist/{userId}/add/{propertyId}
-        [HttpPost("{userId:int}/add/{propertyId:int}")]
-        public async Task<ActionResult<WishlistDto>> AddToWishlist(int userId, int propertyId)
+        // POST: api/wishlist/{userId}/add/{itemId}?type=property|tour
+        [HttpPost("{userId:int}/add/{itemId:int}")]
+        public async Task<ActionResult<WishlistDto>> AddToWishlist(int userId, int itemId, [FromQuery] string type = "property")
         {
             try
             {
-                var wishlist = await _wishlistService.AddToWishlistAsync(userId, propertyId);
+                var wishlist = await _wishlistService.AddToWishlistAsync(userId, itemId, type);
                 return Ok(wishlist);
             }
             catch (Exception ex)
@@ -48,13 +48,13 @@ namespace UITour.API.Controllers
             }
         }
 
-        // DELETE: api/wishlist/{userId}/remove/{propertyId}
-        [HttpDelete("{userId:int}/remove/{propertyId:int}")]
-        public async Task<ActionResult<WishlistDto>> RemoveFromWishlist(int userId, int propertyId)
+        // DELETE: api/wishlist/{userId}/remove/{itemId}?type=property|tour
+        [HttpDelete("{userId:int}/remove/{itemId:int}")]
+        public async Task<ActionResult<WishlistDto>> RemoveFromWishlist(int userId, int itemId, [FromQuery] string type = "property")
         {
             try
             {
-                var wishlist = await _wishlistService.RemoveFromWishlistAsync(userId, propertyId);
+                var wishlist = await _wishlistService.RemoveFromWishlistAsync(userId, itemId, type);
                 return Ok(wishlist);
             }
             catch (Exception ex)
