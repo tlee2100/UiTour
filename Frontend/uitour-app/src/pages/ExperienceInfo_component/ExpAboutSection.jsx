@@ -12,7 +12,11 @@ export default function ExpAboutSection({
   duration,
   price,
   currency,
-  host
+  host,
+  onSaveToggle,
+  isSaved = false,
+  saveLoading = false,
+  onShare
 }) {
   // ✅ Chuẩn hóa location
   const formattedLocation = typeof location === "string"
@@ -74,15 +78,19 @@ export default function ExpAboutSection({
         <ButtonWhite
           className="expAbout-iconButton expAbout-shareButton"
           leftIcon={<SvgIcon name="share" className="icon share-icon" />}
+          onClick={onShare}
         >
           Share
         </ButtonWhite>
 
         <ButtonWhite
-          className="expAbout-iconButton expAbout-saveButton"
+          className={`expAbout-iconButton expAbout-saveButton ${isSaved ? "saved" : ""}`}
           leftIcon={<SvgIcon name="heart" className="icon heart-icon" />}
+          onClick={onSaveToggle}
+          disabled={saveLoading}
+          aria-pressed={isSaved}
         >
-          Save
+          {isSaved ? "Saved" : "Save"}
         </ButtonWhite>
       </div>
 
