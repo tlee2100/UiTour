@@ -84,7 +84,7 @@ export default function HostStayPreview() {
                     )}
 
                     <div className="hs-preview-location">
-                        📍 {d.location.addressLine}, {d.location.city}, {d.location.country}
+                        📍 {d.location.addressLine}
                     </div>
                 </div>
 
@@ -96,7 +96,7 @@ export default function HostStayPreview() {
 
                     <div className="hs-preview-card">
                         <div>
-                            <b>Property type:</b> {d.propertyType}
+                            <b>Property type:</b> {d.propertyTypeLabel}
                         </div>
 
                         {d.roomTypeLabel && (
@@ -120,7 +120,6 @@ export default function HostStayPreview() {
                         <div><b>Address</b>: {d.location.addressLine}</div>
                         <div><b>City</b>: {d.location.city}</div>
                         <div><b>Country</b>: {d.location.country}</div>
-                        <div><b>Lat/Lng</b>: {d.location.lat}, {d.location.lng}</div>
                     </div>
                 </section>
 

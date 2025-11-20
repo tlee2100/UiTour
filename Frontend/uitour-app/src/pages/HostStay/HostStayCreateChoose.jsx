@@ -5,23 +5,20 @@ import "./HostStay.css";
 import { useHost } from "../../contexts/HostContext";
 
 export default function HostStayCreateChoose() {
-  const navigate = useNavigate();
   const { stayData, updateField, validateStep } = useHost();
 
   const categories = [
-    { id: "house", label: "House", icon: "mdi:home-outline" },
-    { id: "apartment", label: "Apartment", icon: "ph:building-apartment-light" },
-    { id: "guesthouse", label: "Guest house", icon: "hugeicons:house-04" },
-    { id: "hotel", label: "Hotel", icon: "hugeicons:hotel-01" },
+    { id: 1, label: "House", icon: "mdi:home-outline" },
+    { id: 2, label: "Apartment", icon: "ph:building-apartment-light" },
+    { id: 3, label: "Guest house", icon: "hugeicons:house-04" },
+    { id: 4, label: "Hotel", icon: "hugeicons:hotel-01" },
   ];
 
-  const handleSelect = (id) => {
-    updateField('choose', { propertyType: id });
-  };
-
-  const handleNext = () => {
-    if (!validateStep('choose')) return;
-    navigate("/host/stay/create/typeofplace");
+  const handleSelect = (id, label) => {
+    updateField("choose", {
+      propertyTypeID: id,
+      propertyTypeLabel: label
+    });
   };
 
   return (
@@ -37,8 +34,9 @@ export default function HostStayCreateChoose() {
           {categories.map((c) => (
             <button
               key={c.id}
-              className={`hs-card ${stayData.propertyType === c.id ? "hs-card--active" : ""}`}
-              onClick={() => handleSelect(c.id)}
+              onClick={() => handleSelect(c.id, c.label)}
+              className={`hs-card ${stayData.propertyTypeID === c.id ? "hs-card--active" : ""
+                }`}
             >
               <Icon icon={c.icon} width="48" height="48" />
               <span>{c.label}</span>

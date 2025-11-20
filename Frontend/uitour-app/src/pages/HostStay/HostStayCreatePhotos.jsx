@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useHost } from "../../contexts/HostContext";
 import { Icon } from "@iconify/react";
@@ -8,10 +8,9 @@ export default function HostStayCreatePhotos() {
   const navigate = useNavigate();
   const inputRef = useRef(null);
 
-  // CHỖ SỬA: dùng ref để giữ category qua re-renders
+  // giữ category khi mở file picker
   const selectedCategoryRef = useRef(null);
 
-  // lấy từ Context (RAM ONLY)
   const {
     stayPhotosRAM,
     setStayPhotosRAM,
@@ -29,20 +28,55 @@ export default function HostStayCreatePhotos() {
     { key: "other", label: "Other", required: false },
   ];
 
-  // open picker for given category => set ref then open file input
   const openPickerFor = (cat) => {
     selectedCategoryRef.current = cat;
     inputRef.current?.click();
   };
 
-  // --------------------------
-  // ADD PHOTOS (from input)
-  // --------------------------
+  // ============================
+  //  COVER AUTO RULE ENGINE
+  // ============================
+  const selectDefaultCover = (list) => {
+    // RULE 1: ưu tiên bedroom
+    const bed = list.filter((p) => p.category === "bedroom");
+    if (bed.length > 0) return bed[0];
+
+    // fallback: ảnh đầu tiên
+    return list[0] || null;
+  };
+
+  const applyCoverRuleIfNeeded = (list) => {
+    const hasCover = list.some((p) => p.isCover);
+    if (hasCover) return list; // user đã chọn → KHÔNG override
+
+    const defaultCover = selectDefaultCover(list);
+
+    return list.map((p) => ({
+      ...p,
+      isCover: p === defaultCover,
+    }));
+  };
+
+  // save photos to Context
+  const syncToContext = (list) => {
+    updateField("photos", {
+      photos: list.map((p) => ({
+        name: p.file?.name || "",
+        caption: p.caption,
+        category: p.category,
+        sortIndex: p.sortIndex,
+        isCover: p.isCover,
+        serverUrl: "",
+      })),
+    });
+  };
+
+  // ============================
+  // ADD PHOTOS
+  // ============================
   const handleSelect = (e) => {
     const cat = selectedCategoryRef.current;
-    // nếu không có category thì bỏ qua (an toàn)
     if (!cat) {
-      // reset input so user can pick again
       e.target.value = "";
       return;
     }
@@ -58,32 +92,21 @@ export default function HostStayCreatePhotos() {
       isCover: false,
     }));
 
-    const newList = [...photos, ...formatted];
+    let newList = [...photos, ...formatted];
 
-    // RAM ONLY
+    // áp dụng auto-cover nếu cần
+    newList = applyCoverRuleIfNeeded(newList);
+
     setStayPhotosRAM(newList);
+    syncToContext(newList);
 
-    // metadata only → context (stayData.photos)
-    updateField("photos", {
-      photos: newList.map((p) => ({
-        name: p.file?.name || "",
-        caption: p.caption,
-        category: p.category,
-        sortIndex: p.sortIndex,
-        isCover: p.isCover,
-        serverUrl: "",
-        // note: we intentionally do NOT include preview here to keep payload small
-      })),
-    });
-
-    // cleanup
     selectedCategoryRef.current = null;
-    e.target.value = ""; // allow re-select same file if needed
+    e.target.value = "";
   };
 
-  // --------------------------
+  // ============================
   // DROP PHOTOS
-  // --------------------------
+  // ============================
   const handleDrop = (e, cat) => {
     e.preventDefault();
 
@@ -98,23 +121,18 @@ export default function HostStayCreatePhotos() {
       isCover: false,
     }));
 
-    const newList = [...photos, ...formatted];
+    let newList = [...photos, ...formatted];
+
+    // auto cover nếu chưa có
+    newList = applyCoverRuleIfNeeded(newList);
 
     setStayPhotosRAM(newList);
-
-    updateField("photos", {
-      photos: newList.map((p) => ({
-        name: p.file?.name || "",
-        caption: p.caption,
-        category: p.category,
-        sortIndex: p.sortIndex,
-        isCover: p.isCover,
-        serverUrl: "",
-      })),
-    });
+    syncToContext(newList);
   };
 
-  // rest of file unchanged...
+  // ============================
+  // SET AS COVER
+  // ============================
   const setAsCover = (photo) => {
     const newList = photos.map((p) => ({
       ...p,
@@ -122,62 +140,59 @@ export default function HostStayCreatePhotos() {
     }));
 
     setStayPhotosRAM(newList);
-
-    updateField("photos", {
-      photos: newList.map((p) => ({
-        name: p.file?.name || "",
-        caption: p.caption,
-        category: p.category,
-        sortIndex: p.sortIndex,
-        isCover: p.isCover,
-        serverUrl: "",
-      })),
-    });
+    syncToContext(newList);
   };
 
-  const autoSelectCover = () => {
-    const hasCover = photos.some((p) => p.isCover);
-    if (hasCover) return;
+  // ============================
+  // REMOVE PHOTO (RULE 3 + RULE 4)
+  // ============================
+  const removePhoto = (photo) => {
+    const newList = photos.filter((p) => p !== photo);
 
-    const living = photos.find((p) => p.category === "livingroom");
-    if (living) return setAsCover(living);
+    // nếu không xoá cover → giữ nguyên
+    if (!photo.isCover) {
+      setStayPhotosRAM(newList);
+      syncToContext(newList);
+      return;
+    }
 
-    const bed = photos.find((p) => p.category === "bedroom");
-    if (bed) return setAsCover(bed);
+    // nếu xoá đúng cover → auto chọn cover mới (RULE 4)
+    let newCover = null;
 
-    if (photos.length > 0) setAsCover(photos[0]);
+    // ưu tiên bedroom
+    const bed = newList.filter((p) => p.category === "bedroom");
+    if (bed.length > 0) newCover = bed[0];
+
+    // fallback
+    if (!newCover && newList.length > 0) newCover = newList[0];
+
+    const updated = newList.map((p) => ({
+      ...p,
+      isCover: p === newCover,
+    }));
+
+    setStayPhotosRAM(updated);
+    syncToContext(updated);
   };
 
+  // ============================
+  // NEXT STEP
+  // ============================
   const handleNext = () => {
     if (!validateStep("photos")) return;
 
-    autoSelectCover();
+    const newList = applyCoverRuleIfNeeded(photos);
+    setStayPhotosRAM(newList);
+    syncToContext(newList);
+
     navigate("/host/stay/create/title");
   };
 
   const coverPhoto = photos.find((p) => p.isCover);
 
-  // Auto-select cover whenever photos change, 
-  // BUT ONLY IF user has not chosen any cover manually
-  useEffect(() => {
-    if (!photos || photos.length === 0) return;
-
-    const hasCover = photos.some((p) => p.isCover);
-    if (hasCover) return; // user already picked → do not override
-
-    // auto pick:
-    const living = photos.find((p) => p.category === "livingroom");
-    if (living) return setAsCover(living);
-
-    const bed = photos.find((p) => p.category === "bedroom");
-    if (bed) return setAsCover(bed);
-
-    // fallback
-    setAsCover(photos[0]);
-
-  }, [photos]);
-
-
+  // ============================
+  // UI RENDER
+  // ============================
   return (
     <div className="hs-page">
       <main className="hs-photo-main" style={{ textAlign: "left", width: "100%" }}>
@@ -210,7 +225,6 @@ export default function HostStayCreatePhotos() {
           )}
         </div>
 
-        {/* CATEGORIES */}
         {CATEGORIES.map((cat) => {
           const filtered = photos.filter((p) => p.category === cat.key);
 
@@ -222,16 +236,13 @@ export default function HostStayCreatePhotos() {
               </h2>
 
               <div
-                className="hs-photo-dropzone"
+                className={`hs-photo-dropzone ${filtered.length === 0 ? "large" : "small"}`}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, cat.key)}
               >
                 <div className="hs-photo-center">
                   <Icon icon="solar:camera-outline" width="64" height="64" />
-                  <button
-                    className="hs-photo-add-btn"
-                    onClick={() => openPickerFor(cat.key)}
-                  >
+                  <button className="hs-photo-add-btn" onClick={() => openPickerFor(cat.key)}>
                     Add {cat.label} photos
                   </button>
                 </div>
@@ -240,14 +251,23 @@ export default function HostStayCreatePhotos() {
               {filtered.length > 0 && (
                 <div className="hs-photo-preview">
                   {filtered.map((f, idx) => (
-                    <div
-                      key={idx}
-                      className="hs-photo-thumb"
-                      style={{ position: "relative", cursor: "pointer" }}
-                      onClick={() => setAsCover(f)}
-                    >
-                      <img src={f.preview} alt="photo" />
-                      {f.isCover && <div className="hs-cover-badge">Cover Photo</div>}
+                    <div key={idx} className="hs-photo-thumb-wrapper">
+                      <button
+                        className="hs-photo-remove-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removePhoto(f);
+                        }}
+                      >
+                        <Icon icon="mdi:close-circle" width="22" height="22" />
+                      </button>
+
+                      <div className="hs-photo-thumb-click" onClick={() => setAsCover(f)}>
+                        <div className="hs-photo-thumb">
+                          <img src={f.preview} alt="photo" />
+                          {f.isCover && <div className="hs-cover-badge">Cover Photo</div>}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>

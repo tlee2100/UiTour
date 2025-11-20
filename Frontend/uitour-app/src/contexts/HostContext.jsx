@@ -25,7 +25,8 @@ const initialStayData = {
   listingTitle: "",      // Tiêu đề phòng
   description: "",       // Mô tả chi tiết (đầy đủ)
   summary: "",           // Mô tả tóm tắt ngắn
-  propertyType: "",      // Loại phòng: Apartment, Villa, Studio…
+  propertyTypeID: null,      // Loại phòng: Apartment, Villa, Studio…
+  propertyTypeLabel: "",
   roomTypeID: null,         // 1, 2, 3...
   roomTypeLabel: "",        // "Entire place", "Private room"
 
@@ -331,6 +332,84 @@ const initialStayData = {
   updatedAt: null,           // Thời gian cập nhật gần nhất
 };
 
+function sanitizeStayData(raw) {
+  if (!raw) return initialStayData;
+
+  const clean = JSON.parse(JSON.stringify(initialStayData));
+
+  // Copy từng nhóm field hợp lệ
+  clean.propertyID = raw.propertyID ?? null;
+  clean.hostID = raw.hostID ?? null;
+  clean.approval = raw.approval ?? initialStayData.approval;
+
+  clean.listingTitle = raw.listingTitle || "";
+  clean.description = raw.description || "";
+  clean.summary = raw.summary || "";
+
+  clean.propertyTypeID = raw.propertyTypeID ?? null;
+  clean.propertyTypeLabel = raw.propertyTypeLabel || "";
+  clean.roomTypeID = raw.roomTypeID || null;
+  clean.roomTypeLabel = raw.roomTypeLabel || "";
+
+  // LOCATION
+  clean.location = {
+    addressLine: raw.location?.addressLine || "",
+    district: raw.location?.district || "",
+    city: raw.location?.city || "",
+    country: raw.location?.country || "",
+    lat: raw.location?.lat ?? null,
+    lng: raw.location?.lng ?? null,
+  };
+
+  clean.neighbourhoodID = raw.neighbourhoodID || null;
+  clean.cityID = raw.cityID || null;
+  clean.countryID = raw.countryID || null;
+
+  clean.bedrooms = raw.bedrooms ?? 1;
+  clean.beds = raw.beds ?? 1;
+  clean.bathrooms = raw.bathrooms ?? 1;
+  clean.accommodates = raw.accommodates ?? 1;
+  clean.squareFeet = raw.squareFeet ?? null;
+
+  // PRICING
+  clean.pricing = {
+    basePrice: Number(raw.pricing?.basePrice) || 0,
+    currency: raw.pricing?.currency || "USD",
+    weekendMultiplier: Number(raw.pricing?.weekendMultiplier) || 1,
+    cleaningFee: Number(raw.pricing?.cleaningFee) || 0,
+    extraPeopleFee: Number(raw.pricing?.extraPeopleFee) || 0,
+    extraPeopleThreshold: Number(raw.pricing?.extraPeopleThreshold) || 1,
+    serviceFee: raw.pricing?.serviceFee || { type: "percentage", percent: 4 },
+    taxFee: raw.pricing?.taxFee || { type: "percentage", percent: 6 },
+    discounts: raw.pricing?.discounts || initialStayData.pricing.discounts,
+    minNights: raw.pricing?.minNights ?? 1,
+    maxNights: raw.pricing?.maxNights ?? 30,
+    preparationTime: raw.pricing?.preparationTime ?? 0,
+    advanceNotice: raw.pricing?.advanceNotice ?? 0
+  };
+
+  clean.houseRules = raw.houseRules || [];
+  clean.rules = raw.rules || initialStayData.rules;
+
+  clean.active = !!raw.active;
+  clean.isBusinessReady = !!raw.isBusinessReady;
+
+  clean.coverPhoto = raw.coverPhoto || null;
+
+  clean.photos = Array.isArray(raw.photos) ? raw.photos : [];
+  clean.photosPreview = []; // không bao giờ lấy từ draft
+
+  clean.amenities = raw.amenities || [];
+  clean.calendar = Array.isArray(raw.calendar) ? raw.calendar : [];
+  clean.bookings = Array.isArray(raw.bookings) ? raw.bookings : [];
+
+  clean.createdAt = raw.createdAt || null;
+  clean.updatedAt = raw.updatedAt || null;
+
+  return clean;
+}
+
+
 
 // 🧭 Experience / Tour
 const initialExperienceData = {
@@ -478,6 +557,15 @@ export function HostProvider({ children }) {
         return;
       }
 
+      if (step === "choose") {
+        setStayData(prev => ({
+          ...prev,
+          propertyTypeID: values.propertyTypeID,
+          propertyTypeLabel: values.propertyTypeLabel
+        }));
+        setCompletedStep(prev => ({ ...prev, choose: true }));
+        return;
+      }
 
       // LOCATION
       if (step === "location") {
@@ -556,8 +644,9 @@ export function HostProvider({ children }) {
 
       // OTHER
       else {
-        setStayData((prev) => ({ ...prev, ...values }));
+        console.warn("❌ updateField bị gọi với step không xác định. Bỏ qua để tránh thêm field sai:", step, values);
       }
+
     } else {
       // EXPERIENCE FLOW
       if (step === "location") {
@@ -626,7 +715,7 @@ export function HostProvider({ children }) {
   // ============================================================
   function validateStep(step) {
     if (type === "stay") {
-      if (step === "choose") return !!stayData.propertyType;
+      if (step === "choose") return !!stayData.propertyTypeID;
       if (step === "typeofplace") return !!stayData.roomTypeID;
       if (step === "location")
         return !!stayData.location.lat && !!stayData.location.lng;
@@ -789,25 +878,9 @@ export function HostProvider({ children }) {
 
     if (savedStay) {
       try {
-        const stay = JSON.parse(savedStay);
-
-        stay.photosPreview = [];
-
-        setStayData({
-          ...initialStayData,
-          ...stay,
-
-          // FIX để không bị null gây crash
-          location: {
-            ...initialStayData.location,
-            ...(stay.location || {})
-          },
-
-          pricing: {
-            ...initialStayData.pricing,
-            ...(stay.pricing || {})
-          }
-        });
+        const parsed = JSON.parse(savedStay);
+        const cleaned = sanitizeStayData(parsed);
+        setStayData(cleaned);
       } catch { }
     }
 
@@ -867,28 +940,23 @@ export function HostProvider({ children }) {
   useEffect(() => {
     if (!loaded) return;
 
-    const clone = { ...stayData };
+    const safeData = sanitizeStayData(stayData);
+
+    const clone = { ...safeData };
     delete clone.photosPreview;
 
-
-    // ❗❗ XÓA preview/file/base64 để tránh overflow
-    if (clone.photos) {
-      clone.photos = clone.photos.map((p) => ({
-        name: p.name || "",
-        caption: p.caption || "",
-        category: p.category || "",
-        sortIndex: p.sortIndex || 0,
-        isCover: p.isCover || false
-      }));
-    }
-
-    // ❗❗ Không lưu cover base64
-    if (clone.coverPhoto && clone.coverPhoto.startsWith("data:")) {
-      clone.coverPhoto = null;
-    }
+    clone.photos = clone.photos.map(p => ({
+      name: p.name || "",
+      caption: p.caption || "",
+      category: p.category || "",
+      sortIndex: p.sortIndex || 0,
+      isCover: !!p.isCover,
+      serverUrl: p.serverUrl || ""
+    }));
 
     localStorage.setItem("host_stay_draft", JSON.stringify(clone));
   }, [stayData, loaded]);
+
 
 
   // SAVE EXPERIENCE DRAFT
@@ -987,152 +1055,154 @@ export function HostProvider({ children }) {
 // 9️⃣ FORMATTER STAY / EXPERIENCE
 // ============================================================
 function formatStayDataForAPI(d) {
-  // Helper
-  const toNum = (v) => {
+  const num = (v) => {
     const n = Number(v);
     return isNaN(n) ? 0 : n;
   };
 
-  const trunc = (s, max) => {
-    if (!s) return "";
-    return s.length > max ? s.substring(0, max) : s;
-  };
+  const safe = (v) => (v === undefined || v === null ? "" : v);
 
-  // Photos
-  const photos = (d.photos || [])
-    .map((p, i) => ({
-      url:
-        trunc(
-          p.serverUrl ||
-          p.preview ||
-          `placeholder_${i + 1}.jpg`,
-          500
-        ),
-      caption: trunc(p.caption || "", 300),
-      sortIndex: p.sortIndex || i + 1,
-    }))
-    .filter((p) => p.url);
+  // ---------------------------------------------------------
+  // PHOTOS
+  // ---------------------------------------------------------
+  const photos = (d.photos || []).map((p, i) => ({
+    url: safe(p.serverUrl || p.preview || ""),
+    caption: safe(p.caption),
+    category: safe(p.category),
+    sortIndex: p.sortIndex ?? i + 1,
+    isCover: !!p.isCover,
+  }));
 
-  const cover =
-    d.coverPhoto && typeof d.coverPhoto === "string"
-      ? d.coverPhoto
-      : photos.length > 0
-        ? photos[0].url
-        : null;
+  const coverPhoto =
+    d.coverPhoto ||
+    (photos.find((p) => p.isCover)?.url || photos[0]?.url || null);
 
-  // Amenities
+  // ---------------------------------------------------------
+  // AMENITIES
+  // ---------------------------------------------------------
   const amenities = (d.amenities || [])
     .map((x) => Number(x))
     .filter((x) => !isNaN(x))
     .map((id) => ({ amenityID: id }));
 
-  // Discounts
+  // ---------------------------------------------------------
+  // DISCOUNTS
+  // ---------------------------------------------------------
   const discounts = {
-    weeklyPercent: toNum(d.pricing?.discounts?.weekly?.percent),
-    monthlyPercent: toNum(d.pricing?.discounts?.monthly?.percent),
+    weeklyPercent: num(d.pricing.discounts.weekly.percent),
+    monthlyPercent: num(d.pricing.discounts.monthly.percent),
 
-    seasonal: (d.pricing?.discounts?.seasonalDiscounts || []).map((s) => ({
+    seasonal: (d.pricing.discounts.seasonalDiscounts || []).map((s) => ({
       from: s.from,
       to: s.to,
-      percentage: toNum(s.percentage),
+      percentage: num(s.percentage),
     })),
 
-    earlyBird: (d.pricing?.discounts?.earlyBird || []).map((e) => ({
-      daysBefore: toNum(e.daysBefore),
-      percent: toNum(e.percent),
+    earlyBird: (d.pricing.discounts.earlyBird || []).map((e) => ({
+      daysBefore: num(e.daysBefore),
+      percent: num(e.percent),
     })),
   };
 
-  // FINAL PAYLOAD BACKEND-READY
+  // ---------------------------------------------------------
+  // FINAL PAYLOAD
+  // ---------------------------------------------------------
   return {
     // =========================
     // BASIC LISTING INFO
     // =========================
-    userID: d.userID || d.hostID || null,
-    listingTitle: trunc(d.listingTitle, 200),
-    description: d.description || "",
-    summary: d.summary || "",
-    propertyType: d.propertyType || null,
+    propertyID: d.propertyID || null,
+    hostID: d.hostID || d.userID || null,
+
+    listingTitle: safe(d.listingTitle),
+    description: safe(d.description),
+    summary: safe(d.summary),
+
+    propertyTypeID: d.propertyTypeID || null,
+    propertyTypeLabel: safe(d.propertyTypeLabel),  // ⭐ THÊM VÀO
+
+    roomTypeID: d.roomTypeID || null,
+    roomTypeLabel: safe(d.roomTypeLabel),
 
     // =========================
     // LOCATION
     // =========================
-    location: d.location?.addressLine || "",
-    district: d.location?.district || "",
-    city: d.location?.city || "",
-    country: d.location?.country || "",
+    location: {
+      addressLine: safe(d.location.addressLine),
+      district: safe(d.location.district),
+      city: safe(d.location.city),
+      country: safe(d.location.country),
+      lat: d.location.lat,
+      lng: d.location.lng,
+    },
+
     cityID: d.cityID || null,
     countryID: d.countryID || null,
 
-    lat: d.location?.lat?.toString() || null,
-    lng: d.location?.lng?.toString() || null,
-
     // =========================
-    // ROOMS / CAPACITY
+    // CAPACITY
     // =========================
-    roomTypeID: d.roomTypeID || null,
-    bedrooms: toNum(d.bedrooms),
-    beds: toNum(d.beds),
-    bathrooms: toNum(d.bathrooms),
-    accommodates: toNum(d.accommodates),
+    bedrooms: num(d.bedrooms),
+    beds: num(d.beds),
+    bathrooms: num(d.bathrooms),
+    accommodates: num(d.accommodates),
     squareFeet: d.squareFeet || null,
 
     // =========================
     // PRICING + FEES
     // =========================
-    price: toNum(d.pricing?.basePrice),
-    currency: d.pricing?.currency || "USD",
+    pricing: {
+      basePrice: num(d.pricing.basePrice),
+      currency: safe(d.pricing.currency),
 
-    weekendMultiplier: toNum(d.pricing?.weekendMultiplier),
+      weekendMultiplier: num(d.pricing.weekendMultiplier),
 
-    cleaningFee: toNum(d.pricing?.cleaningFee),
-    extraPeopleFee: toNum(d.pricing?.extraPeopleFee),
-    extraPeopleThreshold: toNum(
-      d.pricing?.extraPeopleThreshold
-    ),
+      cleaningFee: num(d.pricing.cleaningFee),
+      extraPeopleFee: num(d.pricing.extraPeopleFee),
+      extraPeopleThreshold: num(d.pricing.extraPeopleThreshold),
 
-    serviceFeePercent: toNum(d.pricing?.serviceFee?.percent),
-    taxFeePercent: toNum(d.pricing?.taxFee?.percent),
+      serviceFeePercent: num(d.pricing.serviceFee.percent),
+      taxFeePercent: num(d.pricing.taxFee.percent),
 
-    // =========================
-    // DISCOUNTS (full)
-    // =========================
-    discounts,
+      discounts,
+    },
 
     // =========================
     // BOOKING RULES
     // =========================
-    minNights: toNum(d.pricing?.minNights),
-    maxNights: toNum(d.pricing?.maxNights),
-    preparationTime: toNum(d.pricing?.preparationTime),
-    advanceNotice: toNum(d.pricing?.advanceNotice),
-
-    // =========================
-    // RULES & SAFETY
-    // =========================
-    rules: {
-      checkin_after: d.rules?.checkin_after || "14:00",
-      checkout_before: d.rules?.checkout_before || "11:00",
-
-      no_smoking: !!d.rules?.no_smoking,
-      no_open_flames: !!d.rules?.no_open_flames,
-      pets_allowed: !!d.rules?.pets_allowed,
-
-      covidSafety: !!d.rules?.covidSafety,
-      surfacesSanitized: !!d.rules?.surfacesSanitized,
-      carbonMonoxideAlarm: !!d.rules?.carbonMonoxideAlarm,
-      smokeAlarm: !!d.rules?.smokeAlarm,
-
-      selfCheckIn: !!d.rules?.selfCheckIn,
-      self_checkin_method: d.rules?.self_checkin_method || null,
+    bookingRules: {
+      minNights: num(d.pricing.minNights),
+      maxNights: num(d.pricing.maxNights),
+      preparationTime: num(d.pricing.preparationTime),
+      advanceNotice: num(d.pricing.advanceNotice),
     },
 
+    // =========================
+    // HOUSE RULES & SAFETY
+    // =========================
     houseRules: d.houseRules || [],
+
+    rules: {
+      checkin_after: safe(d.rules.checkin_after),
+      checkout_before: safe(d.rules.checkout_before),
+
+      no_smoking: !!d.rules.no_smoking,
+      no_open_flames: !!d.rules.no_open_flames,
+      pets_allowed: !!d.rules.pets_allowed,
+
+      covidSafety: !!d.rules.covidSafety,
+      surfacesSanitized: !!d.rules.surfacesSanitized,
+      carbonMonoxideAlarm: !!d.rules.carbonMonoxideAlarm,
+      smokeAlarm: !!d.rules.smokeAlarm,
+
+      selfCheckIn: !!d.rules.selfCheckIn,
+      self_checkin_method: safe(d.rules.self_checkin_method),
+    },
 
     // =========================
     // PHOTOS
     // =========================
-    coverPhoto: cover,
+    coverPhoto,
     photos,
 
     // =========================
@@ -1141,16 +1211,13 @@ function formatStayDataForAPI(d) {
     amenities,
 
     // =========================
-    // LISTING STATUS
+    // STATUS
     // =========================
-    active: d.active,
-    isBusinessReady: d.isBusinessReady,
+    active: !!d.active,
+    isBusinessReady: !!d.isBusinessReady,
 
-    // =========================
-    // SYSTEM FIELDS (optional)
-    // =========================
-    propertyID: d.propertyID || null,
-    approval: d.approval || null,
+    approval: d.approval || {},
+
     createdAt: d.createdAt || null,
     updatedAt: d.updatedAt || null,
   };
