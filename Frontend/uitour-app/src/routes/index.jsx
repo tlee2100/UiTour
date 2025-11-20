@@ -48,6 +48,9 @@ import HostStayCreateDescription from "../pages/HostStay/HostStayCreateDescripti
 import HostStayCreateWeekdayPrice from "../pages/HostStay/HostStayCreateWeekdayPrice";
 import HostStayCreateWeekendPrice from "../pages/HostStay/HostStayCreateWeekendPrice";
 import HostStayCreateDiscount from "../pages/HostStay/HostStayCreateDiscount";
+import HostStayCreateFees from "../pages/HostStay/HostStayCreateFees";
+import HostStayCreateRulesSafety from "../pages/HostStay/HostStayCreateRulesSafety";
+import HostStayPreview from "../pages/HostStay/HostStayPreview";
 
 import BecomeHost from "../pages/BecomeHost";
 
@@ -114,7 +117,7 @@ const AppRoutes = () => {
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />  
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route path="/host/becomehost" element={<BecomeHost />} />
       <Route path="/host/today" element={<HostToday />} />
@@ -143,9 +146,12 @@ const AppRoutes = () => {
           <Route path="photos" element={<HostStayCreatePhotos />} />
           <Route path="title" element={<HostStayCreateTitle />} />
           <Route path="description" element={<HostStayCreateDescription />} />
+          <Route path="fees" element={<HostStayCreateFees />} />
           <Route path="weekday-price" element={<HostStayCreateWeekdayPrice />} />
           <Route path="weekend-price" element={<HostStayCreateWeekendPrice />} />
           <Route path="discount" element={<HostStayCreateDiscount />} />
+          <Route path="rules-safety" element={<HostStayCreateRulesSafety />} />
+          <Route path="preview" element={<HostStayPreview />} />
         </Route>
 
         {/* Flow tạo Experience */}
