@@ -272,6 +272,17 @@
   overflow: hidden;
 }
 
+.wishlist-item-type {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
 .wishlist-item-price {
   font-size: 16px;
   font-weight: 600;

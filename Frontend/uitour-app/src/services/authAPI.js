@@ -1,11 +1,12 @@
 // Authentication API Service
 // Kết nối với backend API cho login và register
 
- const API_BASE_URL = 'http://localhost:5069/api/user';
+const API_BASE_URL = 'http://localhost:5069/api/user';
 const PROPERTY_BASE_URL = 'http://localhost:5069/api/properties';
 const TOUR_BASE_URL = 'http://localhost:5069/api/tour';
 const HOST_BASE_URL = 'http://localhost:5069/api/host';
 const WISHLIST_BASE_URL = 'http://localhost:5069/api/wishlist';
+const BOOKING_BASE_URL = 'http://localhost:5069/api/booking';
 
 class AuthAPI {
    // Lấy thông tin user theo ID
@@ -467,10 +468,10 @@ async resetPassword(email, otp, newPassword) {
     }
   }
 
-  async addToWishlist(userId, propertyId) {
+  async addToWishlist(userId, itemId, itemType = 'property') {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${WISHLIST_BASE_URL}/${userId}/add/${propertyId}`, {
+      const response = await fetch(`${WISHLIST_BASE_URL}/${userId}/add/${itemId}?type=${itemType}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -489,10 +490,10 @@ async resetPassword(email, otp, newPassword) {
     }
   }
 
-  async removeFromWishlist(userId, propertyId) {
+  async removeFromWishlist(userId, itemId, itemType = 'property') {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${WISHLIST_BASE_URL}/${userId}/remove/${propertyId}`, {
+      const response = await fetch(`${WISHLIST_BASE_URL}/${userId}/remove/${itemId}?type=${itemType}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -604,6 +605,127 @@ async updateUserProfile(userId, form) {
   // Các lỗi khác
   throw new Error(await tryProfile.text() || 'Failed to update profile');
 }
+
+  async updateUserEmail(userId, newEmail) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/${userId}/email`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ NewEmail: newEmail }),
+    });
+
+    if (!res.ok) throw new Error((await res.text()) || 'Failed to update email');
+    return await res.json();
+  }
+
+  async updateUserPhone(userId, newPhone) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/${userId}/phone`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ NewPhone: newPhone }),
+    });
+
+    if (!res.ok) throw new Error((await res.text()) || 'Failed to update phone');
+    return await res.json();
+  }
+
+  async changePassword(userId, currentPassword, newPassword) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/${userId}/change-password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        CurrentPassword: currentPassword,
+        NewPassword: newPassword,
+      }),
+    });
+
+    if (!res.ok) throw new Error((await res.text()) || 'Failed to change password');
+    return await res.json();
+  }
+
+  async getUserBookings(userId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${BOOKING_BASE_URL}/user/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch trips');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async createBooking(bookingPayload) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(BOOKING_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(bookingPayload),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to create booking');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw new Error(error.message || 'Failed to create booking');
+    }
+  }
+
+  async sendProfileOtp(userId) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/${userId}/profile/send-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!res.ok) throw new Error((await res.text()) || 'Failed to send OTP');
+    return await res.json();
+  }
+
+  async verifyProfileOtp(userId, otp) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/${userId}/profile/verify-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ Otp: otp }),
+    });
+
+    if (!res.ok) throw new Error((await res.text()) || 'Failed to verify OTP');
+    return await res.json();
+  }
 
 
 

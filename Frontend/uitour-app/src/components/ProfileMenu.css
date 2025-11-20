@@ -37,6 +37,23 @@
   background: #f9fafb;
 }
 
+.profile-menu_item-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.profile-menu_item-badge {
+  min-width: 28px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  font-size: 12px;
+  text-align: center;
+}
+
 .profile-menu_item-large {
   display: flex;
   justify-content: space-between;

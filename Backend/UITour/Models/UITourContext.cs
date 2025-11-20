@@ -70,9 +70,6 @@ namespace UITour.Models
                 .WithMany(a => a.PropertyAmenities)
                 .HasForeignKey(pa => pa.AmenityID);
 
-            modelBuilder.Entity<SavedListings>()
-                .HasKey(sl => new { sl.UserID, sl.PropertyID });
-
             // Nếu cần mapping thêm (ví dụ decimal precision)
             modelBuilder.Entity<Property>()
                 .Property(p => p.Price)
@@ -91,7 +88,15 @@ namespace UITour.Models
                 .HasOne(b => b.Property)
                 .WithMany(p => p.Bookings)
                 .HasForeignKey(b => b.PropertyID)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false); // Make PropertyID optional for tour bookings
+
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Tour)
+                .WithMany(t => t.Bookings)
+                .HasForeignKey(b => b.TourID)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false); // Make TourID optional for property bookings
 
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.User)
@@ -166,14 +171,33 @@ namespace UITour.Models
                 .OnDelete(DeleteBehavior.Cascade);
             
             modelBuilder.Entity<SavedListings>()
-                .HasKey(sl => new { sl.UserID, sl.PropertyID, sl.ListID });
+                .HasKey(sl => sl.SavedListingID);
+
+            modelBuilder.Entity<SavedListings>()
+                .HasOne(sl => sl.User)
+                .WithMany(u => u.SavedListings)
+                .HasForeignKey(sl => sl.UserID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SavedListings>()
+                .HasOne(sl => sl.Property)
+                .WithMany(p => p.SavedListings)
+                .HasForeignKey(sl => sl.PropertyID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SavedListings>()
+                .HasOne(sl => sl.Tour)
+                .WithMany()
+                .HasForeignKey(sl => sl.TourID)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<SavedListings>()
                 .HasOne(sl => sl.FavoriteList)
                 .WithMany(fl => fl.SavedListings)
                 .HasForeignKey(sl => sl.ListID);
+
             modelBuilder.Entity<FavoriteList>()
-                .HasKey(fl => fl.ListID);        
+                .HasKey(fl => fl.ListID);
 
         }
     }

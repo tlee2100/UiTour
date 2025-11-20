@@ -20,10 +20,31 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<Booking> CreateAsync(Booking booking)
         {
-            if (!await IsPropertyAvailableAsync(booking.PropertyID, booking.CheckIn, booking.CheckOut))
-                throw new InvalidOperationException("Property is not available for selected dates");
+            // Validate that either PropertyID or TourID is set
+            if (!booking.PropertyID.HasValue && !booking.TourID.HasValue)
+                throw new InvalidOperationException("Either PropertyID or TourID must be provided");
 
-            booking.TotalPrice = await CalculateTotalPriceAsync(booking.PropertyID, booking.CheckIn, booking.CheckOut);
+            if (booking.PropertyID.HasValue && booking.TourID.HasValue)
+                throw new InvalidOperationException("Cannot specify both PropertyID and TourID");
+
+            // Check availability and calculate price based on type
+            if (booking.PropertyID.HasValue)
+            {
+                // Property booking
+                if (!await IsPropertyAvailableAsync(booking.PropertyID.Value, booking.CheckIn, booking.CheckOut))
+                    throw new InvalidOperationException("Property is not available for selected dates");
+
+                booking.TotalPrice = await CalculatePropertyTotalPriceAsync(booking.PropertyID.Value, booking.CheckIn, booking.CheckOut);
+            }
+            else if (booking.TourID.HasValue)
+            {
+                // Tour booking - use the provided TotalPrice or calculate from tour price
+                if (booking.TotalPrice == 0)
+                {
+                    booking.TotalPrice = await CalculateTourTotalPriceAsync(booking.TourID.Value, booking.GuestsCount);
+                }
+            }
+
             await _unitOfWork.Bookings.AddAsync(booking);
             await _unitOfWork.SaveChangesAsync();
             return booking;
@@ -61,11 +82,16 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<bool> IsPropertyAvailableAsync(int propertyId, DateTime checkIn, DateTime checkOut)
         {
-            var existingBookings = await _unitOfWork.Bookings.Query().Where(b => b.PropertyID == propertyId && b.Status != "Cancelled").ToListAsync();
-            return !existingBookings.Any(b => (checkIn >= b.CheckIn && checkIn <= b.CheckOut) || (checkOut >= b.CheckIn && checkOut <= b.CheckOut));
+            var existingBookings = await _unitOfWork.Bookings.Query()
+                .Where(b => b.PropertyID == propertyId && b.Status != "Cancelled")
+                .ToListAsync();
+            return !existingBookings.Any(b => 
+                (checkIn >= b.CheckIn && checkIn <= b.CheckOut) || 
+                (checkOut >= b.CheckIn && checkOut <= b.CheckOut) ||
+                (checkIn <= b.CheckIn && checkOut >= b.CheckOut));
         }
 
-        public async Task<decimal> CalculateTotalPriceAsync(int propertyId, DateTime checkIn, DateTime checkOut)
+        public async Task<decimal> CalculatePropertyTotalPriceAsync(int propertyId, DateTime checkIn, DateTime checkOut)
         {
             var property = await _unitOfWork.Properties.GetByIdAsync(propertyId);
             if (property == null)
@@ -79,9 +105,27 @@ namespace UITour.ServicesL.Implementations
             return basePrice + cleaningFee + serviceFee;
         }
 
+        public async Task<decimal> CalculateTourTotalPriceAsync(int tourId, short guestsCount)
+        {
+            var tour = await _unitOfWork.Tours.GetByIdAsync(tourId);
+            if (tour == null)
+                throw new InvalidOperationException("Tour not found");
+
+            // Tour price is per person
+            return tour.Price * guestsCount;
+        }
+
+        // Keep the old method for backward compatibility, but it only works for properties
+        public async Task<decimal> CalculateTotalPriceAsync(int propertyId, DateTime checkIn, DateTime checkOut)
+        {
+            return await CalculatePropertyTotalPriceAsync(propertyId, checkIn, checkOut);
+        }
+
         public async Task<IEnumerable<DateTime>> GetBlockedDatesAsync(int propertyId)
         {
-            var bookings = await _unitOfWork.Bookings.Query().Where(b => b.PropertyID == propertyId && b.Status != "Cancelled").ToListAsync();
+            var bookings = await _unitOfWork.Bookings.Query()
+                .Where(b => b.PropertyID == propertyId && b.Status != "Cancelled")
+                .ToListAsync();
             var blockedDates = new List<DateTime>();
 
             foreach (var booking in bookings)

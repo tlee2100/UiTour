@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using UITour.Models;
+using UITour.Models.DTO;
 using UITour.ServicesL.Interfaces;
 
 namespace UITour.Controllers
@@ -17,18 +18,45 @@ namespace UITour.Controllers
 
         // POST: api/booking
         [HttpPost]
-        public async Task<IActionResult> CreateBooking([FromBody] Booking request)
+        public async Task<IActionResult> CreateBooking([FromBody] CreateBookingDto request)
         {
+            // Validate that either PropertyID or TourID is provided
+            if (!request.PropertyID.HasValue && !request.TourID.HasValue)
+            {
+                return BadRequest(new { error = "Either PropertyID or TourID must be provided" });
+            }
+
+            if (request.PropertyID.HasValue && request.TourID.HasValue)
+            {
+                return BadRequest(new { error = "Cannot specify both PropertyID and TourID" });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
+                var nights = request.Nights > 0
+                    ? request.Nights
+                    : Math.Max(1, (request.CheckOut - request.CheckIn).Days);
+
                 var booking = new Booking
                 {
                     PropertyID = request.PropertyID,
+                    TourID = request.TourID,
                     UserID = request.UserID,
                     HostID = request.HostID,
                     CheckIn = request.CheckIn,
                     CheckOut = request.CheckOut,
                     GuestsCount = request.GuestsCount,
+                    Nights = nights,
+                    BasePrice = request.BasePrice,
+                    CleaningFee = request.CleaningFee,
+                    ServiceFee = request.ServiceFee,
+                    TotalPrice = request.TotalPrice,
+                    Currency = request.Currency ?? "USD",
                     Status = "Pending"
                 };
 
@@ -37,7 +65,11 @@ namespace UITour.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
             }
         }
 
