@@ -7,26 +7,39 @@ export default function HostStayCreateWeekendPrice() {
   const { stayData, updateField, validateStep } = useHost();
 
   const pricing = stayData.pricing || {};
+
+  // Base price
   const basePrice = Number(pricing.basePrice) || 0;
 
-  const premium = pricing.weekendPremium || 0;
+  // USE ONLY weekendMultiplier
+  const weekendMultiplier = Number(pricing.weekendMultiplier) || 1.0;
 
-  // LẤY FEE TỪ CONTEXT
+  // Weekend price = basePrice * multiplier
+  const weekendPrice = Math.round(basePrice * weekendMultiplier);
+
+  // Fees
   const servicePercent = pricing.serviceFee?.percent || 0;
   const taxPercent = pricing.taxFee?.percent || 0;
   const feeRate = (servicePercent + taxPercent) / 100;
 
-  // TÍNH GIÁ WEEKEND
-  const weekendPrice = Math.round(basePrice * (1 + premium / 100));
-
-  // GIÁ KHÁCH PHẢI TRẢ
+  // Final guest price
   const finalCustomerPrice = Math.round(weekendPrice * (1 + feeRate));
 
-  const handlePremiumChange = (value) => {
+  // Slider converts percent → multiplier
+  const handleMultiplierChange = (percentValue) => {
+    const p = Number(percentValue);
+    const multiplier = 1 + p / 100;         // convert to 1.00 – 2.00
+
     updateField("weekend-price", {
-      pricing: { ...pricing, weekendPremium: Number(value) }
+      pricing: {
+        ...pricing,
+        weekendMultiplier: multiplier
+      }
     });
   };
+
+  // Convert multiplier → slider percent
+  const sliderPercent = Math.round((weekendMultiplier - 1) * 100);
 
   const handleNext = () => {
     if (!validateStep("weekend-price")) return;
@@ -41,7 +54,6 @@ export default function HostStayCreateWeekendPrice() {
         </h1>
 
         <div className="hs-weekend-center">
-
           <div className="hs-weekend-box">
             <span className="hs-weekend-symbol">$</span>
             <span className="hs-weekend-price">
@@ -60,20 +72,19 @@ export default function HostStayCreateWeekendPrice() {
         </div>
 
         <div className="hs-weekend-premium">
-          <span className="hs-weekend-label">Weekend premium</span>
+          <span className="hs-weekend-label">Weekend increase</span>
           <div className="hs-weekend-control">
             <input
               type="range"
               min="0"
               max="100"
-              value={premium}
-              onChange={e => handlePremiumChange(e.target.value)}
+              value={sliderPercent}
+              onChange={(e) => handleMultiplierChange(e.target.value)}
               className="hs-weekend-slider"
             />
-            <span className="hs-weekend-percent">{premium}%</span>
+            <span className="hs-weekend-percent">{sliderPercent}%</span>
           </div>
         </div>
-
       </main>
     </div>
   );
