@@ -185,7 +185,7 @@ export default function ToursPage() {
                     <div className="tour-footer">
                       <div className="tour-price">
                         <span className="price">
-                          {(tour.price ?? 0).toLocaleString("vi-VN")}₫
+                          ${(tour.price ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                         <span className="price-unit">/ person</span>
                       </div>

@@ -17,7 +17,7 @@ function HIBookingBox({
 
   // ✅ Mapping dữ liệu từ Experience format → Booking UI
   const basePrice = property.pricing?.basePrice ?? property.price ?? 0;
-  const currency = property.pricing?.currency ?? "VND";
+  const currency = property.pricing?.currency ?? property.currency ?? "USD";
   const pricePerNight = basePrice;
 
 
@@ -64,9 +64,9 @@ function HIBookingBox({
       {/* Header */}
       <div className="hib-header">
         <div className="hib-price">
-          <span className="hib-price-value">₫ {pricePerNight.toLocaleString()}</span>
+          <span className="hib-price-value">${pricePerNight.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           <span className="hib-price-slash">/</span>
-          <span className="hib-price-night">đêm</span>
+          <span className="hib-price-night">night</span>
         </div>
         <div className="hib-rating">
           <div className="hib-rating-star">⭐</div>
@@ -142,38 +142,38 @@ function HIBookingBox({
       <div className="hib-price-details">
         <div className="hib-row">
           <span className="hib-row-label">
-            ₫{pricePerNight.toLocaleString()} x {nights} đêm
+            ${pricePerNight.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} x {nights} night{nights > 1 ? 's' : ''}
           </span>
-          <span className="hib-row-value">₫{totalPrice.toLocaleString()}</span>
+          <span className="hib-row-value">${totalPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
 
         <div className="hib-row">
-          <span className="hib-row-label">Giảm giá</span>
+          <span className="hib-row-label">Discount</span>
           <span className="hib-row-value hib-discount">
-            -₫{discount.toLocaleString()}
+            -${discount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         </div>
 
         <div className="hib-row">
-          <span className="hib-row-label">Phí dọn dẹp</span>
-          <span className="hib-row-value">₫{cleaningFee.toLocaleString()}</span>
+          <span className="hib-row-label">Cleaning fee</span>
+          <span className="hib-row-value">${cleaningFee.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
 
         <div className="hib-row">
-          <span className="hib-row-label">Phí dịch vụ</span>
-          <span className="hib-row-value">₫{serviceFee.toLocaleString()}</span>
+          <span className="hib-row-label">Service fee</span>
+          <span className="hib-row-value">${serviceFee.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
 
         <div className="hib-row">
-          <span className="hib-row-label">Thuế và phí</span>
-          <span className="hib-row-value">₫{taxFee.toLocaleString()}</span>
+          <span className="hib-row-label">Taxes and fees</span>
+          <span className="hib-row-value">${taxFee.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
 
         <div className="hib-divider"></div>
 
         <div className="hib-row hib-total">
-          <span className="hib-row-label">Tổng cộng</span>
-          <span className="hib-row-value">₫{discountedTotal.toLocaleString()}</span>
+          <span className="hib-row-label">Total</span>
+          <span className="hib-row-value">${discountedTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
       </div>
     </div>

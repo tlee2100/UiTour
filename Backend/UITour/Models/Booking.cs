@@ -6,8 +6,10 @@ namespace UITour.Models
     public class Booking
     {
         [Key] public int BookingID { get; set; }
-        [Required][ForeignKey("Property")] public int PropertyID { get; set; }
+        [ForeignKey("Property")] public int? PropertyID { get; set; } // Nullable for tour bookings
         public Property Property { get; set; } // Navigation property
+        [ForeignKey("Tour")] public int? TourID { get; set; } // Nullable for property bookings
+        public Tour Tour { get; set; } // Navigation property
         [Required][ForeignKey("User")] public int UserID { get; set; }
         public User User { get; set; } // Navigation property
         [Required][ForeignKey("Host")] public int HostID { get; set; }
