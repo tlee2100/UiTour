@@ -26,6 +26,8 @@ const initialStayData = {
   description: "",       // Mô tả chi tiết (đầy đủ)
   summary: "",           // Mô tả tóm tắt ngắn
   propertyType: "",      // Loại phòng: Apartment, Villa, Studio…
+  roomTypeID: null,         // 1, 2, 3...
+  roomTypeLabel: "",        // "Entire place", "Private room"
 
   // ======================================================================================
   // LOCATION – vị trí chi tiết
@@ -86,7 +88,7 @@ const initialStayData = {
       // Mức giảm theo % và được áp dụng TRƯỚC seasonal, global, fixedAmount
       // Chỉ thay thế monthlyDiscount (nghĩa là có monthly thì bỏ weekly)
       // -----------------------------------------------------------------------------------
-      weekly: { percent: 6 },    // luôn tồn tại – ưu tiên #2     // Giảm khi ở >= 7 đêm (%)
+      weekly: { percent: 7 },    // luôn tồn tại – ưu tiên #2     // Giảm khi ở >= 7 đêm (%)
 
       // -----------------------------------------------------------------------------------
       // MONTHLY DISCOUNT: GIẢM THEO SỐ ĐÊM
@@ -540,6 +542,15 @@ export function HostProvider({ children }) {
           houseRules: values
         }));
         setCompletedStep(prev => ({ ...prev, houseRules: true }));
+        return;
+      }
+      if (step === "typeofplace") {
+        setStayData(prev => ({
+          ...prev,
+          roomTypeID: values.roomTypeID,
+          roomTypeLabel: values.roomTypeLabel
+        }));
+        setCompletedStep(prev => ({ ...prev, typeofplace: true }));
         return;
       }
 

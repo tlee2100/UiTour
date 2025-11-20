@@ -921,6 +921,7 @@
   color: #000;
   gap: 4px;
 }
+
 .hs-price-symbol,
 .hs-price-input {
   line-height: 1;
@@ -1895,7 +1896,7 @@
 .hsd-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .hsd-modal-card {
@@ -1905,7 +1906,7 @@
   background: #fff;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 12px 26px rgba(0,0,0,0.15);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.15);
 
   display: flex;
   flex-direction: column;
@@ -2046,7 +2047,7 @@
   line-height: 1.6;
 }
 
-.hs-preview-card div + div {
+.hs-preview-card div+div {
   margin-top: 6px;
 }
 
@@ -2108,4 +2109,104 @@
 
 .hs-preview-btn-publish:hover {
   background: #e12e52;
+}
+
+/* ===========================================================
+   HOST STAY PREVIEW – NEW SECTIONS (Description, Amenities,
+   Rules & Safety)
+   These styles are minimal & consistent with existing Preview UI
+   =========================================================== */
+
+/* ----------------------------- */
+/* DESCRIPTION UNDER TITLE       */
+/* ----------------------------- */
+.hs-preview-description {
+  font-size: 16px;
+  line-height: 1.55;
+  color: #333;
+  max-width: 780px;
+  margin: 10px auto 18px;
+  text-align: center;
+}
+
+
+
+/* ----------------------------- */
+/* AMENITIES BLOCK               */
+/* ----------------------------- */
+.hs-preview-amenities-list div {
+  margin: 4px 0;
+  line-height: 1.45;
+  font-size: 15.5px;
+}
+
+.hs-preview-amenities-list div::before {
+  content: "• ";
+  color: #777;
+}
+
+
+
+/* ----------------------------- */
+/* RULES & SAFETY MAIN STRUCTURE */
+/* ----------------------------- */
+.hs-preview-rs-group {
+  margin-top: 12px;
+}
+
+.hs-preview-rs-title {
+  font-weight: 600;
+  margin-top: 18px;
+  margin-bottom: 8px;
+  font-size: 17px;
+}
+
+
+
+/* ----------------------------- */
+/* RULES LIST ITEMS              */
+/* ----------------------------- */
+.hs-preview-rs-item {
+  padding-left: 8px;
+  border-left: 3px solid #eee;
+  margin: 6px 0;
+  font-size: 15.5px;
+  line-height: 1.45;
+}
+
+
+
+/* ----------------------------- */
+/* SELF CHECK-IN                 */
+/* ----------------------------- */
+.hs-preview-selfcheck {
+  padding-left: 8px;
+  border-left: 3px solid #eee;
+  margin: 6px 0;
+  font-size: 15.5px;
+}
+
+
+
+/* ----------------------------- */
+/* SMALL RESPONSIVE TUNING       */
+/* ----------------------------- */
+@media (max-width: 720px) {
+  .hs-preview-description {
+    font-size: 15px;
+    padding: 0 8px;
+  }
+
+  .hs-preview-rs-item,
+  .hs-preview-selfcheck {
+    font-size: 15px;
+  }
+
+  .hs-preview-rs-title {
+    font-size: 16px;
+  }
+}
+
+.hs-preview-label {
+  font-weight: 600;
 }
