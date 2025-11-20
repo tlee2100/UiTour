@@ -18,6 +18,7 @@ namespace UITour.ServicesL.Implementations
         private readonly IEmailService _emailService;
         private const string RegistrationOtpPrefix = "register_otp_";
         private const string RegistrationVerifiedPrefix = "register_verified_";
+        private const string ProfileOtpPrefix = "profile_otp_";
 
         public UserService(IUnitOfWork unitOfWork, IMemoryCache cache, IEmailService emailService)
         {
@@ -239,6 +240,43 @@ namespace UITour.ServicesL.Implementations
             return true;
         }
 
+        public async Task<string> SendProfileOtpAsync(int userId)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null)
+                throw new InvalidOperationException("User not found");
+            if (string.IsNullOrWhiteSpace(user.Email))
+                throw new InvalidOperationException("User does not have a verified email.");
+
+            var otp = GenerateOtpCode();
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+            };
+
+            _cache.Set($"{ProfileOtpPrefix}{userId}", otp, cacheOptions);
+
+            var body = $"<p>Your UiTour security code is <strong>{otp}</strong>.</p><p>This code expires in 10 minutes.</p>";
+            await _emailService.SendAsync(user.Email, "Confirm changes to your UiTour account", body);
+
+            return otp;
+        }
+
+        public Task<bool> VerifyProfileOtpAsync(int userId, string otp)
+        {
+            if (string.IsNullOrWhiteSpace(otp))
+                throw new InvalidOperationException("OTP is required");
+
+            if (!_cache.TryGetValue($"{ProfileOtpPrefix}{userId}", out string cachedOtp))
+                throw new InvalidOperationException("OTP has expired or is invalid");
+
+            if (!string.Equals(cachedOtp, otp, StringComparison.Ordinal))
+                throw new InvalidOperationException("OTP is incorrect");
+
+            _cache.Remove($"{ProfileOtpPrefix}{userId}");
+            return Task.FromResult(true);
+        }
+
         public async Task<bool> DeleteAccountAsync(int userId)
         {
             var user = await GetByIdAsync(userId);
@@ -258,6 +296,11 @@ namespace UITour.ServicesL.Implementations
         public async Task<IEnumerable<SavedListings>> GetSavedListingsAsync(int userId)
         {
             return await _unitOfWork.SavedListings.Query().Where(sl => sl.UserID == userId).ToListAsync();
+        }
+
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return await _unitOfWork.Users.Query().ToListAsync();
         }
 
         private string GenerateToken(User user)

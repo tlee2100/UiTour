@@ -14,7 +14,18 @@ export default function ToursPage() {
   const { user } = useApp();
   const [searchParams] = useSearchParams();
   const { experiences, loading, error, fetchExperiences } = useExperience();
-  const [savedPropertyIds, setSavedPropertyIds] = useState(new Set());
+  const [savedTourIds, setSavedTourIds] = useState(new Set());
+
+  const deriveIdsFromWishlist = useCallback((wishlistPayload, targetType = 'property') => {
+    if (!wishlistPayload) return new Set();
+    const items = wishlistPayload.items || wishlistPayload.Items || [];
+    return new Set(
+      items
+        .filter((item) => (item.type || item.Type || 'property') === targetType)
+        .map((item) => Number(item.id ?? item.Id ?? item.propertyId ?? item.PropertyID))
+        .filter((id) => !Number.isNaN(id))
+    );
+  }, []);
   
   const location = searchParams.get('location') || '';
   const dates = searchParams.get('dates') || '';
@@ -22,18 +33,19 @@ export default function ToursPage() {
 
   // Load saved property IDs from wishlist
   const loadSavedProperties = useCallback(async () => {
-    if (!user || !user.UserID) return;
+    if (!user || !user.UserID) {
+      setSavedTourIds(new Set());
+      return;
+    }
     
     try {
       const wishlist = await authAPI.getUserWishlist(user.UserID);
-      if (wishlist && wishlist.items) {
-        const savedIds = new Set(wishlist.items.map(item => item.id));
-        setSavedPropertyIds(savedIds);
-      }
+      setSavedTourIds(deriveIdsFromWishlist(wishlist, 'tour'));
     } catch (err) {
       console.error('Error loading saved properties:', err);
+      setSavedTourIds(new Set());
     }
-  }, [user]);
+  }, [deriveIdsFromWishlist, user]);
 
   const loadExperiences = useCallback(async () => {
     try {
@@ -120,20 +132,16 @@ export default function ToursPage() {
 
                         // Note: Tours are saved as properties in the current implementation
                         // If you have a separate tours wishlist, you'll need to create a different API
-                        const isSaved = savedPropertyIds.has(tour.id);
+                        const isSaved = savedTourIds.has(tour.id);
                         
                         try {
+                          let updatedWishlist;
                           if (isSaved) {
-                            await authAPI.removeFromWishlist(user.UserID, tour.id);
-                            setSavedPropertyIds(prev => {
-                              const newSet = new Set(prev);
-                              newSet.delete(tour.id);
-                              return newSet;
-                            });
+                            updatedWishlist = await authAPI.removeFromWishlist(user.UserID, tour.id, 'tour');
                           } else {
-                            await authAPI.addToWishlist(user.UserID, tour.id);
-                            setSavedPropertyIds(prev => new Set(prev).add(tour.id));
+                            updatedWishlist = await authAPI.addToWishlist(user.UserID, tour.id, 'tour');
                           }
+                          setSavedTourIds(deriveIdsFromWishlist(updatedWishlist, 'tour'));
                         } catch (error) {
                           console.error('Error updating wishlist:', error);
                           alert("Failed to update wishlist. Please try again.");
@@ -141,11 +149,11 @@ export default function ToursPage() {
                       }}
                     >
                       <Icon 
-                        icon={savedPropertyIds.has(tour.id) ? "mdi:heart" : "mdi:heart-outline"} 
+                        icon={savedTourIds.has(tour.id) ? "mdi:heart" : "mdi:heart-outline"} 
                         width="20" 
                         height="20"
                         style={{ 
-                          color: savedPropertyIds.has(tour.id) ? '#ff385c' : 'currentColor' 
+                          color: savedTourIds.has(tour.id) ? '#ff385c' : 'currentColor' 
                         }}
                       />
                     </button>
@@ -177,7 +185,7 @@ export default function ToursPage() {
                     <div className="tour-footer">
                       <div className="tour-price">
                         <span className="price">
-                          {(tour.price ?? 0).toLocaleString("vi-VN")}₫
+                          ${(tour.price ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                         <span className="price-unit">/ person</span>
                       </div>

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "./HomeInfoPage.css";
 import authAPI from "../services/authAPI"; // ✅ import authAPI
+import { useApp } from "../contexts/AppContext";
 
 import InfoHeader from "./Info_components/InfoHeader";
 import InfoReview from "./Info_components/InfoReview";
@@ -205,6 +206,16 @@ const normalizeProperty = (p) => {
     averageRating: 0
   };
 
+  const hostIdFromData =
+    host?.id ||
+    hostData?.hostID ||
+    hostData?.HostID ||
+    p.hostID ||
+    p.HostID ||
+    p.hostId ||
+    p.HostId ||
+    null;
+
   return {
     id: p.propertyID || p.id,
     listingTitle: p.listingTitle || p.ListingTitle || "Untitled",
@@ -317,6 +328,7 @@ const normalizeProperty = (p) => {
 
     // Host
     host: host,
+    hostId: hostIdFromData,
     hostStatus: host?.isSuperhost ? "Superhost" : "Host",
 
     // Reviews
@@ -377,9 +389,19 @@ const normalizeProperty = (p) => {
 
 export default function HomeInfoPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useApp();
   const [currentProperty, setCurrentProperty] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [saveState, setSaveState] = useState({ isSaved: false, loading: false });
+  const [bookingState, setBookingState] = useState({
+    checkIn: "",
+    checkOut: "",
+    guests: 1,
+  });
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingFeedback, setBookingFeedback] = useState(null);
 
   // -----------------------
   // Load property from API
@@ -401,6 +423,186 @@ export default function HomeInfoPage() {
     }
   }, []);
 
+  const isPropertySaved = useCallback((wishlistPayload, propertyIdentifier) => {
+    if (!wishlistPayload || !propertyIdentifier) return false;
+    const items = wishlistPayload.items || wishlistPayload.Items || [];
+    return items.some(
+      (item) =>
+        Number(item.id ?? item.Id ?? item.propertyId ?? item.PropertyID) ===
+        Number(propertyIdentifier)
+    );
+  }, []);
+
+  const refreshSaveState = useCallback(
+    async (propertyIdValue) => {
+      if (!user?.UserID || !propertyIdValue) {
+        setSaveState((prev) => ({ ...prev, isSaved: false }));
+        return;
+      }
+      try {
+        const wishlist = await authAPI.getUserWishlist(user.UserID);
+        const saved = isPropertySaved(wishlist, propertyIdValue);
+        setSaveState({ isSaved: saved, loading: false });
+      } catch (err) {
+        console.error("Failed to load wishlist:", err);
+        setSaveState((prev) => ({ ...prev, isSaved: false }));
+      }
+    },
+    [user, isPropertySaved]
+  );
+
+  const handleToggleSave = useCallback(async () => {
+    if (!currentProperty?.id) return;
+
+    if (!user?.UserID) {
+      navigate("/login", { state: { from: `/property/${id}` } });
+      return;
+    }
+
+    setSaveState((prev) => ({ ...prev, loading: true }));
+    try {
+      const response = saveState.isSaved
+        ? await authAPI.removeFromWishlist(user.UserID, currentProperty.id, 'property')
+        : await authAPI.addToWishlist(user.UserID, currentProperty.id, 'property');
+      const saved = isPropertySaved(response, currentProperty.id);
+      setSaveState({ isSaved: saved, loading: false });
+    } catch (err) {
+      console.error("Failed to toggle wishlist:", err);
+      setSaveState((prev) => ({ ...prev, loading: false }));
+      alert(err.message || "Không thể cập nhật danh sách yêu thích.");
+    }
+  }, [currentProperty, id, isPropertySaved, navigate, saveState.isSaved, user]);
+
+  const handleShareProperty = () => {
+    if (!currentProperty) return;
+    const shareData = {
+      title: currentProperty.listingTitle || "UiTour",
+      text: currentProperty.summary || currentProperty.description || "",
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      navigator.share(shareData).catch(() => {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard
+        .writeText(shareData.url)
+        .then(() => alert("Đã sao chép liên kết!"))
+        .catch(() => alert(shareData.url));
+    } else {
+      alert(shareData.url);
+    }
+  };
+
+  const handleDatesChange = (field, value) => {
+    setBookingState((prev) => {
+      const next = { ...prev, [field]: value };
+      if (
+        field === "checkIn" &&
+        next.checkOut &&
+        new Date(next.checkOut) <= new Date(value)
+      ) {
+        next.checkOut = "";
+      }
+      return next;
+    });
+  };
+
+  const handleGuestsChange = (value) => {
+    setBookingState((prev) => ({
+      ...prev,
+      guests: Number(value) || 1,
+    }));
+  };
+
+  const handleBookProperty = async () => {
+    if (!currentProperty?.id) return;
+    if (!user?.UserID) {
+      navigate("/login", { state: { from: `/property/${id}` } });
+      return;
+    }
+
+    if (!bookingState.checkIn || !bookingState.checkOut) {
+      setBookingFeedback({
+        type: "error",
+        message: "Vui lòng chọn ngày nhận phòng và trả phòng.",
+      });
+      return;
+    }
+
+    const checkInDate = new Date(bookingState.checkIn);
+    const checkOutDate = new Date(bookingState.checkOut);
+    if (checkOutDate <= checkInDate) {
+      setBookingFeedback({
+        type: "error",
+        message: "Ngày trả phòng phải sau ngày nhận phòng.",
+      });
+      return;
+    }
+
+    const nights = Math.max(
+      1,
+      Math.round(
+        (checkOutDate.getTime() - checkInDate.getTime()) /
+          (1000 * 60 * 60 * 24)
+      )
+    );
+
+    const pricePerNight =
+      currentProperty.pricing?.basePrice ?? currentProperty.price ?? 0;
+    const cleaningFee = Number(currentProperty.cleaningFee ?? 0);
+    const serviceFee = Number(
+      currentProperty.serviceFee ?? Math.round(pricePerNight * nights * 0.1)
+    );
+    const discount = Number(currentProperty.discount ?? 0);
+    const totalPrice =
+      pricePerNight * nights - discount + cleaningFee + serviceFee;
+    const hostId = currentProperty.hostId || currentProperty.host?.id;
+
+    if (!hostId) {
+      setBookingFeedback({
+        type: "error",
+        message: "Không tìm thấy thông tin host cho chỗ ở này.",
+      });
+      return;
+    }
+
+    const payload = {
+      PropertyID: Number(currentProperty.id),
+      UserID: user.UserID,
+      HostID: hostId,
+      CheckIn: checkInDate.toISOString(),
+      CheckOut: checkOutDate.toISOString(),
+      Nights: nights,
+      GuestsCount:
+        Math.min(
+          Math.max(Number(bookingState.guests) || 1, 1),
+          currentProperty.maxGuests || Number(bookingState.guests) || 1
+        ),
+      BasePrice: pricePerNight,
+      CleaningFee: cleaningFee,
+      ServiceFee: serviceFee,
+      TotalPrice: totalPrice,
+      Currency: currentProperty.currency || "USD",
+    };
+
+    setBookingFeedback(null);
+    setBookingLoading(true);
+    try {
+      await authAPI.createBooking(payload);
+      setBookingFeedback({
+        type: "success",
+        message: "Đặt phòng thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.",
+      });
+    } catch (err) {
+      setBookingFeedback({
+        type: "error",
+        message: err.message || "Không thể đặt phòng. Vui lòng thử lại.",
+      });
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (id) {
       loadProperty(id);
@@ -410,6 +612,18 @@ export default function HomeInfoPage() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
+
+  useEffect(() => {
+    if (!currentProperty?.id) return;
+    refreshSaveState(currentProperty.id);
+    setBookingState((prev) => ({
+      ...prev,
+      guests: Math.min(
+        prev.guests || 1,
+        currentProperty.maxGuests || prev.guests || 1
+      ),
+    }));
+  }, [currentProperty, refreshSaveState]);
 
   if (loading) {
     return <LoadingSpinner message="Đang tải thông tin chỗ ở..." />;
@@ -434,6 +648,12 @@ export default function HomeInfoPage() {
             hostStatus: p.hostStatus || "Host",
             location: p.location || `${p.locationObj?.address}, ${p.locationObj?.city}`
           }}
+          actions={{
+            onShareClick: handleShareProperty,
+            onSaveClick: handleToggleSave,
+            isSaved: saveState.isSaved,
+            saveLoading: saveState.loading,
+          }}
         />
 
         {/* ✅ Gallery with fallback mapping */}
@@ -446,7 +666,17 @@ export default function HomeInfoPage() {
           </div>
 
           <div className="homeinfo-right">
-            <HIBookingBox property={p} />
+            <HIBookingBox
+              property={p}
+              checkInDate={bookingState.checkIn}
+              checkOutDate={bookingState.checkOut}
+              guests={bookingState.guests}
+              onDatesChange={handleDatesChange}
+              onGuestsChange={handleGuestsChange}
+              onBook={handleBookProperty}
+              bookingLoading={bookingLoading}
+              bookingFeedback={bookingFeedback}
+            />
           </div>
         </div>
 

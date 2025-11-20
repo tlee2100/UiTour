@@ -26,23 +26,34 @@ export default function HomePage() {
   const [error, setError] = useState(null);
   const [savedPropertyIds, setSavedPropertyIds] = useState(new Set());
 
+  const deriveIdsFromWishlist = useCallback((wishlistPayload, targetType = 'property') => {
+    if (!wishlistPayload) return;
+    const items = wishlistPayload.items || wishlistPayload.Items || [];
+    const ids = items
+      .filter((item) => (item.type || item.Type || 'property') === targetType)
+      .map((item) => Number(item.id ?? item.Id ?? item.propertyId ?? item.PropertyID))
+      .filter((id) => !Number.isNaN(id));
+    setSavedPropertyIds(new Set(ids));
+  }, []);
+
   // -----------------------
   // Load saved property IDs from wishlist
   // -----------------------
   const loadSavedProperties = useCallback(async () => {
-    if (!user || !user.UserID) return;
+    if (!user || !user.UserID) {
+      setSavedPropertyIds(new Set());
+      return;
+    }
     
     try {
       const wishlist = await authAPI.getUserWishlist(user.UserID);
-      if (wishlist && wishlist.items) {
-        const savedIds = new Set(wishlist.items.map(item => item.id));
-        setSavedPropertyIds(savedIds);
-      }
+      deriveIdsFromWishlist(wishlist, 'property');
     } catch (err) {
       // Silently fail - user might not have wishlist yet
       console.error('Error loading saved properties:', err);
+      setSavedPropertyIds(new Set());
     }
-  }, [user]);
+  }, [deriveIdsFromWishlist, user]);
 
   // -----------------------
   // Load properties from API
@@ -83,7 +94,7 @@ export default function HomePage() {
 
   useEffect(() => {
     loadProperties();
-    loadSavedProperties();
+      loadSavedProperties();
   }, [loadProperties, loadSavedProperties]);
 
   // -----------------------
@@ -204,19 +215,13 @@ export default function HomePage() {
                     const isSaved = savedPropertyIds.has(property.id);
                     
                     try {
+                      let updatedWishlist;
                       if (isSaved) {
-                        // Remove from wishlist
-                        await authAPI.removeFromWishlist(user.UserID, property.id);
-                        setSavedPropertyIds(prev => {
-                          const newSet = new Set(prev);
-                          newSet.delete(property.id);
-                          return newSet;
-                        });
+                        updatedWishlist = await authAPI.removeFromWishlist(user.UserID, property.id, 'property');
                       } else {
-                        // Add to wishlist
-                        await authAPI.addToWishlist(user.UserID, property.id);
-                        setSavedPropertyIds(prev => new Set(prev).add(property.id));
+                        updatedWishlist = await authAPI.addToWishlist(user.UserID, property.id, 'property');
                       }
+                      deriveIdsFromWishlist(updatedWishlist, 'property');
                     } catch (error) {
                       console.error('Error updating wishlist:', error);
                       alert("Failed to update wishlist. Please try again.");
@@ -243,8 +248,8 @@ export default function HomePage() {
                 </div>
                 <div className="property-dates">{property.dates || "Available ✅"}</div>
                 <div className="property-price">
-                  <span className="price">₫{(property.price ?? 0).toLocaleString("vi-VN")}</span>
-                  <span className="price-unit"> / đêm</span>
+                  <span className="price">${(property.price ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="price-unit"> / night</span>
                 </div>
               </div>
             </div>

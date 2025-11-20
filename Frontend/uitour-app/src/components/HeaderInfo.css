@@ -46,14 +46,13 @@
 
   display: flex;
   align-items: center;
-  gap: 12px;
 
-  width: 334px;
+  width: 360px;
   height: 48px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 1000px;
-  padding: 8px 12px 8px 20px;
+  padding: 0;
 }
 
 .headerif_searchInput {
@@ -62,12 +61,18 @@
   outline: none;
   font-size: 14px;
   font-weight: 500;
-  padding-bottom: 0%;
+  padding: 0 56px 0 20px;
+  height: 100%;
+  background: transparent;
 }
 
 .headerif_searchButton {
-  width: 32px;
-  height: 32px;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
   background: var(--uitour-color);
   border: none;
   border-radius: 50%;
@@ -75,6 +80,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 176, 216, 0.25);
 }
 
 .headerif_searchButton:hover {

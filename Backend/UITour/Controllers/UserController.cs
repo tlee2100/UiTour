@@ -114,6 +114,39 @@ namespace UITour.API.Controllers
             }
         }
 
+        [HttpPost("{id}/profile/send-otp")]
+        public async Task<IActionResult> SendProfileOtp(int id)
+        {
+            try
+            {
+                var otp = await _userService.SendProfileOtpAsync(id);
+                return Ok(new
+                {
+                    message = "OTP sent to your email.",
+                    expiresInSeconds = 600,
+                    devOtp = _environment.IsDevelopment() ? otp : null
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost("{id}/profile/verify-otp")]
+        public async Task<IActionResult> VerifyProfileOtp(int id, [FromBody] ProfileOtpVerifyDto dto)
+        {
+            try
+            {
+                await _userService.VerifyProfileOtpAsync(id, dto.Otp);
+                return Ok(new { message = "OTP verified successfully." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
         // POST: api/user/login
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
@@ -296,6 +329,21 @@ namespace UITour.API.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        // GET: api/user/all (Admin only)
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            try
+            {
+                var users = await _userService.GetAllUsersAsync();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
             }
         }
     }
