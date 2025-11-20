@@ -248,8 +248,8 @@ export default function HomePage() {
                 </div>
                 <div className="property-dates">{property.dates || "Available ✅"}</div>
                 <div className="property-price">
-                  <span className="price">₫{(property.price ?? 0).toLocaleString("vi-VN")}</span>
-                  <span className="price-unit"> / đêm</span>
+                  <span className="price">${(property.price ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="price-unit"> / night</span>
                 </div>
               </div>
             </div>

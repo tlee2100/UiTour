@@ -5,7 +5,8 @@ namespace UITour.Models.DTO
 {
     public class CreateBookingDto
     {
-        [Required] public int PropertyID { get; set; }
+        public int? PropertyID { get; set; } // Nullable for tour bookings
+        public int? TourID { get; set; } // Nullable for property bookings
         [Required] public int UserID { get; set; }
         [Required] public int HostID { get; set; }
         [Required] public DateTime CheckIn { get; set; }

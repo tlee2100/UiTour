@@ -88,7 +88,15 @@ namespace UITour.Models
                 .HasOne(b => b.Property)
                 .WithMany(p => p.Bookings)
                 .HasForeignKey(b => b.PropertyID)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false); // Make PropertyID optional for tour bookings
+
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Tour)
+                .WithMany(t => t.Bookings)
+                .HasForeignKey(b => b.TourID)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false); // Make TourID optional for property bookings
 
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.User)
