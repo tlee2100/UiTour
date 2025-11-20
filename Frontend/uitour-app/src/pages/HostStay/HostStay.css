@@ -688,6 +688,90 @@
   }
 }
 
+/* When no photos yet → large dropzone */
+.hs-photo-dropzone.large {
+  height: 480px;
+  background: #f6f6f6;
+  border: 2px dashed #d9d9d9;
+}
+
+/* When photos exist → small compact dropzone */
+.hs-photo-dropzone.small {
+  height: 180px;
+  background: #f9f9f9;
+  border: 1px dashed #d0d0d0;
+}
+
+.hs-photo-dropzone.small .hs-photo-center {
+  gap: 8px;
+}
+
+.hs-photo-dropzone.small svg {
+  width: 30px !important;
+  height: 30px !important;
+}
+
+/* Wrapper giống Experience */
+.hs-photo-thumb-wrapper {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* COVER BADGE — single canonical rule (place this once) */
+.hs-photo-thumb-wrapper,
+.hs-photo-thumb {
+  position: relative;
+  /* đảm bảo badge được tính relative đến thumb */
+}
+
+/* badge nhỏ, cố định ở góc trên-trái, không ảnh hưởng layout */
+.hs-cover-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  bottom: auto;
+  /* chắc chắn không có bottom:... cũ ghi đè */
+  transform: none;
+  display: inline-block;
+  z-index: 50;
+  /* cao hơn remove button nếu muốn, hoặc 3 như trước */
+  pointer-events: none;
+  /* tránh chặn click trên ảnh */
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  white-space: nowrap;
+}
+
+/* Remove button */
+.hs-photo-remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  background: rgba(17, 17, 17, 0.82);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.hs-photo-remove-btn svg {
+  color: #fff;
+}
+
+
 /* ===========================================
    Host Stay – Create Title (Consistent Layout)
 =========================================== */
@@ -1281,18 +1365,8 @@
   }
 }
 
-/* Cover badge */
-.hs-cover-badge {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  background: rgba(0, 0, 0, 0.65);
-  color: white;
-  padding: 4px 8px;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 6px;
-}
+
+
 
 /* =======================================================
    Host Stay – Fees Page (Unified + No Conflicts)
