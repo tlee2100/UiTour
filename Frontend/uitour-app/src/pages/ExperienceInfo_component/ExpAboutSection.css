@@ -89,3 +89,11 @@
   height: 18px;
 }
 
+.expAbout-saveButton.saved {
+  color: #ff385c;
+}
+
+.expAbout-saveButton.saved .heart-icon {
+  fill: #ff385c;
+}
+
