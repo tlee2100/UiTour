@@ -35,8 +35,8 @@ export default function HostStayCreateAmenities() {
     const newAmenities = amenities.includes(amenityId)
       ? amenities.filter((i) => i !== amenityId)
       : [...amenities, amenityId];
-    updateField("amenities", { amenities: newAmenities });
-    Console.log(newAmenities);
+    updateField("amenities", newAmenities);
+    console.log(newAmenities);
   };
 
   const handleNext = () => {
