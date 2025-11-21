@@ -123,11 +123,12 @@ export default function HostExperienceCreateMaxGuests() {
             </div>
 
             <div className="he-field">
-              <label>Price per guest (VND)</label>
+              <label>Price per guest (USD)</label>
               <input
                 className="he-input"
                 type="text"
-                value={formatVND(pricePerGuest)}
+                //value={formatVND(pricePerGuest)}
+                value={pricePerGuest}
                 placeholder="Enter price..."
                 onChange={(e) => {
                   const raw = parseVND(e.target.value);

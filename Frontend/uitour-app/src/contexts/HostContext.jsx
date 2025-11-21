@@ -505,6 +505,8 @@ export function HostProvider({ children }) {
   const [photosReady, setPhotosReady] = useState(false);
   // 🖼 Ảnh chỉ lưu trong RAM (KHÔNG localStorage)
   const [stayPhotosRAM, setStayPhotosRAM] = useState([]);
+  const [experiencePhotosRAM, setExperiencePhotosRAM] = useState([]);
+  const [experienceItineraryRAM, setExperienceItineraryRAM] = useState([]);
 
 
   const location = useLocation();
@@ -695,12 +697,43 @@ export function HostProvider({ children }) {
           ...prev,
           location: { ...prev.location, ...values },
         }));
+
       } else if (step === "qualification") {
-        setExperienceData((prev) => ({
+        setExperienceData(prev => ({
           ...prev,
-          qualifications: { ...prev.qualifications, ...values },
+          qualifications: { ...prev.qualifications, ...values }
         }));
-      } else if (step === "pricing") {
+        setCompletedStep(prev => ({ ...prev, qualification: true }));
+        return;
+
+      } else if (step === "itinerary") {
+        // 1) Update RAM
+        setExperienceItineraryRAM(values.map(item => ({
+          id: item.id,
+          preview: item.photo?.preview || null,
+          file: item.photo?.file || null,
+        })));
+
+        // 2) Save only metadata to local data (no base64)
+        setExperienceData(prev => ({
+          ...prev,
+          experienceDetails: values.map(item => ({
+            id: item.id,
+            title: item.title,
+            content: item.content,
+            photo: item.photo ? {
+              name: item.photo.name || "",
+              caption: item.photo.caption || "",
+              serverUrl: item.photo.serverUrl || "",
+            } : null
+          }))
+        }));
+
+        setCompletedStep(prev => ({ ...prev, itinerary: true }));
+        return;
+      }
+
+      else if (step === "pricing") {
         setExperienceData((prev) => ({
           ...prev,
           pricing: { ...prev.pricing, ...values },
@@ -725,18 +758,32 @@ export function HostProvider({ children }) {
         }));
         return;
       } else if (step === "photos") {
+        const incoming = values.photos || [];
+        const hasPreview = incoming.some(p => p.preview || p.file);
+
+        if (hasPreview) {
+          setExperiencePhotosRAM(incoming);
+        }
+
         setExperienceData((prev) => ({
           ...prev,
           media: {
             ...prev.media,
-            photos: values.photos,
-            cover: values.cover,
+            photos: incoming.map((p, i) => ({
+              name: p.name || "",
+              caption: p.caption || "",
+              serverUrl: p.serverUrl || "",
+              sortIndex: p.sortIndex ?? i + 1,
+              isCover: p.isCover || false,
+            })),
+            cover: values.cover || prev.media.cover,
           },
         }));
 
-        setCompletedStep((prev) => ({ ...prev, photos: true, media: true }));
+        setCompletedStep(prev => ({ ...prev, photos: true, media: true }));
         return;
-      } else {
+      }
+      else {
         setExperienceData((prev) => ({ ...prev, ...values }));
       }
     }
@@ -849,32 +896,32 @@ export function HostProvider({ children }) {
           const userStr = localStorage.getItem("user");
           const user = userStr ? JSON.parse(userStr) : null;
           const userID = user?.UserID || user?.userID || user?.id || null;
-  
+   
           if (!userID) {
             alert("Vui lòng đăng nhập để tạo property!");
             return false;
           }
-  
+   
           // Set userID in data (backend sẽ tự động tạo Host nếu chưa có)
           data.userID = userID;
-  
+   
           // Format data for API (sync function)
           payload = formatStayDataForAPI(data);
-  
+   
           console.log(
             "[SEND TO BACKEND]",
             JSON.stringify(payload, null, 2)
           );
-  
+   
           // Import authAPI dynamically to avoid circular dependency
           const authAPI = (await import("../services/authAPI")).default;
-  
+   
           // Call API to create property
           const result = await authAPI.createProperty(payload);
-  
+   
           console.log("[PROPERTY CREATED]", result);
           alert("Tạo property thành công!");
-  
+   
           return true;
         } else {
           payload = formatExperienceDataForAPI(data);
@@ -888,7 +935,7 @@ export function HostProvider({ children }) {
         return false;
       }
     }
-  
+   
     */
 
   //DEV MODE: -------------------------File tạm để test---------------------------------------
@@ -943,18 +990,15 @@ export function HostProvider({ children }) {
         exp.media = exp.media || { cover: null, photos: [] };
 
         // normalize photos: đảm bảo không crash khi thiếu file
-        exp.media.photos = (exp.media.photos || []).map((p) => {
-          const preview = p.preview || p.serverUrl || "";
+        exp.media.photos = (exp.media.photos || []).map((p) => ({
+          preview: "", // KHÔNG load preview từ localStorage
+          file: null,
+          name: p.name || "",
+          caption: p.caption || "",
+          serverUrl: p.serverUrl || "",
+          isCover: p.isCover || false,
+        }));
 
-          return {
-            file: null, // tránh UI crash
-            preview,
-            name: p.name || "",
-            caption: p.caption || "",
-            serverUrl: p.serverUrl || "",
-            isCover: preview === exp.media.cover,
-          };
-        });
 
         // Nếu cover rỗng thì đặt auto ảnh đầu
         if (!exp.media.cover && exp.media.photos.length > 0) {
@@ -962,6 +1006,13 @@ export function HostProvider({ children }) {
         }
 
         setExperienceData({ ...initialExperienceData, ...exp });
+        setExperienceItineraryRAM(
+          exp.experienceDetails.map(item => ({
+            id: item.id,
+            preview: "", // RAM không load từ localStorage
+            file: null
+          }))
+        );
         setCompletedStep((prev) => ({
           ...prev,
           photos: exp.media.photos.length > 0,
@@ -1007,17 +1058,18 @@ export function HostProvider({ children }) {
     const expForStorage = {
       ...experienceData,
 
-      capacity: {
-        ...experienceData.capacity,
-      },
+      // itinerary cleanup
+      experienceDetails: experienceData.experienceDetails.map((item) => ({
+        ...item,
+        photo: item.photo ? {
+          file: null,
+          preview: "",
+          name: item.photo.name || "",
+          caption: item.photo.caption || "",
+          serverUrl: item.photo.serverUrl || "",
+        } : null,
+      })),
 
-      pricing: {
-        ...experienceData.pricing,
-      },
-
-      booking: {
-        ...experienceData.booking,
-      },
       discounts: {
         earlyBird: experienceData.discounts?.earlyBird ?? false,
         byDaysBefore: experienceData.discounts?.byDaysBefore ?? [],
@@ -1026,13 +1078,15 @@ export function HostProvider({ children }) {
 
       media: {
         ...experienceData.media,
-        photos: experienceData.media.photos.map((p) => ({
-          preview: p.preview,
-          caption: p.caption,
-          serverUrl: p.serverUrl,
-          name: p.name,
+        photos: experienceData.media.photos.map((p, i) => ({
+          name: p.name || "",
+          caption: p.caption || "",
+          serverUrl: p.serverUrl || "",
+          sortIndex: p.sortIndex ?? i + 1,
+          isCover: !!p.isCover,
         })),
       },
+
     };
 
     localStorage.setItem("host_exp_draft", JSON.stringify(expForStorage));
@@ -1085,6 +1139,10 @@ export function HostProvider({ children }) {
         photosReady,
         stayPhotosRAM,
         setStayPhotosRAM,
+        experiencePhotosRAM,
+        setExperiencePhotosRAM,
+        experienceItineraryRAM,
+        setExperienceItineraryRAM,
       }}
     >
       {children}
@@ -1107,7 +1165,7 @@ function formatStayDataForAPI(d) {
   // PHOTOS
   // ---------------------------------------------------------
   const photos = (d.photos || []).map((p, i) => ({
-    url: safe(p.serverUrl || p.preview || ""),
+    url: safe(p.serverUrl || ""),
     caption: safe(p.caption),
     category: safe(p.category),
     sortIndex: p.sortIndex ?? i + 1,
@@ -1303,6 +1361,13 @@ function formatExperienceDataForAPI(d) {
       sortIndex: i + 1,
     })),
     coverPhoto: d.media.cover,
+    experienceDetails: d.experienceDetails.map(item => ({
+      ...item,
+      photo: item.photo ? {
+        url: item.photo.serverUrl || "",
+        caption: item.photo.caption || ""
+      } : null
+    })),
 
     startDate: d.startDate,
     endDate: d.endDate,

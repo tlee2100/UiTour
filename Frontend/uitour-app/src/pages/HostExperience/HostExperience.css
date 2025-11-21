@@ -1253,3 +1253,145 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
   transform: translateY(-1px);
 }
+
+/* Host Experience Preview CSS will be added here based on Stay Preview */
+/* =============================================
+   HOST EXPERIENCE PREVIEW (mirroring Stay Preview)
+   ============================================= */
+
+.he-preview-page {
+  padding: 40px 0;
+  display: flex;
+  justify-content: center;
+  background: #fff;
+}
+
+.he-preview-container {
+  width: 100%;
+  max-width: 880px;
+  padding: 0 20px;
+}
+
+/* HERO */
+.he-preview-hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.he-preview-cover {
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin-bottom: 20px;
+}
+
+.he-preview-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #000;
+}
+
+.he-preview-description {
+  font-size: 16px;
+  line-height: 1.55;
+  color: #333;
+  max-width: 760px;
+  margin: 0 auto 18px;
+}
+
+.he-preview-location {
+  color: #666;
+  font-size: 17px;
+}
+
+/* SECTION */
+.he-preview-section {
+  margin-bottom: 36px;
+}
+
+.he-preview-section-title {
+  font-size: 22px;
+  margin-bottom: 14px;
+  font-weight: 600;
+  color: #000;
+}
+
+/* CARD */
+.he-preview-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #222;
+}
+
+.he-preview-divider {
+  width: 100%;
+  height: 1px;
+  background: #e5e5e5;
+  margin: 14px 0;
+}
+
+/* ITINERARY ITEMS */
+.he-preview-itinerary-item {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.he-preview-itinerary-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.he-preview-itinerary-text h3 {
+  margin: 0 0 6px 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.he-preview-itinerary-text p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #444;
+}
+
+/* PHOTOS */
+.he-preview-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.he-preview-photo-item {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 720px) {
+  .he-preview-title {
+    font-size: 26px;
+  }
+  .he-preview-description {
+    font-size: 15px;
+    padding: 0 8px;
+  }
+  .he-preview-itinerary-item {
+    flex-direction: column;
+  }
+  .he-preview-itinerary-photo {
+    width: 100%;
+    height: 200px;
+  }
+}

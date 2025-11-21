@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import Loading from "../../components/Loading";
 import "./HostExperience.css";
 
+// Convert file → base64 preview
 function fileToBase64(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -19,6 +20,8 @@ export default function HostExperienceCreatePhotos() {
 
   const {
     experienceData,
+    experiencePhotosRAM,
+    setExperiencePhotosRAM,
     updateField,
     validateStep,
     loadingDraft,
@@ -27,20 +30,18 @@ export default function HostExperienceCreatePhotos() {
     type,
   } = useHost();
 
-  // Optional: Set flow type correctly
   useEffect(() => {
-    if (type !== "experience") {
-      setFlowType("experience");
-    }
+    if (type !== "experience") setFlowType("experience");
   }, [type, setFlowType]);
 
   if (loadingDraft || !photosReady) {
     return <Loading message="Loading your photos..." />;
   }
 
-  const photos = experienceData.media?.photos || [];
-  const cover = experienceData.media?.cover || null;
+  const photos = experiencePhotosRAM || [];
+  const coverName = experienceData.media?.cover || null;
 
+  // Convert FileList → RAM photo objects
   const prepareFiles = async (fileList) =>
     Promise.all(
       fileList.map(async (file) => ({
@@ -51,67 +52,84 @@ export default function HostExperienceCreatePhotos() {
       }))
     );
 
-  // ADD FILES
-  const handleSelect = async (e) => {
-    const newPhotos = await prepareFiles(Array.from(e.target.files));
-    const combined = [...photos, ...newPhotos];
+  // Sync RAM + Context metadata
+  const syncPhotos = (list, newCoverName) => {
+    setExperiencePhotosRAM(list);
 
-    const newCover = cover || combined[0]?.preview || null;
+    const meta = list.map((p, i) => ({
+      name: p.name,
+      caption: p.caption || "",
+      serverUrl: p.serverUrl || "",
+      sortIndex: i + 1,
+      isCover: p.name === newCoverName,
+    }));
+
+    updateField("photos", {
+      photos: meta,
+      cover: newCoverName,
+    });
+  };
+
+  // Add Photos
+  const handleSelect = async (e) => {
+    const selected = await prepareFiles(Array.from(e.target.files));
+    const combined = [...photos, ...selected];
+
+    const newCoverName = coverName || combined[0]?.name || null;
 
     const updated = combined.map((p) => ({
       ...p,
-      isCover: p.preview === newCover,
+      isCover: p.name === newCoverName,
     }));
 
-    updateField("photos", { photos: updated, cover: newCover });
+    syncPhotos(updated, newCoverName);
   };
 
-  // DROP FILES
+  // Drop Photos
   const handleDrop = async (e) => {
     e.preventDefault();
+    const dropped = await prepareFiles(Array.from(e.dataTransfer.files));
+    const combined = [...photos, ...dropped];
 
-    const newPhotos = await prepareFiles(Array.from(e.dataTransfer.files));
-    const combined = [...photos, ...newPhotos];
-
-    const newCover = cover || combined[0]?.preview || null;
+    const newCoverName = coverName || combined[0]?.name || null;
 
     const updated = combined.map((p) => ({
       ...p,
-      isCover: p.preview === newCover,
+      isCover: p.name === newCoverName,
     }));
 
-    updateField("photos", { photos: updated, cover: newCover });
+    syncPhotos(updated, newCoverName);
   };
 
-  // REMOVE PHOTO
+  // Remove Photo
   const removePhoto = (index) => {
     const removed = photos[index];
     const newPhotos = photos.filter((_, i) => i !== index);
 
-    let newCover = experienceData.media.cover;
-    if (removed.preview === newCover) {
-      newCover = newPhotos[0]?.preview || null;
+    let newCoverName = experienceData.media.cover;
+
+    if (removed.name === newCoverName) {
+      newCoverName = newPhotos[0]?.name || null;
     }
 
     const updated = newPhotos.map((p) => ({
       ...p,
-      isCover: p.preview === newCover,
+      isCover: p.name === newCoverName,
     }));
 
-    updateField("photos", { photos: updated, cover: newCover });
+    syncPhotos(updated, newCoverName);
   };
 
-  // SET COVER
+  // Set Cover
   const setAsCover = (photo) => {
     const updated = photos.map((p) => ({
       ...p,
-      isCover: p.preview === photo.preview,
+      isCover: p.name === photo.name,
     }));
 
-    updateField("photos", { photos: updated, cover: photo.preview });
+    syncPhotos(updated, photo.name);
   };
 
-  // NEXT
   const handleNext = () => {
     if (!validateStep("photos")) return;
     navigate("/host/experience/create/describe-title");
@@ -124,9 +142,7 @@ export default function HostExperienceCreatePhotos() {
 
         {/* DROPZONE */}
         <div
-          className={`he-photos-dropzone ${
-            photos.length === 0 ? "large" : "small"
-          }`}
+          className={`he-photos-dropzone ${photos.length === 0 ? "large" : "small"}`}
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
         >
@@ -171,9 +187,7 @@ export default function HostExperienceCreatePhotos() {
                 >
                   <div className="he-photo-thumb">
                     <img src={p.preview} alt="photo" />
-                    {p.isCover && (
-                      <div className="he-photo-cover-badge">Cover</div>
-                    )}
+                    {p.isCover && <div className="he-photo-cover-badge">Cover</div>}
                   </div>
                 </div>
               </div>

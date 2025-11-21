@@ -94,6 +94,10 @@ const ROUTE_FLOW = {
   },
   "/host/experience/create/discount": {
     prev: "/host/experience/create/max-guests",
+    next: "/host/experience/create/preview",
+  },
+  "/host/experience/create/preview": {
+    prev: "/host/experience/create/discount",
     isLast: true,
   },
 };
