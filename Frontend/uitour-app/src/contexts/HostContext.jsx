@@ -399,7 +399,8 @@ function sanitizeStayData(raw) {
   clean.photos = Array.isArray(raw.photos) ? raw.photos : [];
   clean.photosPreview = []; // không bao giờ lấy từ draft
 
-  clean.amenities = raw.amenities || [];
+  clean.amenities = Array.isArray(raw.amenities) ? raw.amenities : [];
+
   clean.calendar = Array.isArray(raw.calendar) ? raw.calendar : [];
   clean.bookings = Array.isArray(raw.bookings) ? raw.bookings : [];
 
@@ -573,14 +574,54 @@ export function HostProvider({ children }) {
           ...prev,
           location: { ...prev.location, ...values },
         }));
+        return;
       }
-      // PRICE
-      else if (step === "pricing") {
-        setStayData((prev) => ({
+      if (step === "details") {
+        setStayData(prev => ({
           ...prev,
-          pricing: { ...prev.pricing, ...values },
+          ...values, // bedrooms, beds, bathrooms, accommodates, squareFeet
         }));
+        setCompletedStep(prev => ({ ...prev, details: true }));
+        return;
       }
+      if (step === "title") {
+        setStayData(prev => ({
+          ...prev,
+          listingTitle: values.listingTitle ?? prev.listingTitle
+        }));
+        setCompletedStep(prev => ({ ...prev, title: true }));
+        return;
+      }
+      if (step === "description") {
+        setStayData(prev => ({
+          ...prev,
+          description: values.description ?? prev.description,
+          summary: values.summary ?? prev.summary
+        }));
+        setCompletedStep(prev => ({ ...prev, description: true }));
+        return;
+      }
+      if (step === "amenities") {
+        // values = array
+        setStayData(prev => ({
+          ...prev,
+          amenities: values
+        }));
+        setCompletedStep(prev => ({ ...prev, amenities: true }));
+        return;
+      }
+
+      // PRICE
+      if (step === "pricing") {
+        const patch = values.pricing || values; // chống lỗi UI gửi sai shape
+        setStayData(prev => ({
+          ...prev,
+          pricing: { ...prev.pricing, ...patch }
+        }));
+        setCompletedStep(prev => ({ ...prev, pricing: true }));
+        return;
+      }
+
       // DISCOUNTS (stay)
       if (step === "discounts") {
         setStayData(prev => ({
