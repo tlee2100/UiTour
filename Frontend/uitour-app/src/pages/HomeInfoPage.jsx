@@ -215,7 +215,56 @@ const normalizeProperty = (p) => {
     p.hostId ||
     p.HostId ||
     null;
+  
+  // ---------- HOUSE RULES ----------
+    let parsedHouseRules = [];
+    if (typeof p.houseRules === "string") {
+      try {
+        parsedHouseRules = JSON.parse(p.houseRules);
+      } catch (e) {
+        parsedHouseRules = [];
+      }
+    } else if (Array.isArray(p.houseRules)) {
+      parsedHouseRules = p.houseRules;
+    }
 
+    // ---------- HEALTH & SAFETY ----------
+    const healthAndSafety = {
+      covidSafety:
+        p.covidSafety === true || p.covidSafety === 1 || p.covidSafety === "true",
+      surfacesSanitized:
+        p.surfacesSanitized === true ||
+        p.surfacesSanitized === 1 ||
+        p.surfacesSanitized === "true",
+      carbonMonoxideAlarm:
+        p.carbonMonoxideAlarm === true ||
+        p.carbonMonoxideAlarm === 1 ||
+        p.carbonMonoxideAlarm === "true",
+      smokeAlarm:
+        p.smokeAlarm === true ||
+        p.smokeAlarm === 1 ||
+        p.smokeAlarm === "true",
+    };
+
+    // ---------- RULE FLAGS ----------
+    const rules = {
+      noSmoking: p.no_smoking === true || p.no_smoking === 1 || p.no_smoking === "true",
+      noOpenFlames:
+        p.no_open_flames === true ||
+        p.no_open_flames === 1 ||
+        p.no_open_flames === "true",
+      petsAllowed:
+        p.pets_allowed === true ||
+        p.pets_allowed === 1 ||
+        p.pets_allowed === "true",
+    };
+  const cancellationPolicy = p.cancellationPolicy
+  ? {
+      id: p.cancellationPolicy.cancellationID || p.cancellationPolicy.CancellationID || null,
+      name: p.cancellationPolicy.policyName || p.cancellationPolicy.PolicyName || "",
+      description: p.cancellationPolicy.description || p.cancellationPolicy.Description || ""
+    }
+  : null;
   return {
     id: p.propertyID || p.id,
     listingTitle: p.listingTitle || p.ListingTitle || "Untitled",
@@ -230,9 +279,12 @@ const normalizeProperty = (p) => {
 
     price: parseFloat(p.price || p.Price || 0),
     currency: p.currency || p.Currency || "USD",
+    serviceFee: p.serviceFee ?? 0,
+    taxFee: p.taxFee ?? 0,
+    discount: p.discount ?? 0,
     cleaningFee: parseFloat(p.cleaningFee || p.CleaningFee || 0),
     extraGuestFee: parseFloat(p.extraPeopleFee || p.ExtraPeopleFee || 0),
-
+    cancellationPolicy: cancellationPolicy,
     // Media
     media: {
       cover: photos.length > 0 ? { url: photos[0].url, alt: photos[0].alt } : null,
@@ -266,7 +318,11 @@ const normalizeProperty = (p) => {
       const enhancedClean = p.enhancedClean === true || p.enhancedClean === "true" || p.enhancedClean === 1;
       const selfCheckIn = p.selfCheckIn === true || p.selfCheckIn === "true" || p.selfCheckIn === 1;
       const freeCancellation = p.freeCancellation === true || p.freeCancellation === "true" || p.freeCancellation === 1;
-      const roomType = p.roomType?.name || p.RoomType?.name || p.roomType || "";
+       const roomTypeName =
+        (p.roomType && typeof p.roomType === "object" && (p.roomType.name || p.roomType.Name)) ||
+        p.RoomType?.name ||
+        (typeof p.roomType === "string" ? p.roomType : "") ||
+        "";
       
       // ✅ Nếu có summary, thêm nó như highlight chính
       // Summary có thể là text mô tả ngắn về property
@@ -294,21 +350,29 @@ const normalizeProperty = (p) => {
         });
       }
 
-      if (freeCancellation) {
+      if (cancellationPolicy) {
         highlightsArray.push({
-          id: "free_cancellation",
-          label: "Free cancellation"
+          id: "cancellation_policy",
+          label: `${cancellationPolicy.name} – ${cancellationPolicy.description}`
         });
       }
 
-      // Kiểm tra nếu là entire place dựa trên roomType
-      if (roomType) {
-        const roomTypeLower = roomType.toLowerCase();
-        if (roomTypeLower.includes("entire") || roomTypeLower.includes("whole") || roomTypeLower.includes("private")) {
+      // Kiểm tra nếu là entire/whole/private dựa trên roomTypeName
+      if (roomTypeName) {
+        const roomTypeLower = roomTypeName.toString().toLowerCase();
+        if (
+          roomTypeLower.includes("entire") ||
+          roomTypeLower.includes("whole") ||
+          roomTypeLower.includes("private")
+        ) {
+          
           highlightsArray.push({
             id: "entire_place",
-            label: "Entire place"
+            label: roomTypeName.toString()
           });
+        } else {
+          // Nếu muốn hiển thị loại phòng luôn (kể cả khi không phải entire), có thể uncomment:
+          highlightsArray.push({ id: "room_type", label: roomTypeName.toString() });
         }
       }
 
@@ -316,16 +380,10 @@ const normalizeProperty = (p) => {
     })(),
 
     // Rules
-    houseRules: [],
-    healthAndSafety: {
-      enhancedClean: p.enhancedClean !== undefined ? p.enhancedClean : (p.enhancedClean !== undefined ? p.enhancedClean : false),
-      selfCheckIn: p.selfCheckIn !== undefined ? p.selfCheckIn : (p.selfCheckIn !== undefined ? p.selfCheckIn : false)
-    },
-    cancellationPolicy: p.cancellationPolicy || p.CancellationPolicy || {},
-    freeCancellation: p.freeCancellation !== undefined ? p.freeCancellation : (p.freeCancellation !== undefined ? p.freeCancellation : false),
-    noSmoking: p.no_smoking !== undefined ? p.no_smoking : (p.no_smoking !== undefined ? p.no_smoking : true),
-    petsAllowed: p.pets_allowed !== undefined ? p.pets_allowed : (p.pets_allowed !== undefined ? p.pets_allowed : false),
-
+    
+    houseRules: parsedHouseRules,
+    rules: rules,
+    healthAndSafety: healthAndSafety,
     // Host
     host: host,
     hostId: hostIdFromData,
