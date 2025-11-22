@@ -1,20 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 using UITour.Models;
 using UITour.DAL.Interfaces;
 using UITour.ServicesL.Interfaces;
+using UITour.Models.DTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Host = UITour.Models.Host;
 
 namespace UITour.ServicesL.Implementations
 {
     public class TourService : ITourService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IHostService _hostService;
 
-        public TourService(IUnitOfWork unitOfWork)
+        public TourService(IUnitOfWork unitOfWork, IHostService hostService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _hostService = hostService ?? throw new ArgumentNullException(nameof(hostService));
         }
 
         // ==================== TOUR CRUD ====================
@@ -44,10 +50,76 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<Tour> CreateAsync(Tour tour)
         {
+            tour.Active = false; // Set to false (pending) - admin must approve
             await _unitOfWork.Tours.AddAsync(tour);
             await _unitOfWork.SaveChangesAsync();
             return tour;
+        }
 
+        public async Task<Tour> CreateAsync(CreateTourDto dto)
+        {
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+
+            // Tìm hoặc tạo Host cho UserID
+            int hostID = await GetOrCreateHostAsync(dto.UserID);
+
+            var tour = new Tour
+            {
+                HostID = hostID,
+                TourName = dto.TourName,
+                Description = dto.Description,
+                Location = dto.Location,
+                CityID = dto.CityID ?? 0,
+                CountryID = dto.CountryID ?? 0,
+                DurationDays = dto.DurationDays,
+                MaxGuests = dto.MaxGuests,
+                Price = dto.Price,
+                Currency = dto.Currency ?? "USD",
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+                Active = false, // Set to false (pending) - admin must approve
+                CancellationID = dto.CancellationID,
+                CreatedAt = DateTime.Now,
+                Photos = dto.Photos?.Select(p => new TourPhoto
+                {
+                    Url = p.Url,
+                    Caption = p.Caption,
+                    SortIndex = p.SortIndex
+                }).ToList() ?? new List<TourPhoto>()
+            };
+
+            await _unitOfWork.Tours.AddAsync(tour);
+            await _unitOfWork.SaveChangesAsync();
+
+            return tour;
+        }
+
+        /// Tìm Host theo UserID, nếu chưa có thì tạo mới
+        private async Task<int> GetOrCreateHostAsync(int userID)
+        {
+            // Tìm Host theo UserID
+            var existingHost = await _unitOfWork.Hosts.Query()
+                .FirstOrDefaultAsync(h => h.UserID == userID);
+
+            if (existingHost != null)
+            {
+                return existingHost.HostID;
+            }
+
+            // Nếu chưa có Host, tạo mới
+            var newHost = new Host
+            {
+                UserID = userID,
+                HostSince = DateTime.UtcNow,
+                IsSuperHost = false,
+                HostAbout = null,
+                HostResponseRate = null
+            };
+
+            await _unitOfWork.Hosts.AddAsync(newHost);
+            await _unitOfWork.SaveChangesAsync();
+
+            return newHost.HostID;
         }
 
         public async Task<bool> UpdateAsync(Tour tour)
@@ -64,6 +136,8 @@ namespace UITour.ServicesL.Implementations
             existing.MaxGuests = tour.MaxGuests;
             existing.StartDate = tour.StartDate;
             existing.EndDate = tour.EndDate;
+            existing.Active = tour.Active; // Update Active status
+            // Note: Tour model does not have UpdatedAt field, only CreatedAt
 
             _unitOfWork.Tours.Update(existing);
             await _unitOfWork.SaveChangesAsync();
@@ -88,6 +162,28 @@ namespace UITour.ServicesL.Implementations
                 .Where(t => t.HostID == hostId)
                 .Include(t => t.City)
                 .Include(t => t.Country)
+                .Include(t => t.Photos)
+                .Include(t => t.Reviews)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Tour>> GetByUserIdAsync(int userId)
+        {
+            // Tìm Host theo UserID, sau đó lấy tours của Host đó
+            var host = await _unitOfWork.Hosts.Query()
+                .FirstOrDefaultAsync(h => h.UserID == userId);
+
+            if (host == null)
+            {
+                return new List<Tour>(); // User chưa có Host, không có tours
+            }
+
+            return await _unitOfWork.Tours.Query()
+                .Where(t => t.HostID == host.HostID)
+                .Include(t => t.City)
+                .Include(t => t.Country)
+                .Include(t => t.Photos)
+                .Include(t => t.Reviews)
                 .ToListAsync();
         }
 

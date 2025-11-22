@@ -70,6 +70,28 @@ export default function HomePage() {
       ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviews.length 
       : 0;
 
+    // Helper function to normalize image URL
+    const normalizeImageUrl = (url) => {
+      if (!url || url.trim().length === 0) return "/fallback.png";
+      // If already a full URL (http/https), use as is
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      // If relative path starting with /, prepend backend base URL
+      if (url.startsWith('/')) {
+        return `http://localhost:5069${url}`;
+      }
+      // Otherwise, assume it's a relative path and prepend backend base URL
+      return `http://localhost:5069/${url}`;
+    };
+
+    const firstPhoto = Array.isArray(p.photos) && p.photos.length > 0 
+      ? p.photos[0] 
+      : null;
+    const imageUrl = firstPhoto 
+      ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || "/fallback.png")
+      : "/fallback.png";
+
     return {
       id: p.propertyID,
       title: p.listingTitle || 'Untitled',
@@ -78,7 +100,7 @@ export default function HomePage() {
       currency: p.currency ?? "USD",
       rating: avgRating,
       reviewsCount: reviews.length,
-      mainImage: Array.isArray(p.photos) && p.photos.length > 0 ? p.photos[0].url : "/fallback.png",
+      mainImage: normalizeImageUrl(imageUrl),
       isGuestFavourite: false,
       dates: null
     };

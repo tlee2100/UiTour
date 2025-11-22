@@ -24,13 +24,39 @@ const normalizeProperty = (p) => {
     : 0;
   const reviewsCount = reviews.length;
 
-  // Xử lý photos
+  // Helper function to normalize image URL
+  const normalizeImageUrl = (url) => {
+    if (!url || url.trim().length === 0) return null;
+    // If already a full URL (http/https), use as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url.trim();
+    }
+    // If relative path starting with /, prepend backend base URL
+    if (url.startsWith('/')) {
+      return `http://localhost:5069${url}`;
+    }
+    // Otherwise, assume it's a relative path and prepend backend base URL
+    return `http://localhost:5069/${url}`;
+  };
+
+  // Xử lý photos - filter ra các URL không hợp lệ (base64 bị cắt, empty, etc.)
   const photos = Array.isArray(p.photos) 
-    ? p.photos.map(photo => ({
-        url: photo.url || photo.Url || "",
-        alt: photo.caption || photo.Caption || "Photo",
-        caption: photo.caption || photo.Caption || ""
-      }))
+    ? p.photos
+        .map(photo => {
+          const rawUrl = photo.url || photo.Url || "";
+          // Bỏ qua photos không có URL hoặc có base64 URL (có thể bị cắt)
+          if (!rawUrl || rawUrl.trim().length === 0 || rawUrl.startsWith('data:image')) {
+            return null;
+          }
+          const normalizedUrl = normalizeImageUrl(rawUrl);
+          if (!normalizedUrl) return null;
+          return {
+            url: normalizedUrl,
+            alt: photo.caption || photo.Caption || "Photo",
+            caption: photo.caption || photo.Caption || ""
+          };
+        })
+        .filter(photo => photo !== null)
     : [];
 
   // Xử lý location
@@ -235,11 +261,11 @@ const normalizeProperty = (p) => {
 
     // Media
     media: {
-      cover: photos.length > 0 ? { url: photos[0].url, alt: photos[0].alt } : null,
+      cover: photos.length > 0 ? { url: photos[0].url, alt: photos[0].alt } : null, // URL đã được normalize ở trên
       photos: photos
     },
     photos: photos,
-    mainImage: photos.length > 0 ? photos[0].url : "/fallback.png",
+    mainImage: photos.length > 0 ? photos[0].url : "/fallback.png", // URL đã được normalize ở trên
 
     // Property details
     propertyType: p.propertyType || p.PropertyType || "",
