@@ -8,7 +8,10 @@ import "./HostLayout.css";
 // Tạo bảng flow định nghĩa "trang trước" và "trang sau"
 const ROUTE_FLOW = {
   // Stay Creation Flow
-  "/host/stay/create/choose": { next: "/host/stay/create/typeofplace" },
+  "/host/stay/create/choose": { 
+    prev: "/host/today",
+    next: "/host/stay/create/typeofplace" 
+  },
   "/host/stay/create/typeofplace": {
     prev: "/host/stay/create/choose",
     next: "/host/stay/create/location",
@@ -63,7 +66,10 @@ const ROUTE_FLOW = {
   },
 
   // Experience Creation Flow
-  "/host/experience/create/choose": { next: "/host/experience/create/years" },
+  "/host/experience/create/choose": { 
+    prev: "/host/today",
+    next: "/host/experience/create/years" 
+  },
   "/host/experience/create/years": {
     prev: "/host/experience/create/choose",
     next: "/host/experience/create/qualification",

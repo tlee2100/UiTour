@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useApp } from '../contexts/AppContext';
 import authAPI from '../services/authAPI';
+import { useCurrency } from '../contexts/CurrencyContext';
 import './TripsPage.css';
 
 export default function TripsPage() {
@@ -11,6 +12,7 @@ export default function TripsPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { user } = useApp();
+  const { convertToCurrent, format } = useCurrency();
 
   const formatDateRange = useCallback((checkIn, checkOut) => {
     if (!checkIn || !checkOut) return '';
@@ -194,7 +196,7 @@ export default function TripsPage() {
                     </span>
                   </div>
                   <div className="trip-price">
-                    {totalPrice ? `₫${Number(totalPrice).toLocaleString('vi-VN')}` : ''}
+                    {totalPrice ? format(convertToCurrent(totalPrice)) : ''}
                   </div>
 
                   <div className="trip-actions">

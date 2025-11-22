@@ -44,7 +44,7 @@ export default function AdminHeader() {
       {/* Main Header Section */}
       <header className="admin-header-main">
         {/* Left - Logo */}
-        <div className="admin-header-logo">
+        <div className="admin-header-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
           <img src={logo} alt="UiTour Logo" className="admin-logo-img" />
         </div>
 

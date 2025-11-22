@@ -6,6 +6,10 @@ import sampleImg from "../../assets/sample-room.jpg";
 import logo from "../../assets/UiTour.png";
 import { useApp } from "../../contexts/AppContext";
 import authAPI from "../../services/authAPI";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
+import { useLanguageCurrencyModal } from "../../contexts/LanguageCurrencyModalContext";
+import LanguageCurrencySelector from "../../components/LanguageCurrencySelector";
 
 export default function HostListings() {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -15,6 +19,9 @@ export default function HostListings() {
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const navigate = useNavigate();
     const { user, dispatch } = useApp();
+    const { language } = useLanguage();
+    const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } = useLanguageCurrencyModal();
+    const globeButtonRef = React.useRef(null);
 
     useEffect(() => {
         const handleEsc = (event) => {
@@ -108,7 +115,7 @@ export default function HostListings() {
                 
                 return {
                     id: p.PropertyID || p.propertyID || p.id,
-                    status: p.Active ? "Listed" : "Pending",
+                    status: p.Active ? t(language, 'host.listed') : t(language, 'host.pending'),
                     title: p.ListingTitle || p.listingTitle || "Untitled",
                     rating: avgRating,
                     image: imageUrl || sampleImg,
@@ -117,32 +124,65 @@ export default function HostListings() {
                 };
             });
 
-            // Also load tours if needed
+            // Also load tours - try multiple methods
+            let tours = [];
             try {
-                const tours = await authAPI.getToursByUser(userID);
-                const formattedTours = tours.map(t => {
-                    // Process image URL with helper function
-                    const imageUrl = getFirstPhotoUrl(t);
-                    
-                    // Process reviews - try both Reviews and reviews
-                    const reviews = t.Reviews || t.reviews || t.TourReviews || t.tourReviews || [];
-                    const avgRating = reviews.length > 0
-                        ? reviews.reduce((sum, r) => sum + (r.Rating || r.rating || 0), 0) / reviews.length
-                        : 0;
-                    
-                    return {
-                        id: t.TourID || t.tourID || t.id,
-                        status: t.Active ? "Listed" : "Pending",
-                        title: t.TourName || t.tourName || "Untitled",
-                        rating: avgRating,
-                        image: imageUrl || sampleImg,
-                        type: "tour",
-                        location: t.Location || t.location || ""
-                    };
-                });
-                setListings([...formatted, ...formattedTours]);
+                // First try: getToursByUser (if endpoint exists)
+                try {
+                    tours = await authAPI.getToursByUser(userID);
+                    console.log("Tours loaded via getToursByUser:", tours);
+                } catch (userErr) {
+                    console.warn("getToursByUser failed, trying getToursByHost:", userErr);
+                    // Second try: getToursByHost with userID (backend might map userID to hostID)
+                    try {
+                        tours = await authAPI.getToursByHost(userID);
+                        console.log("Tours loaded via getToursByHost:", tours);
+                    } catch (hostErr) {
+                        console.warn("getToursByHost failed, trying getTours and filtering:", hostErr);
+                        // Third try: get all tours and filter by host/user
+                        const allTours = await authAPI.getTours();
+                        // Filter tours where host matches current user
+                        // Check if tour has HostID, Host, or userID that matches
+                        tours = (allTours || []).filter(t => {
+                            const tourHostID = t.HostID || t.hostID || t.Host?.HostID || t.host?.hostID;
+                            const tourUserID = t.UserID || t.userID || t.Host?.UserID || t.host?.userID;
+                            return tourHostID === userID || tourUserID === userID || 
+                                   tourHostID === (user.HostID || user.hostID) ||
+                                   tourUserID === (user.HostID || user.hostID);
+                        });
+                        console.log("Tours filtered from getAllTours:", tours);
+                    }
+                }
+
+                // Format tours for display
+                if (tours && Array.isArray(tours) && tours.length > 0) {
+                    const formattedTours = tours.map(tour => {
+                        // Process image URL with helper function
+                        const imageUrl = getFirstPhotoUrl(tour);
+                        
+                        // Process reviews - try multiple field names
+                        const reviews = tour.Reviews || tour.reviews || tour.TourReviews || tour.tourReviews || [];
+                        const avgRating = reviews.length > 0
+                            ? reviews.reduce((sum, r) => sum + (r.Rating || r.rating || 0), 0) / reviews.length
+                            : 0;
+                        
+                        return {
+                            id: tour.TourID || tour.tourID || tour.id,
+                            status: tour.Active ? t(language, 'host.listed') : t(language, 'host.pending'),
+                            title: tour.TourName || tour.tourName || tour.title || "Untitled",
+                            rating: avgRating,
+                            image: imageUrl || sampleImg,
+                            type: "tour",
+                            location: tour.Location || tour.location || ""
+                        };
+                    });
+                    setListings([...formatted, ...formattedTours]);
+                } else {
+                    console.log("No tours found for user");
+                    setListings(formatted);
+                }
             } catch (err) {
-                console.error("Error loading tours:", err);
+                console.error("Error loading tours (all methods failed):", err);
                 setListings(formatted);
             }
         } catch (err) {
@@ -191,10 +231,10 @@ export default function HostListings() {
             // Remove from local list
             setListings(prev => prev.filter(l => !(l.id === item.id && l.type === item.type)));
             setDeleteConfirm(null);
-            alert(`${item.type === 'property' ? 'Property' : 'Tour'} has been deleted successfully!`);
+            alert(`${item.type === 'property' ? t(language, 'host.property') : t(language, 'host.tour')} ${t(language, 'host.hasBeenDeleted')}`);
         } catch (err) {
             console.error('Delete error:', err);
-            alert('Error deleting: ' + (err.message || 'An error occurred'));
+            alert(`${t(language, 'host.errorDeleting')}: ` + (err.message || t(language, 'host.anErrorOccurred')));
         } finally {
             setDeletingId(null);
         }
@@ -209,17 +249,17 @@ export default function HostListings() {
             {/* ================= HEADER ================= */}
             <header className="host-header">
                 {/* LOGO */}
-                <div className="header-logo">
+                <div className="header-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
                     <img src={logo} alt="UiTour logo" />
                 </div>
 
                 {/* NAVBAR */}
                 <nav className="nav-tabs">
-                    <Link to="/host/today">Today</Link>
+                    <Link to="/host/today">{t(language, 'host.today')}</Link>
                     <Link to="/host/listings" className="active">
-                        Listings
+                        {t(language, 'host.listings')}
                     </Link>
-                    <Link to="/host/messages">Messages</Link>
+                    <Link to="/host/messages">{t(language, 'host.messages')}</Link>
                 </nav>
 
                 {/* RIGHT SIDE */}
@@ -228,19 +268,42 @@ export default function HostListings() {
                         className="switch-title"
                         onClick={() => navigate("/")}
                     >
-                        Switch to traveling
+                        {t(language, 'common.switchToTraveling')}
                     </button>
 
                     {/* Globe */}
-                    <button className="globe-btn">
+                    <button 
+                        ref={globeButtonRef}
+                        className="globe-btn"
+                        onClick={() => {
+                            if (menuOpen) {
+                                setMenuOpen(false);
+                            }
+                            openLanguageCurrency();
+                        }}
+                        aria-label="Language and Currency"
+                    >
                         <Icon icon="mdi:earth" width="24" height="24" />
                     </button>
+
+                    {languageCurrencyOpen && (
+                        <LanguageCurrencySelector
+                            isOpen={languageCurrencyOpen}
+                            onClose={closeLanguageCurrency}
+                            triggerRef={globeButtonRef}
+                        />
+                    )}
 
                     {/* User Menu */}
                     <div className="header_profile">
                         <button
                             className="header_menu"
-                            onClick={() => setMenuOpen((prev) => !prev)}
+                            onClick={() => {
+                                if (languageCurrencyOpen) {
+                                    closeLanguageCurrency();
+                                }
+                                setMenuOpen((prev) => !prev);
+                            }}
                             aria-label="Open host navigation menu"
                             aria-expanded={menuOpen}
                         >
@@ -249,7 +312,12 @@ export default function HostListings() {
 
                         <button
                             className="header_avatarButton"
-                            onClick={() => setMenuOpen((prev) => !prev)}
+                            onClick={() => {
+                                if (languageCurrencyOpen) {
+                                    closeLanguageCurrency();
+                                }
+                                setMenuOpen((prev) => !prev);
+                            }}
                             aria-label="Open host navigation menu"
                             aria-expanded={menuOpen}
                         >
@@ -273,11 +341,11 @@ export default function HostListings() {
                         aria-label="Host navigation menu"
                     >
                         <div className="host-menu-header">
-                            <h2>Menu</h2>
+                            <h2>{t(language, 'host.menu')}</h2>
                             <button
                                 className="host-menu-close"
                                 onClick={closeMenu}
-                                aria-label="Close menu"
+                                aria-label={t(language, 'host.closeMenu')}
                             >
                                 <Icon icon="mdi:close" width="24" height="24" />
                             </button>
@@ -290,35 +358,49 @@ export default function HostListings() {
                                 className="host-menu-card-img"
                             />
                             <div className="host-menu-card-content">
-                                <h3>New to hosting?</h3>
+                                <h3>{t(language, 'host.newToHosting')}</h3>
                                 <p>
-                                    Discover best practices shared by top-rated hosts and start
-                                    welcoming guests with confidence.
+                                    {t(language, 'host.discoverBestPractices')}
                                 </p>
-                                <button className="host-menu-card-action">Get started</button>
+                                <button className="host-menu-card-action">{t(language, 'host.getStarted')}</button>
                             </div>
                         </div>
 
                         <nav className="host-menu-links">
-                            <button className="host-menu-link">
+                            <button 
+                                className="host-menu-link"
+                                onClick={() => {
+                                    closeMenu();
+                                    navigate("/account/settings");
+                                }}
+                            >
                                 <Icon icon="mdi:cog-outline" width="20" height="20" />
-                                <span>Account settings</span>
+                                <span>{t(language, 'host.accountSettings')}</span>
                             </button>
-                            <button className="host-menu-link">
+                            <button 
+                                className="host-menu-link"
+                                onClick={() => {
+                                    closeMenu();
+                                    // Small delay to ensure menu closes before opening modal
+                                    setTimeout(() => {
+                                        openLanguageCurrency();
+                                    }, 100);
+                                }}
+                            >
                                 <Icon icon="mdi:earth" width="20" height="20" />
-                                <span>Language & currency</span>
+                                <span>{t(language, 'host.languageCurrency')}</span>
                             </button>
                             <button className="host-menu-link">
                                 <Icon icon="mdi:book-open-page-variant" width="20" height="20" />
-                                <span>Hosting resources</span>
+                                <span>{t(language, 'host.hostingResources')}</span>
                             </button>
                             <button className="host-menu-link">
                                 <Icon icon="mdi:lifebuoy" width="20" height="20" />
-                                <span>Get support</span>
+                                <span>{t(language, 'host.getSupport')}</span>
                             </button>
                             <button className="host-menu-link">
                                 <Icon icon="mdi:account-group-outline" width="20" height="20" />
-                                <span>Find a co-host</span>
+                                <span>{t(language, 'host.findCoHost')}</span>
                             </button>
                             <button 
                                 className="host-menu-link"
@@ -328,11 +410,11 @@ export default function HostListings() {
                                 }}
                             >
                                 <Icon icon="mdi:plus-circle-outline" width="20" height="20" />
-                                <span>Create a new listing</span>
+                                <span>{t(language, 'host.createNewListing')}</span>
                             </button>
                             <button className="host-menu-link">
                                 <Icon icon="mdi:gift-outline" width="20" height="20" />
-                                <span>Refer another host</span>
+                                <span>{t(language, 'host.referAnotherHost')}</span>
                             </button>
                             <div className="host-menu-divider" />
                             <button 
@@ -340,7 +422,7 @@ export default function HostListings() {
                                 onClick={handleLogout}
                             >
                                 <Icon icon="mdi:logout" width="20" height="20" />
-                                <span>Log out</span>
+                                <span>{t(language, 'host.logOut')}</span>
                             </button>
                         </nav>
                     </aside>
@@ -351,30 +433,30 @@ export default function HostListings() {
             <div className="listing-content">
                 <div className="listing-header">
                     <div>
-                        <h1>Your listings</h1>
-                        <p>Publish a new stay or update an existing one.</p>
+                        <h1>{t(language, 'host.yourListings')}</h1>
+                        <p>{t(language, 'host.publishNewStay')}</p>
                     </div>
                     <button
                         className="listing-create-btn"
                         onClick={() => navigate("/host/becomehost")}
                     >
                         <Icon icon="mdi:plus" width="20" height="20" />
-                        Create new listing
+                        {t(language, 'host.createNewListing')}
                     </button>
                 </div>
                 <div className="listing-grid">
                 {loading ? (
                     <div style={{ padding: '40px', textAlign: 'center', gridColumn: '1 / -1' }}>
-                        Loading...
+                        {t(language, 'host.loading')}
                     </div>
                 ) : listings.length === 0 ? (
                     <div style={{ padding: '40px', textAlign: 'center', gridColumn: '1 / -1', color: '#666' }}>
-                        You don't have any listings yet. Create a new listing to get started!
+                        {t(language, 'host.noListingsYet')}
                     </div>
                 ) : (
                     listings.map((item) => (
                         <div className="listing-card" key={`${item.type}-${item.id}`}>
-                            <div className={`listing-status ${item.status === "Pending" ? "pending" : ""}`}>
+                            <div className={`listing-status ${item.status === t(language, 'host.pending') ? "pending" : ""}`}>
                                 {item.status}
                             </div>
                             
@@ -385,7 +467,7 @@ export default function HostListings() {
                                     width="14" 
                                     height="14" 
                                 />
-                                {item.type === "property" ? "Stay" : "Tour"}
+                                {item.type === "property" ? t(language, 'host.stay') : t(language, 'host.tour')}
                             </div>
 
                             {/* Delete button */}
@@ -437,14 +519,14 @@ export default function HostListings() {
                     <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="delete-modal-header">
                             <Icon icon="mdi:alert-circle" width="24" height="24" className="delete-modal-icon" />
-                            <h3>Confirm Deletion</h3>
+                            <h3>{t(language, 'host.confirmDeletion')}</h3>
                         </div>
                         <div className="delete-modal-body">
                             <p>
-                                Are you sure you want to delete <strong>"{deleteConfirm.title}"</strong>?
+                                {t(language, 'host.areYouSureDelete')} <strong>"{deleteConfirm.title}"</strong>?
                             </p>
                             <p className="delete-modal-warning">
-                                This action cannot be undone. All related data will be permanently deleted.
+                                {t(language, 'host.thisActionCannotBeUndone')}
                             </p>
                         </div>
                         <div className="delete-modal-actions">
@@ -453,14 +535,14 @@ export default function HostListings() {
                                 onClick={cancelDelete}
                                 disabled={deletingId !== null}
                             >
-                                Cancel
+                                {t(language, 'common.cancel')}
                             </button>
                             <button
                                 className="delete-modal-confirm"
                                 onClick={confirmDelete}
                                 disabled={deletingId !== null}
                             >
-                                {deletingId === deleteConfirm.id ? "Deleting..." : "Delete"}
+                                {deletingId === deleteConfirm.id ? t(language, 'host.deleting') : t(language, 'common.delete')}
                             </button>
                         </div>
                     </div>

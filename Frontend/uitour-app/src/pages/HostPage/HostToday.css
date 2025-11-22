@@ -360,7 +360,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
-  z-index: 80;
+  z-index: 150;
   animation: backdropFade 0.25s ease forwards;
 }
 
@@ -372,7 +372,7 @@
   height: 100%;
   background: #ffffff;
   box-shadow: -12px 0 32px rgba(15, 23, 42, 0.18);
-  z-index: 90;
+  z-index: 160;
   display: flex;
   flex-direction: column;
   padding: 28px 28px 36px;
