@@ -7,6 +7,9 @@ using UITour.DAL.Repositories;
 using UITour.ServicesL.Implementations;
 using UITour.ServicesL.Interfaces;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +22,36 @@ builder.Services.AddDbContext<UITourContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddMemoryCache();
+
+// JWT Authentication Configuration
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
+var key = Encoding.UTF8.GetBytes(secretKey);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+});
 
 // DAL registrations
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -109,6 +142,7 @@ app.UseRouting();
 
 app.UseCors(CorsPolicy);
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Map attribute-routed API controllers

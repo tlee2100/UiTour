@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import './PropertyCard.css';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 export default function PropertyCard({ property }) {
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
+  const { convertToCurrent, format } = useCurrency();
 
   const handleClick = () => {
     navigate(`/property/${property.id}`);
@@ -15,6 +17,10 @@ export default function PropertyCard({ property }) {
     e.stopPropagation();
     setIsFavorite(!isFavorite);
   };
+
+  // Giả sử giá trong property là USD, convert sang currency hiện tại
+  const priceUSD = property.price || 325;
+  const displayPrice = convertToCurrent(priceUSD);
 
   return (
     <div className="property-card-result" onClick={handleClick}>
@@ -64,7 +70,7 @@ export default function PropertyCard({ property }) {
         </div>
 
         <div className="property-price-result">
-          <span className="price-value">${property.price || '325'}</span>
+          <span className="price-value">{format(displayPrice)}</span>
           <span className="price-unit-result"> /night</span>
         </div>
       </div>

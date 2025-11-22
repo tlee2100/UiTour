@@ -8,14 +8,12 @@ export default function HostHeader() {
 
   return (
     <header className="hheader">
-      <div className="hheader-container">
-        <div
-          className="hheader-logo"
-          onClick={() => navigate("/")} // ✅ khi click logo sẽ quay về "/"
-          style={{ cursor: "pointer" }} // thêm hiệu ứng con trỏ
-        >
-          <img src={logo} alt="UiTour Logo" className="hheader-logo-image" />
-        </div>
+      <div
+        className="hheader-logo"
+        onClick={() => navigate("/")}
+        style={{ cursor: "pointer" }}
+      >
+        <img src={logo} alt="UiTour Logo" className="hheader-logo-image" />
       </div>
     </header>
   );

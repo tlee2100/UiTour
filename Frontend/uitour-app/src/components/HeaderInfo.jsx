@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import ProfileMenu from './ProfileMenu';
 import logo from '../assets/UiTour.png';
 import './HeaderInfo.css';
 import { useApp } from '../contexts/AppContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguageCurrencyModal } from '../contexts/LanguageCurrencyModalContext';
+import { t } from '../utils/translations';
+import LanguageCurrencySelector from './LanguageCurrencySelector';
 
 export default function HeaderInfo() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,8 +16,12 @@ export default function HeaderInfo() {
 
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
+  const globeButtonRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, token } = useApp();
+  const { language } = useLanguage();
+  const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } = useLanguageCurrencyModal();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -84,13 +92,26 @@ export default function HeaderInfo() {
           }}
         >
           {((user && token && (user.role === 'ADMIN' || user.Role === 'ADMIN')) || location.pathname.startsWith('/admin'))
-            ? 'Switch to traveling'
-            : 'Become a Host'}
+            ? t(language, 'common.switchToTraveling')
+            : t(language, 'common.becomeAHost')}
         </button>
 
-        <button className="headerif_globe">
+        <button 
+          ref={globeButtonRef}
+          className="headerif_globe"
+          onClick={openLanguageCurrency}
+          aria-label="Language and Currency"
+        >
           <Icon className='globe-icon' icon="mdi:earth" width="26" height="26"/>
         </button>
+
+        {languageCurrencyOpen && (
+          <LanguageCurrencySelector
+            isOpen={languageCurrencyOpen}
+            onClose={closeLanguageCurrency}
+            triggerRef={globeButtonRef}
+          />
+        )}
 
         <div className="headerif_profile">
           <button

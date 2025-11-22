@@ -11,7 +11,7 @@
   font-weight: 500;
   font-size: 24px;
   line-height: 32px;
-  color: #000;
+  color: var(--black);
 }
 
 .itk-columns {
@@ -32,14 +32,14 @@
   font-weight: 500;
   font-size: 16px;
   line-height: 24px;
-  color: #000;
+  color: var(--black);
 }
 
 .itk-subtext {
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   line-height: 20px;
-  color: #4B5563;
+  color: var(--subtitle-color);
 }
 
 .itk-list {
@@ -58,7 +58,7 @@
   font-family: 'Inter', sans-serif;
   font-size: 16px;
   line-height: 24px;
-  color: #000;
+  color: var(--black);
 }
 
 .itk-link {
@@ -71,5 +71,5 @@
   font-weight: 500;
   font-size: 16px;
   text-decoration: underline;
-  color: #000;
+  color: var(--black);
 }

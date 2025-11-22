@@ -908,7 +908,17 @@ export function HostProvider({ children }) {
   // 4️⃣ LẤY DATA TỔNG HỢP
   // ============================================================
   function getFinalData() {
-    return type === "stay" ? stayData : experienceData;
+    if (type === "stay") {
+      // Merge stayPhotosRAM into stayData.photos before returning
+      const mergedData = { ...stayData };
+      if (stayPhotosRAM && stayPhotosRAM.length > 0) {
+        // Use RAM photos if available (they have the latest state including serverUrl after upload)
+        mergedData.photos = stayPhotosRAM;
+        console.log("📸 Merged stayPhotosRAM into stayData:", stayPhotosRAM.length, "photos");
+      }
+      return mergedData;
+    }
+    return experienceData;
   }
 
   // ============================================================
@@ -1137,23 +1147,174 @@ export function HostProvider({ children }) {
    
     */
 
-  //DEV MODE: -------------------------File tạm để test---------------------------------------
   async function sendHostData() {
     const data = getFinalData();
+    
+    try {
+      // Import authAPI dynamically
+      const authAPI = (await import("../services/authAPI")).default;
+      
+      // Get user from localStorage
+      const userStr = localStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userID = user?.UserID || user?.userID || user?.id || null;
 
-    // DEV MODE — không gửi API, không cần login
-    console.warn("⚠️ DEV MODE: sendHostData() tạm thời disabled");
-    console.log("📦 Payload sẽ gửi khi bật API:", {
-      type,
-      formatted:
-        type === "stay"
-          ? formatStayDataForAPI(data)
-          : formatExperienceDataForAPI(data),
-    });
+      if (!userID) {
+        alert("Vui lòng đăng nhập để tạo listing!");
+        return false;
+      }
 
-    // báo thành công giả để UI flow không bị chặn
-    alert("DEV MODE: Dữ liệu CHƯA được gửi đến backend.");
-    return true;
+      if (type === "stay") {
+        // Upload photos first
+        const photos = data.photos || [];
+        const photosWithFiles = photos.filter(p => p.file && p.file instanceof File);
+        
+        console.log("Photos to upload:", photosWithFiles.length, "out of", photos.length);
+        
+        if (photosWithFiles.length > 0) {
+          try {
+            console.log("Starting upload...");
+            const uploadedUrls = await authAPI.uploadImages(photosWithFiles.map(p => p.file));
+            console.log("Uploaded URLs:", uploadedUrls);
+            
+            if (!uploadedUrls || uploadedUrls.length === 0) {
+              throw new Error("Không có ảnh nào được upload thành công");
+            }
+            
+            if (uploadedUrls.length !== photosWithFiles.length) {
+              console.warn(`Warning: Uploaded ${uploadedUrls.length} files but expected ${photosWithFiles.length}`);
+            }
+            
+            // Update photos with server URLs - update both in photos array AND stayPhotosRAM
+            photos.forEach((photo, photoIndex) => {
+              if (photo.file) {
+                const uploadedIndex = photosWithFiles.findIndex(p => p === photo);
+                if (uploadedIndex >= 0 && uploadedIndex < uploadedUrls.length) {
+                  const serverUrl = uploadedUrls[uploadedIndex];
+                  // Set cả serverUrl và url để đảm bảo formatStayDataForAPI có thể dùng
+                  photo.serverUrl = serverUrl;
+                  photo.url = serverUrl; // Backend expect field 'url'
+                  console.log(`✅ Updated photo ${photoIndex} (uploaded index ${uploadedIndex}) with URL: ${serverUrl}`);
+                } else {
+                  console.warn(`⚠️ Photo ${photoIndex} has file but no matching uploaded URL found`);
+                }
+              } else if (photo.serverUrl || photo.url) {
+                // Photo already has URL (from previous upload or database)
+                console.log(`ℹ️ Photo ${photoIndex} already has URL: ${photo.serverUrl || photo.url}`);
+              } else {
+                console.warn(`⚠️ Photo ${photoIndex} has no file and no URL - will be skipped`);
+              }
+            });
+            
+            // CRITICAL: Update stayPhotosRAM với serverUrls để photos được lưu vào database
+            // Match photos by index since they should be in the same order
+            setStayPhotosRAM(prevRAM => {
+              const updatedRAM = prevRAM.map((ramPhoto, ramIndex) => {
+                // Tìm photo tương ứng trong photos array
+                // Ưu tiên match bằng file object, sau đó bằng index
+                let updatedPhoto = null;
+                
+                if (ramPhoto.file) {
+                  // Tìm bằng file object (chính xác nhất)
+                  updatedPhoto = photos.find(p => p.file === ramPhoto.file);
+                }
+                
+                if (!updatedPhoto && ramIndex < photos.length) {
+                  // Fallback: match bằng index
+                  updatedPhoto = photos[ramIndex];
+                }
+                
+                if (updatedPhoto && updatedPhoto.serverUrl) {
+                  console.log(`🔄 Updating RAM photo ${ramIndex} with serverUrl: ${updatedPhoto.serverUrl}`);
+                  return {
+                    ...ramPhoto,
+                    serverUrl: updatedPhoto.serverUrl,
+                    url: updatedPhoto.serverUrl
+                  };
+                }
+                
+                // Nếu RAM photo đã có serverUrl, giữ nguyên
+                if (ramPhoto.serverUrl) {
+                  return ramPhoto;
+                }
+                
+                return ramPhoto;
+              });
+              
+              console.log(`📸 Updated stayPhotosRAM: ${updatedRAM.length} photos, ${updatedRAM.filter(p => p.serverUrl).length} with serverUrl`);
+              return updatedRAM;
+            });
+          } catch (uploadError) {
+            console.error("Upload error details:", uploadError);
+            throw new Error("Lỗi upload ảnh: " + (uploadError.message || "Unknown error"));
+          }
+        } else {
+          console.warn("No files to upload - photos may have been loaded from localStorage without file objects");
+          // If photos have preview but no file, they might be from localStorage
+          // In this case, we'll skip upload and use preview URLs (not ideal but works)
+        }
+
+        // Format and send property data
+        const payload = formatStayDataForAPI({ ...data, userID });
+        
+        // Debug: Log photos in payload
+        console.log("📸 Photos in payload:", payload.Photos);
+        console.log("📸 Total photos:", payload.Photos?.length || 0);
+        if (payload.Photos && payload.Photos.length > 0) {
+          payload.Photos.forEach((p, idx) => {
+            console.log(`  Photo ${idx}:`, { Url: p.Url, Caption: p.Caption, SortIndex: p.SortIndex });
+          });
+        } else {
+          console.warn("⚠️ WARNING: No photos in payload! This property will have no images.");
+        }
+        
+        const result = await authAPI.createProperty(payload);
+        
+        alert("Property đã được tạo thành công! Đang chờ admin duyệt.");
+        return true;
+      } else {
+        // Experience/Tour flow
+        const photos = data.media?.photos || [];
+        const photosWithFiles = photos.filter(p => p.file && p.file instanceof File);
+        
+        if (photosWithFiles.length > 0) {
+          try {
+            const uploadedUrls = await authAPI.uploadImages(photosWithFiles.map(p => p.file));
+            
+            if (!uploadedUrls || uploadedUrls.length === 0) {
+              throw new Error("Không có ảnh nào được upload thành công");
+            }
+            
+            photos.forEach((photo) => {
+              if (photo.file) {
+                const uploadedIndex = photosWithFiles.findIndex(p => p === photo);
+                if (uploadedIndex >= 0 && uploadedIndex < uploadedUrls.length) {
+                  const serverUrl = uploadedUrls[uploadedIndex];
+                  // Set cả serverUrl và url để đảm bảo formatExperienceDataForAPI có thể dùng
+                  photo.serverUrl = serverUrl;
+                  photo.url = serverUrl; // Backend expect field 'url'
+                  console.log(`Updated tour photo ${uploadedIndex} with URL: ${serverUrl}`);
+                }
+              }
+            });
+          } catch (uploadError) {
+            console.error("Upload error:", uploadError);
+            throw new Error("Lỗi upload ảnh: " + (uploadError.message || "Unknown error"));
+          }
+        }
+
+        // Backend sẽ tự động tạo Host từ UserID
+        const payload = formatExperienceDataForAPI({ ...data, userID: userID });
+        const result = await authAPI.createTour(payload);
+        
+        alert("Tour đã được tạo thành công! Đang chờ admin duyệt.");
+        return true;
+      }
+    } catch (err) {
+      console.error("[SEND HOST DATA ERROR]", err);
+      alert("Gửi dữ liệu thất bại: " + (err.message || "Có lỗi xảy ra"));
+      return false;
+    }
   }
 
 
@@ -1364,30 +1525,55 @@ function formatStayDataForAPI(d) {
   const safe = (v) => (v === undefined || v === null ? "" : v);
 
   // ---------------------------------------------------------
-  // PHOTOS
+  // 📸 PHOTOS – Merge logic của HEAD + master (giữ serverUrl)
   // ---------------------------------------------------------
-  const photos = (d.photos || []).map((p, i) => ({
-    url: safe(p.serverUrl || ""),
-    caption: safe(p.caption),
-    category: safe(p.category),
-    sortIndex: p.sortIndex ?? i + 1,
-    isCover: !!p.isCover,
-  }));
+  const photos = (d.photos || [])
+    .map((p, index) => {
+      const url = p.serverUrl || p.url || p.Url || "";
 
-  const coverPhoto =
-    d.coverPhoto ||
-    (photos.find((p) => p.isCover)?.url || photos[0]?.url || null);
+      // Skip invalid URLs or base64 preview
+      if (!url || url.trim().length === 0 || url.startsWith("data:image")) {
+        return null;
+      }
+
+      return {
+        url: url.trim(),
+        caption: safe(p.caption || ""),
+        sortIndex: p.sortIndex || index + 1,
+      };
+    })
+    .filter((p) => p !== null);
+
+  // ---------------------------------------------------------
+  // COVER PHOTO
+  // ---------------------------------------------------------
+  let coverPhoto = null;
+
+  if (d.coverPhoto) {
+    const coverUrl =
+      d.coverPhoto.serverUrl ||
+      d.coverPhoto.url ||
+      (typeof d.coverPhoto === "string" ? d.coverPhoto : null);
+
+    if (coverUrl && !coverUrl.startsWith("data:image")) {
+      coverPhoto = coverUrl;
+    }
+  }
+
+  if (!coverPhoto && photos.length > 0) {
+    coverPhoto = photos[0].url;
+  }
 
   // ---------------------------------------------------------
   // AMENITIES
   // ---------------------------------------------------------
   const amenities = (d.amenities || [])
-    .map((x) => Number(x))
-    .filter((x) => !isNaN(x))
-    .map((id) => ({ amenityID: id }));
+    .map((id) => Number(id))
+    .filter((id) => !isNaN(id))
+    .map((id) => ({ AmenityID: id }));
 
   // ---------------------------------------------------------
-  // DISCOUNTS
+  // DISCOUNTS (from HEAD)
   // ---------------------------------------------------------
   const discounts = {
     weeklyPercent: num(d.pricing.discounts.weekly.percent),
@@ -1406,127 +1592,58 @@ function formatStayDataForAPI(d) {
   };
 
   // ---------------------------------------------------------
-  // FINAL PAYLOAD
+  // FINAL PAYLOAD – MERGED CLEAN VERSION
   // ---------------------------------------------------------
+  const locationString =
+    d.location?.addressLine ||
+    d.location?.address ||
+    (typeof d.location === "string" ? d.location : "") ||
+    "";
+
+  const houseRulesString = Array.isArray(d.houseRules)
+    ? d.houseRules.join(", ")
+    : safe(d.houseRules);
+
   return {
-    // =========================
-    // BASIC LISTING INFO
-    // =========================
-    propertyID: d.propertyID || null,
-    hostID: d.hostID || d.userID || null,
+    UserID: d.userID || d.UserID || null,
+    ListingTitle: safe(d.listingTitle),
+    Description: safe(d.description),
 
-    listingTitle: safe(d.listingTitle),
-    description: safe(d.description),
-    summary: safe(d.summary),
+    Location: locationString,
+    CityID: d.cityID || d.CityID || null,
+    CountryID: d.countryID || d.CountryID || null,
 
-    propertyTypeID: d.propertyTypeID || null,
-    propertyTypeLabel: safe(d.propertyTypeLabel),  // ⭐ THÊM VÀO
+    RoomTypeID: d.roomTypeID || d.RoomTypeID || null,
 
-    roomTypeID: d.roomTypeID || null,
-    roomTypeLabel: safe(d.roomTypeLabel),
+    Bedrooms: num(d.bedrooms),
+    Beds: num(d.beds),
+    Bathrooms: num(d.bathrooms),
+    Accommodates: num(d.accommodates),
 
-    // =========================
-    // LOCATION
-    // =========================
-    location: {
-      addressLine: safe(d.location.addressLine),
-      district: safe(d.location.district),
-      city: safe(d.location.city),
-      country: safe(d.location.country),
-      lat: d.location.lat,
-      lng: d.location.lng,
-    },
+    Price: num(d.pricing.basePrice),
+    Currency: safe(d.pricing.currency || "USD"),
 
-    cityID: d.cityID || null,
-    countryID: d.countryID || null,
+    PropertyType: safe(d.propertyType || d.propertyTypeLabel || ""),
 
-    // =========================
-    // CAPACITY
-    // =========================
-    bedrooms: num(d.bedrooms),
-    beds: num(d.beds),
-    bathrooms: num(d.bathrooms),
-    accommodates: num(d.accommodates),
-    squareFeet: d.squareFeet || null,
+    lat: d.location?.lat ? String(d.location.lat) : null,
+    lng: d.location?.lng ? String(d.location.lng) : null,
 
-    // =========================
-    // PRICING + FEES
-    // =========================
-    pricing: {
-      basePrice: num(d.pricing.basePrice),
-      currency: safe(d.pricing.currency),
+    HouseRules: houseRulesString,
 
-      weekendMultiplier: num(d.pricing.weekendMultiplier),
+    Photos: photos.map((p) => ({
+      Url: p.url,
+      Caption: p.caption,
+      SortIndex: p.sortIndex,
+    })),
 
-      cleaningFee: num(d.pricing.cleaningFee),
-      extraPeopleFee: num(d.pricing.extraPeopleFee),
-      extraPeopleThreshold: num(d.pricing.extraPeopleThreshold),
+    Amenities: amenities,
 
-      serviceFeePercent: num(d.pricing.serviceFee.percent),
-      taxFeePercent: num(d.pricing.taxFee.percent),
-
-      discounts,
-    },
-
-    // =========================
-    // BOOKING RULES
-    // =========================
-    bookingRules: {
-      minNights: num(d.pricing.minNights),
-      maxNights: num(d.pricing.maxNights),
-      preparationTime: num(d.pricing.preparationTime),
-      advanceNotice: num(d.pricing.advanceNotice),
-    },
-
-    // =========================
-    // HOUSE RULES & SAFETY
-    // =========================
-    houseRules: d.houseRules || [],
-
-    rules: {
-      checkin_after: safe(d.rules.checkin_after),
-      checkout_before: safe(d.rules.checkout_before),
-
-      no_smoking: !!d.rules.no_smoking,
-      no_open_flames: !!d.rules.no_open_flames,
-      pets_allowed: !!d.rules.pets_allowed,
-
-      covidSafety: !!d.rules.covidSafety,
-      surfacesSanitized: !!d.rules.surfacesSanitized,
-      carbonMonoxideAlarm: !!d.rules.carbonMonoxideAlarm,
-      smokeAlarm: !!d.rules.smokeAlarm,
-
-      selfCheckIn: !!d.rules.selfCheckIn,
-      self_checkin_method: safe(d.rules.self_checkin_method),
-    },
-
-    // =========================
-    // PHOTOS
-    // =========================
-    coverPhoto,
-    photos,
-
-    // =========================
-    // AMENITIES
-    // =========================
-    amenities,
-
-    // =========================
-    // STATUS
-    // =========================
-    active: !!d.active,
-    isBusinessReady: !!d.isBusinessReady,
-
-    approval: d.approval || {},
-
-    createdAt: d.createdAt || null,
-    updatedAt: d.updatedAt || null,
+    Active: false,
   };
 }
 
-function formatExperienceDataForAPI(raw) {
-  const d = raw || initialExperienceData;
 
+function formatExperienceDataForAPI(d) {
   const num = (v) => {
     const n = Number(v);
     return isNaN(n) ? 0 : n;
@@ -1535,14 +1652,23 @@ function formatExperienceDataForAPI(raw) {
   const safe = (v) => (v === undefined || v === null ? "" : v);
 
   // =============================
-  // 📸 MEDIA
+  // 📸 PHOTOS (merge HEAD + master)
   // =============================
-  const photos = (d.media.photos || []).map((p, i) => ({
-    url: safe(p.serverUrl || ""),
-    caption: safe(p.caption),
-    sortIndex: p.sortIndex ?? i + 1,
-    isCover: !!p.isCover,
-  }));
+  const photos = (d.media.photos || [])
+    .map((p, i) => {
+      const url = p.serverUrl || p.url || "";
+
+      if (!url || url.trim().length === 0 || url.startsWith("data:image")) {
+        return null;
+      }
+
+      return {
+        url: url.trim(),
+        caption: safe(p.caption),
+        sortIndex: p.sortIndex ?? i + 1,
+      };
+    })
+    .filter((p) => p !== null);
 
   const coverPhoto =
     d.media.cover ||
@@ -1551,7 +1677,7 @@ function formatExperienceDataForAPI(raw) {
     null;
 
   // =============================
-  // 🧭 LOCATION
+  // 📌 LOCATION
   // =============================
   const location = {
     addressLine: safe(d.location.addressLine),
@@ -1564,23 +1690,23 @@ function formatExperienceDataForAPI(raw) {
   };
 
   // =============================
-  // 📝 ITINERARY / DETAILS
+  // 📝 DETAILS
   // =============================
-  const details = (d.experienceDetails || []).map((item, i) => ({
+  const details = (d.experienceDetails || []).map((item, index) => ({
     id: item.id,
     title: safe(item.title),
     content: safe(item.content),
-    sortIndex: i + 1,
+    sortIndex: index + 1,
     photo: item.photo
       ? {
-        url: safe(item.photo.serverUrl || ""),
-        caption: safe(item.photo.caption || ""),
-      }
+          url: safe(item.photo.serverUrl || ""),
+          caption: safe(item.photo.caption || ""),
+        }
       : null,
   }));
 
   // =============================
-  // 🕒 TIME SLOTS
+  // 🕒 SLOTS
   // =============================
   const timeSlots = (d.booking.timeSlots || []).map((slot) => ({
     slotID: slot.id || null,
@@ -1595,7 +1721,7 @@ function formatExperienceDataForAPI(raw) {
   // =============================
   const pricing = {
     basePrice: num(d.pricing.basePrice),
-    currency: safe(d.pricing.currency || "USD"),
+    currency: safe(d.pricing.currency),
     priceUnit: d.pricing.priceUnit === "perGroup" ? "perGroup" : "perPerson",
 
     discounts: {
@@ -1611,50 +1737,41 @@ function formatExperienceDataForAPI(raw) {
   };
 
   // =============================
-  // 🎯 FINAL PAYLOAD
+  // 🎯 FINAL PAYLOAD — CLEAN VERSION
   // =============================
   return {
-    // SYSTEM
     tourID: d.tourID || null,
-    hostID: d.hostID || d.userID || null,
+    userID: d.userID || d.hostID || null,
 
-    // BASIC
     tourName: safe(d.tourName),
     summary: safe(d.summary),
     description: safe(d.description),
     mainCategory: safe(d.mainCategory),
+
     qualifications: {
       intro: safe(d.qualifications.intro),
       expertise: safe(d.qualifications.expertise),
       recognition: safe(d.qualifications.recognition),
     },
 
-    // LOCATION
     location,
     lat: location.lat,
     lng: location.lng,
 
-    // CAPACITY + DURATION
     maxGuests: num(d.capacity.maxGuests),
     durationHours: num(d.durationHours),
     durationDays: num(d.durationDays),
 
-    // TIME SLOTS
     timeSlots,
-
-    // MEDIA
     photos,
     coverPhoto,
 
-    // DETAILS / ITINERARY
     experienceDetails: details,
 
-    // AVAILABILITY
     startDate: safe(d.startDate),
     endDate: safe(d.endDate),
     isActive: !!d.isActive,
 
-    // CALENDAR
     calendar: (d.calendar || []).map((c) => ({
       date: c.date,
       slotID: c.slotID || null,
@@ -1662,14 +1779,13 @@ function formatExperienceDataForAPI(raw) {
       bookingID: c.bookingID || null,
     })),
 
-    // APPROVAL
     approval: d.approval || { status: "pending" },
 
-    // TIMESTAMPS
     createdAt: d.createdAt || null,
     updatedAt: d.updatedAt || null,
   };
 }
+
 
 
 // ============================================================

@@ -3,27 +3,26 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 120px;
+  height: 96px;
   background: #ffffff;
   display: flex;
-  justify-content: center;
   align-items: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  justify-content: space-between;
+  box-shadow: inset 0px -1px 0px #f3f4f6;
+  box-sizing: border-box;
+  padding: 24px 160px;
   z-index: 1000;
 }
 
-.hheader-container {
-  width: 1280px;
-  height: 100%;
+.hheader-logo {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 80px;
 }
 
 .hheader-logo img {
-  width: auto;
   height: 45px;
+  object-fit: contain;
+  cursor: pointer;
 }
 
 .hheader-navbar ul {
@@ -33,7 +32,7 @@
   font-family: "Inter", sans-serif;
   font-weight: 500;
   font-size: 16px;
-  color: #000;
+  color: var(--black);
 }
 
 .hheader-navbar li {
@@ -56,5 +55,21 @@
 .hheader-user-title {
   font-family: "Inter", sans-serif;
   font-size: 14px;
-  color: #000;
+  color: var(--black);
+}
+
+/* ==========================
+✅ RESPONSIVE
+========================== */
+@media (max-width: 1024px) {
+  .hheader {
+    padding: 24px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hheader {
+    padding: 16px 20px;
+    height: auto;
+  }
 }

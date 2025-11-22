@@ -8,6 +8,7 @@ import ErrorMessage from "../components/ErrorMessage";
 import ExperienceSearchBar from "../components/search/ExperienceSearchBar";
 import { useApp } from "../contexts/AppContext";
 import authAPI from "../services/authAPI";
+import { useCurrency } from "../contexts/CurrencyContext";
 
 export default function ToursPage() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function ToursPage() {
   const [searchParams] = useSearchParams();
   const { experiences, loading, error, fetchExperiences } = useExperience();
   const [savedTourIds, setSavedTourIds] = useState(new Set());
+  const { convertToCurrent, format } = useCurrency();
 
   const deriveIdsFromWishlist = useCallback((wishlistPayload, targetType = 'property') => {
     if (!wishlistPayload) return new Set();
@@ -111,13 +113,32 @@ export default function ToursPage() {
           <div className="tours-grid">
             {experiences?.map(tour => {
               if (!tour) return null;
+              
+              // Helper function to normalize image URL
+              const normalizeImageUrl = (url) => {
+                if (!url || url.trim().length === 0) return "/fallback.png";
+                // If already a full URL (http/https), use as is
+                if (url.startsWith('http://') || url.startsWith('https://')) {
+                  return url.trim();
+                }
+                // If relative path starting with /, prepend backend base URL
+                if (url.startsWith('/')) {
+                  return `http://localhost:5069${url}`;
+                }
+                // Otherwise, assume it's a relative path and prepend backend base URL
+                return `http://localhost:5069/${url}`;
+              };
+              
+              const imageUrl = tour.image?.url || tour.image || "/fallback.png";
+              const normalizedImageUrl = normalizeImageUrl(imageUrl);
+              
               return (
                 <div key={tour.id} className="tour-card">
 
                   <div className="tour-image"
                     onClick={() => navigate(`/experience/${tour.id}`)}>
                     <img
-                      src={tour.image?.url || tour.image || "/fallback.png"}
+                      src={normalizedImageUrl}
                       alt={tour.title || "Tour image"}
                     />
                     <button 
@@ -185,7 +206,7 @@ export default function ToursPage() {
                     <div className="tour-footer">
                       <div className="tour-price">
                         <span className="price">
-                          ${(tour.price ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {format(convertToCurrent(tour.price ?? 0))}
                         </span>
                         <span className="price-unit">/ person</span>
                       </div>

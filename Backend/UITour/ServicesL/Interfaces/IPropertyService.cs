@@ -10,6 +10,7 @@ public interface IPropertyService
   Task<Property> UpdateAsync(Property property);
   Task<bool> DeleteAsync(int id);
   Task<IEnumerable<Property>> GetByHostIdAsync(int hostId);
+  Task<IEnumerable<Property>> GetByUserIdAsync(int userId);
   Task<IEnumerable<Property>> SearchAsync(string location, DateTime? checkIn, DateTime? checkOut, int? guests);
   Task<bool> AddAmenityAsync(int propertyId, int amenityId);
   Task<bool> RemoveAmenityAsync(int propertyId, int amenityId);

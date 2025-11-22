@@ -25,12 +25,12 @@
 .footer-title {
   font-weight: 500;
   font-size: 16px;
-  color: #000;
+  color: var(--black);
 }
 
 .footer-col a {
   font-size: 14px;
-  color: #4b5563;
+  color: var(--subtitle-color);
   text-decoration: none;
 }
 
@@ -60,11 +60,11 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #4b5563;
+  color: var(--subtitle-color);
 }
 
 .sub-left a {
-  color: #4b5563;
+  color: var(--subtitle-color);
   text-decoration: none;
 }
 
@@ -75,7 +75,7 @@
 .dot {
   width: 2px;
   height: 2px;
-  background: #4b5563;
+  background: var(--subtitle-color);
   border-radius: 50%;
 }
 
@@ -90,7 +90,7 @@
   gap: 16px;
   font-size: 14px;
   font-weight: 500;
-  color: #4b5563;
+  color: var(--subtitle-color);
 }
 
 .lang, .currency {
@@ -117,7 +117,7 @@
 
 .social a {
   font-size: 18px;
-  color: #4b5563;
+  color: var(--subtitle-color);
   text-decoration: none;
 }
 
