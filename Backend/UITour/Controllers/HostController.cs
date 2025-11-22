@@ -32,6 +32,21 @@ namespace UITour.Controllers
             }
         }
 
+        // GET: api/host/user/5
+        [HttpGet("user/{userId:int}")]
+        public async Task<IActionResult> GetByUserId(int userId)
+        {
+            try
+            {
+                var host = await _hostService.GetByUserIdAsync(userId);
+                return Ok(host);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
         // POST: api/host/register
         [HttpPost("register")]
         public async Task<IActionResult> RegisterHost([FromBody] HostRegistrationRequest request)
@@ -212,6 +227,41 @@ namespace UITour.Controllers
             {
                 var tours = await _hostService.GetToursAsync(id);
                 return Ok(tours);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // GET: api/host/{id}/listings
+        [HttpGet("{id}/listings")]
+        public async Task<IActionResult> GetListings(int id)
+        {
+            try
+            {
+                var listings = await _hostService.GetListingsAsync(id);
+                return Ok(listings);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // GET: api/host/user/{userId}/listings
+        [HttpGet("user/{userId}/listings")]
+        public async Task<IActionResult> GetListingsByUserId(int userId)
+        {
+            try
+            {
+                var host = await _hostService.GetByUserIdAsync(userId);
+                var listings = await _hostService.GetListingsAsync(host.HostID);
+                return Ok(listings);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {

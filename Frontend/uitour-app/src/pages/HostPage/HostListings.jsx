@@ -5,62 +5,15 @@ import { Icon } from "@iconify/react";
 import sampleImg from "../../assets/sample-room.jpg";
 import logo from "../../assets/UiTour.png";
 import { useApp } from "../../contexts/AppContext";
-
-const listings = [
-    {
-        id: 1,
-        status: "Listed",
-        title: "Apartment in Quận Ba Đình",
-        rating: 4.33,
-    },
-    {
-        id: 2,
-        status: "Listed",
-        title: "Apartment in Quận Ba Đình",
-        rating: 4.33,
-    },
-    {
-        id: 3,
-        status: "Listed",
-        title: "Apartment in Quận Ba Đình",
-        rating: 4.33,
-    },
-    {
-        id: 4,
-        status: "Listed",
-        title: "Apartment in Quận Ba Đình",
-        rating: 4.33,
-    },
-    {
-        id: 5,
-        status: "Listed",
-        title: "Apartment in Quận Ba Đình",
-        rating: 4.33,
-    },
-    {
-        id: 6,
-        status: "Listed",
-        title: "Apartment in Quận Ba Đình",
-        rating: 4.33,
-    },
-    {
-        id: 7,
-        status: "Listed",
-        title: "Apartment in Quận Ba Đình",
-        rating: 4.33,
-    },
-    {
-        id: 8,
-        status: "Listed",
-        title: "Apartment in Quận Ba Đình",
-        rating: 4.33,
-    },
-];
+import authAPI from "../../services/authAPI";
 
 export default function HostListings() {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [listings, setListings] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
-    const { dispatch } = useApp();
+    const { user, dispatch } = useApp();
 
     useEffect(() => {
         const handleEsc = (event) => {
@@ -75,6 +28,30 @@ export default function HostListings() {
 
         return () => window.removeEventListener("keydown", handleEsc);
     }, [menuOpen]);
+
+    useEffect(() => {
+        const fetchListings = async () => {
+            if (!user || !user.UserID) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                setLoading(true);
+                setError(null);
+                const data = await authAPI.getHostListingsByUserId(user.UserID);
+                setListings(data || []);
+            } catch (err) {
+                console.error('Error fetching listings:', err);
+                setError(err.message || 'Failed to load listings');
+                setListings([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchListings();
+    }, [user]);
 
     const closeMenu = () => setMenuOpen(false);
 
@@ -242,19 +219,55 @@ export default function HostListings() {
                         Create new listing
                     </button>
                 </div>
-                <div className="listing-grid">
-                {listings.map((item) => (
-                    <div className="listing-card" key={item.id}>
-                        <div className="listing-status">{item.status}</div>
-                        <img src={sampleImg} alt={item.title} className="listing-img" />
-                        <div className="listing-info">
-                            <h3>
-                                {item.title} <span>★ {item.rating}</span>
-                            </h3>
-                        </div>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        <p>Loading listings...</p>
                     </div>
-                ))}
-                </div>
+                ) : error ? (
+                    <div style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>
+                        <p>Error: {error}</p>
+                    </div>
+                ) : listings.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        <p>No listings found. Create your first listing to get started!</p>
+                    </div>
+                ) : (
+                    <div className="listing-grid">
+                        {listings.map((item) => (
+                            <div 
+                                className="listing-card" 
+                                key={`${item.type}-${item.id}`}
+                                onClick={() => {
+                                    if (item.type === 'Property') {
+                                        navigate(`/property/${item.id}`);
+                                    } else if (item.type === 'Tour') {
+                                        navigate(`/experience/${item.id}`);
+                                    }
+                                }}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <div className="listing-status">{item.status}</div>
+                                <img 
+                                    src={item.imageUrl || sampleImg} 
+                                    alt={item.title} 
+                                    className="listing-img"
+                                    onError={(e) => {
+                                        e.target.src = sampleImg;
+                                    }}
+                                />
+                                <div className="listing-info">
+                                    <h3>
+                                        {item.title} 
+                                        {item.rating > 0 && <span>★ {item.rating.toFixed(2)}</span>}
+                                    </h3>
+                                    <p style={{ fontSize: '0.875rem', color: '#666', marginTop: '0.25rem' }}>
+                                        {item.type}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
