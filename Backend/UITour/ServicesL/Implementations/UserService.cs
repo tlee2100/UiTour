@@ -8,6 +8,11 @@ using UITour.DAL.Interfaces;
 using UITour.ServicesL.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using System.Security.Cryptography;
+using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 namespace UITour.ServicesL.Implementations
 {
@@ -16,15 +21,17 @@ namespace UITour.ServicesL.Implementations
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMemoryCache _cache;
         private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
         private const string RegistrationOtpPrefix = "register_otp_";
         private const string RegistrationVerifiedPrefix = "register_verified_";
         private const string ProfileOtpPrefix = "profile_otp_";
 
-        public UserService(IUnitOfWork unitOfWork, IMemoryCache cache, IEmailService emailService)
+        public UserService(IUnitOfWork unitOfWork, IMemoryCache cache, IEmailService emailService, IConfiguration configuration)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         public async Task<User> GetByIdAsync(int id)
@@ -305,8 +312,34 @@ namespace UITour.ServicesL.Implementations
 
         private string GenerateToken(User user)
         {
-            // Token generation logic here
-            return "generated_token";
+            var jwtSettings = _configuration.GetSection("JwtSettings");
+            var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
+            var issuer = jwtSettings["Issuer"] ?? "UITour";
+            var audience = jwtSettings["Audience"] ?? "UITourUsers";
+            var expirationMinutes = int.Parse(jwtSettings["ExpirationInMinutes"] ?? "1440");
+
+            var key = Encoding.UTF8.GetBytes(secretKey);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Name, user.FullName),
+                    new Claim(ClaimTypes.Role, user.Role ?? "User")
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(expirationMinutes),
+                Issuer = issuer,
+                Audience = audience,
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature
+                )
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
         private static string NormalizeEmail(string email)
