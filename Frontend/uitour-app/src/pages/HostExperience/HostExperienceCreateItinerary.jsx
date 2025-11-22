@@ -152,12 +152,12 @@ export default function HostExperienceCreateItinerary() {
       content,
       photo: image
         ? {
-            preview: image.preview || null,
-            file: image.file || null,
-            name: image.name || image.file?.name || "",
-            caption: image.caption || "",
-            serverUrl: image.serverUrl || "",
-          }
+          preview: image.preview || null,
+          file: image.file || null,
+          name: image.name || image.file?.name || "",
+          caption: image.caption || "",
+          serverUrl: image.serverUrl || "",
+        }
         : null,
     };
 
@@ -279,6 +279,10 @@ export default function HostExperienceCreateItinerary() {
     <div className="he-page">
       <main className="he-main">
         <h1 className="he-title">Your itinerary</h1>
+        <div className="he-photo-warning">
+          ⚠️ <strong>Warning:</strong> Photos are stored temporarily.
+          Reloading or leaving the hosting setup before publishing will cause them to be lost.
+        </div>
 
         <div className="he-itinerary">
           {activities.map((a) => (
@@ -334,17 +338,28 @@ export default function HostExperienceCreateItinerary() {
                       className="he-editor-title"
                       type="text"
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v.length <= 50) setTitle(v);
+                      }}
+
                       placeholder="Activity title"
                     />
+                    <div className="he-char-count">{title.length}/50</div>
+
 
                     <textarea
                       className="he-editor-content"
                       rows={3}
                       value={content}
-                      onChange={(e) => setContent(e.target.value)}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v.length <= 150) setContent(v);
+                      }}
+
                       placeholder="Activity details"
                     />
+                    <div className="he-char-count">{content.length}/150</div>
 
                     <div className="he-editor-actions">
                       <button
@@ -412,17 +427,28 @@ export default function HostExperienceCreateItinerary() {
                   className="he-editor-title"
                   type="text"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v.length <= 50) setTitle(v);
+                  }}
+
                   placeholder="Activity title"
                 />
+                <div className="he-char-count">{title.length}/50</div>
+
 
                 <textarea
                   className="he-editor-content"
                   rows={3}
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v.length <= 150) setContent(v);
+                  }}
+
                   placeholder="Activity details"
                 />
+                <div className="he-char-count">{content.length}/150</div>
 
                 <div className="he-editor-actions">
                   <button

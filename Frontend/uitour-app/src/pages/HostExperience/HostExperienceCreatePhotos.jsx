@@ -139,7 +139,10 @@ export default function HostExperienceCreatePhotos() {
     <div className="he-page">
       <main className="he-main">
         <h1 className="he-title">Add photos that showcase your skills</h1>
-
+        <div className="he-photo-warning">
+          ⚠️ <strong>Warning:</strong> Photos are stored temporarily.
+          Reloading or leaving the hosting setup before publishing will cause them to be lost.
+        </div>
         {/* DROPZONE */}
         <div
           className={`he-photos-dropzone ${photos.length === 0 ? "large" : "small"}`}

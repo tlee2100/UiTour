@@ -8,7 +8,8 @@ export default function HostExperienceCreateMaxGuests() {
   // Load từ context
   const initialTime = experienceData.booking?.timeSlots?.[0]?.startTime || null;
   const initialMax = experienceData.capacity?.maxGuests || 1;
-  const initialPrice = experienceData.pricing?.basePrice || 0;
+  const initialPrice = Number(experienceData.pricing?.basePrice) || 0;
+  const initialDuration = experienceData.durationHours || 1;
 
   // Parse time
   const now = new Date();
@@ -19,70 +20,85 @@ export default function HostExperienceCreateMaxGuests() {
   const [ampm, setAmpm] = useState(parsed ? parsed[2] : now.getHours() >= 12 ? "PM" : "AM");
 
   const [maxGuests, setMaxGuests] = useState(initialMax);
+
+  // ⚡ Price: dùng number, tránh NaN và tránh "" gây validate fail
   const [pricePerGuest, setPricePerGuest] = useState(initialPrice);
+
+  // Duration Hours
+  const [durationHours, setDurationHours] = useState(initialDuration);
 
   const hours = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
   const minutesArr = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
 
-  // 🔄 Đồng bộ lại từ draft sau khi HostContext load xong
+  // ===========================
+  // Sync lại draft từ context
+  // ===========================
   useEffect(() => {
-    if (loadingDraft) return; // chưa load xong thì kệ
+    if (loadingDraft) return;
 
-    // Lấy lại giá trị mới nhất từ context
     const savedTime = experienceData.booking?.timeSlots?.[0]?.startTime || null;
     const savedMax = experienceData.capacity?.maxGuests || 1;
-    const savedPrice = experienceData.pricing?.basePrice || 0;
+    const savedPrice = Number(experienceData.pricing?.basePrice) || 0;
+    const savedDuration = experienceData.durationHours || 1;
 
-    // Sync maxGuests + price
     setMaxGuests(savedMax);
     setPricePerGuest(savedPrice);
+    setDurationHours(savedDuration);
 
-    // Nếu có time trong draft thì parse lại
     if (savedTime) {
-      const parts = savedTime.split(/[: ]/); // ["HH","mm","AM/PM"]
+      const parts = savedTime.split(/[: ]/);
       setHour(parts[0] || "01");
       setMinute(parts[1] || "00");
       setAmpm(parts[2] || "AM");
     }
   }, [loadingDraft, experienceData]);
 
-  // Auto save time
+  // ===========================
+  // Auto save time slot
+  // ===========================
   useEffect(() => {
     const startTime = `${hour}:${minute} ${ampm}`;
-
-    updateField("booking", {
-      timeSlots: [{ startTime }]
-    });
+    updateField("booking", { timeSlots: [{ startTime }] });
   }, [hour, minute, ampm]);
 
-  // Auto save capacity
+  // ===========================
+  // Auto save max guests
+  // ===========================
   useEffect(() => {
     updateField("capacity", { maxGuests });
   }, [maxGuests]);
 
+  // ===========================
   // Auto save price
+  // ===========================
   useEffect(() => {
-    updateField("pricing", { basePrice: pricePerGuest });
+    if (pricePerGuest === "") {
+      // Khi user đang xoá, không save gì cả
+      return;
+    }
+
+    // Bình thường thì save số
+    updateField("pricing", {
+      basePrice: Number(pricePerGuest)
+    });
   }, [pricePerGuest]);
 
-  // Format cho đẹp khi hiển thị (10.000)
-  const formatVND = (num) => {
-    if (!num) return "";
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  };
 
-  // Convert chuỗi "10.000" → số 10000
-  const parseVND = (str) => {
-    if (!str) return 0;
-    return Number(str.replace(/\./g, ""));
-  };
+  // ===========================
+  // Auto save duration
+  // ===========================
+  useEffect(() => {
+    if (durationHours === "") return;
+
+    updateField("durationHours", { durationHours });
+  }, [durationHours]);
 
   return (
     <div className="he-page">
       <main className="he-main he-time">
-        <h1 className="he-title">Pick a time and number of guests</h1>
+        <h1 className="he-title">Pick a time, duration and number of guests</h1>
 
-        {/* TIME */}
+        {/* START TIME */}
         <div className="he-time-card">
           <div className="he-time-label">Start time</div>
 
@@ -104,11 +120,13 @@ export default function HostExperienceCreateMaxGuests() {
           </div>
         </div>
 
-        {/* CAPACITY */}
+        {/* CAPACITY + PRICE */}
         <div className="he-price-card">
           <div className="he-time-label">Capacity & pricing</div>
 
           <div className="he-price-grid">
+
+            {/* Max Guests */}
             <div className="he-field">
               <label>Max guests</label>
               <select
@@ -122,18 +140,58 @@ export default function HostExperienceCreateMaxGuests() {
               </select>
             </div>
 
+            {/* Duration Hours */}
+            <div className="he-field">
+              <label>Duration (hours)</label>
+              <input
+                type="number"
+                className="he-input"
+                min={1}
+                max={24}
+                value={durationHours}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setDurationHours("");
+                    return;
+                  }
+                  setDurationHours(Number(val));
+                }}
+                onBlur={() => {
+                  let v = Number(durationHours);
+                  if (!v || v < 1) v = 1;
+                  if (v > 24) v = 24;
+                  setDurationHours(v);
+                }}
+                placeholder="Enter duration..."
+              />
+              <div className="he-time-hint">Duration must be between 1–24</div>
+            </div>
+
+            {/* PRICE */}
             <div className="he-field">
               <label>Price per guest (USD)</label>
+
               <input
                 className="he-input"
-                type="text"
-                //value={formatVND(pricePerGuest)}
-                value={pricePerGuest}
+                type="number"
+                min={1}
+                value={pricePerGuest === 0 ? "" : pricePerGuest}
                 placeholder="Enter price..."
                 onChange={(e) => {
-                  const raw = parseVND(e.target.value);
-                  setPricePerGuest(raw);
+                  const v = e.target.value;
+                  if (v === "") {
+                    setPricePerGuest("");
+                    return;
+                  }
+                  setPricePerGuest(Number(v));
                 }}
+                onBlur={() => {
+                  let v = Number(pricePerGuest);
+                  if (!v || v < 1) v = 1;   // nếu rỗng hoặc <1 → set 1
+                  setPricePerGuest(v);
+                }}
+
               />
             </div>
           </div>

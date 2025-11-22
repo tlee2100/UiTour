@@ -414,14 +414,25 @@ function sanitizeStayData(raw) {
 
 // 🧭 Experience / Tour
 const initialExperienceData = {
+  // ======================================================================================
+  // SYSTEM – ID, Host, Approval bởi Admin
+  // ======================================================================================
   tourID: null,
   hostID: null,
 
-  // BASIC INFO (FE + BE)
+  approval: {
+    status: "pending",     // pending | approved | rejected
+    approvedAt: null,
+    approvedBy: null,
+  },
+
+  // ======================================================================================
+  // BASIC INFO
+  // ======================================================================================
   tourName: "",
   summary: "",
   description: "",
-  mainCategory: "", // chọn từ trang Choose
+  mainCategory: "",
   yearsOfExperience: 10,
   qualifications: {
     intro: "",
@@ -429,7 +440,9 @@ const initialExperienceData = {
     recognition: "",
   },
 
+  // ======================================================================================
   // LOCATION
+  // ======================================================================================
   location: {
     addressLine: "",
     city: "",
@@ -440,54 +453,142 @@ const initialExperienceData = {
   cityID: null,
   countryID: null,
 
+  // ======================================================================================
   // PRICING
+  // ======================================================================================
   pricing: {
-    basePrice: "",
+    basePrice: 0,
     currency: "USD",
-    priceUnit: "perPerson",
+    priceUnit: "perPerson", // perPerson | perGroup
   },
 
+  // ======================================================================================
   // GUEST CAPACITY
+  // ======================================================================================
   capacity: {
     maxGuests: 1,
   },
 
-  // BOOKING TIME SLOTS
+  // ======================================================================================
+  // DURATION
+  // ======================================================================================
+  durationHours: 1,       // Thời lượng theo giờ
+  durationDays: 1,        // Tour có thể kéo dài vài ngày
+
+  // ======================================================================================
+  // TIME SLOTS / SCHEDULE
+  // ======================================================================================
   booking: {
-    timeSlots: [], // FE tự quản lý
+    timeSlots: [
+      /*
+        {
+          id: "slot_1",
+          startTime: "09:00",
+          endTime: "12:00",
+          days: ["Mon", "Wed", "Fri"], 
+          capacity: 10, // số khách tối đa cho slot này
+        }
+      */
+    ],
   },
 
+  // ======================================================================================
   // MEDIA
+  // ======================================================================================
   media: {
     cover: null,
     photos: [],
   },
 
+  // ======================================================================================
+  // DISCOUNTS
+  // ======================================================================================
   discounts: {
     earlyBird: false,
-    custom: [],
+    custom: [], // { type, amount, percent, from, to }
   },
 
-  // DURATION
-  durationHours: 1,
-  durationDays: 1,
-
-  // DETAILS / WHAT INCLUDED
+  // ======================================================================================
+  // DETAILS (What’s included / What you’ll do)
+  // ======================================================================================
   experienceDetails: [],
 
-  // STATUS
-  isActive: true,
-
+  // ======================================================================================
+  // AVAILABILITY WINDOW
+  // ======================================================================================
   startDate: "",
   endDate: "",
+  isActive: true,
   createdAt: null,
 
-  // BACKEND-ONLY FIELDS (OPTIONAL)
+  // ======================================================================================
+  // CALENDAR – trạng thái ngày cho Experience
+  // ======================================================================================
+  calendar: [
+    /*
+      Với Experience, block theo ngày (giống Stay) nhưng áp dụng cho các slot.
+
+      {
+        date: "2025-07-21",
+        slotID: "slot_1",   // null nếu block cả ngày
+        status: "booked" | "pending" | "blocked",
+        bookingID: null
+      }
+    */
+  ],
+
+  // ======================================================================================
+  // BOOKINGS (Experience-style)
+  // ======================================================================================
+  bookings: [
+    /*
+      Experience booking khác Stay:
+      - Không có nights
+      - Có slotID
+      - Có số lượng participants
+
+      {
+        bookingID: 101,
+        tourID: 7,
+        userID: 4,
+        slotID: "slot_1",
+        
+        date: "2025-07-21",
+
+        guests: 3,   // số khách
+        totalPrice: 150,
+        originalPrice: 180,
+
+        discountApplied: {
+          type: "earlyBird", 
+          amount: 30
+        },
+
+        status: "pending" | "confirmed" | "cancelled" | "expired",
+
+        createdAt: "2025-06-01T12:00:00",
+        paidAt: null,
+        cancelledAt: null,
+        expiredAt: null
+      }
+    */
+  ],
+
+  // ======================================================================================
+  // BACKEND-ONLY FIELDS
+  // ======================================================================================
   cancellationID: null,
   cancellationPolicy: null,
-  participants: [],
-  reviews: [],
+
+  participants: [],   // BE tính dựa trên bookings
+  reviews: [],        // BE trả về
+
+  // ======================================================================================
+  // SYSTEM GENERATED – timestamps
+  // ======================================================================================
+  updatedAt: null,
 };
+
 
 // ============================================================
 // 2️⃣ TẠO CONTEXT
@@ -734,11 +835,23 @@ export function HostProvider({ children }) {
       }
 
       else if (step === "pricing") {
+        // ensure basePrice is numeric (avoid storing "" or "0" as string)
+        const incoming = values || {};
+        const coerced = {
+          ...incoming,
+          basePrice:
+            incoming.basePrice === "" || incoming.basePrice === null || isNaN(Number(incoming.basePrice))
+              ? 0
+              : Number(incoming.basePrice),
+        };
+
         setExperienceData((prev) => ({
           ...prev,
-          pricing: { ...prev.pricing, ...values },
+          pricing: { ...prev.pricing, ...coerced },
         }));
-      } else if (step === "capacity") {
+        return;
+      }
+      else if (step === "capacity") {
         setExperienceData((prev) => ({
           ...prev,
           capacity: { ...prev.capacity, ...values },
@@ -850,19 +963,25 @@ export function HostProvider({ children }) {
 
       if (step === "qualification") return true;
 
-      if (step === "title") return experienceData.tourName.trim().length > 0;
+      // --- ⭐ DESCRIBE TITLE PAGE (Title + Description both required) ---
+      if (step === "describe-title") {
+        const title = String(experienceData.tourName || "").trim();
+        const desc = String(experienceData.summary || experienceData.description || "").trim();
 
-      if (step === "description")
-        return experienceData.description.trim().length > 0;
+        // Must have BOTH
+        return title.length > 0 && desc.length > 0;
+      }
 
       if (step === "locate")
         return !!experienceData.location.lat && !!experienceData.location.lng;
 
-      if (step === "pricing")
-        return Number(experienceData.pricing.basePrice) > 0;
-
-      if (step === "capacity")
-        return Number(experienceData.capacity.maxGuests) >= 1;
+      // ⭐ Only validate price (maxGuests & duration are always >= 1)
+      if (step === "capacity") {
+        const price = Number(experienceData.pricing?.basePrice);
+        // price must be a valid positive number
+        if (isNaN(price)) return false;
+        return price > 0;
+      }
 
       if (step === "photos") return experienceData.media.photos.length > 0;
 
@@ -875,6 +994,86 @@ export function HostProvider({ children }) {
       return true;
     }
   }
+
+  // ============================================================
+  // FINAL VALIDATION – RÀ SOÁT TẤT CẢ DỮ LIỆU TRƯỚC KHI PUBLISH
+  // ============================================================
+
+  // ⭐ VALIDATE STAY
+  function validateAllStay() {
+    const steps = [
+      "choose",
+      "typeofplace",
+      "location",
+      "details",
+      "title",
+      "description",
+      "weekday-price",
+      "weekend-price",
+      "photos"
+    ];
+
+    for (const step of steps) {
+      if (!validateStep(step)) {
+        return {
+          ok: false,
+          step,
+          message: `Missing or invalid data at step: ${step}`,
+        };
+      }
+    }
+
+    // ⭐ ẢNH: RAM PHẢI CÓ FILE
+    if (!stayPhotosRAM || stayPhotosRAM.length === 0) {
+      return {
+        ok: false,
+        step: "photos",
+        message: "Your photos were lost after reload. Please upload them again.",
+      };
+    }
+
+    // Nếu pass hết
+    return { ok: true };
+  }
+
+  // ⭐ VALIDATE EXPERIENCE
+  function validateAllExperience() {
+    const steps = [
+      "describe-title",
+      "locate",
+      "capacity",
+      "photos",
+      "itinerary",
+      "timeslots"
+    ];
+
+    for (const step of steps) {
+      if (!validateStep(step)) {
+        return {
+          ok: false,
+          step,
+          message: `Missing or invalid data at step: ${step}`,
+        };
+      }
+    }
+
+    // ⭐ Ảnh Experience cũng chỉ an toàn khi RAM còn file
+    if (!experiencePhotosRAM || experiencePhotosRAM.length === 0) {
+      return {
+        ok: false,
+        step: "photos",
+        message: "Your photos were lost after reload. Please upload them again.",
+      };
+    }
+
+    return { ok: true };
+  }
+
+  // ⭐ MASTER VALIDATE – dùng ở Preview
+  function validateAll() {
+    return type === "stay" ? validateAllStay() : validateAllExperience();
+  }
+
 
   function canMoveToStep(step) {
     return validateStep(step);
@@ -1143,6 +1342,9 @@ export function HostProvider({ children }) {
         setExperiencePhotosRAM,
         experienceItineraryRAM,
         setExperienceItineraryRAM,
+        validateAll,
+        validateAllStay,
+        validateAllExperience,
       }}
     >
       {children}
@@ -1322,58 +1524,153 @@ function formatStayDataForAPI(d) {
   };
 }
 
-function formatExperienceDataForAPI(d) {
-  return {
-    tourID: d.tourID || null,
-    hostID: d.hostID,
+function formatExperienceDataForAPI(raw) {
+  const d = raw || initialExperienceData;
 
-    tourName: d.tourName,
-    description: d.description,
-    summary: d.summary,
-    mainCategory: d.mainCategory,
-    qualifications: d.qualifications,
+  const num = (v) => {
+    const n = Number(v);
+    return isNaN(n) ? 0 : n;
+  };
 
-    // Location
-    location: d.location.addressLine,
-    cityID: d.cityID,
-    countryID: d.countryID,
+  const safe = (v) => (v === undefined || v === null ? "" : v);
+
+  // =============================
+  // 📸 MEDIA
+  // =============================
+  const photos = (d.media.photos || []).map((p, i) => ({
+    url: safe(p.serverUrl || ""),
+    caption: safe(p.caption),
+    sortIndex: p.sortIndex ?? i + 1,
+    isCover: !!p.isCover,
+  }));
+
+  const coverPhoto =
+    d.media.cover ||
+    photos.find((p) => p.isCover)?.url ||
+    photos[0]?.url ||
+    null;
+
+  // =============================
+  // 🧭 LOCATION
+  // =============================
+  const location = {
+    addressLine: safe(d.location.addressLine),
+    city: safe(d.location.city),
+    country: safe(d.location.country),
     lat: d.location.lat,
     lng: d.location.lng,
+    cityID: d.cityID || null,
+    countryID: d.countryID || null,
+  };
 
-    // Pricing
-    price: Number(d.pricing.basePrice),
-    currency: d.pricing.currency,
+  // =============================
+  // 📝 ITINERARY / DETAILS
+  // =============================
+  const details = (d.experienceDetails || []).map((item, i) => ({
+    id: item.id,
+    title: safe(item.title),
+    content: safe(item.content),
+    sortIndex: i + 1,
+    photo: item.photo
+      ? {
+        url: safe(item.photo.serverUrl || ""),
+        caption: safe(item.photo.caption || ""),
+      }
+      : null,
+  }));
 
-    // Capacity
-    maxGuests: d.capacity.maxGuests,
+  // =============================
+  // 🕒 TIME SLOTS
+  // =============================
+  const timeSlots = (d.booking.timeSlots || []).map((slot) => ({
+    slotID: slot.id || null,
+    startTime: slot.startTime,
+    endTime: slot.endTime || null,
+    days: Array.isArray(slot.days) ? slot.days : [],
+    capacity: num(slot.capacity || d.capacity.maxGuests),
+  }));
 
-    // Duration
-    durationDays: d.durationDays,
-    durationHours: d.durationHours,
+  // =============================
+  // 💵 PRICING
+  // =============================
+  const pricing = {
+    basePrice: num(d.pricing.basePrice),
+    currency: safe(d.pricing.currency || "USD"),
+    priceUnit: d.pricing.priceUnit === "perGroup" ? "perGroup" : "perPerson",
 
-    // Time slots (optional—tùy BE có hỗ trợ hay không)
-    timeSlots: d.booking.timeSlots,
+    discounts: {
+      earlyBird: !!d.discounts.earlyBird,
+      custom: (d.discounts.custom || []).map((x) => ({
+        type: safe(x.type),
+        amount: num(x.amount),
+        percent: num(x.percent),
+        from: x.from || null,
+        to: x.to || null,
+      })),
+    },
+  };
 
-    // Photos
-    photos: d.media.photos.map((p, i) => ({
-      url: p.serverUrl || "",
-      caption: p.caption || "",
-      sortIndex: i + 1,
+  // =============================
+  // 🎯 FINAL PAYLOAD
+  // =============================
+  return {
+    // SYSTEM
+    tourID: d.tourID || null,
+    hostID: d.hostID || d.userID || null,
+
+    // BASIC
+    tourName: safe(d.tourName),
+    summary: safe(d.summary),
+    description: safe(d.description),
+    mainCategory: safe(d.mainCategory),
+    qualifications: {
+      intro: safe(d.qualifications.intro),
+      expertise: safe(d.qualifications.expertise),
+      recognition: safe(d.qualifications.recognition),
+    },
+
+    // LOCATION
+    location,
+    lat: location.lat,
+    lng: location.lng,
+
+    // CAPACITY + DURATION
+    maxGuests: num(d.capacity.maxGuests),
+    durationHours: num(d.durationHours),
+    durationDays: num(d.durationDays),
+
+    // TIME SLOTS
+    timeSlots,
+
+    // MEDIA
+    photos,
+    coverPhoto,
+
+    // DETAILS / ITINERARY
+    experienceDetails: details,
+
+    // AVAILABILITY
+    startDate: safe(d.startDate),
+    endDate: safe(d.endDate),
+    isActive: !!d.isActive,
+
+    // CALENDAR
+    calendar: (d.calendar || []).map((c) => ({
+      date: c.date,
+      slotID: c.slotID || null,
+      status: c.status,
+      bookingID: c.bookingID || null,
     })),
-    coverPhoto: d.media.cover,
-    experienceDetails: d.experienceDetails.map(item => ({
-      ...item,
-      photo: item.photo ? {
-        url: item.photo.serverUrl || "",
-        caption: item.photo.caption || ""
-      } : null
-    })),
 
-    startDate: d.startDate,
-    endDate: d.endDate,
-    active: d.isActive,
+    // APPROVAL
+    approval: d.approval || { status: "pending" },
+
+    // TIMESTAMPS
+    createdAt: d.createdAt || null,
+    updatedAt: d.updatedAt || null,
   };
 }
+
 
 // ============================================================
 // 🔟 HOOK TIỆN DỤNG
@@ -1381,3 +1678,15 @@ function formatExperienceDataForAPI(d) {
 export function useHost() {
   return useContext(HostContext);
 }
+
+//////////////////////////
+/*
+
+Thêm trường Duration, Booking, Admin duyệt(nếu thiếu) và so lại với Stay để chuẩn data cuối
+Style lại 1 số chỗ của Experience, đặc biệt là phần Title & Description lỗi style khi nhập dài
+Style lại phần nhập chữ khi mở editor vì trông ko thống nhất và cứng nhắc
+Thêm cảnh báo reload sẽ mất ảnh ở tất cả trang upload ảnh
+Thêm final validate để check lần cuối đảm bảo ko cho publish khi Host reload mất ảnh ở cả 2 Exp và Stay
+Format lại Exp lần cuối để hoàn thành
+
+*/
