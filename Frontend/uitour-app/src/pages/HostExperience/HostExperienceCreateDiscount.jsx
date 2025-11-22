@@ -66,32 +66,65 @@ export default function HostExperienceCreateDiscount() {
     setError("");
   };
 
-  // ---- ADD DISCOUNT ----
+  const maxGuests = experienceData.capacity?.maxGuests || 1;
+
   const submitAdd = () => {
     const p = Number(percent);
     const v = Number(value);
 
+    setError("");
+
+    // --- VALIDATE PERCENT ---
     if (isNaN(p) || p <= 0 || p > 100) {
-      setError("Percent must be 1–100");
+      setError("Percent must be between 1–100");
       return;
     }
 
+    // =====================================================
+    // RULE 3: DAYS BEFORE MUST BE <= 365
+    // =====================================================
+    if (formType === "days" && (isNaN(v) || v <= 0 || v > 365)) {
+      setError("Days must be between 1 and 365");
+      return;
+    }
+
+    // =====================================================
+    // RULE 2: GROUP SIZE MUST NOT EXCEED MAX GUESTS
+    // =====================================================
+    if (formType === "group" && (isNaN(v) || v <= 1)) {
+      setError("Group size must be at least 2");
+      return;
+    }
+
+    if (formType === "group" && v > maxGuests) {
+      setError(`Group size cannot exceed max guests (${maxGuests})`);
+      return;
+    }
+
+    // =====================================================
+    // RULE 1: NO DUPLICATES (same condition, different percent also blocked)
+    // =====================================================
     if (formType === "days") {
-      if (isNaN(v) || v <= 0) {
-        setError("Days must be > 0");
+      const duplicated = daysBefore.some((d) => d.days === v);
+      if (duplicated) {
+        setError(`A discount for booking ≥ ${v} days already exists`);
         return;
       }
+
       setDaysBefore((prev) => [...prev, { days: v, percent: p }]);
     }
 
     if (formType === "group") {
-      if (isNaN(v) || v <= 1) {
-        setError("Group size must be > 1");
+      const duplicated = groupSize.some((g) => g.guests === v);
+      if (duplicated) {
+        setError(`A discount for group size ≥ ${v} guests already exists`);
         return;
       }
+
       setGroupSize((prev) => [...prev, { guests: v, percent: p }]);
     }
 
+    // Done
     setFormType(null);
     resetForm();
   };
