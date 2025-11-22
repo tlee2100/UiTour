@@ -4,6 +4,7 @@ import { Icon } from '@iconify/react';
 import { useApp } from '../contexts/AppContext';
 import authAPI from '../services/authAPI';
 import { useNavigate } from 'react-router-dom';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('about'); // about | trips | connections
@@ -16,6 +17,7 @@ export default function ProfilePage() {
   const [tripsError, setTripsError] = useState('');
   const navigate = useNavigate();
   const goToHomeForBooking = () => navigate('/');
+  const { convertToCurrent, format } = useCurrency();
 
   const formatDateRange = useCallback((checkIn, checkOut) => {
     if (!checkIn || !checkOut) return 'No schedule';
@@ -369,7 +371,7 @@ export default function ProfilePage() {
                         </div>
                         <div className="trip-price">
                           {totalPrice
-                            ? `₫${Number(totalPrice).toLocaleString('vi-VN')}`
+                            ? format(convertToCurrent(totalPrice))
                             : ''}
                         </div>
                         <div className="trip-actions">

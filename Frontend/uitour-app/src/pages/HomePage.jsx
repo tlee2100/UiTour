@@ -9,6 +9,7 @@ import SearchDates from '../components/search/SearchDates';
 import SearchGuests from '../components/search/SearchGuests';
 import authAPI from '../services/authAPI';
 import { useApp } from '../contexts/AppContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [savedPropertyIds, setSavedPropertyIds] = useState(new Set());
+  const { convertToCurrent, format } = useCurrency();
 
   const deriveIdsFromWishlist = useCallback((wishlistPayload, targetType = 'property') => {
     if (!wishlistPayload) return;
@@ -270,7 +272,7 @@ export default function HomePage() {
                 </div>
                 <div className="property-dates">{property.dates || "Available ✅"}</div>
                 <div className="property-price">
-                  <span className="price">${(property.price ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="price">{format(convertToCurrent(property.price ?? 0))}</span>
                   <span className="price-unit"> / night</span>
                 </div>
               </div>

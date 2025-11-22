@@ -5,6 +5,7 @@ import authAPI from '../services/authAPI';
 import { useApp } from '../contexts/AppContext';
 import { Icon } from '@iconify/react';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 export default function WishlistPage() {
   const [wishlist, setWishlist] = useState(null);
@@ -12,6 +13,7 @@ export default function WishlistPage() {
   const [openFolder, setOpenFolder] = useState(false);
   const { user } = useApp();
   const navigate = useNavigate();
+  const { convertToCurrent, format } = useCurrency();
 
   useEffect(() => {
     let mounted = true;
@@ -203,7 +205,7 @@ export default function WishlistPage() {
                     </h3>
                     <div className="wishlist-item-price">
                       {item.price
-                        ? `₫${Number(item.price).toLocaleString('vi-VN')}`
+                        ? format(convertToCurrent(item.price))
                         : '—'}
                       <span className="price-unit">
                         {(item.type || item.Type || 'property') === 'tour' ? '/ person' : '/ night'}
