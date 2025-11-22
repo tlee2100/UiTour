@@ -1219,6 +1219,22 @@ function formatStayDataForAPI(d) {
     })
     .filter((p) => p !== null && p.url && p.url.trim().length > 0 && !p.url.startsWith('data:image'));
 
+  // ---------------------------------------------------------
+  // COVER PHOTO
+  // ---------------------------------------------------------
+  // Lấy cover photo từ d.coverPhoto hoặc photo đầu tiên trong photos
+  let coverPhoto = null;
+  if (d.coverPhoto) {
+    // Nếu có coverPhoto trực tiếp
+    const coverUrl = d.coverPhoto.serverUrl || d.coverPhoto.url || d.coverPhoto;
+    if (coverUrl && !coverUrl.startsWith('data:image')) {
+      coverPhoto = typeof coverUrl === 'string' ? coverUrl : coverUrl.trim();
+    }
+  } else if (photos.length > 0) {
+    // Nếu không có coverPhoto, dùng photo đầu tiên
+    coverPhoto = photos[0].url;
+  }
+
   // ========== EXTRACT + VALIDATE MAIN FIELDS ==========
   const listingTitle = safe(d.listingTitle || "");
   const propertyType = safe(d.propertyType || "");
@@ -1274,119 +1290,63 @@ function formatStayDataForAPI(d) {
   // ---------------------------------------------------------
   // FINAL PAYLOAD
   // ---------------------------------------------------------
+  // Build location string from location object
+  const locationString = d.location?.addressLine || 
+    d.location?.address || 
+    (d.location && typeof d.location === 'string' ? d.location : "") || 
+    "";
+
+  // Build house rules string from array
+  const houseRulesString = Array.isArray(d.houseRules) 
+    ? d.houseRules.join(", ") 
+    : (d.houseRules || "");
+
   return {
     // =========================
-    // BASIC LISTING INFO
+    // BASIC LISTING INFO - Match CreatePropertyDto
     // =========================
-    propertyID: d.propertyID || null,
-    hostID: d.hostID || d.userID || null,
-
-    listingTitle: safe(d.listingTitle),
-    description: safe(d.description),
-    summary: safe(d.summary),
-
-    propertyTypeID: d.propertyTypeID || null,
-    propertyTypeLabel: safe(d.propertyTypeLabel),  // ⭐ THÊM VÀO
-
-    roomTypeID: d.roomTypeID || null,
-    roomTypeLabel: safe(d.roomTypeLabel),
-
-    // =========================
-    // LOCATION
-    // =========================
-    location: {
-      addressLine: safe(d.location.addressLine),
-      district: safe(d.location.district),
-      city: safe(d.location.city),
-      country: safe(d.location.country),
-      lat: d.location.lat,
-      lng: d.location.lng,
-    },
-
-    cityID: d.cityID || null,
-    countryID: d.countryID || null,
-
-    // =========================
-    // CAPACITY
-    // =========================
-    bedrooms: num(d.bedrooms),
-    beds: num(d.beds),
-    bathrooms: num(d.bathrooms),
-    accommodates: num(d.accommodates),
-    squareFeet: d.squareFeet || null,
-
-    // =========================
-    // PRICING + FEES
-    // =========================
-    pricing: {
-      basePrice: num(d.pricing.basePrice),
-      currency: safe(d.pricing.currency),
-
-      weekendMultiplier: num(d.pricing.weekendMultiplier),
-
-      cleaningFee: num(d.pricing.cleaningFee),
-      extraPeopleFee: num(d.pricing.extraPeopleFee),
-      extraPeopleThreshold: num(d.pricing.extraPeopleThreshold),
-
-      serviceFeePercent: num(d.pricing.serviceFee.percent),
-      taxFeePercent: num(d.pricing.taxFee.percent),
-
-      discounts,
-    },
-
-    // =========================
-    // BOOKING RULES
-    // =========================
-    bookingRules: {
-      minNights: num(d.pricing.minNights),
-      maxNights: num(d.pricing.maxNights),
-      preparationTime: num(d.pricing.preparationTime),
-      advanceNotice: num(d.pricing.advanceNotice),
-    },
-
-    // =========================
-    // HOUSE RULES & SAFETY
-    // =========================
-    houseRules: d.houseRules || [],
-
-    rules: {
-      checkin_after: safe(d.rules.checkin_after),
-      checkout_before: safe(d.rules.checkout_before),
-
-      no_smoking: !!d.rules.no_smoking,
-      no_open_flames: !!d.rules.no_open_flames,
-      pets_allowed: !!d.rules.pets_allowed,
-
-      covidSafety: !!d.rules.covidSafety,
-      surfacesSanitized: !!d.rules.surfacesSanitized,
-      carbonMonoxideAlarm: !!d.rules.carbonMonoxideAlarm,
-      smokeAlarm: !!d.rules.smokeAlarm,
-
-      selfCheckIn: !!d.rules.selfCheckIn,
-      self_checkin_method: safe(d.rules.self_checkin_method),
-    },
-
-    // =========================
-    // PHOTOS
-    // =========================
-    coverPhoto,
-    photos,
-
-    // =========================
-    // AMENITIES
-    // =========================
-    amenities,
-
-    // =========================
-    // STATUS
-    // =========================
-    active: !!d.active,
-    isBusinessReady: !!d.isBusinessReady,
-
-    approval: d.approval || {},
-
-    createdAt: d.createdAt || null,
-    updatedAt: d.updatedAt || null,
+    UserID: d.userID || d.UserID || null,
+    ListingTitle: safe(d.listingTitle),
+    Description: safe(d.description),
+    Location: locationString, // String, not object
+    CityID: d.cityID || d.CityID || null,
+    CountryID: d.countryID || d.CountryID || null,
+    RoomTypeID: d.roomTypeID || d.RoomTypeID || null,
+    
+    // Capacity fields
+    Bedrooms: num(d.bedrooms),
+    Beds: num(d.beds),
+    Bathrooms: num(d.bathrooms),
+    Accommodates: num(d.accommodates),
+    
+    // Pricing
+    Price: num(d.pricing?.basePrice || d.pricing?.basePrice || 0),
+    Currency: safe(d.pricing?.currency || "USD"),
+    
+    // Property type as string
+    PropertyType: safe(d.propertyType || d.propertyTypeLabel || ""),
+    
+    // Location coordinates as strings
+    lat: d.location?.lat ? String(d.location.lat) : null,
+    lng: d.location?.lng ? String(d.location.lng) : null,
+    
+    // House rules as string
+    HouseRules: houseRulesString,
+    
+    // Photos array
+    Photos: photos.map(p => ({
+      Url: p.url,
+      Caption: p.caption || "",
+      SortIndex: p.sortIndex || 1
+    })),
+    
+    // Amenities array
+    Amenities: amenities.map(a => ({
+      AmenityID: a.amenityID
+    })),
+    
+    // Active status
+    Active: false, // Always false for new properties (pending approval)
   };
 }
 
