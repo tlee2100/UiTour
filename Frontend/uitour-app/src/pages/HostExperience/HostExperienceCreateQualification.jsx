@@ -82,25 +82,31 @@ export default function HostExperienceCreateQualification() {
           <div className="he-modal" role="dialog" aria-modal="true">
             <div className="he-modal-backdrop" onClick={closeEditor} />
 
-            <div className="he-modal-card">
+            <div className="he-modal-card he-qual-modal-card">
+
               <div className="he-modal-header">
                 <div className="he-modal-title">Add details</div>
-
                 <button className="he-modal-close" onClick={closeEditor} aria-label="Close">
                   <Icon icon="mdi:close" width="18" height="18" />
                 </button>
               </div>
 
+              {/* BODY */}
               <div className="he-modal-body">
                 <textarea
-                  className="he-textarea"
-                  rows={6}
+                  className="he-textarea he-qual-textarea"
                   placeholder="Write here..."
                   value={draftText}
-                  onChange={(e) => setDraftText(e.target.value)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v.length <= 150) setDraftText(v);
+                  }}
                 />
+
+                <div className="he-qua-char-count">{draftText.length}/150</div>
               </div>
 
+              {/* FOOTER */}
               <div className="he-modal-footer">
                 <button className="he-tertiary-btn" onClick={closeEditor}>Cancel</button>
                 <button className="he-primary-btn" onClick={saveEditor}>Save</button>

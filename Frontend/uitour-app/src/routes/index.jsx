@@ -36,6 +36,7 @@ import HostExperienceDescribeTitle from "../pages/HostExperience/HostExperienceD
 import HostExperienceCreateItinerary from "../pages/HostExperience/HostExperienceCreateItinerary";
 import HostExperienceCreateMaxGuests from "../pages/HostExperience/HostExperienceCreateMaxGuests";
 import HostExperienceCreateDiscount from "../pages/HostExperience/HostExperienceCreateDiscount";
+import HostExperiencePreview from "../pages/HostExperience/HostExperiencePreview";
 
 import HostStayCreateChoose from "../pages/HostStay/HostStayCreateChoose";
 import HostStayCreateTypeOfPlace from "../pages/HostStay/HostStayCreateTypeOfPlace";
@@ -165,6 +166,7 @@ const AppRoutes = () => {
           <Route path="itinerary" element={<HostExperienceCreateItinerary />} />
           <Route path="max-guests" element={<HostExperienceCreateMaxGuests />} />
           <Route path="discount" element={<HostExperienceCreateDiscount />} />
+          <Route path="preview" element={<HostExperiencePreview />} />
         </Route>
       </Route>
 
