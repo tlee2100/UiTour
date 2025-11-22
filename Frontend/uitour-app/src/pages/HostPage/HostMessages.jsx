@@ -371,11 +371,11 @@ export default function HostMessages() {
                     <div className="conversations-list">
                         {loading ? (
                             <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-                                Đang tải messages...
+                                Loading messages...
                             </div>
                         ) : filteredConversations.length === 0 ? (
                             <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-                                <p>Bạn chưa có tin nhắn nào.</p>
+                                <p>You have no messages yet.</p>
                             </div>
                         ) : (
                             filteredConversations.map((conversation) => (

@@ -17,7 +17,7 @@ export default function AdminTransactions() {
       const data = await adminAPI.getAllTransactions();
       setTransactions(data || []);
     } catch (err) {
-      setError(err.message || 'Không thể tải danh sách giao dịch');
+      setError(err.message || 'Unable to load transactions list');
     } finally {
       setLoading(false);
     }
@@ -43,8 +43,8 @@ export default function AdminTransactions() {
     return (
       <div className="admin-page">
         <div className="table-card">
-          <div className="table-title">Giao dịch gần đây</div>
-          <div style={{ padding: '20px', textAlign: 'center' }}>Đang tải...</div>
+          <div className="table-title">Recent transactions</div>
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         </div>
       </div>
     );
@@ -54,7 +54,7 @@ export default function AdminTransactions() {
     return (
       <div className="admin-page">
         <div className="table-card">
-          <div className="table-title">Giao dịch gần đây</div>
+          <div className="table-title">Recent transactions</div>
           <div style={{ padding: '20px', color: '#b91c1c' }}>{error}</div>
         </div>
       </div>
@@ -66,9 +66,9 @@ export default function AdminTransactions() {
       <div className="table-card">
         <div className="table-title">Giao dịch gần đây ({transactions.length})</div>
         <div className="table">
-          <div className="row head"><div>ID</div><div>Người dùng</div><div>Số tiền</div><div>Ngày</div><div>Trạng thái</div></div>
+          <div className="row head"><div>ID</div><div>User</div><div>Amount</div><div>Date</div><div>Status</div></div>
           {transactions.length === 0 ? (
-            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>Không có dữ liệu</div>
+            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>No data</div>
           ) : (
             transactions.map(t => (
               <div key={t.TransactionID || t.transactionID || t.id} className="row">

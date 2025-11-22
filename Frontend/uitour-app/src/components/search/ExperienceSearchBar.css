@@ -59,7 +59,7 @@
 }
 
 .esb-field input::placeholder {
-  color: #717171;
+  color: var(--subtitle-color);
   font-weight: 400;
 }
 
@@ -74,7 +74,7 @@
 }
 
 .esb-placeholder {
-  color: #717171;
+  color: var(--subtitle-color);
   font-weight: 400;
 }
 
@@ -86,7 +86,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #717171;
+  color: var(--subtitle-color);
   transition: color 0.2s;
   flex-shrink: 0;
 }
@@ -96,8 +96,8 @@
 }
 
 .esb-search-button {
-  background: #2e9bdb;
-  color: white;
+  background: var(--uitour-color);
+  color: var(--white);
   border: none;
   border-radius: 50%;
   width: 48px;
@@ -112,7 +112,7 @@
 }
 
 .esb-search-button:hover {
-  background: #0e8cae;
+  background: var(--hover-uitour);
 }
 
 .esb-search-button svg {

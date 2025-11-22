@@ -60,7 +60,7 @@ const SignUpPage = () => {
       setShowOTP(true);
       setResendTimer(60); // 60 seconds countdown
     } catch (err) {
-      setError(err.message || "Không thể gửi mã OTP. Vui lòng thử lại.");
+      setError(err.message || "Unable to send OTP code. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -126,7 +126,7 @@ const SignUpPage = () => {
       // Chuyển hướng về trang chủ sau khi đăng ký thành công
       navigate("/");
     } catch (err) {
-      setOtpError(err.message || "Mã OTP không đúng. Vui lòng thử lại.");
+      setOtpError(err.message || "Invalid OTP code. Please try again.");
       // Clear OTP on error
       setOtp(["", "", "", "", "", ""]);
       otpInputRefs.current[0]?.focus();
@@ -148,7 +148,7 @@ const SignUpPage = () => {
       setOtp(["", "", "", "", "", ""]);
       otpInputRefs.current[0]?.focus();
     } catch (err) {
-      setOtpError(err.message || "Không thể gửi lại mã OTP. Vui lòng thử lại.");
+      setOtpError(err.message || "Unable to resend OTP code. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -229,7 +229,7 @@ const SignUpPage = () => {
                   className="continue-btn"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Đang gửi mã OTP..." : "Continue"}
+                  {isLoading ? "Sending OTP code..." : "Continue"}
                 </button>
 
                 <button 

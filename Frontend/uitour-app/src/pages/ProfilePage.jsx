@@ -18,7 +18,7 @@ export default function ProfilePage() {
   const goToHomeForBooking = () => navigate('/');
 
   const formatDateRange = useCallback((checkIn, checkOut) => {
-    if (!checkIn || !checkOut) return 'Chưa có lịch';
+    if (!checkIn || !checkOut) return 'No schedule';
     try {
       const inDate = new Date(checkIn);
       const outDate = new Date(checkOut);
@@ -38,15 +38,15 @@ export default function ProfilePage() {
     const status = (statusRaw || '').toLowerCase();
     switch (status) {
       case 'confirmed':
-        return 'Đã xác nhận';
+        return 'Confirmed';
       case 'completed':
-        return 'Hoàn tất';
+        return 'Completed';
       case 'cancelled':
       case 'canceled':
-        return 'Đã hủy';
+        return 'Cancelled';
       case 'pending':
       default:
-        return 'Đang chờ';
+        return 'Pending';
     }
   }, []);
 
@@ -111,7 +111,7 @@ export default function ProfilePage() {
           },
         });
       } catch (err) {
-        if (isMounted) setError(err.message || 'Không thể tải thông tin người dùng');
+        if (isMounted) setError(err.message || 'Unable to load user information');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -187,7 +187,7 @@ export default function ProfilePage() {
             onClick={() => setActiveTab('about')}
           >
             <span className="nav-icon nav-initial">{initial}</span>
-            <span>Giới thiệu bản thân</span>
+            <span>About</span>
           </button>
 
           <button
@@ -206,7 +206,7 @@ export default function ProfilePage() {
               <span className="nav-avatar" />
               <span className="nav-avatar" />
             </span>
-            <span>Kết nối</span>
+            <span>Connections</span>
           </button>
         </nav>
       </aside>
@@ -216,7 +216,7 @@ export default function ProfilePage() {
 
       {/* Main */}
       <main className="profile-main">
-        {loading && <div className="profile-section" style={{ padding: 16 }}>Đang tải thông tin...</div>}
+        {loading && <div className="profile-section" style={{ padding: 16 }}>Loading information...</div>}
         {!!error && <div className="profile-section" style={{ padding: 16, color: '#c00' }}>{error}</div>}
 
         {activeTab === 'about' && (
@@ -243,13 +243,13 @@ export default function ProfilePage() {
 
             {/* Hộp gợi ý hoàn tất hồ sơ */}
             <div className="profile-completion">
-              <div className="profile-completion-title">Hoàn tất hồ sơ của bạn</div>
+              <div className="profile-completion-title">Complete your profile</div>
               <p className="profile-completion-text">
-                Hồ sơ UiTour là một phần quan trọng của mọi lượt đặt. Hãy hoàn tất hồ sơ để giúp khách
-                và các host khác hiểu hơn về bạn.
+                Your UiTour profile is an important part of every booking. Complete your profile to help guests
+                and other hosts understand more about you.
               </p>
               <button className="profile-primary-btn" onClick={() => navigate('/profile/edit')}>
-                {hasProfileInfo ? 'Chỉnh sửa' : 'Bắt đầu'}
+                {hasProfileInfo ? 'Edit' : 'Get started'}
               </button>
             </div>
 
@@ -257,10 +257,10 @@ export default function ProfilePage() {
             <div className="profile-subsection">
               <div className="profile-subtitle">
                 <Icon icon="mdi:chat-outline" width="18" height="18" />
-                <span>Giới thiệu</span>
+                <span>About</span>
               </div>
               <div className="profile-empty">
-                {about || 'Bạn chưa viết phần giới thiệu.'}
+                {about || 'You haven\'t written an introduction yet.'}
               </div>
             </div>
 
@@ -268,19 +268,19 @@ export default function ProfilePage() {
             <div className="profile-subsection profile-subsection-info">
               <div className="profile-subtitle">
                 <Icon icon="mdi:account-outline" width="18" height="18" />
-                <span>Thông tin cá nhân</span>
+                <span>Personal information</span>
               </div>
               <div className="info-grid">
-                <div><strong>Tuổi:</strong> {age || 'Chưa cập nhật'}</div>
-                <div><strong>Giới tính:</strong> {gender || 'Chưa cập nhật'}</div>
-                <div><strong>Quốc tịch:</strong> {nationality || 'Chưa cập nhật'}</div>
+                <div><strong>Age:</strong> {age || 'Not updated'}</div>
+                <div><strong>Gender:</strong> {gender || 'Not updated'}</div>
+                <div><strong>Nationality:</strong> {nationality || 'Not updated'}</div>
               </div>
             </div>
 
             {/* Sở thích */}
             {interests.length > 0 && (
               <div className="profile-subsection" style={{ marginTop: 16 }}>
-                <div className="profile-subtitle">Sở thích của tôi</div>
+                <div className="profile-subtitle">My interests</div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   {interests.map((it, idx) => (
                     <span key={idx} className="interest-chip">{it}</span>
@@ -294,7 +294,7 @@ export default function ProfilePage() {
         {activeTab === 'trips' && (
           <section className="profile-trips-section">
             {tripsLoading && (
-              <div className="profile-trips-feedback">Đang tải chuyến đi...</div>
+              <div className="profile-trips-feedback">Loading trips...</div>
             )}
             {!!tripsError && (
               <div className="profile-trips-feedback error">{tripsError}</div>
@@ -303,9 +303,9 @@ export default function ProfilePage() {
               <div className="profile-empty-state">
                 <div className="empty-emoji suitcase" />
                 <p className="empty-text">
-                  Sau khi thực hiện chuyến đi đầu tiên, bạn sẽ tìm thấy các đặt chỗ trước đây của mình tại đây.
+                  After your first trip, you'll find your past bookings here.
                 </p>
-                <button className="profile-primary-btn" onClick={goToHomeForBooking}>Đặt chuyến đi</button>
+                <button className="profile-primary-btn" onClick={goToHomeForBooking}>Book a trip</button>
               </div>
             )}
             {!tripsLoading && !tripsError && trips.length > 0 && (
@@ -325,7 +325,7 @@ export default function ProfilePage() {
                     propertyInfo?.title ||
                     tourInfo?.tourName ||
                     tourInfo?.title ||
-                    `Đặt chỗ #${trip.bookingID || trip.BookingID}`;
+                    `Booking #${trip.bookingID || trip.BookingID}`;
                   const location =
                     propertyInfo?.location ||
                     propertyInfo?.Location ||
@@ -385,7 +385,7 @@ export default function ProfilePage() {
                               className="profile-secondary-btn"
                               onClick={goToHomeForBooking}
                             >
-                              Đặt chuyến đi khác
+                              Book another trip
                             </button>
                           )}
                         </div>
@@ -404,7 +404,7 @@ export default function ProfilePage() {
             <p className="empty-text">
               Khi bạn tham gia trải nghiệm hoặc mời ai đó tham gia chuyến đi, bạn sẽ tìm thấy hồ sơ của những khách khác ở đây.
             </p>
-            <button className="profile-primary-btn" onClick={goToHomeForBooking}>Đặt chuyến đi</button>
+            <button className="profile-primary-btn" onClick={goToHomeForBooking}>Book a trip</button>
           </section>
         )}
       </main>

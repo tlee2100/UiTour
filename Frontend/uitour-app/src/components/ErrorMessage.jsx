@@ -2,18 +2,18 @@ import React from 'react';
 import './ErrorMessage.css';
 
 const ErrorMessage = ({ 
-  message = "Đã xảy ra lỗi", 
+  message = "An error occurred", 
   onRetry = null,
   showRetry = true 
 }) => {
   return (
     <div className="error-message-container">
       <div className="error-icon">⚠️</div>
-      <h3 className="error-title">Oops! Có lỗi xảy ra</h3>
+      <h3 className="error-title">Oops! An error occurred</h3>
       <p className="error-message">{message}</p>
       {showRetry && onRetry && (
         <button className="retry-button" onClick={onRetry}>
-          Thử lại
+          Try again
         </button>
       )}
     </div>

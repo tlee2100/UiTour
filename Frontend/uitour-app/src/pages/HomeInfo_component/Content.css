@@ -1,7 +1,7 @@
 body {
   font-family: 'Inter', sans-serif;
-  background: #fff;
-  color: #333;
+  background: var(--white);
+  color: var(--black);
 }
 
 .content-content {
@@ -54,7 +54,7 @@ body {
   font-size: 24px;
   line-height: 32px;
   margin: 0;
-  color: #000;
+  color: var(--black);
 }
 
 /* Details row */
@@ -67,7 +67,7 @@ body {
   margin-bottom: 24px;
   font-size: 14px;
   line-height: 20px;
-  color: #000;
+  color: var(--black);
 }
 
 .content-detail-item {
@@ -77,7 +77,7 @@ body {
   gap: 16px;
   font-size: 14px;
   line-height: 20px;
-  color: #000;
+  color: var(--black);
 }
 
 /* Meta row (2 guests • 1 bedroom • 1 bed • 1 bath) */
@@ -92,7 +92,7 @@ body {
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
-  color: #000;
+  color: var(--black);
 }
 
 /* Text items */
@@ -210,7 +210,7 @@ body {
   line-height: 32px;
   display: flex;
   align-items: start;
-  color: #000000;
+  color: var(--black);
 }
 
 /* content-thumbnail */
@@ -253,7 +253,7 @@ body {
   line-height: 150%;
   display: flex;
   align-items: center;
-  color: #000000;
+  color: var(--black);
 }
 
 /* content-subtitle-text */
@@ -294,7 +294,7 @@ body {
   line-height: 32px;
   display: flex;
   align-items: start;
-  color: #000000;
+  color: var(--black);
 }
 
 /* Body: 2 columns side by side */
@@ -344,7 +344,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #000000; /* nếu SvgIcon nhận màu từ currentColor */
+  color: var(--black); /* nếu SvgIcon nhận màu từ currentColor */
 }
 
 /* Icon placeholder when icon is missing */
@@ -394,7 +394,7 @@ body {
   line-height: 24px;
   display: flex;
   align-items: center;
-  color: #000000;
+  color: var(--black);
   flex: none;
   order: 0;
   align-self: stretch;
@@ -416,7 +416,7 @@ body {
   font-weight: 600;
   font-size: 24px;
   line-height: 32px;
-  color: #000000;
+  color: var(--black);
 }
 
 .content-calendar-subtitle {

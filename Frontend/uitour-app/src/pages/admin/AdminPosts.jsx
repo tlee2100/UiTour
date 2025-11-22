@@ -27,20 +27,20 @@ export default function AdminPosts() {
     console.log('AdminPosts - User Role:', user?.Role || user?.role || 'No role');
     
     if (!token) {
-      setError('Vui lòng đăng nhập để tiếp tục');
+      setError('Please log in to continue');
       setLoading(false);
       return;
     }
     
     if (!user) {
-      setError('Không tìm thấy thông tin người dùng');
+      setError('User information not found');
       setLoading(false);
       return;
     }
     
     const userRole = user?.Role || user?.role || '';
     if (userRole?.toUpperCase() !== 'ADMIN') {
-      setError(`Bạn không có quyền Admin. Role hiện tại: "${userRole || 'None'}". Vui lòng đăng nhập lại sau khi set role Admin trong database.`);
+      setError(`You do not have Admin privileges. Current role: "${userRole || 'None'}". Please log in again after setting Admin role in the database.`);
       setLoading(false);
       return;
     }
@@ -84,7 +84,7 @@ export default function AdminPosts() {
         setTours(toursData);
       }
     } catch (err) {
-      setError(err.message || 'Không thể tải danh sách bài đăng');
+      setError(err.message || 'Unable to load posts list');
     } finally {
       setLoading(false);
     }
@@ -100,18 +100,18 @@ export default function AdminPosts() {
       } else {
         await adminAPI.approveTour(itemId);
       }
-      alert('Đã duyệt thành công!');
+      alert('Approved successfully!');
       loadData();
       setShowModal(false);
       setSelectedItem(null);
     } catch (err) {
       console.error('Approve error:', err);
-      const errorMsg = err.message || 'Không thể duyệt';
+      const errorMsg = err.message || 'Unable to approve';
       
       if (errorMsg.includes('Unauthorized') || errorMsg.includes('Forbidden')) {
-        alert(`Lỗi: ${errorMsg}\n\nVui lòng:\n1. Kiểm tra user có role Admin trong database\n2. Đăng xuất và đăng nhập lại để có token mới`);
+        alert(`Error: ${errorMsg}\n\nPlease:\n1. Check if user has Admin role in database\n2. Log out and log in again to get a new token`);
       } else {
-        alert('Lỗi: ' + errorMsg);
+        alert('Error: ' + errorMsg);
       }
     }
   };
@@ -122,7 +122,7 @@ export default function AdminPosts() {
     // Validation: Cảnh báo nếu không có lý do (nhưng vẫn cho phép reject)
     if (!rejectReason || rejectReason.trim().length === 0) {
       const confirmReject = window.confirm(
-        'Bạn chưa nhập lý do từ chối. Bạn có muốn tiếp tục từ chối bài đăng này không?'
+        'You have not entered a rejection reason. Do you want to continue rejecting this post?'
       );
       if (!confirmReject) {
         return; // User cancelled
@@ -131,8 +131,8 @@ export default function AdminPosts() {
     
     // Final confirmation
     const finalConfirm = window.confirm(
-      `Bạn có chắc chắn muốn từ chối bài đăng "${getItemTitle(selectedItem)}" không?\n\n` +
-      `Sau khi từ chối, bài đăng sẽ không hiển thị trên website.`
+      `Are you sure you want to reject the post "${getItemTitle(selectedItem)}"?\n\n` +
+      `After rejection, the post will not be displayed on the website.`
     );
     if (!finalConfirm) {
       return;
@@ -167,14 +167,14 @@ export default function AdminPosts() {
         throw new Error(`Unknown item type: ${type}. Cannot reject.`);
       }
       
-      alert('Đã từ chối bài đăng thành công!');
+      alert('Post rejected successfully!');
       loadData(); // Reload to update the list
       setShowModal(false);
       setSelectedItem(null);
       setRejectReason('');
     } catch (err) {
       console.error('Reject error:', err);
-      let errorMsg = err.message || 'Không thể từ chối';
+      let errorMsg = err.message || 'Unable to reject';
       
       // Parse JSON error message if it's a stringified JSON
       try {
@@ -187,13 +187,13 @@ export default function AdminPosts() {
       }
       
       if (errorMsg.includes('Unauthorized') || errorMsg.includes('Forbidden')) {
-        alert(`Lỗi: ${errorMsg}\n\nVui lòng:\n1. Kiểm tra user có role Admin trong database\n2. Đăng xuất và đăng nhập lại để có token mới`);
+        alert(`Error: ${errorMsg}\n\nPlease:\n1. Check if user has Admin role in database\n2. Log out and log in again to get a new token`);
       } else if (errorMsg.includes('not found') || errorMsg.includes('Tour not found') || errorMsg.includes('Property not found')) {
-        alert(`Lỗi: ${errorMsg}\n\nCó thể bài đăng này đã bị xóa hoặc không tồn tại trong database.\nVui lòng refresh trang để cập nhật danh sách.`);
+        alert(`Error: ${errorMsg}\n\nThis post may have been deleted or does not exist in the database.\nPlease refresh the page to update the list.`);
         // Auto reload data to refresh the list
         loadData();
       } else {
-        alert('Lỗi: ' + errorMsg);
+        alert('Error: ' + errorMsg);
       }
     } finally {
       setRejecting(false);
@@ -217,10 +217,10 @@ export default function AdminPosts() {
     const itemTitle = getItemTitle(item);
     
     const confirmDelete = window.confirm(
-      `Bạn có chắc chắn muốn XÓA VĨNH VIỄN ${type === 'property' ? 'phòng' : 'tour'} này không?\n\n` +
-      `Tiêu đề: ${itemTitle}\n` +
+      `Are you sure you want to PERMANENTLY DELETE this ${type === 'property' ? 'property' : 'tour'}?\n\n` +
+      `Title: ${itemTitle}\n` +
       `ID: ${itemId}\n\n` +
-      `⚠️ CẢNH BÁO: Hành động này không thể hoàn tác! Bài đăng sẽ bị xóa hoàn toàn khỏi database.`
+      `⚠️ WARNING: This action cannot be undone! The post will be completely removed from the database.`
     );
     
     if (!confirmDelete) {
@@ -241,11 +241,11 @@ export default function AdminPosts() {
         throw new Error(`Unknown item type: ${type}`);
       }
       
-      alert(`${type === 'property' ? 'Phòng' : 'Tour'} đã được xóa thành công!`);
+      alert(`${type === 'property' ? 'Property' : 'Tour'} deleted successfully!`);
       loadData(); // Reload to update the list
     } catch (err) {
       console.error('Delete error:', err);
-      let errorMsg = err.message || 'Không thể xóa';
+      let errorMsg = err.message || 'Unable to delete';
       
       // Parse JSON error message if it's a stringified JSON
       try {
@@ -258,9 +258,9 @@ export default function AdminPosts() {
       }
       
       if (errorMsg.includes('Unauthorized') || errorMsg.includes('Forbidden')) {
-        alert(`Lỗi: ${errorMsg}\n\nVui lòng:\n1. Kiểm tra user có role Admin trong database\n2. Đăng xuất và đăng nhập lại để có token mới`);
+        alert(`Error: ${errorMsg}\n\nPlease:\n1. Check if user has Admin role in database\n2. Log out and log in again to get a new token`);
       } else {
-        alert('Lỗi: ' + errorMsg);
+        alert('Error: ' + errorMsg);
       }
     } finally {
       setDeleting(false);
@@ -278,7 +278,7 @@ export default function AdminPosts() {
     // Check both Active and active (case variations)
     const activeValue = item.Active !== undefined ? item.Active : item.active;
     const isActive = activeValue === true;
-    return isActive ? 'ĐÃ DUYỆT' : 'CHƯA DUYỆT';
+    return isActive ? 'APPROVED' : 'PENDING';
   };
 
   const getItemType = (item) => {
@@ -320,8 +320,8 @@ export default function AdminPosts() {
     return (
       <div className="admin-page">
         <div className="table-card">
-          <div className="table-title">Danh sách bài đăng</div>
-          <div style={{ padding: '20px', textAlign: 'center' }}>Đang tải...</div>
+          <div className="table-title">Posts list</div>
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         </div>
       </div>
     );
@@ -331,16 +331,16 @@ export default function AdminPosts() {
     return (
       <div className="admin-page">
         <div className="table-card">
-          <div className="table-title">Danh sách bài đăng</div>
+          <div className="table-title">Posts list</div>
           <div style={{ padding: '20px', color: '#b91c1c' }}>
-            <div style={{ marginBottom: '12px', fontWeight: 600 }}>Lỗi: {error}</div>
+            <div style={{ marginBottom: '12px', fontWeight: 600 }}>Error: {error}</div>
             {error.includes('Unauthorized') || error.includes('Forbidden') ? (
               <div style={{ fontSize: '14px', color: '#666', marginTop: '8px' }}>
-                <p>Vui lòng kiểm tra:</p>
+                <p>Please check:</p>
                 <ul style={{ marginLeft: '20px', marginTop: '8px' }}>
-                  <li>Bạn đã đăng nhập chưa?</li>
-                  <li>User của bạn có role "Admin" trong database không?</li>
-                  <li>Token có còn hợp lệ không? (Thử đăng xuất và đăng nhập lại)</li>
+                  <li>Have you logged in?</li>
+                  <li>Does your user have "Admin" role in the database?</li>
+                  <li>Is the token still valid? (Try logging out and logging in again)</li>
                 </ul>
                 <p style={{ marginTop: '12px', fontSize: '12px', color: '#999' }}>
                   Để set role Admin: UPDATE [User] SET Role = 'Admin' WHERE UserID = [YourUserID]
@@ -362,14 +362,14 @@ export default function AdminPosts() {
           onClick={() => setFilter('all')}
           style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
         >
-          Tất cả ({allItems.length})
+          All ({allItems.length})
         </button>
         <button
           className={filter === 'pending' ? 'primary' : 'ghost'}
           onClick={() => setFilter('pending')}
           style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
         >
-          Chờ duyệt ({properties.filter(p => {
+          Pending ({properties.filter(p => {
             const active = p.Active !== undefined ? p.Active : p.active;
             return active !== true;
           }).length + tours.filter(t => {
@@ -382,7 +382,7 @@ export default function AdminPosts() {
           onClick={() => setFilter('approved')}
           style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
         >
-          Đã duyệt ({properties.filter(p => {
+          Approved ({properties.filter(p => {
             const active = p.Active !== undefined ? p.Active : p.active;
             return active === true;
           }).length + tours.filter(t => {
@@ -394,23 +394,23 @@ export default function AdminPosts() {
 
       <div className="table-card">
         <div className="table-title">
-          Danh sách bài đăng ({allItems.length})
+          Posts list ({allItems.length})
           <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#666', marginLeft: '8px' }}>
             ({properties.length} Properties, {tours.length} Tours)
           </span>
         </div>
         <div className="table">
           <div className="row head" data-columns="7">
-            <div>Loại</div>
+            <div>Type</div>
             <div>ID</div>
-            <div>Tiêu đề</div>
-            <div>Giá</div>
+            <div>Title</div>
+            <div>Price</div>
             <div>Host</div>
-            <div>Trạng thái</div>
-            <div>Thao tác</div>
+            <div>Status</div>
+            <div>Actions</div>
           </div>
           {allItems.length === 0 ? (
-            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>Không có dữ liệu</div>
+            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>No data</div>
           ) : (
             allItems.map(item => {
               // Check if item is pending: Active must be explicitly false or null/undefined
@@ -496,7 +496,7 @@ export default function AdminPosts() {
                         fontSize: '12px',
                         marginLeft: isPending ? '0' : '4px'
                       }}
-                      title="Xóa vĩnh viễn"
+                      title="Delete permanently"
                     >
                       {deleting && deletingId === itemId ? '...' : '🗑️'}
                     </button>
@@ -608,7 +608,7 @@ export default function AdminPosts() {
                   fontFamily: 'inherit',
                   lineHeight: '1.5'
                 }}
-                placeholder="Nhập lý do từ chối bài đăng này... (Ví dụ: Nội dung không phù hợp, thiếu thông tin, vi phạm quy định...)"
+                placeholder="Enter rejection reason for this post... (e.g., Inappropriate content, missing information, policy violation...)"
                 autoFocus
               />
               {!rejectReason || rejectReason.trim().length === 0 ? (
@@ -620,7 +620,7 @@ export default function AdminPosts() {
                   alignItems: 'center',
                   gap: '4px'
                 }}>
-                  <span>ℹ️</span> Không bắt buộc, nhưng nên nhập lý do để host biết cần sửa gì
+                  <span>ℹ️</span> Optional, but recommended to enter a reason so the host knows what to fix
                 </p>
               ) : null}
             </div>
@@ -652,7 +652,7 @@ export default function AdminPosts() {
                 onMouseOver={(e) => e.target.style.background = '#e5e7eb'}
                 onMouseOut={(e) => e.target.style.background = '#f3f4f6'}
               >
-                Hủy
+                Cancel
               </button>
               <button
                 onClick={handleReject}
@@ -693,10 +693,10 @@ export default function AdminPosts() {
                       borderRadius: '50%',
                       animation: 'spin 0.8s linear infinite'
                     }}></span>
-                    Đang xử lý...
-                  </>
+                    Processing...
+                  </> 
                 ) : (
-                  'Xác nhận từ chối'
+                  'Confirm rejection'
                 )}
               </button>
             </div>
