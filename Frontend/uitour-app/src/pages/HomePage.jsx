@@ -87,12 +87,21 @@ export default function HomePage() {
       return `http://localhost:5069/${url}`;
     };
 
-    const firstPhoto = Array.isArray(p.photos) && p.photos.length > 0 
-      ? p.photos[0] 
+    // Get first photo - check multiple possible field names
+    const photos = p.photos || p.Photos || [];
+    const firstPhoto = Array.isArray(photos) && photos.length > 0 
+      ? photos[0] 
       : null;
+    
+    // Try multiple possible URL field names (camelCase, PascalCase, etc.)
     const imageUrl = firstPhoto 
-      ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || "/fallback.png")
+      ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || firstPhoto.ServerUrl || "/fallback.png")
       : "/fallback.png";
+    
+    // Debug logging for missing photos
+    if (!firstPhoto && photos.length === 0) {
+      console.warn(`Property ${p.propertyID || p.PropertyID} has no photos`);
+    }
 
     return {
       id: p.propertyID,

@@ -748,7 +748,17 @@ export function HostProvider({ children }) {
   // 4️⃣ LẤY DATA TỔNG HỢP
   // ============================================================
   function getFinalData() {
-    return type === "stay" ? stayData : experienceData;
+    if (type === "stay") {
+      // Merge stayPhotosRAM into stayData.photos before returning
+      const mergedData = { ...stayData };
+      if (stayPhotosRAM && stayPhotosRAM.length > 0) {
+        // Use RAM photos if available (they have the latest state including serverUrl after upload)
+        mergedData.photos = stayPhotosRAM;
+        console.log("📸 Merged stayPhotosRAM into stayData:", stayPhotosRAM.length, "photos");
+      }
+      return mergedData;
+    }
+    return experienceData;
   }
 
   // ============================================================
@@ -929,8 +939,8 @@ export function HostProvider({ children }) {
               console.warn(`Warning: Uploaded ${uploadedUrls.length} files but expected ${photosWithFiles.length}`);
             }
             
-            // Update photos with server URLs
-            photos.forEach((photo) => {
+            // Update photos with server URLs - update both in photos array AND stayPhotosRAM
+            photos.forEach((photo, photoIndex) => {
               if (photo.file) {
                 const uploadedIndex = photosWithFiles.findIndex(p => p === photo);
                 if (uploadedIndex >= 0 && uploadedIndex < uploadedUrls.length) {
@@ -938,9 +948,55 @@ export function HostProvider({ children }) {
                   // Set cả serverUrl và url để đảm bảo formatStayDataForAPI có thể dùng
                   photo.serverUrl = serverUrl;
                   photo.url = serverUrl; // Backend expect field 'url'
-                  console.log(`Updated photo ${uploadedIndex} with URL: ${serverUrl}`);
+                  console.log(`✅ Updated photo ${photoIndex} (uploaded index ${uploadedIndex}) with URL: ${serverUrl}`);
+                } else {
+                  console.warn(`⚠️ Photo ${photoIndex} has file but no matching uploaded URL found`);
                 }
+              } else if (photo.serverUrl || photo.url) {
+                // Photo already has URL (from previous upload or database)
+                console.log(`ℹ️ Photo ${photoIndex} already has URL: ${photo.serverUrl || photo.url}`);
+              } else {
+                console.warn(`⚠️ Photo ${photoIndex} has no file and no URL - will be skipped`);
               }
+            });
+            
+            // CRITICAL: Update stayPhotosRAM với serverUrls để photos được lưu vào database
+            // Match photos by index since they should be in the same order
+            setStayPhotosRAM(prevRAM => {
+              const updatedRAM = prevRAM.map((ramPhoto, ramIndex) => {
+                // Tìm photo tương ứng trong photos array
+                // Ưu tiên match bằng file object, sau đó bằng index
+                let updatedPhoto = null;
+                
+                if (ramPhoto.file) {
+                  // Tìm bằng file object (chính xác nhất)
+                  updatedPhoto = photos.find(p => p.file === ramPhoto.file);
+                }
+                
+                if (!updatedPhoto && ramIndex < photos.length) {
+                  // Fallback: match bằng index
+                  updatedPhoto = photos[ramIndex];
+                }
+                
+                if (updatedPhoto && updatedPhoto.serverUrl) {
+                  console.log(`🔄 Updating RAM photo ${ramIndex} with serverUrl: ${updatedPhoto.serverUrl}`);
+                  return {
+                    ...ramPhoto,
+                    serverUrl: updatedPhoto.serverUrl,
+                    url: updatedPhoto.serverUrl
+                  };
+                }
+                
+                // Nếu RAM photo đã có serverUrl, giữ nguyên
+                if (ramPhoto.serverUrl) {
+                  return ramPhoto;
+                }
+                
+                return ramPhoto;
+              });
+              
+              console.log(`📸 Updated stayPhotosRAM: ${updatedRAM.length} photos, ${updatedRAM.filter(p => p.serverUrl).length} with serverUrl`);
+              return updatedRAM;
             });
           } catch (uploadError) {
             console.error("Upload error details:", uploadError);
@@ -954,6 +1010,18 @@ export function HostProvider({ children }) {
 
         // Format and send property data
         const payload = formatStayDataForAPI({ ...data, userID });
+        
+        // Debug: Log photos in payload
+        console.log("📸 Photos in payload:", payload.Photos);
+        console.log("📸 Total photos:", payload.Photos?.length || 0);
+        if (payload.Photos && payload.Photos.length > 0) {
+          payload.Photos.forEach((p, idx) => {
+            console.log(`  Photo ${idx}:`, { Url: p.Url, Caption: p.Caption, SortIndex: p.SortIndex });
+          });
+        } else {
+          console.warn("⚠️ WARNING: No photos in payload! This property will have no images.");
+        }
+        
         const result = await authAPI.createProperty(payload);
         
         alert("Property đã được tạo thành công! Đang chờ admin duyệt.");
@@ -1204,20 +1272,31 @@ function formatStayDataForAPI(d) {
     .map((p, index) => {
       // Chỉ dùng serverUrl - đây là URL từ server sau khi upload
       // Nếu không có serverUrl, bỏ qua photo này (không lưu base64 vào database)
-      const url = p.serverUrl || p.url; // p.url có thể là URL từ database nếu đã có
+      const url = p.serverUrl || p.url || p.Url; // p.url có thể là URL từ database nếu đã có
       
       // Nếu vẫn không có URL hợp lệ, bỏ qua photo này
       if (!url || url.trim().length === 0 || url.startsWith('data:image')) {
+        console.warn(`⚠️ Photo ${index} skipped: no valid URL`, { 
+          hasServerUrl: !!p.serverUrl, 
+          hasUrl: !!p.url, 
+          hasUrlCapital: !!p.Url,
+          preview: p.preview ? 'has preview (base64)' : 'no preview'
+        });
         return null;
       }
 
+      const cleanUrl = url.trim();
+      console.log(`✅ Photo ${index} included:`, cleanUrl);
+      
       return {
-        url: url.trim(), // Không truncate URL ảnh - giữ nguyên để đảm bảo hợp lệ
+        url: cleanUrl, // Không truncate URL ảnh - giữ nguyên để đảm bảo hợp lệ
         caption: safe(p.caption || ""),
         sortIndex: p.sortIndex || index + 1,
       };
     })
     .filter((p) => p !== null && p.url && p.url.trim().length > 0 && !p.url.startsWith('data:image'));
+  
+  console.log(`📸 Total valid photos after filtering: ${photos.length} out of ${d.photos?.length || 0}`);
 
   // ---------------------------------------------------------
   // COVER PHOTO
