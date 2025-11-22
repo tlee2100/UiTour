@@ -25,7 +25,7 @@ export default function HostStayTypeOfPlace() {
   const handleSelect = (option) => {
     updateField("typeofplace", {
       roomTypeID: option.id,     // ✅ dùng cho backend
-      roomType: option.title,    // ✅ dùng cho frontend hiển thị
+      roomTypeLabel: option.title,    // ✅ dùng cho frontend hiển thị
     });
   };
 

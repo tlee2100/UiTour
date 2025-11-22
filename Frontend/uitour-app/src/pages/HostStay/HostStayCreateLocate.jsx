@@ -19,36 +19,62 @@ export default function HostStayCreateLocate() {
   ]);
   const [loading, setLoading] = useState(false);
 
-  // Reverse geocode
+  // ==========================================
+  // Reverse Geocode → lấy đúng 3 cấp: 
+  // addressLine, city, country
+  // ==========================================
   const reverseGeocode = async (lat, lng) => {
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
       );
       const data = await res.json();
-      return data?.display_name || "";
+
+      const addr = data.address || {};
+
+      // city fallback chain theo chuẩn OSM
+      const city =
+        addr.city ||
+        addr.town ||
+        addr.village ||
+        addr.municipality ||
+        addr.county ||
+        "";
+
+      const country = addr.country || "";
+
+      const addressLine = data.display_name || "";
+
+      return { addressLine, city, country };
     } catch {
-      return "";
+      return { addressLine: "", city: "", country: "" };
     }
   };
 
+  // ============================
   // When map changes
+  // ============================
   const handleMapChange = async ({ latitude, longitude }) => {
-    const address = await reverseGeocode(latitude, longitude);
+    const { addressLine, city, country } = await reverseGeocode(
+      latitude,
+      longitude
+    );
 
     updateField("location", {
       lat: latitude,
       lng: longitude,
-      addressLine: address,
-      city: "Ho Chi Minh",
-      country: "Vietnam",
+      addressLine,
+      city,
+      country,
     });
 
     setCenter([latitude, longitude]);
-    setQuery(address); // readonly update only
+    setQuery(addressLine);
   };
 
+  // ============================
   // Use current GPS
+  // ============================
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
       alert("Trình duyệt không hỗ trợ định vị GPS.");
@@ -60,18 +86,21 @@ export default function HostStayCreateLocate() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
-        const address = await reverseGeocode(latitude, longitude);
+        const { addressLine, city, country } = await reverseGeocode(
+          latitude,
+          longitude
+        );
 
         updateField("location", {
           lat: latitude,
           lng: longitude,
-          addressLine: address,
-          city: "Ho Chi Minh",
-          country: "Vietnam",
+          addressLine,
+          city,
+          country,
         });
 
         setCenter([latitude, longitude]);
-        setQuery(address);
+        setQuery(addressLine);
         setLoading(false);
       },
       () => {
@@ -87,12 +116,9 @@ export default function HostStayCreateLocate() {
         <h1 className="hs-title">Where’s your place located?</h1>
 
         <div className="hs-map-card">
-
-          {/* Input + Button row */}
           <div className="hs-map-search-row">
             <div className="hs-map-search">
               <div className="hs-map-icon">
-                {/* MAP PIN ICON */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -108,7 +134,6 @@ export default function HostStayCreateLocate() {
                 </svg>
               </div>
 
-              {/* READ ONLY INPUT */}
               <input
                 type="text"
                 placeholder="Move the map to select a location"
