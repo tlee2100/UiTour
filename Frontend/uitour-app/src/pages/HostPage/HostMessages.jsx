@@ -5,6 +5,10 @@ import { Icon } from "@iconify/react";
 import logo from "../../assets/UiTour.png";
 import { useApp } from "../../contexts/AppContext";
 import authAPI from "../../services/authAPI";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
+import { useLanguageCurrencyModal } from "../../contexts/LanguageCurrencyModalContext";
+import LanguageCurrencySelector from "../../components/LanguageCurrencySelector";
 
 // Mock conversation data
 const mockConversations = [
@@ -112,6 +116,9 @@ export default function HostMessages() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { user, dispatch } = useApp();
+    const { language } = useLanguage();
+    const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } = useLanguageCurrencyModal();
+    const globeButtonRef = React.useRef(null);
 
     useEffect(() => {
         const handleEsc = (event) => {
@@ -192,7 +199,7 @@ export default function HostMessages() {
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMins < 1) return "Just now";
+        if (diffMins < 1) return t(language, 'host.justNow');
         if (diffMins < 60) return `${diffMins}m ago`;
         if (diffHours < 24) return `${diffHours}h ago`;
         if (diffDays < 7) return `${diffDays}d ago`;
@@ -206,9 +213,9 @@ export default function HostMessages() {
         yesterday.setDate(yesterday.getDate() - 1);
 
         if (date.toDateString() === today.toDateString()) {
-            return "Today";
+            return t(language, 'host.today');
         } else if (date.toDateString() === yesterday.toDateString()) {
-            return "Yesterday";
+            return t(language, 'host.yesterday');
         } else {
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         }
@@ -219,16 +226,16 @@ export default function HostMessages() {
             {/* ================= HEADER ================= */}
             <header className="host-header">
                 {/* LOGO */}
-                <div className="header-logo">
+                <div className="header-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
                     <img src={logo} alt="UiTour logo" />
                 </div>
 
                 {/* NAVBAR */}
                 <nav className="nav-tabs">
-                    <Link to="/host/today">Today</Link>
-                    <Link to="/host/listings">Listings</Link>
+                    <Link to="/host/today">{t(language, 'host.today')}</Link>
+                    <Link to="/host/listings">{t(language, 'host.listings')}</Link>
                     <Link to="/host/messages" className="active">
-                        Messages
+                        {t(language, 'host.messages')}
                     </Link>
                 </nav>
 
@@ -238,13 +245,26 @@ export default function HostMessages() {
                         className="switch-title"
                         onClick={() => navigate("/")}
                     >
-                        Switch to traveling
+                        {t(language, 'common.switchToTraveling')}
                     </button>
 
                     {/* Globe */}
-                    <button className="globe-btn">
+                    <button 
+                        ref={globeButtonRef}
+                        className="globe-btn"
+                        onClick={openLanguageCurrency}
+                        aria-label="Language and Currency"
+                    >
                         <Icon icon="mdi:earth" width="24" height="24" />
                     </button>
+
+                    {languageCurrencyOpen && (
+                        <LanguageCurrencySelector
+                            isOpen={languageCurrencyOpen}
+                            onClose={closeLanguageCurrency}
+                            triggerRef={globeButtonRef}
+                        />
+                    )}
 
                     {/* User Menu */}
                     <div className="header_profile">
@@ -283,11 +303,11 @@ export default function HostMessages() {
                         aria-label="Host navigation menu"
                     >
                         <div className="host-menu-header">
-                            <h2>Menu</h2>
+                            <h2>{t(language, 'host.menu')}</h2>
                             <button
                                 className="host-menu-close"
                                 onClick={closeMenu}
-                                aria-label="Close menu"
+                                aria-label={t(language, 'host.closeMenu')}
                             >
                                 <Icon icon="mdi:close" width="24" height="24" />
                             </button>
@@ -295,35 +315,46 @@ export default function HostMessages() {
 
                         <div className="host-menu-card">
                             <div className="host-menu-card-content">
-                                <h3>New to hosting?</h3>
+                                <h3>{t(language, 'host.newToHosting')}</h3>
                                 <p>
-                                    Discover best practices shared by top-rated hosts and start
-                                    welcoming guests with confidence.
+                                    {t(language, 'host.discoverBestPractices')}
                                 </p>
-                                <button className="host-menu-card-action">Get started</button>
+                                <button className="host-menu-card-action">{t(language, 'host.getStarted')}</button>
                             </div>
                         </div>
 
                         <nav className="host-menu-links">
-                            <button className="host-menu-link">
+                            <button 
+                                className="host-menu-link"
+                                onClick={() => {
+                                    closeMenu();
+                                    navigate("/account/settings");
+                                }}
+                            >
                                 <Icon icon="mdi:cog-outline" width="20" height="20" />
-                                <span>Account settings</span>
+                                <span>{t(language, 'host.accountSettings')}</span>
                             </button>
-                            <button className="host-menu-link">
+                            <button 
+                                className="host-menu-link"
+                                onClick={() => {
+                                    closeMenu();
+                                    openLanguageCurrency();
+                                }}
+                            >
                                 <Icon icon="mdi:earth" width="20" height="20" />
-                                <span>Language & currency</span>
+                                <span>{t(language, 'host.languageCurrency')}</span>
                             </button>
                             <button className="host-menu-link">
                                 <Icon icon="mdi:book-open-page-variant" width="20" height="20" />
-                                <span>Hosting resources</span>
+                                <span>{t(language, 'host.hostingResources')}</span>
                             </button>
                             <button className="host-menu-link">
                                 <Icon icon="mdi:lifebuoy" width="20" height="20" />
-                                <span>Get support</span>
+                                <span>{t(language, 'host.getSupport')}</span>
                             </button>
                             <button className="host-menu-link">
                                 <Icon icon="mdi:account-group-outline" width="20" height="20" />
-                                <span>Find a co-host</span>
+                                <span>{t(language, 'host.findCoHost')}</span>
                             </button>
                             <button 
                                 className="host-menu-link"
@@ -333,11 +364,11 @@ export default function HostMessages() {
                                 }}
                             >
                                 <Icon icon="mdi:plus-circle-outline" width="20" height="20" />
-                                <span>Create a new listing</span>
+                                <span>{t(language, 'host.createNewListing')}</span>
                             </button>
                             <button className="host-menu-link">
                                 <Icon icon="mdi:gift-outline" width="20" height="20" />
-                                <span>Refer another host</span>
+                                <span>{t(language, 'host.referAnotherHost')}</span>
                             </button>
                             <div className="host-menu-divider" />
                             <button 
@@ -345,7 +376,7 @@ export default function HostMessages() {
                                 onClick={handleLogout}
                             >
                                 <Icon icon="mdi:logout" width="20" height="20" />
-                                <span>Log out</span>
+                                <span>{t(language, 'host.logOut')}</span>
                             </button>
                         </nav>
                     </aside>
@@ -357,12 +388,12 @@ export default function HostMessages() {
                 {/* Left Sidebar - Conversation List */}
                 <div className="messages-sidebar">
                     <div className="messages-sidebar-header">
-                        <h2>Messages</h2>
+                        <h2>{t(language, 'host.messages')}</h2>
                         <div className="messages-search">
                             <Icon icon="mdi:magnify" width="20" height="20" />
                             <input
                                 type="text"
-                                placeholder="Search conversations"
+                                placeholder={t(language, 'host.searchConversations')}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -371,11 +402,11 @@ export default function HostMessages() {
                     <div className="conversations-list">
                         {loading ? (
                             <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-                                Loading messages...
+                                {t(language, 'host.loadingMessages')}
                             </div>
                         ) : filteredConversations.length === 0 ? (
                             <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-                                <p>You have no messages yet.</p>
+                                <p>{t(language, 'host.noMessagesYet')}</p>
                             </div>
                         ) : (
                             filteredConversations.map((conversation) => (
@@ -475,7 +506,7 @@ export default function HostMessages() {
                                     <div className="messages-input-wrapper">
                                         <input
                                             type="text"
-                                            placeholder="Type a message"
+                                            placeholder={t(language, 'host.typeAMessage')}
                                             value={messageInput}
                                             onChange={(e) => setMessageInput(e.target.value)}
                                             className="messages-input"
@@ -494,7 +525,7 @@ export default function HostMessages() {
                     ) : (
                         <div className="messages-empty">
                             <Icon icon="mdi:message-outline" width="64" height="64" />
-                            <p>Select a conversation to start messaging</p>
+                            <p>{t(language, 'host.selectConversation')}</p>
                         </div>
                     )}
                 </div>

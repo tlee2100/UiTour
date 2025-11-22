@@ -6,6 +6,10 @@ import sampleImg from "../../assets/sample-room.jpg";
 import logo from "../../assets/UiTour.png";
 import { useApp } from "../../contexts/AppContext";
 import authAPI from "../../services/authAPI";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
+import { useLanguageCurrencyModal } from "../../contexts/LanguageCurrencyModalContext";
+import LanguageCurrencySelector from "../../components/LanguageCurrencySelector";
 
 export default function HostToday() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -14,6 +18,9 @@ export default function HostToday() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const { user, dispatch } = useApp();
+  const { language } = useLanguage();
+  const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } = useLanguageCurrencyModal();
+  const globeButtonRef = React.useRef(null);
 
   useEffect(() => {
     const handleEsc = (event) => {
@@ -59,13 +66,13 @@ export default function HostToday() {
         
         // Xác định status
         const now = new Date();
-        let status = "Upcoming";
+        let status = t(language, 'host.upcoming');
         if (checkIn <= now && checkOut >= now) {
-          status = "Staying";
+          status = t(language, 'host.staying');
         } else if (checkIn.toDateString() === now.toDateString()) {
-          status = "Check-in today";
+          status = t(language, 'host.checkInToday');
         } else if (checkIn < now && checkOut < now) {
-          status = "Completed";
+          status = t(language, 'host.completed');
         }
 
         // Format duration
@@ -118,7 +125,11 @@ export default function HostToday() {
       });
 
       // Sắp xếp: Check-in today > Staying > Upcoming > Completed
-      const statusOrder = { "Check-in today": 0, "Staying": 1, "Upcoming": 2, "Completed": 3 };
+      const checkInToday = t(language, 'host.checkInToday');
+      const staying = t(language, 'host.staying');
+      const upcoming = t(language, 'host.upcoming');
+      const completed = t(language, 'host.completed');
+      const statusOrder = { [checkInToday]: 0, [staying]: 1, [upcoming]: 2, [completed]: 3 };
       formatted.sort((a, b) => {
         const orderA = statusOrder[a.status] ?? 99;
         const orderB = statusOrder[b.status] ?? 99;
@@ -149,17 +160,17 @@ export default function HostToday() {
       {/* ================= HEADER ================= */}
       <header className="host-header">
         {/* LOGO */}
-        <div className="header-logo">
+        <div className="header-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
           <img src={logo} alt="UiTour logo" />
         </div>
 
         {/* NAVBAR */}
         <nav className="nav-tabs">
           <Link to="/host/today" className="active">
-            Today
+            {t(language, 'host.today')}
           </Link>
-          <Link to="/host/listings">Listings</Link>
-          <Link to="/host/messages">Messages</Link>
+          <Link to="/host/listings">{t(language, 'host.listings')}</Link>
+          <Link to="/host/messages">{t(language, 'host.messages')}</Link>
         </nav>
 
         {/* RIGHT SIDE */}
@@ -168,13 +179,26 @@ export default function HostToday() {
             className="switch-title"
             onClick={() => navigate('/')}
           >
-            Switch to traveling
+            {t(language, 'common.switchToTraveling')}
           </button>
 
           {/* Globe */}
-          <button className="globe-btn">
+          <button 
+            ref={globeButtonRef}
+            className="globe-btn"
+            onClick={openLanguageCurrency}
+            aria-label="Language and Currency"
+          >
             <Icon icon="mdi:earth" width="24" height="24" />
           </button>
+
+          {languageCurrencyOpen && (
+            <LanguageCurrencySelector
+              isOpen={languageCurrencyOpen}
+              onClose={closeLanguageCurrency}
+              triggerRef={globeButtonRef}
+            />
+          )}
 
           {/* User Menu */}
           <div className="header_profile">
@@ -213,11 +237,11 @@ export default function HostToday() {
             aria-label="Host navigation menu"
           >
             <div className="host-menu-header">
-              <h2>Menu</h2>
+              <h2>{t(language, 'host.menu')}</h2>
               <button
                 className="host-menu-close"
                 onClick={closeMenu}
-                aria-label="Close menu"
+                aria-label={t(language, 'host.closeMenu')}
               >
                 <Icon icon="mdi:close" width="24" height="24" />
               </button>
@@ -230,35 +254,46 @@ export default function HostToday() {
                 className="host-menu-card-img"
               />
               <div className="host-menu-card-content">
-                <h3>New to hosting?</h3>
+                <h3>{t(language, 'host.newToHosting')}</h3>
                 <p>
-                  Discover best practices shared by top-rated hosts and start
-                  welcoming guests with confidence.
+                  {t(language, 'host.discoverBestPractices')}
                 </p>
-                <button className="host-menu-card-action">Get started</button>
+                <button className="host-menu-card-action">{t(language, 'host.getStarted')}</button>
               </div>
             </div>
 
             <nav className="host-menu-links">
-              <button className="host-menu-link">
+              <button 
+                className="host-menu-link"
+                onClick={() => {
+                  closeMenu();
+                  navigate("/account/settings");
+                }}
+              >
                 <Icon icon="mdi:cog-outline" width="20" height="20" />
-                <span>Account settings</span>
+                <span>{t(language, 'host.accountSettings')}</span>
               </button>
-              <button className="host-menu-link">
+              <button 
+                className="host-menu-link"
+                onClick={() => {
+                  closeMenu();
+                  openLanguageCurrency();
+                }}
+              >
                 <Icon icon="mdi:earth" width="20" height="20" />
-                <span>Language & currency</span>
+                <span>{t(language, 'host.languageCurrency')}</span>
               </button>
               <button className="host-menu-link">
                 <Icon icon="mdi:book-open-page-variant" width="20" height="20" />
-                <span>Hosting resources</span>
+                <span>{t(language, 'host.hostingResources')}</span>
               </button>
               <button className="host-menu-link">
                 <Icon icon="mdi:lifebuoy" width="20" height="20" />
-                <span>Get support</span>
+                <span>{t(language, 'host.getSupport')}</span>
               </button>
               <button className="host-menu-link">
                 <Icon icon="mdi:account-group-outline" width="20" height="20" />
-                <span>Find a co-host</span>
+                <span>{t(language, 'host.findCoHost')}</span>
               </button>
               <button 
                 className="host-menu-link"
@@ -268,11 +303,11 @@ export default function HostToday() {
                 }}
               >
                 <Icon icon="mdi:plus-circle-outline" width="20" height="20" />
-                <span>Create a new listing</span>
+                <span>{t(language, 'host.createNewListing')}</span>
               </button>
               <button className="host-menu-link">
                 <Icon icon="mdi:gift-outline" width="20" height="20" />
-                <span>Refer another host</span>
+                <span>{t(language, 'host.referAnotherHost')}</span>
               </button>
               <div className="host-menu-divider" />
               <button 
@@ -280,7 +315,7 @@ export default function HostToday() {
                 onClick={handleLogout}
               >
                 <Icon icon="mdi:logout" width="20" height="20" />
-                <span>Log out</span>
+                <span>{t(language, 'host.logOut')}</span>
               </button>
             </nav>
           </aside>
@@ -291,11 +326,11 @@ export default function HostToday() {
       <div className="booking-list">
         {loading ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-            Loading bookings...
+            {t(language, 'host.loadingBookings')}
           </div>
         ) : error ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>
-            <p>Lỗi: {error}</p>
+            <p>{t(language, 'host.error')}: {error}</p>
             <button 
               onClick={loadBookings}
               style={{ 
@@ -308,14 +343,14 @@ export default function HostToday() {
                 cursor: 'pointer'
               }}
             >
-              Try again
+              {t(language, 'host.tryAgain')}
             </button>
           </div>
         ) : bookings.length === 0 ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-            <p>You have no bookings yet.</p>
+            <p>{t(language, 'host.noBookingsYet')}</p>
             <p style={{ fontSize: '14px', marginTop: '8px' }}>
-              Bookings will appear here when guests book your property/tour.
+              {t(language, 'host.bookingsWillAppear')}
             </p>
           </div>
         ) : (
@@ -341,8 +376,8 @@ export default function HostToday() {
                   {b.title} 
                   {b.rating && <span>★ {b.rating}</span>}
                 </h3>
-                <p>Guest name: {b.guest}</p>
-                <p>Stay duration: {b.duration}</p>
+                <p>{t(language, 'host.guestName')}: {b.guest}</p>
+                <p>{t(language, 'host.stayDuration')}: {b.duration}</p>
               </div>
             </div>
           ))

@@ -5,14 +5,21 @@ import logo from '../assets/UiTour.png';
 import './Header.css';
 import ProfileMenu from './ProfileMenu';
 import { useApp } from '../contexts/AppContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguageCurrencyModal } from '../contexts/LanguageCurrencyModalContext';
+import { t } from '../utils/translations';
+import LanguageCurrencySelector from './LanguageCurrencySelector';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
+  const globeButtonRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, token } = useApp();
+  const { language } = useLanguage();
+  const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } = useLanguageCurrencyModal();
 
   const handleLogoClick = () => navigate('/');
 
@@ -52,10 +59,10 @@ export default function Header() {
       {/* Navigation */}
       <nav className="header_nav">
         <Link to="/" className={`nav_link ${active === "stays" ? "active" : ""}`}>
-          Stays
+          {t(language, 'header.stays')}
         </Link>
         <Link to="/tours" className={`nav_link ${active === "tours" ? "active" : ""}`}>
-          Experiences
+          {t(language, 'header.experiences')}
         </Link>
         <span className="nav_highlight"></span>
       </nav>
@@ -78,13 +85,26 @@ export default function Header() {
           }}
         >
           {((user && token && (user.role === 'ADMIN' || user.Role === 'ADMIN')) || location.pathname.startsWith('/admin'))
-            ? 'Switch to traveling'
-            : 'Become a Host'}
+            ? t(language, 'common.switchToTraveling')
+            : t(language, 'common.becomeAHost')}
         </button>
 
-        <button className="header_globe">
+        <button 
+          ref={globeButtonRef}
+          className="header_globe"
+          onClick={openLanguageCurrency}
+          aria-label="Language and Currency"
+        >
           <Icon icon="mdi:earth" width="26" height="26" />
         </button>
+
+        {languageCurrencyOpen && (
+          <LanguageCurrencySelector
+            isOpen={languageCurrencyOpen}
+            onClose={closeLanguageCurrency}
+            triggerRef={globeButtonRef}
+          />
+        )}
 
         <div className="header_profile">
           <button

@@ -1,6 +1,7 @@
 import "./ExpAboutSection.css";
 import ButtonWhite from "../../components/ButtonWhite";
 import SvgIcon from "../../components/SvgIcon";
+import { useCurrency } from "../../contexts/CurrencyContext";
 
 export default function ExpAboutSection({
   title,
@@ -18,6 +19,8 @@ export default function ExpAboutSection({
   saveLoading = false,
   onShare
 }) {
+  const { convertToCurrent, format } = useCurrency();
+  
   // ✅ Chuẩn hóa location
   const formattedLocation = typeof location === "string"
     ? location
@@ -25,11 +28,12 @@ export default function ExpAboutSection({
       ? `${location.addressLine}, ${location.city}`
       : "Location unavailable";
 
-  // ✅ Chuẩn hóa giá
-  const finalPrice =
+  // ✅ Chuẩn hóa giá (giả sử là USD), convert sang currency hiện tại
+  const finalPriceUSD =
     price ??
     (host?.pricing?.basePrice) ??
     0;
+  const finalPrice = convertToCurrent(finalPriceUSD);
 
   // ✅ Host safe data
   const safeHost = host || {};
@@ -61,11 +65,7 @@ export default function ExpAboutSection({
       {/* ✅ Pricing + Duration */}
       <div className="expAbout-priceTime">
         <span className="expAbout-price">
-          {new Intl.NumberFormat("vi-VN", {
-            style: "currency",
-            currency: currency || "VND"
-          }).format(finalPrice)}{" "}
-          / person
+          {format(finalPrice)} / person
         </span>
 
         {duration && (
