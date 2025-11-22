@@ -71,7 +71,7 @@
 }
 
 .search-button-compact {
-  background: #00b4d8;
+  background: var(--uitour-color);
   color: white;
   border: none;
   border-radius: 50%;
@@ -87,7 +87,7 @@
 }
 
 .search-button-compact:hover {
-  background: #0099b8;
+  background: var(--hover-uitour);
 }
 
 .header-actions {

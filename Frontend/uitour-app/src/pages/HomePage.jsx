@@ -146,7 +146,7 @@ export default function HomePage() {
 
   // 🔄 Loading state
   if (loading) {
-    return <LoadingSpinner message="Đang tải danh sách chỗ ở..." />;
+    return <LoadingSpinner message="Loading accommodations..." />;
   }
 
   // ⚠️ Error state

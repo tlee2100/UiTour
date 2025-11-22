@@ -17,7 +17,7 @@ export default function AdminUsers() {
       const data = await adminAPI.getAllUsers();
       setUsers(data || []);
     } catch (err) {
-      setError(err.message || 'Không thể tải danh sách người dùng');
+      setError(err.message || 'Unable to load users list');
     } finally {
       setLoading(false);
     }
@@ -30,19 +30,19 @@ export default function AdminUsers() {
 
   const getStatus = (user) => {
     // You can add logic here to determine status based on user data
-    return 'HOẠT ĐỘNG';
+    return 'ACTIVE';
   };
 
   const handleUpdateRole = async (userId, newRole) => {
-    if (!window.confirm(`Bạn có chắc muốn đổi role của user này thành "${newRole}"?`)) {
+    if (!window.confirm(`Are you sure you want to change this user's role to "${newRole}"?`)) {
       return;
     }
     try {
       await adminAPI.updateUserRole(userId, newRole);
-      alert('Đã cập nhật role thành công!');
+      alert('Role updated successfully!');
       loadUsers();
     } catch (err) {
-      alert('Lỗi: ' + (err.message || 'Không thể cập nhật role'));
+      alert('Error: ' + (err.message || 'Unable to update role'));
     }
   };
 
@@ -50,8 +50,8 @@ export default function AdminUsers() {
     return (
       <div className="admin-page">
         <div className="table-card">
-          <div className="table-title">Danh sách người dùng</div>
-          <div style={{ padding: '20px', textAlign: 'center' }}>Đang tải...</div>
+          <div className="table-title">Users list</div>
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         </div>
       </div>
     );
@@ -61,7 +61,7 @@ export default function AdminUsers() {
     return (
       <div className="admin-page">
         <div className="table-card">
-          <div className="table-title">Danh sách người dùng</div>
+          <div className="table-title">Users list</div>
           <div style={{ padding: '20px', color: '#b91c1c' }}>{error}</div>
         </div>
       </div>
@@ -73,9 +73,9 @@ export default function AdminUsers() {
       <div className="table-card">
         <div className="table-title">Danh sách người dùng ({users.length})</div>
         <div className="table">
-          <div className="row head" data-columns="6"><div>ID</div><div>Họ tên</div><div>Email</div><div>Vai trò</div><div>Trạng thái</div><div>Thao tác</div></div>
+          <div className="row head" data-columns="6"><div>ID</div><div>Full name</div><div>Email</div><div>Role</div><div>Status</div><div>Actions</div></div>
           {users.length === 0 ? (
-            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>Không có dữ liệu</div>
+            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>No data</div>
           ) : (
             users.map(u => {
               const userId = u.UserID || u.userID || u.id;

@@ -34,6 +34,49 @@ export default function HostListings() {
         loadListings();
     }, [user]);
 
+    // Helper function to normalize image URL
+    const normalizeImageUrl = (url) => {
+        if (!url || typeof url !== 'string' || url.trim().length === 0) {
+            return null;
+        }
+        
+        const trimmedUrl = url.trim();
+        
+        // If it's base64 or invalid, skip
+        if (trimmedUrl.startsWith('data:image') || trimmedUrl.length < 10) {
+            return null;
+        }
+        
+        // If it's already a full URL (http/https), use directly
+        if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+            return trimmedUrl;
+        }
+        
+        // If it's a relative path (starts with /), add base URL
+        if (trimmedUrl.startsWith('/')) {
+            return `http://localhost:5069${trimmedUrl}`;
+        }
+        
+        // If it doesn't start with /, add / and base URL
+        return `http://localhost:5069/${trimmedUrl}`;
+    };
+
+    // Helper function to extract first photo URL from property/tour
+    const getFirstPhotoUrl = (item) => {
+        // Try multiple ways to get photos: Photos (PascalCase) or photos (camelCase)
+        const photos = item.Photos || item.photos || [];
+        
+        if (!Array.isArray(photos) || photos.length === 0) {
+            return null;
+        }
+        
+        // Get first photo and try multiple ways to get URL
+        const firstPhoto = photos[0];
+        const url = firstPhoto?.Url || firstPhoto?.url || firstPhoto?.serverUrl || null;
+        
+        return normalizeImageUrl(url);
+    };
+
     const loadListings = async () => {
         try {
             setLoading(true);
@@ -54,26 +97,20 @@ export default function HostListings() {
             
             // Format listings for display
             const formatted = properties.map(p => {
-                // Xử lý URL ảnh - có thể là relative path hoặc full URL
-                let imageUrl = p.Photos?.[0]?.Url || p.Photos?.[0]?.url || null;
-                if (imageUrl) {
-                    // Nếu là relative path (bắt đầu bằng /), thêm base URL
-                    if (imageUrl.startsWith('/')) {
-                        imageUrl = `http://localhost:5069${imageUrl}`;
-                    }
-                    // Nếu là base64 hoặc không hợp lệ, dùng fallback
-                    if (imageUrl.startsWith('data:image') || imageUrl.length < 10) {
-                        imageUrl = null;
-                    }
-                }
+                // Process image URL with helper function
+                const imageUrl = getFirstPhotoUrl(p);
+                
+                // Process reviews - try both Reviews and reviews
+                const reviews = p.Reviews || p.reviews || [];
+                const avgRating = reviews.length > 0 
+                    ? reviews.reduce((sum, r) => sum + (r.Rating || r.rating || 0), 0) / reviews.length 
+                    : 0;
                 
                 return {
                     id: p.PropertyID || p.propertyID || p.id,
                     status: p.Active ? "Listed" : "Pending",
                     title: p.ListingTitle || p.listingTitle || "Untitled",
-                    rating: p.Reviews?.length > 0 
-                        ? p.Reviews.reduce((sum, r) => sum + (r.Rating || r.rating || 0), 0) / p.Reviews.length 
-                        : 0,
+                    rating: avgRating,
                     image: imageUrl || sampleImg,
                     type: "property",
                     location: p.Location || p.location || ""
@@ -84,26 +121,20 @@ export default function HostListings() {
             try {
                 const tours = await authAPI.getToursByUser(userID);
                 const formattedTours = tours.map(t => {
-                    // Xử lý URL ảnh - có thể là relative path hoặc full URL
-                    let imageUrl = t.Photos?.[0]?.Url || t.Photos?.[0]?.url || null;
-                    if (imageUrl) {
-                        // Nếu là relative path (bắt đầu bằng /), thêm base URL
-                        if (imageUrl.startsWith('/')) {
-                            imageUrl = `http://localhost:5069${imageUrl}`;
-                        }
-                        // Nếu là base64 hoặc không hợp lệ, dùng fallback
-                        if (imageUrl.startsWith('data:image') || imageUrl.length < 10) {
-                            imageUrl = null;
-                        }
-                    }
+                    // Process image URL with helper function
+                    const imageUrl = getFirstPhotoUrl(t);
+                    
+                    // Process reviews - try both Reviews and reviews
+                    const reviews = t.Reviews || t.reviews || t.TourReviews || t.tourReviews || [];
+                    const avgRating = reviews.length > 0
+                        ? reviews.reduce((sum, r) => sum + (r.Rating || r.rating || 0), 0) / reviews.length
+                        : 0;
                     
                     return {
                         id: t.TourID || t.tourID || t.id,
                         status: t.Active ? "Listed" : "Pending",
                         title: t.TourName || t.tourName || "Untitled",
-                        rating: t.Reviews?.length > 0
-                            ? t.Reviews.reduce((sum, r) => sum + (r.Rating || r.rating || 0), 0) / t.Reviews.length
-                            : 0,
+                        rating: avgRating,
                         image: imageUrl || sampleImg,
                         type: "tour",
                         location: t.Location || t.location || ""
@@ -131,7 +162,7 @@ export default function HostListings() {
     };
 
     const handleDeleteClick = (item) => {
-        // Mở confirmation dialog
+        // Open confirmation dialog
         setDeleteConfirm({
             id: item.id,
             type: item.type,
@@ -148,7 +179,7 @@ export default function HostListings() {
             title: deleteConfirm.title
         };
 
-        // Thực hiện xóa
+        // Perform deletion
         try {
             setDeletingId(item.id);
             if (item.type === 'property') {
@@ -157,13 +188,13 @@ export default function HostListings() {
                 await authAPI.deleteTour(item.id);
             }
             
-            // Xóa khỏi danh sách local
+            // Remove from local list
             setListings(prev => prev.filter(l => !(l.id === item.id && l.type === item.type)));
             setDeleteConfirm(null);
-            alert(`${item.type === 'property' ? 'Property' : 'Tour'} đã được xóa thành công!`);
+            alert(`${item.type === 'property' ? 'Property' : 'Tour'} has been deleted successfully!`);
         } catch (err) {
             console.error('Delete error:', err);
-            alert('Lỗi khi xóa: ' + (err.message || 'Có lỗi xảy ra'));
+            alert('Error deleting: ' + (err.message || 'An error occurred'));
         } finally {
             setDeletingId(null);
         }
@@ -334,11 +365,11 @@ export default function HostListings() {
                 <div className="listing-grid">
                 {loading ? (
                     <div style={{ padding: '40px', textAlign: 'center', gridColumn: '1 / -1' }}>
-                        Đang tải...
+                        Loading...
                     </div>
                 ) : listings.length === 0 ? (
                     <div style={{ padding: '40px', textAlign: 'center', gridColumn: '1 / -1', color: '#666' }}>
-                        Bạn chưa có listing nào. Tạo listing mới để bắt đầu!
+                        You don't have any listings yet. Create a new listing to get started!
                     </div>
                 ) : (
                     listings.map((item) => (
@@ -376,7 +407,7 @@ export default function HostListings() {
                                 alt={item.title}
                                 className="listing-img"
                                 onError={(e) => {
-                                    // Fallback nếu ảnh không load được
+                                    // Fallback if image fails to load
                                     e.target.src = sampleImg;
                                 }}
                             />
@@ -406,14 +437,14 @@ export default function HostListings() {
                     <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="delete-modal-header">
                             <Icon icon="mdi:alert-circle" width="24" height="24" className="delete-modal-icon" />
-                            <h3>Xác nhận xóa</h3>
+                            <h3>Confirm Deletion</h3>
                         </div>
                         <div className="delete-modal-body">
                             <p>
-                                Bạn có chắc chắn muốn xóa <strong>"{deleteConfirm.title}"</strong>?
+                                Are you sure you want to delete <strong>"{deleteConfirm.title}"</strong>?
                             </p>
                             <p className="delete-modal-warning">
-                                Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan sẽ bị xóa vĩnh viễn.
+                                This action cannot be undone. All related data will be permanently deleted.
                             </p>
                         </div>
                         <div className="delete-modal-actions">
@@ -422,14 +453,14 @@ export default function HostListings() {
                                 onClick={cancelDelete}
                                 disabled={deletingId !== null}
                             >
-                                Hủy
+                                Cancel
                             </button>
                             <button
                                 className="delete-modal-confirm"
                                 onClick={confirmDelete}
                                 disabled={deletingId !== null}
                             >
-                                {deletingId === deleteConfirm.id ? "Đang xóa..." : "Xóa"}
+                                {deletingId === deleteConfirm.id ? "Deleting..." : "Delete"}
                             </button>
                         </div>
                     </div>

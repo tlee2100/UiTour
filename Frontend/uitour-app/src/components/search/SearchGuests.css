@@ -22,7 +22,7 @@
 
 .sg-info { display: flex; flex-direction: column; }
 .sg-label { font-weight: 600; color: var(--black); }
-.sg-desc { color: #6b7280; font-size: 12px; }
+.sg-desc { color: var(--subtitle-color); font-size: 12px; }
 
 .sg-ctrl { display: flex; align-items: center; gap: 12px; }
 .sg-btn {
