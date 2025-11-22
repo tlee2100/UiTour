@@ -177,24 +177,78 @@ export const ExperienceProvider = ({ children }) => {
 
     // Base tour
     const tour = await authAPI.getTourById(id);
+    
+    console.log(`🔍 Tour ${id} from API:`, {
+      tourID: tour?.tourID || tour?.TourID,
+      hasPhotosInTour: !!(tour?.photos || tour?.Photos),
+      photosCount: (tour?.photos || tour?.Photos || []).length,
+      photos: tour?.photos || tour?.Photos || []
+    });
 
     // Related resources
     const [photos, reviews, host, details] = await Promise.all([
-      authAPI.getTourPhotos(id).catch(() => []),
+      authAPI.getTourPhotos(id).catch((err) => {
+        console.warn(`⚠️ Failed to fetch photos separately for tour ${id}:`, err);
+        return [];
+      }),
       authAPI.getTourReviews(id).catch(() => []),
-      tour?.hostID ? authAPI.getHostById(tour.hostID).catch(() => null) : Promise.resolve(null),
+      tour?.hostID || tour?.HostID ? authAPI.getHostById(tour.hostID || tour.HostID).catch(() => null) : Promise.resolve(null),
       authAPI.getTourExperienceDetails(id).catch(() => []),   // ✅ thêm dòng này
     ]);
+    
+    console.log(`🔍 Photos from separate API call:`, photos);
 
-    // Build media
-    const media = {
-      cover: photos?.[0]?.url ? { url: photos[0].url } : undefined,
-      photos: (photos || []).map(p => ({
-        id: p.photoID,
-        url: p.url,
-        alt: p.caption || "photo"
-      })),
+    // Helper function to normalize image URL
+    const normalizeImageUrl = (url) => {
+      if (!url || url.trim().length === 0) return null;
+      // If already a full URL (http/https), use as is
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url.trim();
+      }
+      // If relative path starting with /, prepend backend base URL
+      if (url.startsWith('/')) {
+        return `http://localhost:5069${url}`;
+      }
+      // Otherwise, assume it's a relative path and prepend backend base URL
+      return `http://localhost:5069/${url}`;
     };
+
+    // Get photos from tour object first (backend may include Photos), then fallback to separate API call
+    const tourPhotos = tour?.photos || tour?.Photos || [];
+    const allPhotos = tourPhotos.length > 0 ? tourPhotos : (photos || []);
+    
+    console.log(`🔍 All photos sources:`, {
+      tourPhotosCount: tourPhotos.length,
+      separatePhotosCount: (photos || []).length,
+      allPhotosCount: allPhotos.length,
+      allPhotos: allPhotos
+    });
+    
+    // Build media with normalized URLs
+    const normalizedPhotos = allPhotos
+      .map((p, index) => {
+        const url = p.url || p.Url || p.serverUrl || p.ServerUrl || "";
+        console.log(`🔍 Photo ${index} raw URL:`, url);
+        const normalizedUrl = normalizeImageUrl(url);
+        if (!normalizedUrl) {
+          console.warn(`⚠️ Photo ${index} has invalid URL:`, url);
+          return null;
+        }
+        
+        return {
+          id: p.photoID || p.PhotoID || p.id,
+          url: normalizedUrl,
+          alt: p.caption || p.Caption || "photo"
+        };
+      })
+      .filter(p => p !== null);
+
+    const media = {
+      cover: normalizedPhotos.length > 0 ? { url: normalizedPhotos[0].url } : undefined,
+      photos: normalizedPhotos,
+    };
+    
+    console.log(`📸 Tour ${id} photos: ${normalizedPhotos.length} photos loaded`);
 
     // Map reviews
     const mappedReviews = (reviews || []).map(r => ({
@@ -282,42 +336,62 @@ export const ExperienceProvider = ({ children }) => {
     clearError();
     const tours = await authAPI.getTours();
 
-    // Load cover image per tour (first photo) in parallel
-    const coverPromises = (tours || []).map(async (t) => {
-      try {
-        const photos = await authAPI.getTourPhotos(t.tourID);
-        const first = Array.isArray(photos) && photos.length > 0 ? photos[0] : null;
-        return first ? { id: t.tourID, url: first.url } : { id: t.tourID, url: null };
-      } catch {
-        return { id: t.tourID, url: null };
+    // Helper function to normalize image URL
+    const normalizeImageUrl = (url) => {
+      if (!url || url.trim().length === 0) return null;
+      // If already a full URL (http/https), use as is
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url.trim();
       }
-    });
-
-    const covers = await Promise.all(coverPromises);
-    const tourIdToCoverUrl = new Map(covers.map(c => [c.id, c.url]));
+      // If relative path starting with /, prepend backend base URL
+      if (url.startsWith('/')) {
+        return `http://localhost:5069${url}`;
+      }
+      // Otherwise, assume it's a relative path and prepend backend base URL
+      return `http://localhost:5069/${url}`;
+    };
 
     const normalized = (tours || []).map(t => {
-      const imageUrl = tourIdToCoverUrl.get(t.tourID) || null;
+      // Get first photo from Photos array (backend includes Photos in GetAllAsync)
+      const photos = t.photos || t.Photos || [];
+      const firstPhoto = Array.isArray(photos) && photos.length > 0 ? photos[0] : null;
+      
+      // Try multiple possible URL field names
+      const imageUrl = firstPhoto 
+        ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || firstPhoto.ServerUrl || null)
+        : null;
+      
+      const normalizedImageUrl = imageUrl ? normalizeImageUrl(imageUrl) : null;
+
+      // Debug logging for missing photos
+      if (!firstPhoto) {
+        console.warn(`Tour ${t.tourID || t.TourID} has no photos`);
+      }
 
       // ✅ Tính toán rating và reviewsCount
-      const reviewsCount = Array.isArray(t.reviews) ? t.reviews.length : 0;
+      const reviews = t.reviews || t.Reviews || [];
+      const reviewsCount = Array.isArray(reviews) ? reviews.length : 0;
       const averageRating = reviewsCount > 0
-        ? t.reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewsCount
+        ? reviews.reduce((sum, r) => sum + (r.rating || r.Rating || 0), 0) / reviewsCount
         : 0;
 
       return normalizeExperienceListItem({
-        id: t.tourID,
-        title: t.tourName,
-        description: t.description,
-        image: imageUrl ? { url: imageUrl } : null,
-        price: t.price,
+        id: t.tourID || t.TourID,
+        title: t.tourName || t.TourName,
+        description: t.description || t.Description,
+        image: normalizedImageUrl ? { url: normalizedImageUrl } : null,
+        price: t.price || t.Price || 0,
         rating: averageRating,
         reviews: reviewsCount,
-        duration: typeof t.durationDays === "number" ? `${t.durationDays} days` : null,
-        location: t.location || "",
+        duration: typeof (t.durationDays || t.DurationDays) === "number" 
+          ? `${t.durationDays || t.DurationDays} days` 
+          : null,
+        location: t.location || t.Location || "",
         isGuestFavourite: false,
       });
     });
+
+    console.log(`📸 Loaded ${normalized.length} tours, ${normalized.filter(t => t.image).length} with images`);
 
     setExperiences(normalized);
     return normalized;

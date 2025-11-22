@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using UITour.Models;
 using UITour.Models.DTO;
@@ -27,7 +28,24 @@ namespace UITour.Controllers
         public async Task<ActionResult<IEnumerable<Tour>>> GetAllTours()
         {
             var allTours = await _tourService.GetAllAsync();
-            // Only return active tours for public access
+            
+            // Check if user is authenticated
+            var userIdClaim = User?.FindFirst("UserID")?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+            {
+                // User is logged in: return their tours (including inactive) + all active tours
+                var userTours = await _tourService.GetByUserIdAsync(userId);
+                var userTourIds = new HashSet<int>(userTours.Select(t => t.TourID));
+                
+                // Combine: user's tours (all) + other active tours
+                var result = allTours
+                    .Where(t => t.Active == true || userTourIds.Contains(t.TourID))
+                    .ToList();
+                
+                return Ok(result);
+            }
+            
+            // Not logged in: only return active tours for public access
             var activeTours = allTours.Where(t => t.Active == true).ToList();
             return Ok(activeTours);
         }
