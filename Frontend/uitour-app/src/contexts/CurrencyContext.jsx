@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 // ⭐ Tỷ giá (bạn có thể lấy API sau)
 const RATE = {
@@ -24,13 +24,16 @@ const CurrencyContext = createContext();
 
 export function CurrencyProvider({ children }) {
 
-  // ⭐ Currency hiện tại — mặc định cho Host là VND,
-  // còn cho Guest là USD (tuỳ bạn)
-  const [currency, setCurrency] = useState("VND");
+  // ⭐ Currency hiện tại — mặc định từ localStorage hoặc VND
+  const [currency, setCurrency] = useState(() => {
+    const saved = localStorage.getItem('uitour_currency');
+    return saved && (saved === 'USD' || saved === 'VND') ? saved : 'VND';
+  });
 
   // ⭐ Đổi đơn vị hiển thị
   const changeCurrency = (cur) => {
     setCurrency(cur);
+    localStorage.setItem('uitour_currency', cur);
   };
 
   // ⭐ Convert USD → currency hiển thị

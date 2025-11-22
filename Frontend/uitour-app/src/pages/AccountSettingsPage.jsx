@@ -3,20 +3,11 @@ import { Link } from 'react-router-dom';
 import './AccountSettingsPage.css';
 import authAPI from '../services/authAPI';
 import { useApp } from '../contexts/AppContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { t } from '../utils/translations';
 
-const sidebarItems = [
-  { id: 'personal', label: 'Personal information' },
-  { id: 'security', label: 'Login & security' },
-  { id: 'privacy', label: 'Privacy', disabled: true },
-  { id: 'notifications', label: 'Notifications', disabled: true },
-  { id: 'tax', label: 'Tax', disabled: true },
-  { id: 'payment', label: 'Payments', disabled: true },
-  { id: 'locale', label: 'Language & currency', disabled: true },
-  { id: 'business', label: 'Business travel', disabled: true },
-];
-
-const maskEmail = (email = '') => {
-  if (!email) return 'Not provided';
+const maskEmail = (email = '', language) => {
+  if (!email) return t(language, 'accountSettings.notProvided');
   const [local, domain] = email.split('@');
   if (!domain) return email;
   const visible = local.slice(0, 1);
@@ -37,6 +28,7 @@ const normalizeUser = (payload = {}) => ({
 
 export default function AccountSettingsPage() {
   const { user, dispatch } = useApp();
+  const { language } = useLanguage();
   const [activeItem, setActiveItem] = useState('personal');
   const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,6 +36,17 @@ export default function AccountSettingsPage() {
   const [modal, setModal] = useState(initialModalState);
 
   const isAuthenticated = !!user?.UserID;
+
+  const sidebarItems = [
+    { id: 'personal', label: t(language, 'accountSettings.personalInformation') },
+    { id: 'security', label: t(language, 'accountSettings.loginSecurity') },
+    { id: 'privacy', label: t(language, 'accountSettings.privacy'), disabled: true },
+    { id: 'notifications', label: t(language, 'accountSettings.notifications'), disabled: true },
+    { id: 'tax', label: t(language, 'accountSettings.tax'), disabled: true },
+    { id: 'payment', label: t(language, 'accountSettings.payments'), disabled: true },
+    { id: 'locale', label: t(language, 'accountSettings.languageCurrency'), disabled: true },
+    { id: 'business', label: t(language, 'accountSettings.businessTravel'), disabled: true },
+  ];
 
   const refreshUser = async () => {
     if (!user?.UserID) return;
@@ -57,7 +60,7 @@ export default function AccountSettingsPage() {
         payload: { ...user, ...normalized },
       });
     } catch (error) {
-      setBanner({ type: 'error', message: error.message || 'Unable to load user information.' });
+      setBanner({ type: 'error', message: error.message || t(language, 'accountSettings.unableToLoadUserInfo') });
     } finally {
       setLoading(false);
     }
@@ -77,7 +80,7 @@ export default function AccountSettingsPage() {
     if (type === 'profile') {
       setModal({
         type,
-        title: 'Edit personal information',
+        title: t(language, 'accountSettings.editPersonalInformation'),
         step: 'form',
         submitting: false,
         sendingOtp: false,
@@ -94,7 +97,7 @@ export default function AccountSettingsPage() {
     if (type === 'email') {
       setModal({
         type,
-        title: 'Update email address',
+        title: t(language, 'accountSettings.updateEmailAddress'),
         step: 'form',
         submitting: false,
         sendingOtp: false,
@@ -109,7 +112,7 @@ export default function AccountSettingsPage() {
     if (type === 'password') {
       setModal({
         type,
-        title: 'Change password',
+        title: t(language, 'accountSettings.changePassword'),
         step: 'form',
         submitting: false,
         sendingOtp: false,
@@ -139,7 +142,7 @@ export default function AccountSettingsPage() {
         otpEmail: userDetails.Email,
       }));
     } catch (error) {
-      setModal((prev) => ({ ...prev, sendingOtp: false, error: error.message || 'Unable to send OTP code.' }));
+      setModal((prev) => ({ ...prev, sendingOtp: false, error: error.message || t(language, 'accountSettings.unableToSendOtp') }));
     }
   };
 
@@ -149,11 +152,11 @@ export default function AccountSettingsPage() {
 
     if (step === 'form') {
       if (!form.fullName?.trim()) {
-        setModal((prev) => ({ ...prev, error: 'Name cannot be empty.' }));
+        setModal((prev) => ({ ...prev, error: t(language, 'accountSettings.nameCannotBeEmpty') }));
         return;
       }
       if (form.phone && !/^[0-9+ ]{6,15}$/.test(form.phone)) {
-        setModal((prev) => ({ ...prev, error: 'Invalid phone number.' }));
+        setModal((prev) => ({ ...prev, error: t(language, 'accountSettings.invalidPhoneNumber') }));
         return;
       }
       await handleSendOtp();
@@ -162,7 +165,7 @@ export default function AccountSettingsPage() {
 
     if (step === 'otp') {
       if (!modal.otp?.trim()) {
-        setModal((prev) => ({ ...prev, error: 'Please enter OTP code.' }));
+        setModal((prev) => ({ ...prev, error: t(language, 'accountSettings.pleaseEnterOtpCode') }));
         return;
       }
       setModal((prev) => ({ ...prev, submitting: true, error: '' }));
@@ -188,16 +191,16 @@ export default function AccountSettingsPage() {
         }
 
         if (promises.length === 0) {
-          setModal((prev) => ({ ...prev, submitting: false, error: 'No information has changed.' }));
+          setModal((prev) => ({ ...prev, submitting: false, error: t(language, 'accountSettings.noInformationChanged') }));
           return;
         }
 
         await Promise.all(promises);
         await refreshUser();
-        setBanner({ type: 'success', message: 'Personal information updated successfully.' });
+        setBanner({ type: 'success', message: t(language, 'accountSettings.personalInformationUpdated') });
         setModal((prev) => ({ ...prev, step: 'success', submitting: false }));
       } catch (error) {
-        setModal((prev) => ({ ...prev, submitting: false, error: error.message || 'Unable to update information.' }));
+        setModal((prev) => ({ ...prev, submitting: false, error: error.message || t(language, 'accountSettings.unableToUpdateInformation') }));
       }
     }
   };
@@ -210,11 +213,11 @@ export default function AccountSettingsPage() {
       const email = form.email?.trim();
       const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!regex.test(email || '')) {
-        setModal((prev) => ({ ...prev, error: 'Invalid email address.' }));
+        setModal((prev) => ({ ...prev, error: t(language, 'accountSettings.invalidEmailAddress') }));
         return;
       }
       if (email === userDetails.Email) {
-        setModal((prev) => ({ ...prev, error: 'New email must be different from current email.' }));
+        setModal((prev) => ({ ...prev, error: t(language, 'accountSettings.newEmailMustBeDifferent') }));
         return;
       }
       await handleSendOtp();
@@ -223,7 +226,7 @@ export default function AccountSettingsPage() {
 
     if (step === 'otp') {
       if (!modal.otp?.trim()) {
-        setModal((prev) => ({ ...prev, error: 'Please enter OTP code.' }));
+        setModal((prev) => ({ ...prev, error: t(language, 'accountSettings.pleaseEnterOtpCode') }));
         return;
       }
       setModal((prev) => ({ ...prev, submitting: true, error: '' }));
@@ -231,10 +234,10 @@ export default function AccountSettingsPage() {
         await authAPI.verifyProfileOtp(userDetails.UserID, modal.otp);
         await authAPI.updateUserEmail(userDetails.UserID, modal.form.email.trim());
         await refreshUser();
-        setBanner({ type: 'success', message: 'Email has been updated.' });
+        setBanner({ type: 'success', message: t(language, 'accountSettings.emailHasBeenUpdated') });
         setModal((prev) => ({ ...prev, step: 'success', submitting: false }));
       } catch (error) {
-        setModal((prev) => ({ ...prev, submitting: false, error: error.message || 'Unable to update email.' }));
+        setModal((prev) => ({ ...prev, submitting: false, error: error.message || t(language, 'accountSettings.unableToUpdateEmail') }));
       }
     }
   };
@@ -245,15 +248,15 @@ export default function AccountSettingsPage() {
 
     if (step === 'form') {
       if (!form.currentPassword || !form.newPassword) {
-        setModal((prev) => ({ ...prev, error: 'Please fill in all required fields.' }));
+        setModal((prev) => ({ ...prev, error: t(language, 'accountSettings.pleaseFillAllFields') }));
         return;
       }
       if (form.newPassword.length < 6) {
-        setModal((prev) => ({ ...prev, error: 'New password must be at least 6 characters.' }));
+        setModal((prev) => ({ ...prev, error: t(language, 'accountSettings.newPasswordMinLength') }));
         return;
       }
       if (form.newPassword !== form.confirmPassword) {
-        setModal((prev) => ({ ...prev, error: 'Password confirmation does not match.' }));
+        setModal((prev) => ({ ...prev, error: t(language, 'accountSettings.passwordConfirmationMismatch') }));
         return;
       }
       await handleSendOtp();
@@ -262,7 +265,7 @@ export default function AccountSettingsPage() {
 
     if (step === 'otp') {
       if (!modal.otp?.trim()) {
-        setModal((prev) => ({ ...prev, error: 'Please enter OTP code.' }));
+        setModal((prev) => ({ ...prev, error: t(language, 'accountSettings.pleaseEnterOtpCode') }));
         return;
       }
       setModal((prev) => ({ ...prev, submitting: true, error: '' }));
@@ -273,10 +276,10 @@ export default function AccountSettingsPage() {
           form.currentPassword,
           form.newPassword,
         );
-        setBanner({ type: 'success', message: 'Password changed successfully.' });
+        setBanner({ type: 'success', message: t(language, 'accountSettings.passwordChangedSuccessfully') });
         setModal((prev) => ({ ...prev, step: 'success', submitting: false }));
       } catch (error) {
-        setModal((prev) => ({ ...prev, submitting: false, error: error.message || 'Unable to change password.' }));
+        setModal((prev) => ({ ...prev, submitting: false, error: error.message || t(language, 'accountSettings.unableToChangePassword') }));
       }
     }
   };
@@ -289,7 +292,7 @@ export default function AccountSettingsPage() {
           {modal.step === 'form' && (
             <div className="acct-form-grid">
               <label>
-                Legal name
+                {t(language, 'accountSettings.legalName')}
                 <input
                   type="text"
                   value={modal.form.fullName}
@@ -302,7 +305,7 @@ export default function AccountSettingsPage() {
                 />
               </label>
               <label>
-                Phone number
+                {t(language, 'accountSettings.phoneNumber')}
                 <input
                   type="text"
                   value={modal.form.phone}
@@ -316,7 +319,7 @@ export default function AccountSettingsPage() {
                 />
               </label>
               <label>
-                Country/Residence
+                {t(language, 'accountSettings.countryResidence')}
                 <input
                   type="text"
                   value={modal.form.nationality}
@@ -333,13 +336,13 @@ export default function AccountSettingsPage() {
           )}
           {modal.step === 'otp' && (
             <div className="acct-otp-step">
-              <p>Verification code sent to <strong>{modal.otpEmail}</strong>.</p>
+              <p>{t(language, 'accountSettings.verificationCodeSent')} <strong>{modal.otpEmail}</strong>.</p>
               <input
                 type="text"
                 value={modal.otp}
                 onChange={(e) => setModal((prev) => ({ ...prev, otp: e.target.value, error: '' }))}
                 className="acct-input"
-                placeholder="Enter OTP code"
+                placeholder={t(language, 'accountSettings.enterOtpCode')}
               />
               <button
                 type="button"
@@ -347,7 +350,7 @@ export default function AccountSettingsPage() {
                 onClick={() => handleSendOtp()}
                 disabled={modal.sendingOtp}
               >
-                {modal.sendingOtp ? 'Sending...' : 'Resend code'}
+                {modal.sendingOtp ? t(language, 'accountSettings.sending') : t(language, 'accountSettings.resendCode')}
               </button>
             </div>
           )}
@@ -361,7 +364,7 @@ export default function AccountSettingsPage() {
           {modal.step === 'form' && (
             <div className="acct-form-grid">
               <label>
-                New email
+                {t(language, 'accountSettings.newEmail')}
                 <input
                   type="email"
                   value={modal.form.email}
@@ -378,13 +381,13 @@ export default function AccountSettingsPage() {
           )}
           {modal.step === 'otp' && (
             <div className="acct-otp-step">
-              <p>Verification code sent to <strong>{modal.otpEmail}</strong>.</p>
+              <p>{t(language, 'accountSettings.verificationCodeSent')} <strong>{modal.otpEmail}</strong>.</p>
               <input
                 type="text"
                 value={modal.otp}
                 onChange={(e) => setModal((prev) => ({ ...prev, otp: e.target.value, error: '' }))}
                 className="acct-input"
-                placeholder="Enter OTP code"
+                placeholder={t(language, 'accountSettings.enterOtpCode')}
               />
               <button
                 type="button"
@@ -392,7 +395,7 @@ export default function AccountSettingsPage() {
                 onClick={() => handleSendOtp()}
                 disabled={modal.sendingOtp}
               >
-                {modal.sendingOtp ? 'Sending...' : 'Resend code'}
+                {modal.sendingOtp ? t(language, 'accountSettings.sending') : t(language, 'accountSettings.resendCode')}
               </button>
             </div>
           )}
@@ -406,7 +409,7 @@ export default function AccountSettingsPage() {
           {modal.step === 'form' && (
             <div className="acct-form-grid">
               <label>
-                Current password
+                {t(language, 'accountSettings.currentPassword')}
                 <input
                   type="password"
                   value={modal.form.currentPassword}
@@ -419,7 +422,7 @@ export default function AccountSettingsPage() {
                 />
               </label>
               <label>
-                New password
+                {t(language, 'accountSettings.newPassword')}
                 <input
                   type="password"
                   value={modal.form.newPassword}
@@ -429,11 +432,11 @@ export default function AccountSettingsPage() {
                     error: '',
                   }))}
                   className="acct-input"
-                  placeholder="Minimum 6 characters"
+                  placeholder={t(language, 'accountSettings.minimum6Characters')}
                 />
               </label>
               <label>
-                Confirm new password
+                {t(language, 'accountSettings.confirmNewPassword')}
                 <input
                   type="password"
                   value={modal.form.confirmPassword}
@@ -449,13 +452,13 @@ export default function AccountSettingsPage() {
           )}
           {modal.step === 'otp' && (
             <div className="acct-otp-step">
-              <p>Verification code sent to <strong>{modal.otpEmail}</strong>.</p>
+              <p>{t(language, 'accountSettings.verificationCodeSent')} <strong>{modal.otpEmail}</strong>.</p>
               <input
                 type="text"
                 value={modal.otp}
                 onChange={(e) => setModal((prev) => ({ ...prev, otp: e.target.value, error: '' }))}
                 className="acct-input"
-                placeholder="Enter OTP code"
+                placeholder={t(language, 'accountSettings.enterOtpCode')}
               />
               <button
                 type="button"
@@ -463,7 +466,7 @@ export default function AccountSettingsPage() {
                 onClick={() => handleSendOtp()}
                 disabled={modal.sendingOtp}
               >
-                {modal.sendingOtp ? 'Sending...' : 'Resend code'}
+                {modal.sendingOtp ? t(language, 'accountSettings.sending') : t(language, 'accountSettings.resendCode')}
               </button>
             </div>
           )}
@@ -491,14 +494,14 @@ export default function AccountSettingsPage() {
     if (modal.step === 'success') {
       return (
         <button type="button" className="acct-primary" onClick={closeModal}>
-          Done
+          {t(language, 'accountSettings.done')}
         </button>
       );
     }
     return (
       <>
         <button type="button" className="acct-secondary" onClick={closeModal} disabled={modal.submitting || modal.sendingOtp}>
-          Cancel
+          {t(language, 'common.cancel')}
         </button>
         <button
           type="button"
@@ -506,8 +509,8 @@ export default function AccountSettingsPage() {
           onClick={handleModalPrimary}
           disabled={modal.submitting || modal.sendingOtp}
         >
-          {modal.step === 'form' && 'Continue'}
-          {modal.step === 'otp' && (modal.submitting ? 'Verifying...' : 'Confirm')}
+          {modal.step === 'form' && t(language, 'accountSettings.continue')}
+          {modal.step === 'otp' && (modal.submitting ? t(language, 'accountSettings.verifying') : t(language, 'common.confirm'))}
         </button>
       </>
     );
@@ -515,44 +518,44 @@ export default function AccountSettingsPage() {
 
   const accountFields = useMemo(() => (userDetails ? [
     {
-      label: 'Legal name',
-      value: userDetails.FullName || 'Not provided',
+      label: t(language, 'accountSettings.legalName'),
+      value: userDetails.FullName || t(language, 'accountSettings.notProvided'),
       action: () => openModal('profile'),
-      actionLabel: 'Edit',
+      actionLabel: t(language, 'accountSettings.edit'),
     },
     {
-      label: 'Email address',
-      value: userDetails.Email ? maskEmail(userDetails.Email) : 'Not provided',
+      label: t(language, 'accountSettings.emailAddress'),
+      value: userDetails.Email ? maskEmail(userDetails.Email, language) : t(language, 'accountSettings.notProvided'),
       action: () => openModal('email'),
-      actionLabel: 'Change',
+      actionLabel: t(language, 'accountSettings.change'),
     },
     {
-      label: 'Phone number',
-      value: userDetails.Phone || 'Not provided',
+      label: t(language, 'accountSettings.phoneNumber'),
+      value: userDetails.Phone || t(language, 'accountSettings.notProvided'),
       action: () => openModal('profile'),
-      actionLabel: userDetails.Phone ? 'Update' : 'Add',
+      actionLabel: userDetails.Phone ? t(language, 'accountSettings.update') : t(language, 'accountSettings.add'),
     },
     {
-      label: 'Identity verification',
-      value: 'Verified via email',
+      label: t(language, 'accountSettings.identityVerification'),
+      value: t(language, 'accountSettings.verifiedViaEmail'),
       action: () => openModal('profile'),
-      actionLabel: 'Verify again',
+      actionLabel: t(language, 'accountSettings.verifyAgain'),
     },
     {
-      label: 'Residence address',
-      value: userDetails.Nationality || 'Not provided',
+      label: t(language, 'accountSettings.residenceAddress'),
+      value: userDetails.Nationality || t(language, 'accountSettings.notProvided'),
       action: () => openModal('profile'),
-      actionLabel: userDetails.Nationality ? 'Update' : 'Add',
+      actionLabel: userDetails.Nationality ? t(language, 'accountSettings.update') : t(language, 'accountSettings.add'),
     },
-  ] : []), [userDetails]);
+  ] : []), [userDetails, language]);
 
   if (!isAuthenticated) {
     return (
       <div className="acct acct-empty">
-        <h1 className="acct-title">Account settings</h1>
-        <p>You need to log in to manage your personal information.</p>
+        <h1 className="acct-title">{t(language, 'accountSettings.title')}</h1>
+        <p>{t(language, 'accountSettings.loginRequired')}</p>
         <Link to="/login" className="acct-primary-link">
-          Log in
+          {t(language, 'profile.login')}
         </Link>
       </div>
     );
@@ -560,7 +563,7 @@ export default function AccountSettingsPage() {
 
   return (
     <div className="acct">
-      <h1 className="acct-title">Account settings</h1>
+      <h1 className="acct-title">{t(language, 'accountSettings.title')}</h1>
       {banner && (
         <div className={`acct-banner ${banner.type}`}>
           {banner.message}
@@ -577,17 +580,17 @@ export default function AccountSettingsPage() {
               onClick={() => setActiveItem(item.id)}
             >
               {item.label}
-              {item.disabled && <span className="acct-badge">Soon</span>}
+              {item.disabled && <span className="acct-badge">{t(language, 'accountSettings.soon')}</span>}
             </button>
           ))}
         </aside>
 
         <main className="acct-main">
-          {loading && <div className="acct-loader">Loading information...</div>}
+          {loading && <div className="acct-loader">{t(language, 'accountSettings.loadingInformation')}</div>}
 
           {!loading && activeItem === 'personal' && (
             <>
-              <h2 className="acct-section-title">Personal information</h2>
+              <h2 className="acct-section-title">{t(language, 'accountSettings.personalInformation')}</h2>
               <div className="acct-card">
                 {accountFields.map((field) => (
                   <div className="acct-field" key={field.label}>
@@ -606,24 +609,24 @@ export default function AccountSettingsPage() {
 
           {!loading && activeItem === 'security' && (
             <>
-              <h2 className="acct-section-title">Login & security</h2>
+              <h2 className="acct-section-title">{t(language, 'accountSettings.loginSecurity')}</h2>
               <div className="acct-card">
                 <div className="acct-field">
                   <div>
-                    <div className="acct-field-label">Password</div>
-                    <div className="acct-field-value">Last updated recently</div>
+                    <div className="acct-field-label">{t(language, 'accountSettings.password')}</div>
+                    <div className="acct-field-value">{t(language, 'accountSettings.lastUpdatedRecently')}</div>
                   </div>
                   <button type="button" className="acct-link" onClick={() => openModal('password')}>
-                    Change password
+                    {t(language, 'accountSettings.changePassword')}
                   </button>
                 </div>
                 <div className="acct-field">
                   <div>
-                    <div className="acct-field-label">Email verification</div>
-                    <div className="acct-field-value">Use OTP when updating sensitive information.</div>
+                    <div className="acct-field-label">{t(language, 'accountSettings.emailVerification')}</div>
+                    <div className="acct-field-value">{t(language, 'accountSettings.useOtpWhenUpdating')}</div>
                   </div>
                   <button type="button" className="acct-link" onClick={() => openModal('profile')}>
-                    Try now
+                    {t(language, 'accountSettings.tryNow')}
                   </button>
                 </div>
               </div>
@@ -642,7 +645,7 @@ export default function AccountSettingsPage() {
             <div className="acct-modal-body">
               {renderModalBody()}
               {modal.error && <div className="acct-error">{modal.error}</div>}
-              {modal.step === 'success' && <div className="acct-success">Done!</div>}
+              {modal.step === 'success' && <div className="acct-success">{t(language, 'accountSettings.done')}!</div>}
             </div>
             <div className="acct-modal-actions">
               {renderModalActions()}

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./ExpInfoBookingBox.css";
+import { useCurrency } from "../../contexts/CurrencyContext";
 
 function ExpInfoBookingBox({ 
   booking, 
@@ -10,12 +11,14 @@ function ExpInfoBookingBox({
   bookingLoading = false,
   bookingFeedback = null
 }) {
+  const { convertToCurrent, format } = useCurrency();
+  
   // ✅ Chuẩn hóa booking object
   const safeBooking = booking && typeof booking === "object" ? booking : {};
 
-  // ✅ Lấy giá từ props hoặc fallback từ pricing root của experience
-  const basePrice = Number(propPrice || 0);
-  const curr = propCurrency || "USD";
+  // ✅ Lấy giá từ props (giả sử là USD), convert sang currency hiện tại
+  const basePriceUSD = Number(propPrice || 0);
+  const basePrice = convertToCurrent(basePriceUSD);
 
   const timeSlots = Array.isArray(safeBooking.timeSlots)
     ? safeBooking.timeSlots
@@ -50,11 +53,7 @@ function ExpInfoBookingBox({
       <div className="expib-header">
         <div className="expib-price">
           <span className="expib-price-text">
-            From{" "}
-            {new Intl.NumberFormat("vi-VN", {
-              style: "currency",
-              currency: curr
-            }).format(basePrice)}
+            From {format(basePrice)}
           </span>
           <span className="expib-per">/ person</span>
         </div>
@@ -91,10 +90,7 @@ function ExpInfoBookingBox({
         <div className="expib-total">
           <span className="expib-total-label">Total:</span>
           <span className="expib-total-price">
-            {new Intl.NumberFormat("vi-VN", {
-              style: "currency",
-              currency: curr
-            }).format(totalPrice)}
+            {format(totalPrice)}
           </span>
         </div>
       )}
