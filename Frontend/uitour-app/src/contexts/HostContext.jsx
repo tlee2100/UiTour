@@ -1199,17 +1199,8 @@ function formatStayDataForAPI(d) {
   // ---------------------------------------------------------
   // PHOTOS
   // ---------------------------------------------------------
-  const photos = (d.photos || []).map((p, i) => ({
-    url: safe(p.serverUrl || p.preview || ""),
-    caption: safe(p.caption),
-    category: safe(p.category),
-    sortIndex: p.sortIndex ?? i + 1,
-    isCover: !!p.isCover,
-  }));
-
-  // Convert photos safely (sync – không cần async)
   // ⚠️ CHỈ dùng serverUrl, KHÔNG dùng preview (preview là base64 chỉ để preview tạm thời)
-  const photos = (stayData.photos || [])
+  const photos = (d.photos || [])
     .map((p, index) => {
       // Chỉ dùng serverUrl - đây là URL từ server sau khi upload
       // Nếu không có serverUrl, bỏ qua photo này (không lưu base64 vào database)
@@ -1222,20 +1213,20 @@ function formatStayDataForAPI(d) {
 
       return {
         url: url.trim(), // Không truncate URL ảnh - giữ nguyên để đảm bảo hợp lệ
-        caption: truncate(p.caption || "", 300),
+        caption: safe(p.caption || ""),
         sortIndex: p.sortIndex || index + 1,
       };
     })
     .filter((p) => p !== null && p.url && p.url.trim().length > 0 && !p.url.startsWith('data:image'));
 
   // ========== EXTRACT + VALIDATE MAIN FIELDS ==========
-  const listingTitle = truncate(stayData.listingTitle || "", 200);
-  const propertyType = truncate(stayData.propertyType || "", 100);
-  const price = toDecimal(stayData.pricing?.basePrice);
-  const bathrooms = toDecimal(stayData.bathrooms);
+  const listingTitle = safe(d.listingTitle || "");
+  const propertyType = safe(d.propertyType || "");
+  const price = num(d.pricing?.basePrice);
+  const bathrooms = num(d.bathrooms);
 
   // DEV MODE: Temporarily disable UserID validation
-  // if (!stayData.userID && !stayData.hostID)
+  // if (!d.userID && !d.hostID)
   //   throw new Error("UserID is required");
 
   if (!listingTitle.trim()) throw new Error("ListingTitle is required");
@@ -1247,7 +1238,7 @@ function formatStayDataForAPI(d) {
   // Ensure valid, unique numeric IDs
   const amenityIds = Array.from(
     new Set(
-      (stayData.amenities || [])
+      (d.amenities || [])
         .map((id) => Number(id))
         .filter((id) => !isNaN(id))
     )
