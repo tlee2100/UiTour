@@ -2284,3 +2284,31 @@
 .hs-preview-label {
   font-weight: 600;
 }
+
+.hs-photo-warning {
+  background: #fff3cd;
+  color: #856404;
+  padding: 14px 18px;
+  border-left: 4px solid #ffca28;
+  border-radius: 6px;
+  font-size: 15px;
+  margin: 20px 0 32px 0;
+  max-width: 900px;
+  line-height: 1.5;
+}
+
+/* Prevent overflow in Preview Title */
+.hs-preview-title {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}
+
+/* Prevent overflow in Description */
+.hs-preview-description {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}

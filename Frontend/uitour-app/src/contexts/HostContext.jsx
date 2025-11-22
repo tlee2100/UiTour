@@ -414,14 +414,25 @@ function sanitizeStayData(raw) {
 
 // 🧭 Experience / Tour
 const initialExperienceData = {
+  // ======================================================================================
+  // SYSTEM – ID, Host, Approval bởi Admin
+  // ======================================================================================
   tourID: null,
   hostID: null,
 
-  // BASIC INFO (FE + BE)
+  approval: {
+    status: "pending",     // pending | approved | rejected
+    approvedAt: null,
+    approvedBy: null,
+  },
+
+  // ======================================================================================
+  // BASIC INFO
+  // ======================================================================================
   tourName: "",
   summary: "",
   description: "",
-  mainCategory: "", // chọn từ trang Choose
+  mainCategory: "",
   yearsOfExperience: 10,
   qualifications: {
     intro: "",
@@ -429,7 +440,9 @@ const initialExperienceData = {
     recognition: "",
   },
 
+  // ======================================================================================
   // LOCATION
+  // ======================================================================================
   location: {
     addressLine: "",
     city: "",
@@ -440,54 +453,142 @@ const initialExperienceData = {
   cityID: null,
   countryID: null,
 
+  // ======================================================================================
   // PRICING
+  // ======================================================================================
   pricing: {
-    basePrice: "",
+    basePrice: 0,
     currency: "USD",
-    priceUnit: "perPerson",
+    priceUnit: "perPerson", // perPerson | perGroup
   },
 
+  // ======================================================================================
   // GUEST CAPACITY
+  // ======================================================================================
   capacity: {
     maxGuests: 1,
   },
 
-  // BOOKING TIME SLOTS
+  // ======================================================================================
+  // DURATION
+  // ======================================================================================
+  durationHours: 1,       // Thời lượng theo giờ
+  durationDays: 1,        // Tour có thể kéo dài vài ngày
+
+  // ======================================================================================
+  // TIME SLOTS / SCHEDULE
+  // ======================================================================================
   booking: {
-    timeSlots: [], // FE tự quản lý
+    timeSlots: [
+      /*
+        {
+          id: "slot_1",
+          startTime: "09:00",
+          endTime: "12:00",
+          days: ["Mon", "Wed", "Fri"], 
+          capacity: 10, // số khách tối đa cho slot này
+        }
+      */
+    ],
   },
 
+  // ======================================================================================
   // MEDIA
+  // ======================================================================================
   media: {
     cover: null,
     photos: [],
   },
 
+  // ======================================================================================
+  // DISCOUNTS
+  // ======================================================================================
   discounts: {
     earlyBird: false,
-    custom: [],
+    custom: [], // { type, amount, percent, from, to }
   },
 
-  // DURATION
-  durationHours: 1,
-  durationDays: 1,
-
-  // DETAILS / WHAT INCLUDED
+  // ======================================================================================
+  // DETAILS (What’s included / What you’ll do)
+  // ======================================================================================
   experienceDetails: [],
 
-  // STATUS
-  isActive: true,
-
+  // ======================================================================================
+  // AVAILABILITY WINDOW
+  // ======================================================================================
   startDate: "",
   endDate: "",
+  isActive: true,
   createdAt: null,
 
-  // BACKEND-ONLY FIELDS (OPTIONAL)
+  // ======================================================================================
+  // CALENDAR – trạng thái ngày cho Experience
+  // ======================================================================================
+  calendar: [
+    /*
+      Với Experience, block theo ngày (giống Stay) nhưng áp dụng cho các slot.
+
+      {
+        date: "2025-07-21",
+        slotID: "slot_1",   // null nếu block cả ngày
+        status: "booked" | "pending" | "blocked",
+        bookingID: null
+      }
+    */
+  ],
+
+  // ======================================================================================
+  // BOOKINGS (Experience-style)
+  // ======================================================================================
+  bookings: [
+    /*
+      Experience booking khác Stay:
+      - Không có nights
+      - Có slotID
+      - Có số lượng participants
+
+      {
+        bookingID: 101,
+        tourID: 7,
+        userID: 4,
+        slotID: "slot_1",
+        
+        date: "2025-07-21",
+
+        guests: 3,   // số khách
+        totalPrice: 150,
+        originalPrice: 180,
+
+        discountApplied: {
+          type: "earlyBird", 
+          amount: 30
+        },
+
+        status: "pending" | "confirmed" | "cancelled" | "expired",
+
+        createdAt: "2025-06-01T12:00:00",
+        paidAt: null,
+        cancelledAt: null,
+        expiredAt: null
+      }
+    */
+  ],
+
+  // ======================================================================================
+  // BACKEND-ONLY FIELDS
+  // ======================================================================================
   cancellationID: null,
   cancellationPolicy: null,
-  participants: [],
-  reviews: [],
+
+  participants: [],   // BE tính dựa trên bookings
+  reviews: [],        // BE trả về
+
+  // ======================================================================================
+  // SYSTEM GENERATED – timestamps
+  // ======================================================================================
+  updatedAt: null,
 };
+
 
 // ============================================================
 // 2️⃣ TẠO CONTEXT
@@ -505,6 +606,8 @@ export function HostProvider({ children }) {
   const [photosReady, setPhotosReady] = useState(false);
   // 🖼 Ảnh chỉ lưu trong RAM (KHÔNG localStorage)
   const [stayPhotosRAM, setStayPhotosRAM] = useState([]);
+  const [experiencePhotosRAM, setExperiencePhotosRAM] = useState([]);
+  const [experienceItineraryRAM, setExperienceItineraryRAM] = useState([]);
 
 
   const location = useLocation();
@@ -695,17 +798,60 @@ export function HostProvider({ children }) {
           ...prev,
           location: { ...prev.location, ...values },
         }));
+
       } else if (step === "qualification") {
+        setExperienceData(prev => ({
+          ...prev,
+          qualifications: { ...prev.qualifications, ...values }
+        }));
+        setCompletedStep(prev => ({ ...prev, qualification: true }));
+        return;
+
+      } else if (step === "itinerary") {
+        // 1) Update RAM
+        setExperienceItineraryRAM(values.map(item => ({
+          id: item.id,
+          preview: item.photo?.preview || null,
+          file: item.photo?.file || null,
+        })));
+
+        // 2) Save only metadata to local data (no base64)
+        setExperienceData(prev => ({
+          ...prev,
+          experienceDetails: values.map(item => ({
+            id: item.id,
+            title: item.title,
+            content: item.content,
+            photo: item.photo ? {
+              name: item.photo.name || "",
+              caption: item.photo.caption || "",
+              serverUrl: item.photo.serverUrl || "",
+            } : null
+          }))
+        }));
+
+        setCompletedStep(prev => ({ ...prev, itinerary: true }));
+        return;
+      }
+
+      else if (step === "pricing") {
+        // ensure basePrice is numeric (avoid storing "" or "0" as string)
+        const incoming = values || {};
+        const coerced = {
+          ...incoming,
+          basePrice:
+            incoming.basePrice === "" || incoming.basePrice === null || isNaN(Number(incoming.basePrice))
+              ? 0
+              : Number(incoming.basePrice),
+        };
+
         setExperienceData((prev) => ({
           ...prev,
-          qualifications: { ...prev.qualifications, ...values },
+          pricing: { ...prev.pricing, ...coerced },
         }));
-      } else if (step === "pricing") {
-        setExperienceData((prev) => ({
-          ...prev,
-          pricing: { ...prev.pricing, ...values },
-        }));
-      } else if (step === "capacity") {
+        return;
+      }
+      else if (step === "capacity") {
         setExperienceData((prev) => ({
           ...prev,
           capacity: { ...prev.capacity, ...values },
@@ -725,18 +871,32 @@ export function HostProvider({ children }) {
         }));
         return;
       } else if (step === "photos") {
+        const incoming = values.photos || [];
+        const hasPreview = incoming.some(p => p.preview || p.file);
+
+        if (hasPreview) {
+          setExperiencePhotosRAM(incoming);
+        }
+
         setExperienceData((prev) => ({
           ...prev,
           media: {
             ...prev.media,
-            photos: values.photos,
-            cover: values.cover,
+            photos: incoming.map((p, i) => ({
+              name: p.name || "",
+              caption: p.caption || "",
+              serverUrl: p.serverUrl || "",
+              sortIndex: p.sortIndex ?? i + 1,
+              isCover: p.isCover || false,
+            })),
+            cover: values.cover || prev.media.cover,
           },
         }));
 
-        setCompletedStep((prev) => ({ ...prev, photos: true, media: true }));
+        setCompletedStep(prev => ({ ...prev, photos: true, media: true }));
         return;
-      } else {
+      }
+      else {
         setExperienceData((prev) => ({ ...prev, ...values }));
       }
     }
@@ -813,19 +973,25 @@ export function HostProvider({ children }) {
 
       if (step === "qualification") return true;
 
-      if (step === "title") return experienceData.tourName.trim().length > 0;
+      // --- ⭐ DESCRIBE TITLE PAGE (Title + Description both required) ---
+      if (step === "describe-title") {
+        const title = String(experienceData.tourName || "").trim();
+        const desc = String(experienceData.summary || experienceData.description || "").trim();
 
-      if (step === "description")
-        return experienceData.description.trim().length > 0;
+        // Must have BOTH
+        return title.length > 0 && desc.length > 0;
+      }
 
       if (step === "locate")
         return !!experienceData.location.lat && !!experienceData.location.lng;
 
-      if (step === "pricing")
-        return Number(experienceData.pricing.basePrice) > 0;
-
-      if (step === "capacity")
-        return Number(experienceData.capacity.maxGuests) >= 1;
+      // ⭐ Only validate price (maxGuests & duration are always >= 1)
+      if (step === "capacity") {
+        const price = Number(experienceData.pricing?.basePrice);
+        // price must be a valid positive number
+        if (isNaN(price)) return false;
+        return price > 0;
+      }
 
       if (step === "photos") return experienceData.media.photos.length > 0;
 
@@ -838,6 +1004,86 @@ export function HostProvider({ children }) {
       return true;
     }
   }
+
+  // ============================================================
+  // FINAL VALIDATION – RÀ SOÁT TẤT CẢ DỮ LIỆU TRƯỚC KHI PUBLISH
+  // ============================================================
+
+  // ⭐ VALIDATE STAY
+  function validateAllStay() {
+    const steps = [
+      "choose",
+      "typeofplace",
+      "location",
+      "details",
+      "title",
+      "description",
+      "weekday-price",
+      "weekend-price",
+      "photos"
+    ];
+
+    for (const step of steps) {
+      if (!validateStep(step)) {
+        return {
+          ok: false,
+          step,
+          message: `Missing or invalid data at step: ${step}`,
+        };
+      }
+    }
+
+    // ⭐ ẢNH: RAM PHẢI CÓ FILE
+    if (!stayPhotosRAM || stayPhotosRAM.length === 0) {
+      return {
+        ok: false,
+        step: "photos",
+        message: "Your photos were lost after reload. Please upload them again.",
+      };
+    }
+
+    // Nếu pass hết
+    return { ok: true };
+  }
+
+  // ⭐ VALIDATE EXPERIENCE
+  function validateAllExperience() {
+    const steps = [
+      "describe-title",
+      "locate",
+      "capacity",
+      "photos",
+      "itinerary",
+      "timeslots"
+    ];
+
+    for (const step of steps) {
+      if (!validateStep(step)) {
+        return {
+          ok: false,
+          step,
+          message: `Missing or invalid data at step: ${step}`,
+        };
+      }
+    }
+
+    // ⭐ Ảnh Experience cũng chỉ an toàn khi RAM còn file
+    if (!experiencePhotosRAM || experiencePhotosRAM.length === 0) {
+      return {
+        ok: false,
+        step: "photos",
+        message: "Your photos were lost after reload. Please upload them again.",
+      };
+    }
+
+    return { ok: true };
+  }
+
+  // ⭐ MASTER VALIDATE – dùng ở Preview
+  function validateAll() {
+    return type === "stay" ? validateAllStay() : validateAllExperience();
+  }
+
 
   function canMoveToStep(step) {
     return validateStep(step);
@@ -859,32 +1105,32 @@ export function HostProvider({ children }) {
           const userStr = localStorage.getItem("user");
           const user = userStr ? JSON.parse(userStr) : null;
           const userID = user?.UserID || user?.userID || user?.id || null;
-  
+   
           if (!userID) {
             alert("Vui lòng đăng nhập để tạo property!");
             return false;
           }
-  
+   
           // Set userID in data (backend sẽ tự động tạo Host nếu chưa có)
           data.userID = userID;
-  
+   
           // Format data for API (sync function)
           payload = formatStayDataForAPI(data);
-  
+   
           console.log(
             "[SEND TO BACKEND]",
             JSON.stringify(payload, null, 2)
           );
-  
+   
           // Import authAPI dynamically to avoid circular dependency
           const authAPI = (await import("../services/authAPI")).default;
-  
+   
           // Call API to create property
           const result = await authAPI.createProperty(payload);
-  
+   
           console.log("[PROPERTY CREATED]", result);
           alert("Tạo property thành công!");
-  
+   
           return true;
         } else {
           payload = formatExperienceDataForAPI(data);
@@ -898,7 +1144,7 @@ export function HostProvider({ children }) {
         return false;
       }
     }
-  
+   
     */
 
   async function sendHostData() {
@@ -1141,18 +1387,15 @@ export function HostProvider({ children }) {
         exp.media = exp.media || { cover: null, photos: [] };
 
         // normalize photos: đảm bảo không crash khi thiếu file
-        exp.media.photos = (exp.media.photos || []).map((p) => {
-          const preview = p.preview || p.serverUrl || "";
+        exp.media.photos = (exp.media.photos || []).map((p) => ({
+          preview: "", // KHÔNG load preview từ localStorage
+          file: null,
+          name: p.name || "",
+          caption: p.caption || "",
+          serverUrl: p.serverUrl || "",
+          isCover: p.isCover || false,
+        }));
 
-          return {
-            file: null, // tránh UI crash
-            preview,
-            name: p.name || "",
-            caption: p.caption || "",
-            serverUrl: p.serverUrl || "",
-            isCover: preview === exp.media.cover,
-          };
-        });
 
         // Nếu cover rỗng thì đặt auto ảnh đầu
         if (!exp.media.cover && exp.media.photos.length > 0) {
@@ -1160,6 +1403,13 @@ export function HostProvider({ children }) {
         }
 
         setExperienceData({ ...initialExperienceData, ...exp });
+        setExperienceItineraryRAM(
+          exp.experienceDetails.map(item => ({
+            id: item.id,
+            preview: "", // RAM không load từ localStorage
+            file: null
+          }))
+        );
         setCompletedStep((prev) => ({
           ...prev,
           photos: exp.media.photos.length > 0,
@@ -1205,17 +1455,18 @@ export function HostProvider({ children }) {
     const expForStorage = {
       ...experienceData,
 
-      capacity: {
-        ...experienceData.capacity,
-      },
+      // itinerary cleanup
+      experienceDetails: experienceData.experienceDetails.map((item) => ({
+        ...item,
+        photo: item.photo ? {
+          file: null,
+          preview: "",
+          name: item.photo.name || "",
+          caption: item.photo.caption || "",
+          serverUrl: item.photo.serverUrl || "",
+        } : null,
+      })),
 
-      pricing: {
-        ...experienceData.pricing,
-      },
-
-      booking: {
-        ...experienceData.booking,
-      },
       discounts: {
         earlyBird: experienceData.discounts?.earlyBird ?? false,
         byDaysBefore: experienceData.discounts?.byDaysBefore ?? [],
@@ -1224,13 +1475,15 @@ export function HostProvider({ children }) {
 
       media: {
         ...experienceData.media,
-        photos: experienceData.media.photos.map((p) => ({
-          preview: p.preview,
-          caption: p.caption,
-          serverUrl: p.serverUrl,
-          name: p.name,
+        photos: experienceData.media.photos.map((p, i) => ({
+          name: p.name || "",
+          caption: p.caption || "",
+          serverUrl: p.serverUrl || "",
+          sortIndex: p.sortIndex ?? i + 1,
+          isCover: !!p.isCover,
         })),
       },
+
     };
 
     localStorage.setItem("host_exp_draft", JSON.stringify(expForStorage));
@@ -1283,6 +1536,13 @@ export function HostProvider({ children }) {
         photosReady,
         stayPhotosRAM,
         setStayPhotosRAM,
+        experiencePhotosRAM,
+        setExperiencePhotosRAM,
+        experienceItineraryRAM,
+        setExperienceItineraryRAM,
+        validateAll,
+        validateAllStay,
+        validateAllExperience,
       }}
     >
       {children}
@@ -1302,90 +1562,55 @@ function formatStayDataForAPI(d) {
   const safe = (v) => (v === undefined || v === null ? "" : v);
 
   // ---------------------------------------------------------
-  // PHOTOS
+  // 📸 PHOTOS – Merge logic của HEAD + master (giữ serverUrl)
   // ---------------------------------------------------------
-  // ⚠️ CHỈ dùng serverUrl, KHÔNG dùng preview (preview là base64 chỉ để preview tạm thời)
   const photos = (d.photos || [])
     .map((p, index) => {
-      // Chỉ dùng serverUrl - đây là URL từ server sau khi upload
-      // Nếu không có serverUrl, bỏ qua photo này (không lưu base64 vào database)
-      const url = p.serverUrl || p.url || p.Url; // p.url có thể là URL từ database nếu đã có
-      
-      // Nếu vẫn không có URL hợp lệ, bỏ qua photo này
-      if (!url || url.trim().length === 0 || url.startsWith('data:image')) {
-        console.warn(`⚠️ Photo ${index} skipped: no valid URL`, { 
-          hasServerUrl: !!p.serverUrl, 
-          hasUrl: !!p.url, 
-          hasUrlCapital: !!p.Url,
-          preview: p.preview ? 'has preview (base64)' : 'no preview'
-        });
+      const url = p.serverUrl || p.url || p.Url || "";
+
+      // Skip invalid URLs or base64 preview
+      if (!url || url.trim().length === 0 || url.startsWith("data:image")) {
         return null;
       }
 
-      const cleanUrl = url.trim();
-      console.log(`✅ Photo ${index} included:`, cleanUrl);
-      
       return {
-        url: cleanUrl, // Không truncate URL ảnh - giữ nguyên để đảm bảo hợp lệ
+        url: url.trim(),
         caption: safe(p.caption || ""),
         sortIndex: p.sortIndex || index + 1,
       };
     })
-    .filter((p) => p !== null && p.url && p.url.trim().length > 0 && !p.url.startsWith('data:image'));
-  
-  console.log(`📸 Total valid photos after filtering: ${photos.length} out of ${d.photos?.length || 0}`);
+    .filter((p) => p !== null);
 
   // ---------------------------------------------------------
   // COVER PHOTO
   // ---------------------------------------------------------
-  // Lấy cover photo từ d.coverPhoto hoặc photo đầu tiên trong photos
   let coverPhoto = null;
+
   if (d.coverPhoto) {
-    // Nếu có coverPhoto trực tiếp
-    const coverUrl = d.coverPhoto.serverUrl || d.coverPhoto.url || d.coverPhoto;
-    if (coverUrl && !coverUrl.startsWith('data:image')) {
-      coverPhoto = typeof coverUrl === 'string' ? coverUrl : coverUrl.trim();
+    const coverUrl =
+      d.coverPhoto.serverUrl ||
+      d.coverPhoto.url ||
+      (typeof d.coverPhoto === "string" ? d.coverPhoto : null);
+
+    if (coverUrl && !coverUrl.startsWith("data:image")) {
+      coverPhoto = coverUrl;
     }
-  } else if (photos.length > 0) {
-    // Nếu không có coverPhoto, dùng photo đầu tiên
-    coverPhoto = photos[0].url;
   }
 
-  // ========== EXTRACT + VALIDATE MAIN FIELDS ==========
-  const listingTitle = safe(d.listingTitle || "");
-  const propertyType = safe(d.propertyType || "");
-  const price = num(d.pricing?.basePrice);
-  const bathrooms = num(d.bathrooms);
-
-  // DEV MODE: Temporarily disable UserID validation
-  // if (!d.userID && !d.hostID)
-  //   throw new Error("UserID is required");
-
-  if (!listingTitle.trim()) throw new Error("ListingTitle is required");
-
-  if (!price || price <= 0)
-    throw new Error("Price must be a positive number");
-
-  // ========== AMENITIES – FIXED 100% ==========
-  // Ensure valid, unique numeric IDs
-  const amenityIds = Array.from(
-    new Set(
-      (d.amenities || [])
-        .map((id) => Number(id))
-        .filter((id) => !isNaN(id))
-    )
-  );
+  if (!coverPhoto && photos.length > 0) {
+    coverPhoto = photos[0].url;
+  }
 
   // ---------------------------------------------------------
   // AMENITIES
   // ---------------------------------------------------------
   const amenities = (d.amenities || [])
-    .map((x) => Number(x))
-    .filter((x) => !isNaN(x))
-    .map((id) => ({ amenityID: id }));
+    .map((id) => Number(id))
+    .filter((id) => !isNaN(id))
+    .map((id) => ({ AmenityID: id }));
 
   // ---------------------------------------------------------
-  // DISCOUNTS
+  // DISCOUNTS (from HEAD)
   // ---------------------------------------------------------
   const discounts = {
     weeklyPercent: num(d.pricing.discounts.weekly.percent),
@@ -1404,67 +1629,56 @@ function formatStayDataForAPI(d) {
   };
 
   // ---------------------------------------------------------
-  // FINAL PAYLOAD
+  // FINAL PAYLOAD – MERGED CLEAN VERSION
   // ---------------------------------------------------------
-  // Build location string from location object
-  const locationString = d.location?.addressLine || 
-    d.location?.address || 
-    (d.location && typeof d.location === 'string' ? d.location : "") || 
+  const locationString =
+    d.location?.addressLine ||
+    d.location?.address ||
+    (typeof d.location === "string" ? d.location : "") ||
     "";
 
-  // Build house rules string from array
-  const houseRulesString = Array.isArray(d.houseRules) 
-    ? d.houseRules.join(", ") 
-    : (d.houseRules || "");
+  const houseRulesString = Array.isArray(d.houseRules)
+    ? d.houseRules.join(", ")
+    : safe(d.houseRules);
 
   return {
-    // =========================
-    // BASIC LISTING INFO - Match CreatePropertyDto
-    // =========================
     UserID: d.userID || d.UserID || null,
     ListingTitle: safe(d.listingTitle),
     Description: safe(d.description),
-    Location: locationString, // String, not object
+
+    Location: locationString,
     CityID: d.cityID || d.CityID || null,
     CountryID: d.countryID || d.CountryID || null,
+
     RoomTypeID: d.roomTypeID || d.RoomTypeID || null,
-    
-    // Capacity fields
+
     Bedrooms: num(d.bedrooms),
     Beds: num(d.beds),
     Bathrooms: num(d.bathrooms),
     Accommodates: num(d.accommodates),
-    
-    // Pricing
-    Price: num(d.pricing?.basePrice || d.pricing?.basePrice || 0),
-    Currency: safe(d.pricing?.currency || "USD"),
-    
-    // Property type as string
+
+    Price: num(d.pricing.basePrice),
+    Currency: safe(d.pricing.currency || "USD"),
+
     PropertyType: safe(d.propertyType || d.propertyTypeLabel || ""),
-    
-    // Location coordinates as strings
+
     lat: d.location?.lat ? String(d.location.lat) : null,
     lng: d.location?.lng ? String(d.location.lng) : null,
-    
-    // House rules as string
+
     HouseRules: houseRulesString,
-    
-    // Photos array
-    Photos: photos.map(p => ({
+
+    Photos: photos.map((p) => ({
       Url: p.url,
-      Caption: p.caption || "",
-      SortIndex: p.sortIndex || 1
+      Caption: p.caption,
+      SortIndex: p.sortIndex,
     })),
-    
-    // Amenities array
-    Amenities: amenities.map(a => ({
-      AmenityID: a.amenityID
-    })),
-    
-    // Active status
-    Active: false, // Always false for new properties (pending approval)
+
+    Amenities: amenities,
+
+    Active: false,
   };
 }
+
 
 function formatExperienceDataForAPI(d) {
   const safe = (v) => (v === undefined || v === null ? "" : String(v));
@@ -1555,9 +1769,23 @@ function formatExperienceDataForAPI(d) {
   };
 }
 
+
+
 // ============================================================
 // 🔟 HOOK TIỆN DỤNG
 // ============================================================
 export function useHost() {
   return useContext(HostContext);
 }
+
+//////////////////////////
+/*
+
+Thêm trường Duration, Booking, Admin duyệt(nếu thiếu) và so lại với Stay để chuẩn data cuối
+Style lại 1 số chỗ của Experience, đặc biệt là phần Title & Description lỗi style khi nhập dài
+Style lại phần nhập chữ khi mở editor vì trông ko thống nhất và cứng nhắc
+Thêm cảnh báo reload sẽ mất ảnh ở tất cả trang upload ảnh
+Thêm final validate để check lần cuối đảm bảo ko cho publish khi Host reload mất ảnh ở cả 2 Exp và Stay
+Format lại Exp lần cuối để hoàn thành
+
+*/
