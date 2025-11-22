@@ -243,7 +243,11 @@ export default function ExperienceInfoPage() {
       <div className="expif-two-columns">
         <div className="expif-left-column">
           <ExpGallery
-            images={exp.media?.photos?.map(p => p.url) || exp.photos || []}
+            images={
+              exp.media?.photos?.map(p => p.url || p) || 
+              exp.photos?.map(p => p.url || p) || 
+              []
+            }
           />
 
         </div>
