@@ -159,7 +159,11 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<IEnumerable<Property>> GetByHostIdAsync(int hostId)
         {
-            return await _unitOfWork.Properties.Query().Where(p => p.HostID == hostId).ToListAsync();
+            return await _unitOfWork.Properties.Query()
+                .Where(p => p.HostID == hostId)
+                .Include(p => p.Photos)
+                .Include(p => p.Reviews)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<Property>> SearchAsync(string location, DateTime? checkIn, DateTime? checkOut, int? guests)
