@@ -2,9 +2,46 @@ import { useState, useEffect } from "react";
 import "./ExpGallery.css";
 
 export default function ExpGallery({ images }) {
+  // Helper function to normalize image URL
+  const normalizeImageUrl = (url) => {
+    if (!url || url.trim().length === 0) return null;
+    // If already a full URL (http/https), use as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url.trim();
+    }
+    // If relative path starting with /, prepend backend base URL
+    if (url.startsWith('/')) {
+      return `http://localhost:5069${url}`;
+    }
+    // Otherwise, assume it's a relative path and prepend backend base URL
+    return `http://localhost:5069/${url}`;
+  };
+
   const formattedImages = Array.isArray(images)
-    ? images.map(img => img.url || img) // Fallback nếu BE chưa ổn định
+    ? images
+        .map(img => {
+          const url = img.url || img;
+          return normalizeImageUrl(url);
+        })
+        .filter(url => url !== null) // Remove null/invalid URLs
     : [];
+  
+  // If no images, show placeholder
+  if (formattedImages.length === 0) {
+    return (
+      <div className="expGallery-grid">
+        <div className="expGallery-item" style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          backgroundColor: '#f0f0f0',
+          minHeight: '400px'
+        }}>
+          <p style={{ color: '#666' }}>No images available</p>
+        </div>
+      </div>
+    );
+  }
 
   const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);

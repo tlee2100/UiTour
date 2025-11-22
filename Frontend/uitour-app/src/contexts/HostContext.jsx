@@ -1285,7 +1285,8 @@ export function HostProvider({ children }) {
               throw new Error("Không có ảnh nào được upload thành công");
             }
             
-            photos.forEach((photo) => {
+            // Update photos with server URLs - CRITICAL: Update both in photos array AND data.media.photos
+            photos.forEach((photo, photoIndex) => {
               if (photo.file) {
                 const uploadedIndex = photosWithFiles.findIndex(p => p === photo);
                 if (uploadedIndex >= 0 && uploadedIndex < uploadedUrls.length) {
@@ -1293,10 +1294,34 @@ export function HostProvider({ children }) {
                   // Set cả serverUrl và url để đảm bảo formatExperienceDataForAPI có thể dùng
                   photo.serverUrl = serverUrl;
                   photo.url = serverUrl; // Backend expect field 'url'
-                  console.log(`Updated tour photo ${uploadedIndex} with URL: ${serverUrl}`);
+                  console.log(`✅ Updated tour photo ${photoIndex} (uploaded index ${uploadedIndex}) with URL: ${serverUrl}`);
+                } else {
+                  console.warn(`⚠️ Tour photo ${photoIndex} has file but no matching uploaded URL found`);
                 }
+              } else if (photo.serverUrl || photo.url) {
+                // Photo already has URL (from previous upload or database)
+                console.log(`ℹ️ Tour photo ${photoIndex} already has URL: ${photo.serverUrl || photo.url}`);
+              } else {
+                console.warn(`⚠️ Tour photo ${photoIndex} has no file and no URL - will be skipped`);
               }
             });
+            
+            // CRITICAL: Update data.media.photos to ensure formatExperienceDataForAPI can access serverUrls
+            if (!data.media) {
+              data.media = {};
+            }
+            if (!data.media.photos) {
+              data.media.photos = [];
+            }
+            
+            // Sync photos array to data.media.photos
+            data.media.photos = photos.map(p => ({
+              ...p,
+              serverUrl: p.serverUrl || p.url || "",
+              url: p.url || p.serverUrl || ""
+            }));
+            
+            console.log(`📸 Updated data.media.photos: ${data.media.photos.length} photos with serverUrls`);
           } catch (uploadError) {
             console.error("Upload error:", uploadError);
             throw new Error("Lỗi upload ảnh: " + (uploadError.message || "Unknown error"));
@@ -1305,6 +1330,18 @@ export function HostProvider({ children }) {
 
         // Backend sẽ tự động tạo Host từ UserID
         const payload = formatExperienceDataForAPI({ ...data, userID: userID });
+        
+        // Debug: Log photos in payload
+        console.log("📸 Tour photos in payload:", payload.Photos);
+        console.log("📸 Total photos:", payload.Photos?.length || 0);
+        if (payload.Photos && payload.Photos.length > 0) {
+          payload.Photos.forEach((p, idx) => {
+            console.log(`  Photo ${idx}:`, { Url: p.Url, Caption: p.Caption, SortIndex: p.SortIndex });
+          });
+        } else {
+          console.warn("⚠️ WARNING: No photos in tour payload! This tour will have no images.");
+        }
+        
         const result = await authAPI.createTour(payload);
         
         alert("Tour đã được tạo thành công! Đang chờ admin duyệt.");
@@ -1644,145 +1681,91 @@ function formatStayDataForAPI(d) {
 
 
 function formatExperienceDataForAPI(d) {
+  const safe = (v) => (v === undefined || v === null ? "" : String(v));
   const num = (v) => {
     const n = Number(v);
     return isNaN(n) ? 0 : n;
   };
 
-  const safe = (v) => (v === undefined || v === null ? "" : v);
+  // Convert qualifications object to string
+  // qualifications is {intro: "...", expertise: "...", recognition: "..."}
+  // Backend expects string, so we'll convert to JSON string or concatenate
+  let qualificationsString = "";
+  if (d.qualifications && typeof d.qualifications === 'object') {
+    // Option 1: JSON string
+    qualificationsString = JSON.stringify(d.qualifications);
+    // Option 2: Or concatenate (uncomment if preferred):
+    // qualificationsString = [
+    //   d.qualifications.intro || "",
+    //   d.qualifications.expertise || "",
+    //   d.qualifications.recognition || ""
+    // ].filter(s => s).join("\n\n");
+  } else if (d.qualifications) {
+    qualificationsString = String(d.qualifications);
+  }
 
-  // =============================
-  // 📸 PHOTOS (merge HEAD + master)
-  // =============================
-  const photos = (d.media.photos || [])
+  // Build location string from location object
+  const locationString = d.location?.addressLine || 
+    d.location?.address || 
+    (d.location && typeof d.location === 'string' ? d.location : "") || 
+    "";
+
+  // Process photos - only use serverUrl (not base64 preview)
+  const photos = (d.media?.photos || [])
     .map((p, i) => {
-      const url = p.serverUrl || p.url || "";
-
-      if (!url || url.trim().length === 0 || url.startsWith("data:image")) {
+      const url = p.serverUrl || p.url || p.Url || "";
+      // Skip photos without valid URL or base64 URLs
+      if (!url || url.trim().length === 0 || url.startsWith('data:image')) {
+        console.warn(`⚠️ Tour photo ${i} skipped: no valid URL`);
         return null;
       }
-
       return {
-        url: url.trim(),
-        caption: safe(p.caption),
-        sortIndex: p.sortIndex ?? i + 1,
+        Url: url.trim(), // PascalCase for DTO
+        Caption: safe(p.caption || ""),
+        SortIndex: p.sortIndex || i + 1,
       };
     })
-    .filter((p) => p !== null);
+    .filter(p => p !== null);
 
-  const coverPhoto =
-    d.media.cover ||
-    photos.find((p) => p.isCover)?.url ||
-    photos[0]?.url ||
-    null;
+  // Get cover photo URL (string, not object)
+  const coverPhotoUrl = d.media?.cover?.serverUrl || 
+    d.media?.cover?.url || 
+    d.media?.cover || 
+    (photos.length > 0 ? photos[0].Url : null);
 
-  // =============================
-  // 📌 LOCATION
-  // =============================
-  const location = {
-    addressLine: safe(d.location.addressLine),
-    city: safe(d.location.city),
-    country: safe(d.location.country),
-    lat: d.location.lat,
-    lng: d.location.lng,
-    cityID: d.cityID || null,
-    countryID: d.countryID || null,
-  };
+  // Process time slots - ensure they're strings
+  const timeSlots = Array.isArray(d.booking?.timeSlots) 
+    ? d.booking.timeSlots.map(ts => String(ts || ""))
+    : [];
 
-  // =============================
-  // 📝 DETAILS
-  // =============================
-  const details = (d.experienceDetails || []).map((item, index) => ({
-    id: item.id,
-    title: safe(item.title),
-    content: safe(item.content),
-    sortIndex: index + 1,
-    photo: item.photo
-      ? {
-          url: safe(item.photo.serverUrl || ""),
-          caption: safe(item.photo.caption || ""),
-        }
-      : null,
-  }));
+  console.log("📸 Tour photos in payload:", photos.length);
+  console.log("📝 Qualifications:", qualificationsString.substring(0, 100) + "...");
 
-  // =============================
-  // 🕒 SLOTS
-  // =============================
-  const timeSlots = (d.booking.timeSlots || []).map((slot) => ({
-    slotID: slot.id || null,
-    startTime: slot.startTime,
-    endTime: slot.endTime || null,
-    days: Array.isArray(slot.days) ? slot.days : [],
-    capacity: num(slot.capacity || d.capacity.maxGuests),
-  }));
-
-  // =============================
-  // 💵 PRICING
-  // =============================
-  const pricing = {
-    basePrice: num(d.pricing.basePrice),
-    currency: safe(d.pricing.currency),
-    priceUnit: d.pricing.priceUnit === "perGroup" ? "perGroup" : "perPerson",
-
-    discounts: {
-      earlyBird: !!d.discounts.earlyBird,
-      custom: (d.discounts.custom || []).map((x) => ({
-        type: safe(x.type),
-        amount: num(x.amount),
-        percent: num(x.percent),
-        from: x.from || null,
-        to: x.to || null,
-      })),
-    },
-  };
-
-  // =============================
-  // 🎯 FINAL PAYLOAD — CLEAN VERSION
-  // =============================
   return {
-    tourID: d.tourID || null,
-    userID: d.userID || d.hostID || null,
-
-    tourName: safe(d.tourName),
-    summary: safe(d.summary),
-    description: safe(d.description),
-    mainCategory: safe(d.mainCategory),
-
-    qualifications: {
-      intro: safe(d.qualifications.intro),
-      expertise: safe(d.qualifications.expertise),
-      recognition: safe(d.qualifications.recognition),
-    },
-
-    location,
-    lat: location.lat,
-    lng: location.lng,
-
-    maxGuests: num(d.capacity.maxGuests),
-    durationHours: num(d.durationHours),
-    durationDays: num(d.durationDays),
-
-    timeSlots,
-    photos,
-    coverPhoto,
-
-    experienceDetails: details,
-
-    startDate: safe(d.startDate),
-    endDate: safe(d.endDate),
-    isActive: !!d.isActive,
-
-    calendar: (d.calendar || []).map((c) => ({
-      date: c.date,
-      slotID: c.slotID || null,
-      status: c.status,
-      bookingID: c.bookingID || null,
-    })),
-
-    approval: d.approval || { status: "pending" },
-
-    createdAt: d.createdAt || null,
-    updatedAt: d.updatedAt || null,
+    // Match CreateTourDto - PascalCase field names
+    UserID: d.userID || d.UserID || null,
+    TourName: safe(d.tourName || ""),
+    Description: safe(d.description || ""),
+    Summary: safe(d.summary || ""),
+    Location: locationString,
+    CityID: d.cityID || d.CityID || null,
+    CountryID: d.countryID || d.CountryID || null,
+    DurationDays: num(d.durationDays || 1),
+    DurationHours: d.durationHours ? num(d.durationHours) : null,
+    MaxGuests: num(d.capacity?.maxGuests || 10),
+    Price: num(d.pricing?.basePrice || 0),
+    Currency: safe(d.pricing?.currency || "USD"),
+    StartDate: d.startDate ? new Date(d.startDate).toISOString() : new Date().toISOString(),
+    EndDate: d.endDate ? new Date(d.endDate).toISOString() : null,
+    Active: false, // Always false for new tours (pending approval)
+    CancellationID: d.cancellationID || null,
+    lat: d.location?.lat ? String(d.location.lat) : null,
+    lng: d.location?.lng ? String(d.location.lng) : null,
+    MainCategory: safe(d.mainCategory || ""),
+    Qualifications: qualificationsString, // String, not object
+    Photos: photos, // Array with PascalCase fields
+    CoverPhoto: coverPhotoUrl, // String URL
+    TimeSlots: timeSlots, // List<string>
   };
 }
 
