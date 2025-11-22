@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System;
+using System.Linq;
 using UITour.Models;
 using UITour.Models.DTO;
 using UITour.ServicesL.Interfaces;
@@ -20,8 +23,10 @@ namespace UITour.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var properties = await _propertyService.GetAllAsync();
-            return Ok(properties);
+            var allProperties = await _propertyService.GetAllAsync();
+            // Only return active properties for public access
+            var activeProperties = allProperties.Where(p => p.Active == true).ToList();
+            return Ok(activeProperties);
         }
 
         // GET: api/properties/5
@@ -82,13 +87,14 @@ namespace UITour.API.Controllers
             return Ok(updated);
         }
 
-        // DELETE: api/properties/5
+        // DELETE: api/properties/5 (Admin only)
         [HttpDelete("{id:int}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> Delete(int id)
         {
             var success = await _propertyService.DeleteAsync(id);
-            if (!success) return NotFound();
-            return NoContent();
+            if (!success) return NotFound(new { error = $"Property with ID {id} not found" });
+            return Ok(new { message = "Property deleted successfully", propertyId = id });
         }
 
         // GET: api/properties/host/3
@@ -96,6 +102,14 @@ namespace UITour.API.Controllers
         public async Task<IActionResult> GetByHost(int hostId)
         {
             var result = await _propertyService.GetByHostIdAsync(hostId);
+            return Ok(result);
+        }
+
+        // GET: api/properties/user/3
+        [HttpGet("user/{userId:int}")]
+        public async Task<IActionResult> GetByUserId(int userId)
+        {
+            var result = await _propertyService.GetByUserIdAsync(userId);
             return Ok(result);
         }
 
@@ -164,6 +178,70 @@ namespace UITour.API.Controllers
             if (photo == null)
                 return NotFound($"No Photo found for Property ID {id}");
             return Ok(photo);
+        }
+
+        // PUT: api/properties/5/approve (Admin only)
+        [HttpPut("{id:int}/approve")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> ApproveProperty(int id)
+        {
+            try
+            {
+                var property = await _propertyService.GetByIdAsync(id);
+                if (property == null)
+                    return NotFound($"Property with ID {id} not found");
+
+                property.Active = true;
+                property.UpdatedAt = DateTime.Now;
+                await _propertyService.UpdateAsync(property);
+
+                return Ok(new { message = "Property approved successfully", propertyId = id });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        // PUT: api/properties/5/reject (Admin only)
+        [HttpPut("{id:int}/reject")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> RejectProperty(int id, [FromBody] RejectRequestDto request)
+        {
+            try
+            {
+                var property = await _propertyService.GetByIdAsync(id);
+                if (property == null)
+                    return NotFound($"Property with ID {id} not found");
+
+                property.Active = false;
+                property.UpdatedAt = DateTime.Now;
+                await _propertyService.UpdateAsync(property);
+
+                return Ok(new { message = "Property rejected", propertyId = id, reason = request?.Reason });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        // GET: api/properties/pending (Admin only)
+        [HttpGet("pending")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> GetPendingProperties()
+        {
+            try
+            {
+                var allProperties = await _propertyService.GetAllAsync();
+                // Filter: Active == false or Active == null (not explicitly set to true)
+                var pendingProperties = allProperties.Where(p => p.Active == false || p.Active == null).ToList();
+                return Ok(pendingProperties);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
     }
 }

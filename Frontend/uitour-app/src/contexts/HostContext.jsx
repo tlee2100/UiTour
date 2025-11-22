@@ -444,23 +444,116 @@ export function HostProvider({ children }) {
   
     */
 
-  //DEV MODE: -------------------------File tạm để test---------------------------------------
   async function sendHostData() {
     const data = getFinalData();
+    
+    try {
+      // Import authAPI dynamically
+      const authAPI = (await import("../services/authAPI")).default;
+      
+      // Get user from localStorage
+      const userStr = localStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userID = user?.UserID || user?.userID || user?.id || null;
 
-    // DEV MODE — không gửi API, không cần login
-    console.warn("⚠️ DEV MODE: sendHostData() tạm thời disabled");
-    console.log("📦 Payload sẽ gửi khi bật API:", {
-      type,
-      formatted:
-        type === "stay"
-          ? formatStayDataForAPI(data)
-          : formatExperienceDataForAPI(data),
-    });
+      if (!userID) {
+        alert("Vui lòng đăng nhập để tạo listing!");
+        return false;
+      }
 
-    // báo thành công giả để UI flow không bị chặn
-    alert("DEV MODE: Dữ liệu CHƯA được gửi đến backend.");
-    return true;
+      if (type === "stay") {
+        // Upload photos first
+        const photos = data.photos || [];
+        const photosWithFiles = photos.filter(p => p.file && p.file instanceof File);
+        
+        console.log("Photos to upload:", photosWithFiles.length, "out of", photos.length);
+        
+        if (photosWithFiles.length > 0) {
+          try {
+            console.log("Starting upload...");
+            const uploadedUrls = await authAPI.uploadImages(photosWithFiles.map(p => p.file));
+            console.log("Uploaded URLs:", uploadedUrls);
+            
+            if (!uploadedUrls || uploadedUrls.length === 0) {
+              throw new Error("Không có ảnh nào được upload thành công");
+            }
+            
+            if (uploadedUrls.length !== photosWithFiles.length) {
+              console.warn(`Warning: Uploaded ${uploadedUrls.length} files but expected ${photosWithFiles.length}`);
+            }
+            
+            // Update photos with server URLs
+            photos.forEach((photo) => {
+              if (photo.file) {
+                const uploadedIndex = photosWithFiles.findIndex(p => p === photo);
+                if (uploadedIndex >= 0 && uploadedIndex < uploadedUrls.length) {
+                  const serverUrl = uploadedUrls[uploadedIndex];
+                  // Set cả serverUrl và url để đảm bảo formatStayDataForAPI có thể dùng
+                  photo.serverUrl = serverUrl;
+                  photo.url = serverUrl; // Backend expect field 'url'
+                  console.log(`Updated photo ${uploadedIndex} with URL: ${serverUrl}`);
+                }
+              }
+            });
+          } catch (uploadError) {
+            console.error("Upload error details:", uploadError);
+            throw new Error("Lỗi upload ảnh: " + (uploadError.message || "Unknown error"));
+          }
+        } else {
+          console.warn("No files to upload - photos may have been loaded from localStorage without file objects");
+          // If photos have preview but no file, they might be from localStorage
+          // In this case, we'll skip upload and use preview URLs (not ideal but works)
+        }
+
+        // Format and send property data
+        const payload = formatStayDataForAPI({ ...data, userID });
+        const result = await authAPI.createProperty(payload);
+        
+        alert("Property đã được tạo thành công! Đang chờ admin duyệt.");
+        return true;
+      } else {
+        // Experience/Tour flow
+        const photos = data.media?.photos || [];
+        const photosWithFiles = photos.filter(p => p.file && p.file instanceof File);
+        
+        if (photosWithFiles.length > 0) {
+          try {
+            const uploadedUrls = await authAPI.uploadImages(photosWithFiles.map(p => p.file));
+            
+            if (!uploadedUrls || uploadedUrls.length === 0) {
+              throw new Error("Không có ảnh nào được upload thành công");
+            }
+            
+            photos.forEach((photo) => {
+              if (photo.file) {
+                const uploadedIndex = photosWithFiles.findIndex(p => p === photo);
+                if (uploadedIndex >= 0 && uploadedIndex < uploadedUrls.length) {
+                  const serverUrl = uploadedUrls[uploadedIndex];
+                  // Set cả serverUrl và url để đảm bảo formatExperienceDataForAPI có thể dùng
+                  photo.serverUrl = serverUrl;
+                  photo.url = serverUrl; // Backend expect field 'url'
+                  console.log(`Updated tour photo ${uploadedIndex} with URL: ${serverUrl}`);
+                }
+              }
+            });
+          } catch (uploadError) {
+            console.error("Upload error:", uploadError);
+            throw new Error("Lỗi upload ảnh: " + (uploadError.message || "Unknown error"));
+          }
+        }
+
+        // Backend sẽ tự động tạo Host từ UserID
+        const payload = formatExperienceDataForAPI({ ...data, userID: userID });
+        const result = await authAPI.createTour(payload);
+        
+        alert("Tour đã được tạo thành công! Đang chờ admin duyệt.");
+        return true;
+      }
+    } catch (err) {
+      console.error("[SEND HOST DATA ERROR]", err);
+      alert("Gửi dữ liệu thất bại: " + (err.message || "Có lỗi xảy ra"));
+      return false;
+    }
   }
 
 
@@ -644,20 +737,25 @@ function formatStayDataForAPI(stayData) {
   };
 
   // Convert photos safely (sync – không cần async)
+  // ⚠️ CHỈ dùng serverUrl, KHÔNG dùng preview (preview là base64 chỉ để preview tạm thời)
   const photos = (stayData.photos || [])
     .map((p, index) => {
-      const url = truncate(
-        p.preview || p.serverUrl || `placeholder_photo_${index + 1}.jpg`,
-        500
-      );
+      // Chỉ dùng serverUrl - đây là URL từ server sau khi upload
+      // Nếu không có serverUrl, bỏ qua photo này (không lưu base64 vào database)
+      const url = p.serverUrl || p.url; // p.url có thể là URL từ database nếu đã có
+      
+      // Nếu vẫn không có URL hợp lệ, bỏ qua photo này
+      if (!url || url.trim().length === 0 || url.startsWith('data:image')) {
+        return null;
+      }
 
       return {
-        url,
+        url: url.trim(), // Không truncate URL ảnh - giữ nguyên để đảm bảo hợp lệ
         caption: truncate(p.caption || "", 300),
         sortIndex: p.sortIndex || index + 1,
       };
     })
-    .filter((p) => p.url && p.url.trim().length > 0);
+    .filter((p) => p !== null && p.url && p.url.trim().length > 0 && !p.url.startsWith('data:image'));
 
   // ========== EXTRACT + VALIDATE MAIN FIELDS ==========
   const listingTitle = truncate(stayData.listingTitle || "", 200);
@@ -727,7 +825,7 @@ function formatStayDataForAPI(stayData) {
 function formatExperienceDataForAPI(d) {
   return {
     tourID: d.tourID || null,
-    hostID: d.hostID,
+    userID: d.userID || d.hostID, // Gửi userID thay vì hostID - backend sẽ tự tạo Host
 
     tourName: d.tourName,
     description: d.description,
@@ -756,12 +854,21 @@ function formatExperienceDataForAPI(d) {
     // Time slots (optional—tùy BE có hỗ trợ hay không)
     timeSlots: d.booking.timeSlots,
 
-    // Photos
-    photos: d.media.photos.map((p, i) => ({
-      url: p.serverUrl || "",
-      caption: p.caption || "",
-      sortIndex: i + 1,
-    })),
+    // Photos - chỉ lấy photos có serverUrl hợp lệ (không phải base64)
+    photos: (d.media.photos || [])
+      .map((p, i) => {
+        const url = p.serverUrl || p.url || "";
+        // Bỏ qua photos không có URL hoặc có base64 URL
+        if (!url || url.trim().length === 0 || url.startsWith('data:image')) {
+          return null;
+        }
+        return {
+          url: url.trim(),
+          caption: p.caption || "",
+          sortIndex: i + 1,
+        };
+      })
+      .filter(p => p !== null),
     coverPhoto: d.media.cover,
 
     startDate: d.startDate,

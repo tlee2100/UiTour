@@ -7,6 +7,7 @@ const TOUR_BASE_URL = 'http://localhost:5069/api/tour';
 const HOST_BASE_URL = 'http://localhost:5069/api/host';
 const WISHLIST_BASE_URL = 'http://localhost:5069/api/wishlist';
 const BOOKING_BASE_URL = 'http://localhost:5069/api/booking';
+const UPLOAD_BASE_URL = 'http://localhost:5069/api/upload';
 
 class AuthAPI {
    // Lấy thông tin user theo ID
@@ -727,7 +728,292 @@ async updateUserProfile(userId, form) {
     return await res.json();
   }
 
+  // ============ UPLOAD IMAGES ============
+  async uploadImage(file) {
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', file);
 
+      const response = await fetch(`${UPLOAD_BASE_URL}/image`, {
+        method: 'POST',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to upload image');
+      }
+
+      const data = await response.json();
+      return data.url; // Returns the URL path
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async uploadImages(files) {
+    try {
+      if (!files || files.length === 0) {
+        throw new Error('No files to upload');
+      }
+
+      // Filter out invalid files
+      const validFiles = files.filter(file => file instanceof File);
+      if (validFiles.length === 0) {
+        throw new Error('No valid files to upload');
+      }
+
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      validFiles.forEach(file => {
+        formData.append('files', file);
+      });
+
+      const response = await fetch(`${UPLOAD_BASE_URL}/images`, {
+        method: 'POST',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          // Don't set Content-Type header - browser will set it automatically with boundary for FormData
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        let errText = '';
+        try {
+          errText = await response.text();
+          // Try to parse as JSON for better error message
+          try {
+            const errJson = JSON.parse(errText);
+            errText = errJson.error || errJson.message || errText;
+          } catch {
+            // Not JSON, use as is
+          }
+        } catch {
+          errText = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errText || 'Failed to upload images');
+      }
+
+      const data = await response.json();
+      if (!data.files || data.files.length === 0) {
+        throw new Error('No files were uploaded successfully');
+      }
+      return data.files.map(f => f.url); // Returns array of URLs
+    } catch (err) {
+      console.error('Upload images error:', err);
+      throw err;
+    }
+  }
+
+  // Create tour
+  async createTour(tourData) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(TOUR_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(tourData),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to create tour');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Get properties by host
+  async getPropertiesByHost(hostId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${PROPERTY_BASE_URL}/host/${hostId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch properties');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Get properties by user ID (recommended - automatically finds host from user)
+  async getPropertiesByUser(userId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${PROPERTY_BASE_URL}/user/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch properties');
+      }
+
+      return await response.json();
+    } catch (err) {
+      console.error('getPropertiesByUser error:', err);
+      throw err;
+    }
+  }
+
+  // Get tours by host
+  async getToursByHost(hostId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${TOUR_BASE_URL}/host/${hostId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch tours');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Get tours by user ID (recommended - automatically finds host from user)
+  async getToursByUser(userId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${TOUR_BASE_URL}/user/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch tours');
+      }
+
+      return await response.json();
+    } catch (err) {
+      console.error('getToursByUser error:', err);
+      throw err;
+    }
+  }
+
+  // Delete property
+  async deleteProperty(propertyId) {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found. Please login again.');
+      }
+
+      const response = await fetch(`${PROPERTY_BASE_URL}/${propertyId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        if (response.status === 401) {
+          throw new Error('Unauthorized: Token may be invalid or expired. Please login again.');
+        }
+        if (response.status === 404) {
+          throw new Error('Property not found.');
+        }
+        throw new Error(errText || 'Failed to delete property');
+      }
+
+      return true; // Success (204 No Content)
+    } catch (err) {
+      console.error('deleteProperty error:', err);
+      throw err;
+    }
+  }
+
+  // Delete tour
+  async deleteTour(tourId) {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found. Please login again.');
+      }
+
+      const response = await fetch(`${TOUR_BASE_URL}/${tourId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        if (response.status === 401) {
+          throw new Error('Unauthorized: Token may be invalid or expired. Please login again.');
+        }
+        if (response.status === 404) {
+          throw new Error('Tour not found.');
+        }
+        throw new Error(errText || 'Failed to delete tour');
+      }
+
+      return true; // Success (204 No Content)
+    } catch (err) {
+      console.error('deleteTour error:', err);
+      throw err;
+    }
+  }
+
+  // Get bookings by host ID
+  async getBookingsByHost(hostId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${BOOKING_BASE_URL}/host/${hostId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch bookings');
+      }
+
+      return await response.json();
+    } catch (err) {
+      console.error('getBookingsByHost error:', err);
+      throw err;
+    }
+  }
 
 }
 

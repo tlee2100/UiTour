@@ -4,6 +4,7 @@ import "./HostMessages.css";
 import { Icon } from "@iconify/react";
 import logo from "../../assets/UiTour.png";
 import { useApp } from "../../contexts/AppContext";
+import authAPI from "../../services/authAPI";
 
 // Mock conversation data
 const mockConversations = [
@@ -104,11 +105,13 @@ const mockConversations = [
 
 export default function HostMessages() {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [conversations, setConversations] = useState(mockConversations);
     const [selectedConversation, setSelectedConversation] = useState(mockConversations[0]);
     const [searchQuery, setSearchQuery] = useState("");
     const [messageInput, setMessageInput] = useState("");
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { dispatch } = useApp();
+    const { user, dispatch } = useApp();
 
     useEffect(() => {
         const handleEsc = (event) => {
@@ -132,7 +135,29 @@ export default function HostMessages() {
         navigate('/');
     };
 
-    const filteredConversations = mockConversations.filter((conv) =>
+    useEffect(() => {
+        // TODO: Load messages from API when endpoint is available
+        // For now, using mock data
+        // When API is ready, uncomment and implement:
+        /*
+        const loadMessages = async () => {
+            if (!user) return;
+            try {
+                setLoading(true);
+                const userID = user.UserID || user.userID || user.id;
+                // const messages = await authAPI.getMessagesByHost(userID);
+                // setConversations(messages);
+            } catch (err) {
+                console.error("Error loading messages:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadMessages();
+        */
+    }, [user]);
+
+    const filteredConversations = conversations.filter((conv) =>
         conv.guestName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         conv.propertyTitle.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -344,7 +369,16 @@ export default function HostMessages() {
                         </div>
                     </div>
                     <div className="conversations-list">
-                        {filteredConversations.map((conversation) => (
+                        {loading ? (
+                            <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+                                Đang tải messages...
+                            </div>
+                        ) : filteredConversations.length === 0 ? (
+                            <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+                                <p>Bạn chưa có tin nhắn nào.</p>
+                            </div>
+                        ) : (
+                            filteredConversations.map((conversation) => (
                             <div
                                 key={conversation.id}
                                 className={`conversation-item ${
@@ -378,7 +412,8 @@ export default function HostMessages() {
                                     <p className="conversation-property">{conversation.propertyTitle}</p>
                                 </div>
                             </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
 
