@@ -1,8 +1,10 @@
 import React from "react";
+import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import HostHeader from "../components/HostHeader";
 import HostFooter from "../components/HostFooter";
 import { HostProvider, useHost } from "../contexts/HostContext";
+import ErrorModal from "../components/ErrorModal";
 import "./HostLayout.css";
 
 // Tạo bảng flow định nghĩa "trang trước" và "trang sau"
@@ -102,7 +104,11 @@ const ROUTE_FLOW = {
   },
 };
 
+
 function HostLayoutContent() {
+
+  const [errorMessage, setErrorMessage] = useState("");
+
   const { pathname } = useLocation();
   const { prev, next, isLast } = ROUTE_FLOW[pathname] || {};
   const host = useHost();
@@ -110,9 +116,18 @@ function HostLayoutContent() {
   const stepKey = pathname.split("/").pop();
   const disabledNext = next && !host.canMoveToStep(stepKey);
   async function handlePublish() {
+    const result = host.validateAll();
+
+    if (!result.ok) {
+      // ❌ Hiện modal thay vì alert
+      setErrorMessage(result.message);
+      return;
+    }
+
     const ok = await host.sendHostData();
     if (ok) navigate("/host/demo-preview");
   }
+
   return (
     <div className="host-layout">
       <HostHeader />
@@ -125,6 +140,10 @@ function HostLayoutContent() {
         isLast={isLast}
         disabledNext={disabledNext}
         onPublish={isLast ? handlePublish : undefined}
+      />
+      <ErrorModal
+        message={errorMessage}
+        onClose={() => setErrorMessage("")}
       />
     </div>
   );

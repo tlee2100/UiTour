@@ -197,6 +197,10 @@ export default function HostStayCreatePhotos() {
     <div className="hs-page">
       <main className="hs-photo-main" style={{ textAlign: "left", width: "100%" }}>
         <h1 className="hs-photo-title">Add photos for each part of your property</h1>
+        <div className="hs-photo-warning">
+          ⚠️ <strong>Warning:</strong> Photos are stored temporarily.
+          Reloading or leaving the hosting setup before publishing will cause them to be lost.
+        </div>
 
         {/* COVER PHOTO */}
         <div style={{ marginBottom: "40px", width: "100%", maxWidth: "900px" }}>

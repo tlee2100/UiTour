@@ -244,6 +244,7 @@
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 14px;
+  font-family: "Inter", sans-serif;
   resize: vertical;
 }
 
@@ -391,7 +392,7 @@
   border: none;
   outline: none;
   text-align: center;
-  font-size: 38px;
+  font-size: 42px;
   font-weight: 800;
   line-height: 1.25;
   margin-bottom: 32px;
@@ -403,20 +404,25 @@
   border: none;
   outline: none;
   text-align: center;
-  font-size: 13px;
-  color: #444;
+  font-size: 18px;
+  /* tăng từ 13 → 16 */
+  line-height: 1.5;
+  color: #000;
   background: transparent;
-  height: 160px;
-  /* lock height larger */
+  height: 180px;
+  /* tăng nhẹ */
   resize: none;
-  /* prevent manual resize */
+  font-family: 'Inter', sans-serif !important;
 }
 
 .he-describe-label {
   text-align: center;
-  color: #999;
-  font-size: 12px;
-  margin: 8px 0 6px;
+  color: #666;
+  font-size: 14px;
+  /* tăng từ 12 → 14 */
+  font-weight: 500;
+  font-family: 'Inter', sans-serif !important;
+  margin: 8px 0 10px;
 }
 
 /* Itinerary */
@@ -462,12 +468,18 @@
   font-weight: 600;
   font-size: 15px;
   margin-bottom: 4px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .he-activity-content {
   font-size: 12px;
   color: #666;
   line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .he-add-activity {
@@ -1250,7 +1262,7 @@
 /* Hover effect for itinerary item (same as qualification) */
 .he-activity:hover {
   border-color: #d0d0d0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   transform: translateY(-1px);
 }
 
@@ -1351,10 +1363,22 @@
   object-fit: cover;
 }
 
+.he-preview-itinerary-text {
+  min-width: 0;
+  /* CHÌA KHÓA để text co lại thay vì tràn */
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+
 .he-preview-itinerary-text h3 {
   margin: 0 0 6px 0;
   font-size: 17px;
   font-weight: 600;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .he-preview-itinerary-text p {
@@ -1362,6 +1386,9 @@
   font-size: 15px;
   line-height: 1.45;
   color: #444;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* PHOTOS */
@@ -1383,15 +1410,198 @@
   .he-preview-title {
     font-size: 26px;
   }
+
   .he-preview-description {
     font-size: 15px;
     padding: 0 8px;
   }
+
   .he-preview-itinerary-item {
     flex-direction: column;
   }
+
   .he-preview-itinerary-photo {
     width: 100%;
     height: 200px;
   }
+}
+
+.he-time-hint {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #777;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+/* Duration input — centered & wider */
+.he-duration-input {
+  width: 60%;
+  margin: 0 auto;
+  /* căn giữa */
+  display: block;
+  /* đảm bảo margin auto hoạt động */
+  text-align: left;
+  /* số nằm giữa */
+  font-size: 16px;
+  /* to cho dễ nhìn */
+  height: 40px;
+  /* cao hơn một chút */
+}
+
+/* 3 rows layout for capacity, duration & price */
+.he-price-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  /* 1 cột */
+  gap: 16px;
+}
+
+/* Title uses Inter font + multiline + responsive wrap */
+.he-title-textarea {
+  font-family: 'Inter', sans-serif !important;
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  /* không cho scroll */
+  background: transparent;
+
+  text-align: center;
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1.2;
+
+  word-wrap: break-word;
+  /* tự xuống dòng */
+  white-space: pre-wrap;
+  /* giữ khoảng trắng + xuống dòng */
+}
+
+/* Temporary auto-height fix */
+.he-title-textarea:focus {
+  outline: none;
+}
+
+.he-char-count {
+  font-size: 11px;
+  color: #888;
+  margin-top: -4px;
+  text-align: right;
+}
+
+.he-activity-body {
+  min-width: 0;
+  /* CHÌA KHÓA ngăn text tràn flex container */
+}
+
+.he-qua-char-count {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.6;
+  text-align: right;
+}
+
+/* =============================
+   BETTER MODAL EDITOR LAYOUT
+   ============================= */
+
+.he-modal-card {
+  position: relative;
+  width: 720px;
+  max-width: 95%;
+  background: #fff;
+  border-radius: 14px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.he-modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid #e9e9e9;
+}
+
+.he-modal-body {
+  padding: 22px 24px 10px;
+}
+
+.he-textarea {
+  width: 100%;
+  min-height: 180px;
+  border: 1px solid #d0d0d0;
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 15px;
+  line-height: 1.5;
+  resize: none;
+  /* KHÔNG kéo giãn */
+}
+
+.he-modal-footer {
+  padding: 14px 24px 20px;
+  border-top: 1px solid #efefef;
+}
+
+.he-list-title,
+.he-list-subtitle {
+  white-space: normal !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.he-preview-qual-item {
+  margin-bottom: 10px;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.he-preview-qual-text {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  color: #444;
+  font-size: 15px;
+}
+
+/* Universal safe text wrapper for all user-generated content */
+.he-text-safe {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.5;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* For labels + content displayed in block form */
+.he-row-safe {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.he-error {
+  margin-top: 6px;
+  font-size: 13px;
+  color: red;
+  font-style: italic;
+  line-height: 1.3;
+  opacity: 0.8;
+}
+
+.he-photo-warning {
+  background: #fff3cd;
+  color: #856404;
+  padding: 14px 18px;
+  border-left: 4px solid #ffca28;
+  border-radius: 6px;
+  font-size: 15px;
+  margin: 20px 0 32px 0;
+  max-width: 900px;
+  line-height: 1.5;
 }

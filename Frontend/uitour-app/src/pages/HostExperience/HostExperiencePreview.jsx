@@ -41,39 +41,41 @@ export default function HostExperiencePreview() {
             />
           )}
 
-          <h1 className="he-preview-title">{d.tourName}</h1>
+          <h1 className="he-preview-title he-text-safe">{d.tourName}</h1>
 
           {d.summary && (
-            <p className="he-preview-description">{d.summary}</p>
+            <p className="he-preview-description he-text-safe">{d.summary}</p>
           )}
 
           {d.location.addressLine && (
-            <div className="he-preview-location">
+            <div className="he-preview-location he-text-safe">
               📍 {d.location.addressLine}
             </div>
           )}
+
         </div>
 
-        {/* ======================================================= */}
-        {/*  BASIC INFO                                             */}
-        {/* ======================================================= */}
         <section className="he-preview-section">
           <h2 className="he-preview-section-title">Basic information</h2>
 
           <div className="he-preview-card">
-            <div>
-              <b>Category:</b> {CATEGORY_LABELS[d.mainCategory] || d.mainCategory}
+            <div className="he-row-safe">
+              <b>Category:</b>
+              <span className="he-text-safe">
+                {CATEGORY_LABELS[d.mainCategory] || d.mainCategory}
+              </span>
             </div>
 
-            <div>
-              <b>Years of experience:</b> {d.yearsOfExperience} years
+            <div className="he-row-safe">
+              <b>Years of experience:</b>
+              <span className="he-text-safe">{d.yearsOfExperience} years</span>
             </div>
 
             <div className="he-preview-divider"></div>
 
-            <div>
+            <div className="he-row-safe">
               <b>Description:</b>
-              <div>{d.description}</div>
+              <span className="he-text-safe">{d.description}</span>
             </div>
           </div>
         </section>
@@ -85,10 +87,22 @@ export default function HostExperiencePreview() {
           <h2 className="he-preview-section-title">Qualifications</h2>
 
           <div className="he-preview-card">
-            <div><b>Introduction:</b> {d.qualifications.intro}</div>
-            <div><b>Expertise:</b> {d.qualifications.expertise}</div>
-            <div><b>Recognition:</b> {d.qualifications.recognition}</div>
+            <div className="he-row-safe">
+              <b>Introduction:</b>
+              <span className="he-text-safe">{d.qualifications.intro}</span>
+            </div>
+
+            <div className="he-row-safe">
+              <b>Expertise:</b>
+              <span className="he-text-safe">{d.qualifications.expertise}</span>
+            </div>
+
+            <div className="he-row-safe">
+              <b>Recognition:</b>
+              <span className="he-text-safe">{d.qualifications.recognition}</span>
+            </div>
           </div>
+
         </section>
 
         {/* ======================================================= */}
@@ -98,10 +112,22 @@ export default function HostExperiencePreview() {
           <h2 className="he-preview-section-title">Location</h2>
 
           <div className="he-preview-card">
-            <div><b>Address:</b> {d.location.addressLine}</div>
-            <div><b>City:</b> {d.location.city}</div>
-            <div><b>Country:</b> {d.location.country}</div>
+            <div className="he-row-safe">
+              <b>Address:</b>
+              <span className="he-text-safe">{d.location.addressLine}</span>
+            </div>
+
+            <div className="he-row-safe">
+              <b>City:</b>
+              <span className="he-text-safe">{d.location.city}</span>
+            </div>
+
+            <div className="he-row-safe">
+              <b>Country:</b>
+              <span className="he-text-safe">{d.location.country}</span>
+            </div>
           </div>
+
         </section>
 
         {/* ======================================================= */}
@@ -111,10 +137,22 @@ export default function HostExperiencePreview() {
           <h2 className="he-preview-section-title">Pricing</h2>
 
           <div className="he-preview-card">
-            <div><b>Base price:</b> ${d.pricing.basePrice}</div>
-            <div><b>Currency:</b> {d.pricing.currency}</div>
-            <div><b>Price per:</b> {d.pricing.priceUnit}</div>
+            <div className="he-row-safe">
+              <b>Base price:</b>
+              <span className="he-text-safe">${d.pricing.basePrice}</span>
+            </div>
+
+            <div className="he-row-safe">
+              <b>Currency:</b>
+              <span className="he-text-safe">{d.pricing.currency}</span>
+            </div>
+
+            <div className="he-row-safe">
+              <b>Price per:</b>
+              <span className="he-text-safe">{d.pricing.priceUnit}</span>
+            </div>
           </div>
+
         </section>
 
         {/* ======================================================= */}
@@ -139,10 +177,11 @@ export default function HostExperiencePreview() {
               <div>No time slots added</div>
             ) : (
               d.booking.timeSlots.map((t, i) => (
-                <div key={i}>• {t.startTime}</div>
+                <div key={i} className="he-text-safe">• {t.startTime}</div>
               ))
             )}
           </div>
+
         </section>
 
         {/* ======================================================= */}
@@ -169,9 +208,10 @@ export default function HostExperiencePreview() {
                     )}
 
                     <div className="he-preview-itinerary-text">
-                      <h3>{item.title}</h3>
-                      <p>{item.content}</p>
+                      <h3 className="he-text-safe">{item.title}</h3>
+                      <p className="he-text-safe">{item.content}</p>
                     </div>
+
                   </div>
                 );
               })
