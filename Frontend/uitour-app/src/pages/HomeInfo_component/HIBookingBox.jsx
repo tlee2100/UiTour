@@ -1,5 +1,6 @@
 import React from "react";
 import "./HIBookingBox.css";
+import { useCurrency } from "../../contexts/CurrencyContext";
 
 function HIBookingBox({
   property,
@@ -15,10 +16,12 @@ function HIBookingBox({
   // Nếu chưa có dữ liệu, tạo dữ liệu mặc định
   if (!property) return null;
 
+  const { convertToCurrent, format } = useCurrency();
+
   // ✅ Mapping dữ liệu từ Experience format → Booking UI
-  const basePrice = property.pricing?.basePrice ?? property.price ?? 0;
-  const currency = property.pricing?.currency ?? property.currency ?? "USD";
-  const pricePerNight = basePrice;
+  // Giả sử giá trong database là USD, convert sang currency hiện tại
+  const basePriceUSD = property.pricing?.basePrice ?? property.price ?? 0;
+  const pricePerNight = convertToCurrent(basePriceUSD);
 
 
   const nights =
@@ -36,13 +39,14 @@ function HIBookingBox({
   const maxGuests = property.maxGuests ?? property.booking?.maxGuests ?? 2;
 
   // ✅ fallback phí (nếu backend thật sẽ điều chỉnh sau)
-  const cleaningFee = property.cleaningFee ?? 0;
-  const serviceFee = property.serviceFee ?? 0;
-  const taxFee = property.taxFee ?? 0;
-  const discount = property.discount ?? 0;
+  // Giả sử các phí trong database là USD, convert sang currency hiện tại
+  const cleaningFee = convertToCurrent(property.cleaningFee ?? 0);
+  const serviceFee = convertToCurrent(property.serviceFee ?? 0);
+  const taxFee = convertToCurrent(property.taxFee ?? 0);
+  const discount = convertToCurrent(property.discount ?? 0);
 
   // ✅ Tính tổng
-  const totalPrice = basePrice * nights;
+  const totalPrice = pricePerNight * nights;
   const discountedTotal =
     totalPrice - discount + cleaningFee + serviceFee + taxFee;
 
@@ -64,7 +68,7 @@ function HIBookingBox({
       {/* Header */}
       <div className="hib-header">
         <div className="hib-price">
-          <span className="hib-price-value">${pricePerNight.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="hib-price-value">{format(pricePerNight)}</span>
           <span className="hib-price-slash">/</span>
           <span className="hib-price-night">night</span>
         </div>
@@ -72,7 +76,7 @@ function HIBookingBox({
           <div className="hib-rating-star">⭐</div>
           <span className="hib-rating-score">{rating}</span>
           <div className="hib-rating-dot"></div>
-          <span className="hib-rating-reviews">{reviewsCount} đánh giá</span>
+          <span className="hib-rating-reviews">{reviewsCount} reviews</span>
         </div>
       </div>
 
@@ -104,7 +108,7 @@ function HIBookingBox({
         <div className="hib-details-row">
           <div className="hib-guests">
             <div className="hib-guests-label">
-              <span className="hib-guests-title">KHÁCH</span>
+              <span className="hib-guests-title">GUESTS</span>
               <input
                 type="number"
                 className="hib-input"
@@ -114,7 +118,7 @@ function HIBookingBox({
                 onChange={(e) => handleGuestsChange(e.target.value)}
               />
             </div>
-            <div className="hib-chevron">tối đa {maxGuests}</div>
+            <div className="hib-chevron">max {maxGuests}</div>
           </div>
         </div>
       </div>
@@ -126,11 +130,11 @@ function HIBookingBox({
         disabled={bookingLoading}
       >
         <span className="hib-book-text">
-          {bookingLoading ? "Đang xử lý..." : "Đặt ngay"}
+          {bookingLoading ? "Processing..." : "Book now"}
         </span>
       </button>
 
-      <div className="hib-note">Bạn chưa bị trừ tiền</div>
+      <div className="hib-note">You won't be charged yet</div>
 
       {bookingFeedback?.message && (
         <div className={`hib-feedback ${bookingFeedback.type}`}>
@@ -142,38 +146,38 @@ function HIBookingBox({
       <div className="hib-price-details">
         <div className="hib-row">
           <span className="hib-row-label">
-            ${pricePerNight.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} x {nights} night{nights > 1 ? 's' : ''}
+            {format(pricePerNight)} x {nights} night{nights > 1 ? 's' : ''}
           </span>
-          <span className="hib-row-value">${totalPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="hib-row-value">{format(totalPrice)}</span>
         </div>
 
         <div className="hib-row">
           <span className="hib-row-label">Discount</span>
           <span className="hib-row-value hib-discount">
-            -${discount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            -{format(discount)}
           </span>
         </div>
 
         <div className="hib-row">
           <span className="hib-row-label">Cleaning fee</span>
-          <span className="hib-row-value">${cleaningFee.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="hib-row-value">{format(cleaningFee)}</span>
         </div>
 
         <div className="hib-row">
           <span className="hib-row-label">Service fee</span>
-          <span className="hib-row-value">${serviceFee.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="hib-row-value">{format(serviceFee)}</span>
         </div>
 
         <div className="hib-row">
           <span className="hib-row-label">Taxes and fees</span>
-          <span className="hib-row-value">${taxFee.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="hib-row-value">{format(taxFee)}</span>
         </div>
 
         <div className="hib-divider"></div>
 
         <div className="hib-row hib-total">
           <span className="hib-row-label">Total</span>
-          <span className="hib-row-value">${discountedTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="hib-row-value">{format(discountedTotal)}</span>
         </div>
       </div>
     </div>

@@ -38,7 +38,7 @@
   position: absolute;
   inset: 0;
   border-radius: 1000px;
-  background: #c4c4c4;
+  background: #e5e7eb;
 }
 .ih-avatar-img {
   position: absolute;
@@ -68,14 +68,14 @@
   font-weight: 500;
   font-size: 24px;
   line-height: 32px;
-  color: #000;
+  color: var(--black);
 }
 .ih-subtitle {
   font-family: "Inter", sans-serif;
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
-  color: #6b7280;
+  color: var(--subtitle-color);
 }
 
 /* ---------- DETAILS ---------- */
@@ -103,7 +103,7 @@
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
-  color: #000;
+  color: var(--black);
 }
 
 /* ---------- DESCRIPTION ---------- */
@@ -123,10 +123,10 @@
 .ih-line-title {
   font-size: 16px;
   font-weight: 500;
-  color: #000;
+  color: var(--black);
 }
 .ih-line-desc {
   font-size: 16px;
   font-weight: 400;
-  color: #6b7280;
+  color: var(--subtitle-color);
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using UITour.Models;
 using UITour.Models.DTO;
 using UITour.ServicesL.Implementations;
@@ -182,13 +183,11 @@ namespace UITour.API.Controllers
 
         // PUT: api/user/{id}/role
         [HttpPut("{id}/role")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateUserRole(int id, [FromBody] UpdateUserRoleDto dto)
         {
             try
             {
-                // Optional: kiểm tra quyền admin ở đây nếu cần
-                // if (!User.IsInRole("Admin")) return Forbid();
-
                 var result = await _userService.UpdateUserRoleAsync(id, dto.Role);
                 return result
                     ? Ok(new { message = "User role updated successfully" })
@@ -334,6 +333,7 @@ namespace UITour.API.Controllers
 
         // GET: api/user/all (Admin only)
         [HttpGet("all")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetAllUsers()
         {
             try

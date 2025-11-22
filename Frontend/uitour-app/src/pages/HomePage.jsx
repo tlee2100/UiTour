@@ -9,6 +9,7 @@ import SearchDates from '../components/search/SearchDates';
 import SearchGuests from '../components/search/SearchGuests';
 import authAPI from '../services/authAPI';
 import { useApp } from '../contexts/AppContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [savedPropertyIds, setSavedPropertyIds] = useState(new Set());
+  const { convertToCurrent, format } = useCurrency();
 
   const deriveIdsFromWishlist = useCallback((wishlistPayload, targetType = 'property') => {
     if (!wishlistPayload) return;
@@ -70,6 +72,37 @@ export default function HomePage() {
       ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviews.length 
       : 0;
 
+    // Helper function to normalize image URL
+    const normalizeImageUrl = (url) => {
+      if (!url || url.trim().length === 0) return "/fallback.png";
+      // If already a full URL (http/https), use as is
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      // If relative path starting with /, prepend backend base URL
+      if (url.startsWith('/')) {
+        return `http://localhost:5069${url}`;
+      }
+      // Otherwise, assume it's a relative path and prepend backend base URL
+      return `http://localhost:5069/${url}`;
+    };
+
+    // Get first photo - check multiple possible field names
+    const photos = p.photos || p.Photos || [];
+    const firstPhoto = Array.isArray(photos) && photos.length > 0 
+      ? photos[0] 
+      : null;
+    
+    // Try multiple possible URL field names (camelCase, PascalCase, etc.)
+    const imageUrl = firstPhoto 
+      ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || firstPhoto.ServerUrl || "/fallback.png")
+      : "/fallback.png";
+    
+    // Debug logging for missing photos
+    if (!firstPhoto && photos.length === 0) {
+      console.warn(`Property ${p.propertyID || p.PropertyID} has no photos`);
+    }
+
     return {
       id: p.propertyID,
       title: p.listingTitle || 'Untitled',
@@ -78,7 +111,7 @@ export default function HomePage() {
       currency: p.currency ?? "USD",
       rating: avgRating,
       reviewsCount: reviews.length,
-      mainImage: Array.isArray(p.photos) && p.photos.length > 0 ? p.photos[0].url : "/fallback.png",
+      mainImage: normalizeImageUrl(imageUrl),
       isGuestFavourite: false,
       dates: null
     };
@@ -124,7 +157,7 @@ export default function HomePage() {
 
   // 🔄 Loading state
   if (loading) {
-    return <LoadingSpinner message="Đang tải danh sách chỗ ở..." />;
+    return <LoadingSpinner message="Loading accommodations..." />;
   }
 
   // ⚠️ Error state
@@ -248,7 +281,7 @@ export default function HomePage() {
                 </div>
                 <div className="property-dates">{property.dates || "Available ✅"}</div>
                 <div className="property-price">
-                  <span className="price">${(property.price ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="price">{format(convertToCurrent(property.price ?? 0))}</span>
                   <span className="price-unit"> / night</span>
                 </div>
               </div>

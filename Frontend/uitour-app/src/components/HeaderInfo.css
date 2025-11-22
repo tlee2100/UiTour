@@ -80,11 +80,11 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 176, 216, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 192, 232, 0.25);
 }
 
 .headerif_searchButton:hover {
-  background: #00a3c4;
+  background: var(--hover-uitour);
 }
 
 

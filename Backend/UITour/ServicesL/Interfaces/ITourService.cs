@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UITour.Models;
+using UITour.Models.DTO;
 
 namespace UITour.ServicesL.Interfaces
 {
@@ -10,11 +11,13 @@ namespace UITour.ServicesL.Interfaces
         Task<IEnumerable<Tour>> GetAllAsync();
         Task<Tour> GetByIdAsync(int id);
         Task<Tour> CreateAsync(Tour tour);
+        Task<Tour> CreateAsync(CreateTourDto dto);
         Task<bool> UpdateAsync(Tour tour);
         Task<bool> DeleteAsync(int id);
 
         // ======== FILTERING & RELATIONSHIP ========
         Task<IEnumerable<Tour>> GetByHostIdAsync(int hostId);
+        Task<IEnumerable<Tour>> GetByUserIdAsync(int userId);
         Task<IEnumerable<Tour>> GetByCityIdAsync(int cityId);
         Task<IEnumerable<Tour>> GetByCountryIdAsync(int countryId);
 

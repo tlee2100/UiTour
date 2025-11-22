@@ -39,7 +39,7 @@
   background: transparent; border: none; text-align: left; cursor: pointer; 
 }
 .search-field-btn:focus { outline: none; }
-.sf-value { padding: 0 16px 8px; color: #717171; font-size: 14px; }
+.sf-value { padding: 0 16px 8px; color: var(--subtitle-color); font-size: 14px; }
 
 .search-field:last-of-type {
   border-right: none;
@@ -66,11 +66,11 @@
 }
 
 .search-field input::placeholder {
-  color: #717171;
+  color: var(--subtitle-color);
 }
 
 .search-button {
-  background: #00b4d8;
+  background: var(--uitour-color);
   color: white;
   border: none;
   border-radius: 50%;
@@ -86,7 +86,7 @@
 }
 
 .search-button:hover {
-  background: #0099b8;
+  background: var(--hover-uitour);
 }
 
 .search-button svg {
@@ -335,7 +335,8 @@
 }
 
 .show-more-button:hover {
-  background: #333;
+  background: var(--black);
+  opacity: 0.9;
 }
 
 /* Inspiration Section */

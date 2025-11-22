@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import './ExperienceCard.css';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 export default function ExperienceCard({ experience }) {
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
+  const { convertToCurrent, format } = useCurrency();
 
   const handleClick = () => {
     navigate(`/experience/${experience.id}`);
@@ -16,9 +18,10 @@ export default function ExperienceCard({ experience }) {
     setIsFavorite(!isFavorite);
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN').format(price || 0);
-  };
+  // Giả sử giá trong experience là USD, convert sang currency hiện tại
+  // Nếu không có giá, dùng giá mặc định (ví dụ: $30 USD)
+  const priceUSD = experience.price || 30;
+  const displayPrice = convertToCurrent(priceUSD);
 
   return (
     <div className="experience-card-result" onClick={handleClick}>
@@ -57,7 +60,7 @@ export default function ExperienceCard({ experience }) {
         <div className="experience-price-rating-result">
           <div className="experience-price-result">
             <span className="price-label">Từ </span>
-            <span className="price-value">₫{formatPrice(experience.price || 730000)}</span>
+            <span className="price-value">{format(displayPrice)}</span>
             <span className="price-unit-result">/khách</span>
           </div>
           <div className="experience-rating-result">

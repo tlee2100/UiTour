@@ -4,23 +4,29 @@ import { AppProvider } from './contexts/AppContext';
 import { ExperienceProvider } from './contexts/ExperienceContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { CurrencyProvider } from './contexts/CurrencyContext';
+import { LanguageProvider } from './contexts/LanguageContext';
+import { LanguageCurrencyModalProvider } from './contexts/LanguageCurrencyModalContext';
 import AppRoutes from './routes/index';
 import './App.css';
 
 function App() {
   return (
     <ErrorBoundary>
-      <CurrencyProvider>
-        <AppProvider>
-          <PropertyProvider>
-            <ExperienceProvider>
-              <Router>
-                <AppRoutes /> {/* Chỉnh trang hiện trên web ở file index.jsx của folder routes */}
-              </Router>
-            </ExperienceProvider>
-          </PropertyProvider>
-        </AppProvider>
-      </CurrencyProvider>
+      <LanguageProvider>
+        <CurrencyProvider>
+          <LanguageCurrencyModalProvider>
+            <AppProvider>
+              <PropertyProvider>
+                <ExperienceProvider>
+                  <Router>
+                    <AppRoutes /> {/* Chỉnh trang hiện trên web ở file index.jsx của folder routes */}
+                  </Router>
+                </ExperienceProvider>
+              </PropertyProvider>
+            </AppProvider>
+          </LanguageCurrencyModalProvider>
+        </CurrencyProvider>
+      </LanguageProvider>
     </ErrorBoundary>
   );
 }

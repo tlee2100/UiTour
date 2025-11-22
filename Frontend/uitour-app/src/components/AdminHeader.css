@@ -22,8 +22,9 @@
 }
 
 .admin-logo-img {
-  height: 32px;
+  height: 45px;
   width: auto;
+  object-fit: contain;
 }
 
 /* Center - Navigation Tabs */
@@ -41,7 +42,7 @@
   align-items: center;
   gap: 4px;
   text-decoration: none;
-  color: #000;
+  color: var(--black);
   padding: 8px 12px;
   border-radius: 8px;
   transition: background-color 0.2s;
@@ -52,7 +53,7 @@
 }
 
 .admin-nav-item.active {
-  border-bottom: 3px solid #000;
+  border-bottom: 3px solid var(--black);
   font-weight: 600;
 }
 
@@ -71,7 +72,7 @@
 .admin-switch-btn {
   background: none;
   border: none;
-  color: #000;
+  color: var(--black);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -87,7 +88,7 @@
 .admin-globe-btn {
   background: none;
   border: none;
-  color: #000;
+  color: var(--black);
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
