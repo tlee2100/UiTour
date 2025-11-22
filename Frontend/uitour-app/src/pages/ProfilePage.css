@@ -105,15 +105,16 @@
 .profile-completion-text { color: var(--subtitle-color); margin: 0 0 16px 0; line-height: 1.5; }
 
 .profile-primary-btn {
-  background: #0099b8;
+  background: var(--uitour-color);
   color: #fff;
   border: none;
   border-radius: 10px;
   padding: 12px 16px;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
-.profile-primary-btn:hover { background: #0099b8; }
+.profile-primary-btn:hover { background: var(--hover-uitour); }
 
 .profile-subsection { grid-column: 1 / -1; padding-top: 8px; }
 .profile-subtitle { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--black); }
@@ -340,8 +341,8 @@
 
 .info-grid-edit input:focus,
 .info-grid-edit select:focus {
-  border-color: #0099b8;
-  box-shadow: 0 0 0 1px rgba(0, 153, 184, 0.2);
+  border-color: var(--uitour-color);
+  box-shadow: 0 0 0 1px rgba(0, 192, 232, 0.2);
 }
 
 @media (max-width: 768px) {

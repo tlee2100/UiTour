@@ -52,7 +52,7 @@
   height: 80%;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 8px;
-  border: 2px solid rgba(0, 180, 216, 0.3);
+  border: 2px solid rgba(0, 192, 232, 0.3);
 }
 
 .map-labels {
@@ -85,7 +85,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   cursor: pointer;
   transition: all 0.2s;
-  border: 2px solid #00b4d8;
+  border: 2px solid var(--uitour-color);
 }
 
 .price-bubble:hover {

@@ -291,7 +291,7 @@ export default function HostToday() {
       <div className="booking-list">
         {loading ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-            Đang tải bookings...
+            Loading bookings...
           </div>
         ) : error ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>
@@ -308,14 +308,14 @@ export default function HostToday() {
                 cursor: 'pointer'
               }}
             >
-              Thử lại
+              Try again
             </button>
           </div>
         ) : bookings.length === 0 ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-            <p>Bạn chưa có booking nào.</p>
+            <p>You have no bookings yet.</p>
             <p style={{ fontSize: '14px', marginTop: '8px' }}>
-              Các booking sẽ xuất hiện ở đây khi có khách đặt phòng/tour của bạn.
+              Bookings will appear here when guests book your property/tour.
             </p>
           </div>
         ) : (

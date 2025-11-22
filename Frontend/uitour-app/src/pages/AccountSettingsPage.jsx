@@ -5,18 +5,18 @@ import authAPI from '../services/authAPI';
 import { useApp } from '../contexts/AppContext';
 
 const sidebarItems = [
-  { id: 'personal', label: 'Thông tin cá nhân' },
-  { id: 'security', label: 'Đăng nhập và bảo mật' },
-  { id: 'privacy', label: 'Quyền riêng tư', disabled: true },
-  { id: 'notifications', label: 'Thông báo', disabled: true },
-  { id: 'tax', label: 'Thuế', disabled: true },
-  { id: 'payment', label: 'Thanh toán', disabled: true },
-  { id: 'locale', label: 'Ngôn ngữ & loại tiền tệ', disabled: true },
-  { id: 'business', label: 'Đi công tác', disabled: true },
+  { id: 'personal', label: 'Personal information' },
+  { id: 'security', label: 'Login & security' },
+  { id: 'privacy', label: 'Privacy', disabled: true },
+  { id: 'notifications', label: 'Notifications', disabled: true },
+  { id: 'tax', label: 'Tax', disabled: true },
+  { id: 'payment', label: 'Payments', disabled: true },
+  { id: 'locale', label: 'Language & currency', disabled: true },
+  { id: 'business', label: 'Business travel', disabled: true },
 ];
 
 const maskEmail = (email = '') => {
-  if (!email) return 'Chưa cung cấp';
+  if (!email) return 'Not provided';
   const [local, domain] = email.split('@');
   if (!domain) return email;
   const visible = local.slice(0, 1);
@@ -57,7 +57,7 @@ export default function AccountSettingsPage() {
         payload: { ...user, ...normalized },
       });
     } catch (error) {
-      setBanner({ type: 'error', message: error.message || 'Không thể tải thông tin người dùng.' });
+      setBanner({ type: 'error', message: error.message || 'Unable to load user information.' });
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export default function AccountSettingsPage() {
     if (type === 'profile') {
       setModal({
         type,
-        title: 'Chỉnh sửa thông tin cá nhân',
+        title: 'Edit personal information',
         step: 'form',
         submitting: false,
         sendingOtp: false,
@@ -94,7 +94,7 @@ export default function AccountSettingsPage() {
     if (type === 'email') {
       setModal({
         type,
-        title: 'Cập nhật địa chỉ email',
+        title: 'Update email address',
         step: 'form',
         submitting: false,
         sendingOtp: false,
@@ -109,7 +109,7 @@ export default function AccountSettingsPage() {
     if (type === 'password') {
       setModal({
         type,
-        title: 'Đổi mật khẩu',
+        title: 'Change password',
         step: 'form',
         submitting: false,
         sendingOtp: false,
@@ -139,7 +139,7 @@ export default function AccountSettingsPage() {
         otpEmail: userDetails.Email,
       }));
     } catch (error) {
-      setModal((prev) => ({ ...prev, sendingOtp: false, error: error.message || 'Không thể gửi mã OTP.' }));
+      setModal((prev) => ({ ...prev, sendingOtp: false, error: error.message || 'Unable to send OTP code.' }));
     }
   };
 
@@ -149,11 +149,11 @@ export default function AccountSettingsPage() {
 
     if (step === 'form') {
       if (!form.fullName?.trim()) {
-        setModal((prev) => ({ ...prev, error: 'Tên không được để trống.' }));
+        setModal((prev) => ({ ...prev, error: 'Name cannot be empty.' }));
         return;
       }
       if (form.phone && !/^[0-9+ ]{6,15}$/.test(form.phone)) {
-        setModal((prev) => ({ ...prev, error: 'Số điện thoại không hợp lệ.' }));
+        setModal((prev) => ({ ...prev, error: 'Invalid phone number.' }));
         return;
       }
       await handleSendOtp();
@@ -162,7 +162,7 @@ export default function AccountSettingsPage() {
 
     if (step === 'otp') {
       if (!modal.otp?.trim()) {
-        setModal((prev) => ({ ...prev, error: 'Vui lòng nhập mã OTP.' }));
+        setModal((prev) => ({ ...prev, error: 'Please enter OTP code.' }));
         return;
       }
       setModal((prev) => ({ ...prev, submitting: true, error: '' }));
@@ -188,16 +188,16 @@ export default function AccountSettingsPage() {
         }
 
         if (promises.length === 0) {
-          setModal((prev) => ({ ...prev, submitting: false, error: 'Không có thông tin nào thay đổi.' }));
+          setModal((prev) => ({ ...prev, submitting: false, error: 'No information has changed.' }));
           return;
         }
 
         await Promise.all(promises);
         await refreshUser();
-        setBanner({ type: 'success', message: 'Đã cập nhật thông tin cá nhân.' });
+        setBanner({ type: 'success', message: 'Personal information updated successfully.' });
         setModal((prev) => ({ ...prev, step: 'success', submitting: false }));
       } catch (error) {
-        setModal((prev) => ({ ...prev, submitting: false, error: error.message || 'Không thể cập nhật thông tin.' }));
+        setModal((prev) => ({ ...prev, submitting: false, error: error.message || 'Unable to update information.' }));
       }
     }
   };
@@ -210,11 +210,11 @@ export default function AccountSettingsPage() {
       const email = form.email?.trim();
       const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!regex.test(email || '')) {
-        setModal((prev) => ({ ...prev, error: 'Email không hợp lệ.' }));
+        setModal((prev) => ({ ...prev, error: 'Invalid email address.' }));
         return;
       }
       if (email === userDetails.Email) {
-        setModal((prev) => ({ ...prev, error: 'Email mới phải khác email hiện tại.' }));
+        setModal((prev) => ({ ...prev, error: 'New email must be different from current email.' }));
         return;
       }
       await handleSendOtp();
@@ -223,7 +223,7 @@ export default function AccountSettingsPage() {
 
     if (step === 'otp') {
       if (!modal.otp?.trim()) {
-        setModal((prev) => ({ ...prev, error: 'Vui lòng nhập mã OTP.' }));
+        setModal((prev) => ({ ...prev, error: 'Please enter OTP code.' }));
         return;
       }
       setModal((prev) => ({ ...prev, submitting: true, error: '' }));
@@ -231,10 +231,10 @@ export default function AccountSettingsPage() {
         await authAPI.verifyProfileOtp(userDetails.UserID, modal.otp);
         await authAPI.updateUserEmail(userDetails.UserID, modal.form.email.trim());
         await refreshUser();
-        setBanner({ type: 'success', message: 'Email đã được cập nhật.' });
+        setBanner({ type: 'success', message: 'Email has been updated.' });
         setModal((prev) => ({ ...prev, step: 'success', submitting: false }));
       } catch (error) {
-        setModal((prev) => ({ ...prev, submitting: false, error: error.message || 'Không thể cập nhật email.' }));
+        setModal((prev) => ({ ...prev, submitting: false, error: error.message || 'Unable to update email.' }));
       }
     }
   };
@@ -245,15 +245,15 @@ export default function AccountSettingsPage() {
 
     if (step === 'form') {
       if (!form.currentPassword || !form.newPassword) {
-        setModal((prev) => ({ ...prev, error: 'Vui lòng nhập đầy đủ thông tin.' }));
+        setModal((prev) => ({ ...prev, error: 'Please fill in all required fields.' }));
         return;
       }
       if (form.newPassword.length < 6) {
-        setModal((prev) => ({ ...prev, error: 'Mật khẩu mới phải từ 6 ký tự.' }));
+        setModal((prev) => ({ ...prev, error: 'New password must be at least 6 characters.' }));
         return;
       }
       if (form.newPassword !== form.confirmPassword) {
-        setModal((prev) => ({ ...prev, error: 'Xác nhận mật khẩu không khớp.' }));
+        setModal((prev) => ({ ...prev, error: 'Password confirmation does not match.' }));
         return;
       }
       await handleSendOtp();
@@ -262,7 +262,7 @@ export default function AccountSettingsPage() {
 
     if (step === 'otp') {
       if (!modal.otp?.trim()) {
-        setModal((prev) => ({ ...prev, error: 'Vui lòng nhập mã OTP.' }));
+        setModal((prev) => ({ ...prev, error: 'Please enter OTP code.' }));
         return;
       }
       setModal((prev) => ({ ...prev, submitting: true, error: '' }));
@@ -273,10 +273,10 @@ export default function AccountSettingsPage() {
           form.currentPassword,
           form.newPassword,
         );
-        setBanner({ type: 'success', message: 'Đổi mật khẩu thành công.' });
+        setBanner({ type: 'success', message: 'Password changed successfully.' });
         setModal((prev) => ({ ...prev, step: 'success', submitting: false }));
       } catch (error) {
-        setModal((prev) => ({ ...prev, submitting: false, error: error.message || 'Không thể đổi mật khẩu.' }));
+        setModal((prev) => ({ ...prev, submitting: false, error: error.message || 'Unable to change password.' }));
       }
     }
   };
@@ -289,7 +289,7 @@ export default function AccountSettingsPage() {
           {modal.step === 'form' && (
             <div className="acct-form-grid">
               <label>
-                Tên pháp lý
+                Legal name
                 <input
                   type="text"
                   value={modal.form.fullName}
@@ -302,7 +302,7 @@ export default function AccountSettingsPage() {
                 />
               </label>
               <label>
-                Số điện thoại
+                Phone number
                 <input
                   type="text"
                   value={modal.form.phone}
@@ -316,7 +316,7 @@ export default function AccountSettingsPage() {
                 />
               </label>
               <label>
-                Quốc gia/Cư trú
+                Country/Residence
                 <input
                   type="text"
                   value={modal.form.nationality}
@@ -333,13 +333,13 @@ export default function AccountSettingsPage() {
           )}
           {modal.step === 'otp' && (
             <div className="acct-otp-step">
-              <p>Mã xác thực đã gửi tới <strong>{modal.otpEmail}</strong>.</p>
+              <p>Verification code sent to <strong>{modal.otpEmail}</strong>.</p>
               <input
                 type="text"
                 value={modal.otp}
                 onChange={(e) => setModal((prev) => ({ ...prev, otp: e.target.value, error: '' }))}
                 className="acct-input"
-                placeholder="Nhập mã OTP"
+                placeholder="Enter OTP code"
               />
               <button
                 type="button"
@@ -347,7 +347,7 @@ export default function AccountSettingsPage() {
                 onClick={() => handleSendOtp()}
                 disabled={modal.sendingOtp}
               >
-                {modal.sendingOtp ? 'Đang gửi...' : 'Gửi lại mã'}
+                {modal.sendingOtp ? 'Sending...' : 'Resend code'}
               </button>
             </div>
           )}
@@ -361,7 +361,7 @@ export default function AccountSettingsPage() {
           {modal.step === 'form' && (
             <div className="acct-form-grid">
               <label>
-                Email mới
+                New email
                 <input
                   type="email"
                   value={modal.form.email}
@@ -378,13 +378,13 @@ export default function AccountSettingsPage() {
           )}
           {modal.step === 'otp' && (
             <div className="acct-otp-step">
-              <p>Mã xác thực đã gửi tới <strong>{modal.otpEmail}</strong>.</p>
+              <p>Verification code sent to <strong>{modal.otpEmail}</strong>.</p>
               <input
                 type="text"
                 value={modal.otp}
                 onChange={(e) => setModal((prev) => ({ ...prev, otp: e.target.value, error: '' }))}
                 className="acct-input"
-                placeholder="Nhập mã OTP"
+                placeholder="Enter OTP code"
               />
               <button
                 type="button"
@@ -392,7 +392,7 @@ export default function AccountSettingsPage() {
                 onClick={() => handleSendOtp()}
                 disabled={modal.sendingOtp}
               >
-                {modal.sendingOtp ? 'Đang gửi...' : 'Gửi lại mã'}
+                {modal.sendingOtp ? 'Sending...' : 'Resend code'}
               </button>
             </div>
           )}
@@ -406,7 +406,7 @@ export default function AccountSettingsPage() {
           {modal.step === 'form' && (
             <div className="acct-form-grid">
               <label>
-                Mật khẩu hiện tại
+                Current password
                 <input
                   type="password"
                   value={modal.form.currentPassword}
@@ -419,7 +419,7 @@ export default function AccountSettingsPage() {
                 />
               </label>
               <label>
-                Mật khẩu mới
+                New password
                 <input
                   type="password"
                   value={modal.form.newPassword}
@@ -429,11 +429,11 @@ export default function AccountSettingsPage() {
                     error: '',
                   }))}
                   className="acct-input"
-                  placeholder="Tối thiểu 6 ký tự"
+                  placeholder="Minimum 6 characters"
                 />
               </label>
               <label>
-                Xác nhận mật khẩu mới
+                Confirm new password
                 <input
                   type="password"
                   value={modal.form.confirmPassword}
@@ -449,13 +449,13 @@ export default function AccountSettingsPage() {
           )}
           {modal.step === 'otp' && (
             <div className="acct-otp-step">
-              <p>Mã xác thực đã gửi tới <strong>{modal.otpEmail}</strong>.</p>
+              <p>Verification code sent to <strong>{modal.otpEmail}</strong>.</p>
               <input
                 type="text"
                 value={modal.otp}
                 onChange={(e) => setModal((prev) => ({ ...prev, otp: e.target.value, error: '' }))}
                 className="acct-input"
-                placeholder="Nhập mã OTP"
+                placeholder="Enter OTP code"
               />
               <button
                 type="button"
@@ -463,7 +463,7 @@ export default function AccountSettingsPage() {
                 onClick={() => handleSendOtp()}
                 disabled={modal.sendingOtp}
               >
-                {modal.sendingOtp ? 'Đang gửi...' : 'Gửi lại mã'}
+                {modal.sendingOtp ? 'Sending...' : 'Resend code'}
               </button>
             </div>
           )}
@@ -491,14 +491,14 @@ export default function AccountSettingsPage() {
     if (modal.step === 'success') {
       return (
         <button type="button" className="acct-primary" onClick={closeModal}>
-          Hoàn tất
+          Done
         </button>
       );
     }
     return (
       <>
         <button type="button" className="acct-secondary" onClick={closeModal} disabled={modal.submitting || modal.sendingOtp}>
-          Hủy
+          Cancel
         </button>
         <button
           type="button"
@@ -506,8 +506,8 @@ export default function AccountSettingsPage() {
           onClick={handleModalPrimary}
           disabled={modal.submitting || modal.sendingOtp}
         >
-          {modal.step === 'form' && 'Tiếp tục'}
-          {modal.step === 'otp' && (modal.submitting ? 'Đang xác minh...' : 'Xác nhận')}
+          {modal.step === 'form' && 'Continue'}
+          {modal.step === 'otp' && (modal.submitting ? 'Verifying...' : 'Confirm')}
         </button>
       </>
     );
@@ -515,44 +515,44 @@ export default function AccountSettingsPage() {
 
   const accountFields = useMemo(() => (userDetails ? [
     {
-      label: 'Tên pháp lý',
-      value: userDetails.FullName || 'Chưa cung cấp',
+      label: 'Legal name',
+      value: userDetails.FullName || 'Not provided',
       action: () => openModal('profile'),
-      actionLabel: 'Chỉnh sửa',
+      actionLabel: 'Edit',
     },
     {
-      label: 'Địa chỉ email',
-      value: userDetails.Email ? maskEmail(userDetails.Email) : 'Chưa cung cấp',
+      label: 'Email address',
+      value: userDetails.Email ? maskEmail(userDetails.Email) : 'Not provided',
       action: () => openModal('email'),
-      actionLabel: 'Thay đổi',
+      actionLabel: 'Change',
     },
     {
-      label: 'Số điện thoại',
-      value: userDetails.Phone || 'Chưa cung cấp',
+      label: 'Phone number',
+      value: userDetails.Phone || 'Not provided',
       action: () => openModal('profile'),
-      actionLabel: userDetails.Phone ? 'Cập nhật' : 'Thêm',
+      actionLabel: userDetails.Phone ? 'Update' : 'Add',
     },
     {
-      label: 'Xác minh danh tính',
-      value: 'Đã xác thực qua email',
+      label: 'Identity verification',
+      value: 'Verified via email',
       action: () => openModal('profile'),
-      actionLabel: 'Xác minh lại',
+      actionLabel: 'Verify again',
     },
     {
-      label: 'Địa chỉ cư trú',
-      value: userDetails.Nationality || 'Chưa cung cấp',
+      label: 'Residence address',
+      value: userDetails.Nationality || 'Not provided',
       action: () => openModal('profile'),
-      actionLabel: userDetails.Nationality ? 'Cập nhật' : 'Thêm',
+      actionLabel: userDetails.Nationality ? 'Update' : 'Add',
     },
   ] : []), [userDetails]);
 
   if (!isAuthenticated) {
     return (
       <div className="acct acct-empty">
-        <h1 className="acct-title">Cài đặt tài khoản</h1>
-        <p>Bạn cần đăng nhập để quản lý thông tin cá nhân.</p>
+        <h1 className="acct-title">Account settings</h1>
+        <p>You need to log in to manage your personal information.</p>
         <Link to="/login" className="acct-primary-link">
-          Đăng nhập
+          Log in
         </Link>
       </div>
     );
@@ -560,7 +560,7 @@ export default function AccountSettingsPage() {
 
   return (
     <div className="acct">
-      <h1 className="acct-title">Cài đặt tài khoản</h1>
+      <h1 className="acct-title">Account settings</h1>
       {banner && (
         <div className={`acct-banner ${banner.type}`}>
           {banner.message}
@@ -583,11 +583,11 @@ export default function AccountSettingsPage() {
         </aside>
 
         <main className="acct-main">
-          {loading && <div className="acct-loader">Đang tải thông tin...</div>}
+          {loading && <div className="acct-loader">Loading information...</div>}
 
           {!loading && activeItem === 'personal' && (
             <>
-              <h2 className="acct-section-title">Thông tin cá nhân</h2>
+              <h2 className="acct-section-title">Personal information</h2>
               <div className="acct-card">
                 {accountFields.map((field) => (
                   <div className="acct-field" key={field.label}>
@@ -606,24 +606,24 @@ export default function AccountSettingsPage() {
 
           {!loading && activeItem === 'security' && (
             <>
-              <h2 className="acct-section-title">Đăng nhập & bảo mật</h2>
+              <h2 className="acct-section-title">Login & security</h2>
               <div className="acct-card">
                 <div className="acct-field">
                   <div>
-                    <div className="acct-field-label">Mật khẩu</div>
-                    <div className="acct-field-value">Cập nhật lần cuối gần đây</div>
+                    <div className="acct-field-label">Password</div>
+                    <div className="acct-field-value">Last updated recently</div>
                   </div>
                   <button type="button" className="acct-link" onClick={() => openModal('password')}>
-                    Đổi mật khẩu
+                    Change password
                   </button>
                 </div>
                 <div className="acct-field">
                   <div>
-                    <div className="acct-field-label">Xác thực qua email</div>
-                    <div className="acct-field-value">Sử dụng OTP khi cập nhật thông tin nhạy cảm.</div>
+                    <div className="acct-field-label">Email verification</div>
+                    <div className="acct-field-value">Use OTP when updating sensitive information.</div>
                   </div>
                   <button type="button" className="acct-link" onClick={() => openModal('profile')}>
-                    Thử ngay
+                    Try now
                   </button>
                 </div>
               </div>
@@ -642,7 +642,7 @@ export default function AccountSettingsPage() {
             <div className="acct-modal-body">
               {renderModalBody()}
               {modal.error && <div className="acct-error">{modal.error}</div>}
-              {modal.step === 'success' && <div className="acct-success">Hoàn tất!</div>}
+              {modal.step === 'success' && <div className="acct-success">Done!</div>}
             </div>
             <div className="acct-modal-actions">
               {renderModalActions()}

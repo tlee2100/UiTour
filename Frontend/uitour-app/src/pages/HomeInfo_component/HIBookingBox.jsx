@@ -72,7 +72,7 @@ function HIBookingBox({
           <div className="hib-rating-star">⭐</div>
           <span className="hib-rating-score">{rating}</span>
           <div className="hib-rating-dot"></div>
-          <span className="hib-rating-reviews">{reviewsCount} đánh giá</span>
+          <span className="hib-rating-reviews">{reviewsCount} reviews</span>
         </div>
       </div>
 
@@ -104,7 +104,7 @@ function HIBookingBox({
         <div className="hib-details-row">
           <div className="hib-guests">
             <div className="hib-guests-label">
-              <span className="hib-guests-title">KHÁCH</span>
+              <span className="hib-guests-title">GUESTS</span>
               <input
                 type="number"
                 className="hib-input"
@@ -114,7 +114,7 @@ function HIBookingBox({
                 onChange={(e) => handleGuestsChange(e.target.value)}
               />
             </div>
-            <div className="hib-chevron">tối đa {maxGuests}</div>
+            <div className="hib-chevron">max {maxGuests}</div>
           </div>
         </div>
       </div>
@@ -126,11 +126,11 @@ function HIBookingBox({
         disabled={bookingLoading}
       >
         <span className="hib-book-text">
-          {bookingLoading ? "Đang xử lý..." : "Đặt ngay"}
+          {bookingLoading ? "Processing..." : "Book now"}
         </span>
       </button>
 
-      <div className="hib-note">Bạn chưa bị trừ tiền</div>
+      <div className="hib-note">You won't be charged yet</div>
 
       {bookingFeedback?.message && (
         <div className={`hib-feedback ${bookingFeedback.type}`}>
