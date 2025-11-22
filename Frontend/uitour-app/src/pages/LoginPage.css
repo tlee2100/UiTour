@@ -1,15 +1,15 @@
 :root {
-  --auth-primary: #2196f3;
-  --auth-primary-600: #1e88e5;
-  --auth-accent: #64b5f6;
-  --auth-ink: #0f2942;
-  --auth-muted: rgba(15, 41, 66, 0.68);
+  --auth-primary: var(--uitour-color);
+  --auth-primary-600: var(--hover-uitour);
+  --auth-accent: #00d4f8;
+  --auth-ink: var(--black);
+  --auth-muted: rgba(0, 0, 0, 0.68);
   --auth-surface: rgba(255, 255, 255, 0.92);
-  --auth-border: rgba(33, 150, 243, 0.18);
-  --auth-input-border: rgba(15, 41, 66, 0.10);
-  --auth-input-shadow: rgba(33, 150, 243, 0.12);
-  --auth-card-shadow: rgba(20, 46, 72, 0.28);
-  --auth-bg-gradient: linear-gradient(135deg, #eaf4ff 0%, #f7fbff 45%, #ffffff 100%);
+  --auth-border: rgba(0, 192, 232, 0.18);
+  --auth-input-border: rgba(0, 0, 0, 0.10);
+  --auth-input-shadow: rgba(0, 192, 232, 0.12);
+  --auth-card-shadow: rgba(0, 0, 0, 0.15);
+  --auth-bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #ffffff 45%, #ffffff 100%);
   /* Replace this URL to change the hero background image */
   --auth-bg-image: url("../assets/LoginBackground.jpg");
 }
@@ -61,7 +61,7 @@ body {
   position: absolute;
   inset: -2px;
   border-radius: inherit;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(33, 150, 243, 0.28));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(0, 192, 232, 0.28));
   z-index: -1;
   opacity: 0.8;
   filter: blur(6px);
@@ -144,13 +144,13 @@ form input:focus {
   font-weight: 600;
   color: #fff;
   background: linear-gradient(135deg, var(--auth-primary-600), var(--auth-accent));
-  box-shadow: 0 18px 35px rgba(33, 150, 243, 0.28);
+  box-shadow: 0 18px 35px rgba(0, 192, 232, 0.28);
   transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.2s ease;
 }
 
 .continue-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 22px 40px rgba(33, 150, 243, 0.34);
+  box-shadow: 0 22px 40px rgba(0, 192, 232, 0.34);
   filter: brightness(1.03);
 }
 
@@ -189,13 +189,13 @@ form input:focus {
   color: rgba(13, 31, 49, 0.82);
   cursor: pointer;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
-  box-shadow: 0 14px 22px rgba(33, 150, 243, 0.12);
+  box-shadow: 0 14px 22px rgba(0, 192, 232, 0.12);
   margin-top: 6px;
 }
 
 .google-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 18px 30px rgba(33, 150, 243, 0.16);
+  box-shadow: 0 18px 30px rgba(0, 192, 232, 0.16);
 }
 
 .google-btn:disabled {
@@ -258,7 +258,7 @@ form + p a:hover {
 
 .otp-input:focus {
   border-color: var(--auth-primary);
-  box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.15);
+  box-shadow: 0 0 0 4px rgba(0, 192, 232, 0.15);
   transform: scale(1.05);
 }
 
@@ -441,7 +441,7 @@ form + p a:hover {
   .login-box {
     padding: 28px 24px;
     width: 100%;
-    box-shadow: 0 18px 30px rgba(33, 150, 243, 0.24);
+    box-shadow: 0 18px 30px rgba(0, 192, 232, 0.24);
   }
 
   .close-btn {

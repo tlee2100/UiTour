@@ -24,7 +24,7 @@
   justify-content: flex-start;
 
   margin: 0; /* reset default h1 margins so gap works */
-  color: #222222;
+  color: var(--black);
 
   /*background-color: #6B7280;  /*block display check*/
 }
@@ -80,13 +80,13 @@
   line-height: 20px;
   display: flex;
   align-items: center;
-  color: #000;
+  color: var(--black);
 }
 
 .info-header .iheader-dot {
   width: 2px;
   height: 2px;
-  background: #6B7280;
+  background: var(--subtitle-color);
   border-radius: 50%;
 }
 
@@ -96,7 +96,7 @@
 
 .info-header .iheader-location {
   text-decoration: underline;
-  color: #6B7280;
+  color: var(--subtitle-color);
 }
 
 /* Right */
@@ -112,9 +112,9 @@
 }
 
 .info-header .iheader-save-button.saved {
-  background: #111827;
-  color: #fff;
-  border-color: #111827;
+  background: var(--black);
+  color: var(--white);
+  border-color: var(--black);
 }
 
 .info-header .iheader-save-button.saved .heart-icon path {

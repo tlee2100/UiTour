@@ -48,7 +48,7 @@ const LoginPage = () => {
 
       if (!userObj.UserID) {
         // nếu vẫn không có id => backend chưa trả đúng; báo lỗi dễ hiểu
-        throw new Error("Thiếu UserID trong dữ liệu đăng nhập. Kiểm tra payload từ API.");
+        throw new Error("Missing UserID in login data. Check API payload.");
       }
 
       // Lưu vào context (AppContext sẽ sync sang localStorage)
@@ -144,7 +144,7 @@ const LoginPage = () => {
             className="continue-btn"
             disabled={isLoading}
           >
-            {isLoading ? "Đang đăng nhập..." : "Continue"}
+            {isLoading ? "Logging in..." : "Continue"}
           </button>
         </form>
 

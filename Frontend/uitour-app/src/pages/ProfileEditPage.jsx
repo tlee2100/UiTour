@@ -50,7 +50,7 @@ export default function ProfileEditPage() {
     async function load() {
       try {
         if (!user || !(user.UserID ?? user.userID)) {
-          setError('Thiếu thông tin đăng nhập. Vui lòng đăng nhập lại.');
+          setError('Missing login information. Please log in again.');
           return;
         }
         setLoading(true);
@@ -90,7 +90,7 @@ export default function ProfileEditPage() {
           }
         });
       } catch (err) {
-        if (mounted) setError(err.message || 'Không thể tải hồ sơ');
+        if (mounted) setError(err.message || 'Unable to load profile');
       } finally {
         if (mounted) setLoading(false);
       }
@@ -165,14 +165,14 @@ export default function ProfileEditPage() {
 
       navigate('/profile');
     } catch (err) {
-      setError(err.message || 'Lưu hồ sơ thất bại');
+      setError(err.message || 'Failed to save profile');
     } finally {
       setSaving(false);
     }
   };
 
   if (loading || !form) {
-    return <div className="profile-section" style={{ padding: 16 }}>Đang tải hồ sơ...</div>;
+    return <div className="profile-section" style={{ padding: 16 }}>Loading profile...</div>;
   }
 
   return (
@@ -264,7 +264,7 @@ export default function ProfileEditPage() {
                   style={{ background: '#ffecec', color: '#b40000' }}
                   onClick={() => removeVisitedTag(idx)}
                 >
-                  Xoá
+                  Delete
                 </button>
               </div>
             ))}
@@ -273,18 +273,18 @@ export default function ProfileEditPage() {
               style={{ background: '#f1f1f1', color: '#333' }}
               onClick={addVisitedTag}
             >
-              + Thêm nơi đã đến
+              + Add place visited
             </button>
           </div>
         </section>
 
         {/* Thông tin cá nhân: Tuổi / Giới tính / Quốc tịch */}
         <section className="profile-section">
-          <div className="profile-completion-title">Thông tin cá nhân</div>
+          <div className="profile-completion-title">Personal information</div>
           <div className="info-grid info-grid-edit">
-            {/* Tuổi */}
+            {/* Age */}
             <label>
-              <strong>Tuổi</strong>
+              <strong>Age</strong>
               <input
                 type="number"
                 min="0"
@@ -297,28 +297,28 @@ export default function ProfileEditPage() {
               />
             </label>
 
-            {/* Giới tính */}
+            {/* Gender */}
             <label>
-              <strong>Giới tính</strong>
+              <strong>Gender</strong>
               <select
                 value={form.gender ?? ''}
                 onChange={e => update('gender', e.target.value)}
               >
-                <option value="">-- Chọn giới tính --</option>
-                <option value="Nam">Nam</option>
-                <option value="Nữ">Nữ</option>
-                <option value="Khác">Khác</option>
+                <option value="">-- Select gender --</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
               </select>
             </label>
 
-            {/* Quốc tịch */}
+            {/* Nationality */}
             <label>
-              <strong>Quốc tịch</strong>
+              <strong>Nationality</strong>
               <input
                 type="text"
                 value={form.nationality ?? ''}
                 onChange={e => update('nationality', e.target.value)}
-                placeholder="VD: Việt Nam"
+                placeholder="e.g., Vietnam"
               />
             </label>
           </div>
@@ -326,7 +326,7 @@ export default function ProfileEditPage() {
 
         {/* Sở thích của tôi */}
         <section className="profile-section">
-          <div className="profile-completion-title">Sở thích của tôi</div>
+          <div className="profile-completion-title">My interests</div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
             {(form.interests || []).map((it, idx) => (
               <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -347,7 +347,7 @@ export default function ProfileEditPage() {
                   style={{ background: '#ffecec', color: '#b40000' }}
                   onClick={() => removeInterest(idx)}
                 >
-                  Xoá
+                  Delete
                 </button>
               </div>
             ))}
@@ -356,7 +356,7 @@ export default function ProfileEditPage() {
               style={{ background: '#f1f1f1', color: '#333' }}
               onClick={addInterest}
             >
-              + Thêm sở thích
+              + Add interest
             </button>
           </div>
         </section>
@@ -373,14 +373,14 @@ export default function ProfileEditPage() {
             onClick={() => navigate(-1)}
             style={{ background: '#eee', color: '#333' }}
           >
-            Hủy
+            Cancel
           </button>
           <button
             className="profile-primary-btn"
             onClick={handleSave}
             disabled={saving}
           >
-            {saving ? 'Đang lưu...' : 'Hoàn tất'}
+            {saving ? 'Saving...' : 'Done'}
           </button>
         </div>
       </main>

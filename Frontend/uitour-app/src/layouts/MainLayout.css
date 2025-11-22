@@ -6,4 +6,5 @@
 
 .main-content {
   flex: 1;
+  padding-top: 96px; /* Header height - bù cho header fixed */
 }

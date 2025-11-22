@@ -5,36 +5,36 @@ export default function AdminSettings() {
     <div className="admin-page">
       <div className="grid-3">
         <div className="settings-card">
-          <div className="settings-title">Quản lý danh mục</div>
+          <div className="settings-title">Category management</div>
           <div className="settings-row">
-            <label>Loại phòng</label>
+            <label>Room type</label>
             <input placeholder="Villa" />
           </div>
           <div className="settings-row">
-            <label>Loại tour</label>
-            <input placeholder="Du lịch biển" />
+            <label>Tour type</label>
+            <input placeholder="Beach travel" />
           </div>
           <div className="settings-row">
-            <label>Địa điểm</label>
-            <input placeholder="Hà Nội" />
+            <label>Location</label>
+            <input placeholder="Hanoi" />
           </div>
         </div>
         <div className="settings-card">
-          <div className="settings-title">Quản lý phí dịch vụ (%)</div>
+          <div className="settings-title">Service fee management (%)</div>
           <div className="settings-row">
-            <label>Phí dịch vụ (%)</label>
+            <label>Service fee (%)</label>
             <input defaultValue="7" />
           </div>
           <div className="settings-row">
-            <label>Thuế VAT (%)</label>
+            <label>VAT tax (%)</label>
             <input defaultValue="10" />
           </div>
-          <button className="primary small">Lưu thay đổi</button>
+          <button className="primary small">Save changes</button>
         </div>
         <div className="settings-card">
-          <div className="settings-title">Banner & sự kiện</div>
-          <div className="banner-item">Banner Tết 2025</div>
-          <button className="ghost small">+ Thêm banner mới</button>
+          <div className="settings-title">Banner & events</div>
+          <div className="banner-item">Tet 2025 Banner</div>
+          <button className="ghost small">+ Add new banner</button>
         </div>
       </div>
     </div>

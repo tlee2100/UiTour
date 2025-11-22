@@ -43,7 +43,7 @@
 
 .acct-item.active {
   background: #f5f7ff;
-  color: #1d4ed8;
+  color: var(--uitour-color);
   font-weight: 600;
 }
 
@@ -57,7 +57,7 @@
   padding: 2px 8px;
   border-radius: 999px;
   background: #e4e4e7;
-  color: #3f3f46;
+  color: var(--subtitle-color);
 }
 
 .acct-main {
@@ -91,7 +91,7 @@
 }
 
 .acct-field-label {
-  color: #475569;
+  color: var(--subtitle-color);
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -101,13 +101,13 @@
 .acct-field-value {
   font-weight: 600;
   font-size: 17px;
-  color: #0f172a;
+  color: var(--black);
 }
 
 .acct-link {
   background: none;
   border: none;
-  color: #2563eb;
+  color: var(--uitour-color);
   font-weight: 600;
   cursor: pointer;
   padding: 8px 12px;
@@ -116,7 +116,7 @@
 }
 
 .acct-link:hover:not(:disabled) {
-  background: rgba(37, 99, 235, 0.08);
+  background: rgba(0, 192, 232, 0.08);
 }
 
 .acct-link.resend {
@@ -155,7 +155,7 @@
 .acct-loader {
   padding: 40px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--subtitle-color);
 }
 
 .acct-modal-backdrop {
@@ -189,7 +189,7 @@
   background: transparent;
   font-size: 22px;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--subtitle-color);
 }
 
 .acct-modal-body {
@@ -210,7 +210,7 @@
   flex-direction: column;
   gap: 6px;
   font-weight: 500;
-  color: #0f172a;
+  color: var(--black);
 }
 
 .acct-input {
@@ -223,8 +223,8 @@
 
 .acct-input:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  border-color: var(--uitour-color);
+  box-shadow: 0 0 0 3px rgba(0, 192, 232, 0.15);
 }
 
 .acct-modal-actions {
@@ -245,14 +245,14 @@
 }
 
 .acct-primary {
-  background: #2563eb;
-  color: #fff;
-  box-shadow: 0 12px 20px rgba(37, 99, 235, 0.2);
+  background: var(--uitour-color);
+  color: var(--white);
+  box-shadow: 0 12px 20px rgba(0, 192, 232, 0.2);
 }
 
 .acct-secondary {
   background: #e2e8f0;
-  color: #0f172a;
+  color: var(--black);
 }
 
 .acct-primary:disabled,
@@ -294,8 +294,8 @@
 }
 
 .acct-primary-link {
-  background: #2563eb;
-  color: #fff;
+  background: var(--uitour-color);
+  color: var(--white);
   text-decoration: none;
 }
 

@@ -61,7 +61,7 @@ export default function TripsPage() {
       );
       setTrips(enriched);
     } catch (err) {
-      setError(err.message || 'Không thể tải danh sách chuyến đi');
+      setError(err.message || 'Unable to load trips list');
       setTrips([]);
     } finally {
       setLoading(false);
@@ -77,14 +77,14 @@ export default function TripsPage() {
   if (!user?.UserID) {
     return (
       <div className="trips-page">
-        <div className="trips-title">Chuyến đi</div>
+        <div className="trips-title">Trips</div>
         <div className="trips-empty">
           <div className="trips-empty-illustration" />
           <div className="trips-empty-textBlock">
-            <h2>Đăng nhập để theo dõi chuyến đi của bạn</h2>
-            <p>Đăng nhập để xem các chuyến đã đặt và tiếp tục khám phá những trải nghiệm mới.</p>
+            <h2>Log in to track your trips</h2>
+            <p>Log in to view your bookings and continue exploring new experiences.</p>
             <button className="trips-btn" onClick={() => navigate('/login')}>
-              Đăng nhập
+              Log in
             </button>
           </div>
         </div>
@@ -95,21 +95,21 @@ export default function TripsPage() {
   if (loading) {
     return (
       <div className="trips-page">
-        <div className="trips-title">Chuyến đi</div>
-        <div style={{ padding: 24 }}>Đang tải...</div>
+        <div className="trips-title">Trips</div>
+        <div style={{ padding: 24 }}>Loading...</div>
       </div>
     );
   }
 
   return (
     <div className="trips-page">
-      <h1 className="trips-title">Chuyến đi</h1>
+      <h1 className="trips-title">Trips</h1>
 
       {!!error && (
         <div className="trips-feedback error">
           {error}
           <button className="trips-btn small" onClick={loadTrips}>
-            Thử lại
+            Try again
           </button>
         </div>
       )}
@@ -118,13 +118,13 @@ export default function TripsPage() {
         <div className="trips-empty">
           <div className="trips-empty-illustration" />
           <div className="trips-empty-textBlock">
-            <h2>Sắp xếp một chuyến đi hoàn hảo</h2>
+            <h2>Plan the perfect trip</h2>
             <p>
-              Khám phá chỗ ở, trải nghiệm và dịch vụ. Sau khi bạn đặt, các lượt đặt của bạn sẽ hiển thị
-              tại đây.
+              Explore stays, experiences and services. After you book, your bookings will appear
+              here.
             </p>
             <button className="trips-btn" onClick={() => navigate('/')}>
-              Bắt đầu
+              Get started
             </button>
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function TripsPage() {
               propertyInfo?.title ||
               tourInfo?.tourName ||
               tourInfo?.title ||
-              `Đặt chỗ #${trip.bookingID || trip.BookingID}`;
+                    `Booking #${trip.bookingID || trip.BookingID}`;
             const location =
               propertyInfo?.location ||
               propertyInfo?.Location ||
@@ -168,29 +168,29 @@ export default function TripsPage() {
               <div key={trip.bookingID || trip.BookingID} className="trip-card">
                 <div className="trip-cover">
                   <img src={coverImage} alt={title} />
-                  <span className="trip-type-badge">{isTour ? 'Trải nghiệm' : 'Chỗ ở'}</span>
+                  <span className="trip-type-badge">{isTour ? 'Experience' : 'Stay'}</span>
                 </div>
                 <div className="trip-info">
                   <div className="trip-title">{title}</div>
                   <div className="trip-location">
                     <Icon icon="mdi:map-marker" width="16" height="16" />
-                    <span>{location || 'Chưa cập nhật địa điểm'}</span>
+                    <span>{location || 'Location not updated'}</span>
                   </div>
                   <div className="trip-dates">
                     <Icon icon="mdi:calendar" width="16" height="16" />
-                    <span>{dateRange || 'Chưa có lịch'}</span>
+                    <span>{dateRange || 'No schedule'}</span>
                   </div>
                   <div className="trip-meta">
-                    <span>{nights ? `${nights} đêm` : ''}</span>
-                    <span>{guests} khách</span>
+                    <span>{nights ? `${nights} night${nights > 1 ? 's' : ''}` : ''}</span>
+                    <span>{guests} guest{guests > 1 ? 's' : ''}</span>
                     <span className={`trip-status ${status}`}>
                       {status === 'confirmed'
-                        ? 'Đã xác nhận'
+                        ? 'Confirmed'
                         : status === 'completed'
-                        ? 'Hoàn tất'
+                        ? 'Completed'
                         : status === 'cancelled' || status === 'canceled'
-                        ? 'Đã hủy'
-                        : 'Đang chờ'}
+                        ? 'Cancelled'
+                        : 'Pending'}
                     </span>
                   </div>
                   <div className="trip-price">
@@ -200,11 +200,11 @@ export default function TripsPage() {
                   <div className="trip-actions">
                     {detailLink ? (
                       <button className="trip-btn-secondary" onClick={() => navigate(detailLink)}>
-                        Xem chi tiết
+                        View details
                       </button>
                     ) : (
                       <button className="trip-btn-secondary" onClick={() => navigate('/')}>
-                        Đặt chuyến đi khác
+                        Book another trip
                       </button>
                     )}
                   </div>
