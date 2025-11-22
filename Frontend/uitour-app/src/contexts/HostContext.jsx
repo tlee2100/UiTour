@@ -917,8 +917,19 @@ export function HostProvider({ children }) {
         console.log("📸 Merged stayPhotosRAM into stayData:", stayPhotosRAM.length, "photos");
       }
       return mergedData;
+    } else {
+      // Experience/Tour: Merge experiencePhotosRAM into experienceData.media.photos
+      const mergedData = { ...experienceData };
+      if (experiencePhotosRAM && experiencePhotosRAM.length > 0) {
+        // Use RAM photos if available (they have the latest state including serverUrl after upload)
+        if (!mergedData.media) {
+          mergedData.media = {};
+        }
+        mergedData.media.photos = experiencePhotosRAM;
+        console.log("📸 Merged experiencePhotosRAM into experienceData:", experiencePhotosRAM.length, "photos");
+      }
+      return mergedData;
     }
-    return experienceData;
   }
 
   // ============================================================
@@ -1320,6 +1331,45 @@ export function HostProvider({ children }) {
               serverUrl: p.serverUrl || p.url || "",
               url: p.url || p.serverUrl || ""
             }));
+            
+            // CRITICAL: Update experiencePhotosRAM với serverUrls để photos được lưu vào database
+            // Match photos by index since they should be in the same order
+            setExperiencePhotosRAM(prevRAM => {
+              const updatedRAM = prevRAM.map((ramPhoto, ramIndex) => {
+                // Tìm photo tương ứng trong photos array
+                // Ưu tiên match bằng file object, sau đó bằng index
+                let updatedPhoto = null;
+                
+                if (ramPhoto.file) {
+                  // Tìm bằng file object (chính xác nhất)
+                  updatedPhoto = photos.find(p => p.file === ramPhoto.file);
+                }
+                
+                if (!updatedPhoto && ramIndex < photos.length) {
+                  // Fallback: match bằng index
+                  updatedPhoto = photos[ramIndex];
+                }
+                
+                if (updatedPhoto && updatedPhoto.serverUrl) {
+                  console.log(`🔄 Updating RAM tour photo ${ramIndex} with serverUrl: ${updatedPhoto.serverUrl}`);
+                  return {
+                    ...ramPhoto,
+                    serverUrl: updatedPhoto.serverUrl,
+                    url: updatedPhoto.serverUrl
+                  };
+                }
+                
+                // Nếu RAM photo đã có serverUrl, giữ nguyên
+                if (ramPhoto.serverUrl) {
+                  return ramPhoto;
+                }
+                
+                return ramPhoto;
+              });
+              
+              console.log(`📸 Updated experiencePhotosRAM: ${updatedRAM.length} photos, ${updatedRAM.filter(p => p.serverUrl).length} with serverUrl`);
+              return updatedRAM;
+            });
             
             console.log(`📸 Updated data.media.photos: ${data.media.photos.length} photos with serverUrls`);
           } catch (uploadError) {
