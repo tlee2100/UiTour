@@ -7,79 +7,410 @@ import { useLocation } from "react-router-dom";
 
 // 🏠 Stay / Property
 const initialStayData = {
-  propertyID: null,
-  hostID: null,
-  listingTitle: "",
-  description: "",
-  summary: "",
-  propertyType: "",
-  roomTypeID: null,
-  bedTypeID: null,
+  // ======================================================================================
+  // SYSTEM – ID, Host, trạng thái phê duyệt bởi admin
+  // ======================================================================================
+  propertyID: null,      // ID do BE sinh ra sau khi tạo listing
+  hostID: null,          // Người tạo listing (chủ nhà)
+
+  approval: {
+    status: "pending",   // Trạng thái admin duyệt: pending | approved | rejected
+    approvedAt: null,    // Thời gian admin duyệt (nếu approved)
+    approvedBy: null,    // Admin ID đã duyệt
+  },
+
+  // ======================================================================================
+  // BASIC INFO – thông tin mô tả phòng
+  // ======================================================================================
+  listingTitle: "",      // Tiêu đề phòng
+  description: "",       // Mô tả chi tiết (đầy đủ)
+  summary: "",           // Mô tả tóm tắt ngắn
+  propertyTypeID: null,      // Loại phòng: Apartment, Villa, Studio…
+  propertyTypeLabel: "",
+  roomTypeID: null,         // 1, 2, 3...
+  roomTypeLabel: "",        // "Entire place", "Private room"
+
+  // ======================================================================================
+  // LOCATION – vị trí chi tiết
+  // => FE dùng dạng object để dễ validate, BE có thể convert thành string
+  // ======================================================================================
+  location: {
+    addressLine: "",     // Số nhà + tên đường
+    district: "",        // Quận
+    city: "",            // Thành phố
+    country: "",         // Quốc gia
+    lat: null,           // Vĩ độ (map)
+    lng: null,           // Kinh độ (map)
+  },
+
+  neighbourhoodID: null, // ID khu vực (nếu BE có bảng riêng)
+  cityID: null,          // ID city trong DB
+  countryID: null,       // ID country trong DB
+
+  // ======================================================================================
+  // CAPACITY – sức chứa
+  // ======================================================================================
+  bedrooms: 1,           // Số phòng ngủ
+  beds: 1,               // Số giường
+  bathrooms: 1,          // Số phòng tắm
+  accommodates: 1,       // Số khách tối đa
+  squareFeet: null,      // Diện tích phòng (tùy chọn)
+
+  // ======================================================================================
+  // PRICING + FEES + DISCOUNTS – logic giá đầy đủ
+  // ======================================================================================
+  pricing: {
+    basePrice: 0,        // Giá cơ bản mỗi đêm
+    currency: "USD",     // Loại tiền tệ
+
+    // WEEKEND PRICING
+    weekendMultiplier: 1.0,
+    // Hệ số tăng giá cuối tuần, ví dụ 1.2 = tăng 20%
+
+    // FEES
+    cleaningFee: 2,      // Phí dọn dẹp cố định ($)
+    serviceFee: {
+      type: "percentage",
+      percent: 4        // Phí dịch vụ theo %
+    },
+    taxFee: {
+      type: "percentage",
+      percent: 6         // Thuế theo %
+    },
+
+    extraPeopleFee: 0,       // Phí phụ thu mỗi khách vượt quá
+    extraPeopleThreshold: 2, // Số khách vượt quá mới tính phụ thu
+
+    // DISCOUNTS – nhiều loại giảm giá (Airbnb chuẩn)
+    discounts: {
+      // -----------------------------------------------------------------------------------
+      // WEEKLY DISCOUNT: GIẢM THEO SỐ ĐÊM
+      // Điều kiện: tổng số đêm >= 7
+      // Mức giảm theo % và được áp dụng TRƯỚC seasonal, global, fixedAmount
+      // Chỉ thay thế monthlyDiscount (nghĩa là có monthly thì bỏ weekly)
+      // -----------------------------------------------------------------------------------
+      weekly: { percent: 7 },    // luôn tồn tại – ưu tiên #2     // Giảm khi ở >= 7 đêm (%)
+
+      // -----------------------------------------------------------------------------------
+      // MONTHLY DISCOUNT: GIẢM THEO SỐ ĐÊM
+      // Điều kiện: tổng số đêm >= 28
+      // Ưu tiên cao hơn weekly (tức là nếu đủ 28 đêm → chỉ áp monthly)
+      // Dùng để giảm giá cho khách ở dài hạn (Airbnb thực tế)
+      // -----------------------------------------------------------------------------------
+      monthly: { percent: 30 },   // luôn tồn tại – ưu tiên #1    // Giảm khi ở >= 28 đêm (%)
+
+      // -----------------------------------------------------------------------------------
+      // SEASONAL DISCOUNTS: GIẢM GIÁ THEO MÙA (THEO KHOẢNG NGÀY)
+      // Host tự đặt, ví dụ: mùa hè, lễ tết, cuối tuần dài, Giáng Sinh...
+      // BE kiểm tra nếu startDate rơi trong khoảng from/to → áp discount.
+      // Chỉ áp 1 lần *không cộng dồn*.
+      // -----------------------------------------------------------------------------------
+      seasonalDiscounts: [
+        // {
+        //   from: "YYYY-MM-DD",
+        //   to:   "YYYY-MM-DD",
+        //   percentage: 0     // Giảm % trong thời gian này
+        // }
+      ],
+
+      // -----------------------------------------------------------------------------------
+      // EARLY BIRD DISCOUNT: GIẢM CHO KHÁCH ĐẶT SỚM
+      // Điều kiện: nếu khách đặt ít nhất X ngày trước check-in
+      // Ví dụ: daysBefore = 30 → đặt trước 30 ngày được giảm percentage%
+      // Lưu ý: mutually exclusive với last-minute discount
+      // -----------------------------------------------------------------------------------
+      earlyBird: [
+
+      ],
+
+      // -----------------------------------------------------------------------------------
+      // LAST MINUTE DISCOUNT (nếu bạn muốn thêm sau)
+      // Điều kiện: chỉ áp dụng nếu đặt cận ngày check-in (<= X ngày)
+      // Không bao giờ đi chung với earlyBird (BE tự chọn một loại).
+      // -----------------------------------------------------------------------------------
+      // lastMinuteDiscount: {
+      //   daysBefore: 0,
+      //   percentage: 0
+      // }
+    },
+    // BOOKING RULES – quy tắc đặt phòng
+    minNights: 1,            // Số đêm tối thiểu
+    maxNights: 30,           // Số đêm tối đa
+    preparationTime: 0,      // Số ngày trống giữa 2 lịch đặt (để dọn phòng)
+    advanceNotice: 0,        // Khách phải đặt trước X ngày tối thiểu
+  },
+
+  // ======================================================================================
+  // RULES & SAFETY – quy tắc nhà và an toàn
+  // ======================================================================================
+
+
+  // HOUSE RULES
+  houseRules: [],            // Danh sách luật nhà [{ id, label }]
+  /*
+    houseRules = [
+    { id: "quiet_hours", label: "Quiet hours (22:00 – 07:00)" },
+    { id: "no_parties", label: "No parties or events" },
+    { id: "no_visitors", label: "No unregistered guests" },
+    { id: "no_children", label: "Not suitable for children" },
+    { id: "no_shoes_inside", label: "Remove shoes inside" },
+    { id: "no_food_in_bedrooms", label: "No food in bedrooms" }
+];
+    Optional: BE có thể thêm nếu cần sử dụng hoặc để trống(bỏ luôn thuộc tính này) nếu khôgn muốn dùng
+   */
+
+  // ======================================================================================
+  // RULES & SAFETY – quy tắc nhà và an toàn
+  // ======================================================================================
+  rules: {
+    // ------------------------------
+    checkin_after: "14:00",    // Nhận phòng sau 14:00
+    checkout_before: "11:00",  // Trả phòng trước 11:00
+
+    // BOOLEAN PROPERTY FLAGS – quy tắc nhanh (Quick Rules)
+    // ------------------------------
+    no_smoking: false,           // Cấm hút thuốc trong nhà?
+    no_open_flames: false,       // Cấm lửa trần (nến, bếp ga di động...)?
+    pets_allowed: false,         // Có cho phép thú cưng không?
+
+    // ------------------------------
+    // HEALTH & SAFETY – tiêu chuẩn an toàn theo Airbnb
+    // ------------------------------
+    covidSafety: false,          // Enhanced Cleaning? (chuẩn vệ sinh nâng cao)
+    surfacesSanitized: false,    // Có khử khuẩn bề mặt thường xuyên?
+    carbonMonoxideAlarm: false,  // Có máy cảnh báo khí CO?
+    smokeAlarm: false,           // Có máy cảnh báo khói?     
+
+    selfCheckIn: false,        // Có tự checkin hay không
+    self_checkin_method: "Lockbox", // Kiểu check-in: Lockbox, Smart lock…
+  },
+
+
+  // ======================================================================================
+  // LISTING STATUS – hiển thị hay không
+  // ======================================================================================
+  active: false,              // = false => không hiện trên HomePage
+  isBusinessReady: false,    // Gói tiện nghi phù hợp khách công tác
+
+  // ======================================================================================
+  // MEDIA – ảnh phòng
+  // ======================================================================================
+  coverPhoto: null,          // Ảnh đại diện
+  photos: [],                // Danh sách ảnh: { base64|url, caption, sortIndex }
+  photosPreview: [],   // <== chỉ dùng RAM, không lưu localStorage
+
+  // ======================================================================================
+  // AMENITIES – tiện nghi
+  // ======================================================================================
+  amenities: [],             // Mảng các id tiện nghi đã chọn
+
+  // ======================================================================================
+  // CALENDAR – chống double booking + block ngày
+  // Dữ liệu này BE sinh ra và FE chỉ đọc để vẽ calendar.
+  //
+  // QUY TẮC CHÍNH:
+  // - Calendar chỉ lưu NHỮNG NGÀY KHÔNG PHẢI “available mặc định”.
+  // - Nếu một ngày không xuất hiện trong calendar → FE hiểu là AVAILABLE.
+  //
+  // Status giải thích:
+  //   • booked  = ngày đã được khách thanh toán thành công → KHÓA CỨNG.
+  //   • pending = ngày đang được giữ tạm do khách đang thanh toán (10 phút). 
+  //               Ai khác không thể đặt trùng trong thời gian pending.
+  //   • blocked = host tự chặn ngày, không cho khách đặt.
+  //   • available = (ít dùng) chỉ khi bạn muốn BE gửi đủ 30–90 ngày sẵn.
+  //
+  // BE sử dụng calendar khi:
+  //   - Kiểm tra một ngày có thể đặt không.
+  //   - Chặn ngày khi booking pending.
+  //   - Chuyển ngày pending → booked khi thanh toán thành công.
+  //   - Chuyển ngày pending → available khi hết hạn/ hủy.
+  //
+  // FE sử dụng calendar để:
+  //   - Disable những ngày đã booked, pending, blocked.
+  //   - Hiển thị màu sắc khác nhau trong UI.
+
+  // Calendar không phải là nơi lưu booking.
+  // Nó chỉ là “mốc thời gian” để hệ thống biết ngày nào bận / rảnh.
+  // ======================================================================================
+  calendar: [
+    /*
+      Mỗi entry = 1 ngày “không còn available”.
+  
+      {
+        date: "2025-06-25",   // YYYY-MM-DD
+  
+        status: "booked" | "pending" | "blocked",
+        // booked  = khách đã thanh toán xong → ngày bị khóa cứng
+        // pending = khách đang thanh toán → giữ chỗ tạm 10 phút
+        // blocked = host tự đóng ngày (ví dụ muốn sửa phòng hoặc đi du lịch)
+  
+        bookingID: null       // ID booking liên quan nếu booked hoặc pending
+      }
+  
+      Quy tắc:
+      - Nếu status == booked → bookingID luôn = id của booking đó
+      - Nếu status == pending → bookingID là booking đang pending
+      - Nếu status == blocked → bookingID phải = null
+    */
+  ],
+
+
+  // ======================================================================================
+  // BOOKING HISTORY – FE có thể lưu để hiển thị nhưng BE là nguồn gốc duy nhất.
+  //
+  // Mỗi booking là 1 ĐƠN ĐẶT PHÒNG (giao dịch).
+  // Đây là nơi lưu toàn bộ thông tin: ai đặt, đặt bao nhiêu đêm, giá bao nhiêu,
+  // trạng thái pending/confirmed/cancelled/expired.
+  //
+  // FE không bao giờ tự tạo booking hoặc sửa booking.
+  // FE chỉ gọi API create booking và pay booking.
+  //
+  // Các trạng thái booking:
+  //   • pending   = giữ chỗ tạm, user đang thanh toán (QR, card…)
+  //   • confirmed = đã thanh toán thành công → phòng CHÍNH THỨC BOOKED
+  //   • cancelled = thanh toán fail hoặc user hủy giữa chừng
+  //   • expired   = pending quá thời gian (ví dụ 10 phút) → tự động hủy
+  //
+  // BE logic quan trọng:
+  //
+  //   Khi FE nhấn “ĐẶT PHÒNG”:
+  //     → BE tạo booking: status = "pending"
+  //     → BE đánh dấu calendar tương ứng = pending
+  //
+  //   Khi thanh toán thành công:
+  //     → BE: booking.status = "confirmed"
+  //     → BE: calendar.pending → booked
+  //
+  //   Khi thanh toán thất bại/hết hạn:
+  //     → BE: booking.status = "expired" hoặc "cancelled"
+  //     → BE: calendar.pending → available
+  //
+  // ======================================================================================
+  bookings: [
+    /*
+      {
+        bookingID: 123,           // ID booking
+        propertyID: 1,            // Phòng này
+        userID: 7,                // Ai đặt
+        guests: 2,                // Số khách
+        startDate: "2025-06-16",
+        endDate: "2025-06-20",
+  
+        nights: 4,                // Số đêm BE tính sẵn
+  
+        totalPrice: 177,          // Tổng giá cuối cùng (BE tính)
+        originalPrice: 200,       // Có thể lưu giá gốc trước khi discount
+        discountApplied: {        // (Optional) giúp debug
+          type: "weekly",         // monthly | seasonal | earlyBird | global...
+          amount: 23,
+        },
+  
+        status: "pending",        // pending | confirmed | cancelled | expired
+  
+        createdAt: "2025-06-01T12:55:23",
+        paidAt: null,             // Set khi confirmed
+        cancelledAt: null,        // Set khi user hủy hoặc hết hạn
+        expiredAt: null           // Set khi BE auto expire
+      }
+  
+      FE dùng bookings để:
+      - render lịch sử booking của host/user
+      - hiển thị chi tiết đơn đặt phòng
+  
+      BE dùng bookings để:
+      - đối chiếu lịch
+      - kiểm tra trùng lịch
+      - xử lý thanh toán
+    */
+  ],
+  // Danh sách booking đã fetch từ BE
+
+  // ======================================================================================
+  // SYSTEM GENERATED – BE trả về
+  // ======================================================================================
+  createdAt: null,           // Thời gian tạo
+  updatedAt: null,           // Thời gian cập nhật gần nhất
+};
+
+function sanitizeStayData(raw) {
+  if (!raw) return initialStayData;
+
+  const clean = JSON.parse(JSON.stringify(initialStayData));
+
+  // Copy từng nhóm field hợp lệ
+  clean.propertyID = raw.propertyID ?? null;
+  clean.hostID = raw.hostID ?? null;
+  clean.approval = raw.approval ?? initialStayData.approval;
+
+  clean.listingTitle = raw.listingTitle || "";
+  clean.description = raw.description || "";
+  clean.summary = raw.summary || "";
+
+  clean.propertyTypeID = raw.propertyTypeID ?? null;
+  clean.propertyTypeLabel = raw.propertyTypeLabel || "";
+  clean.roomTypeID = raw.roomTypeID || null;
+  clean.roomTypeLabel = raw.roomTypeLabel || "";
 
   // LOCATION
-  location: {
-    addressLine: "",
-    district: "",
-    city: "",
-    country: "",
-    lat: null,
-    lng: null,
-  },
-  neighbourhoodID: null,
-  cityID: null,
-  countryID: null,
+  clean.location = {
+    addressLine: raw.location?.addressLine || "",
+    district: raw.location?.district || "",
+    city: raw.location?.city || "",
+    country: raw.location?.country || "",
+    lat: raw.location?.lat ?? null,
+    lng: raw.location?.lng ?? null,
+  };
 
-  // CAPACITY
-  bedrooms: 1,
-  beds: 1,
-  bathrooms: 1,
-  accommodates: 1,
-  squareFeet: null,
+  clean.neighbourhoodID = raw.neighbourhoodID || null;
+  clean.cityID = raw.cityID || null;
+  clean.countryID = raw.countryID || null;
+
+  clean.bedrooms = raw.bedrooms ?? 1;
+  clean.beds = raw.beds ?? 1;
+  clean.bathrooms = raw.bathrooms ?? 1;
+  clean.accommodates = raw.accommodates ?? 1;
+  clean.squareFeet = raw.squareFeet ?? null;
 
   // PRICING
-  pricing: {
-    basePrice: "",
-    weekendPremium: 0, // %
-    currency: "USD",
-    cleaningFee: 0,
-    serviceFee: 0,
-    taxFee: 0,
-    extraPeopleFee: 0,
-    discount: 0,
-    discountPercentage: 0,
-    minNights: 1,
-    maxNights: 30,
-  },
+  clean.pricing = {
+    basePrice: Number(raw.pricing?.basePrice) || 0,
+    currency: raw.pricing?.currency || "USD",
+    weekendMultiplier: Number(raw.pricing?.weekendMultiplier) || 1,
+    cleaningFee: Number(raw.pricing?.cleaningFee) || 0,
+    extraPeopleFee: Number(raw.pricing?.extraPeopleFee) || 0,
+    extraPeopleThreshold: Number(raw.pricing?.extraPeopleThreshold) || 1,
+    serviceFee: raw.pricing?.serviceFee || { type: "percentage", percent: 4 },
+    taxFee: raw.pricing?.taxFee || { type: "percentage", percent: 6 },
+    discounts: raw.pricing?.discounts || initialStayData.pricing.discounts,
+    minNights: raw.pricing?.minNights ?? 1,
+    maxNights: raw.pricing?.maxNights ?? 30,
+    preparationTime: raw.pricing?.preparationTime ?? 0,
+    advanceNotice: raw.pricing?.advanceNotice ?? 0
+  };
 
-  // RULES
-  checkin_after: "14:00",
-  checkout_before: "11:00",
-  selfCheckIn: false,
-  self_checkin_method: "Lockbox",
-  no_smoking: false,
-  no_open_flames: false,
-  pets_allowed: false,
-  houseRules: [],
+  clean.houseRules = raw.houseRules || [];
+  clean.rules = raw.rules || initialStayData.rules;
 
-  // HEALTH & SAFETY
-  covidSafety: false,
-  surfacesSanitized: false,
-  carbonMonoxideAlarm: false,
-  smokeAlarm: false,
-  securityDepositRequired: false,
-  securityDepositAmount: 0,
+  clean.active = !!raw.active;
+  clean.isBusinessReady = !!raw.isBusinessReady;
 
-  // STATUS
-  active: true,
-  isBusinessReady: false,
+  clean.coverPhoto = raw.coverPhoto || null;
 
-  // MEDIA
-  photos: [],
-  coverPhoto: null,
+  clean.photos = Array.isArray(raw.photos) ? raw.photos : [];
+  clean.photosPreview = []; // không bao giờ lấy từ draft
 
-  // AMENITIES
-  amenities: [],
-};
+  clean.amenities = Array.isArray(raw.amenities) ? raw.amenities : [];
+
+  clean.calendar = Array.isArray(raw.calendar) ? raw.calendar : [];
+  clean.bookings = Array.isArray(raw.bookings) ? raw.bookings : [];
+
+  clean.createdAt = raw.createdAt || null;
+  clean.updatedAt = raw.updatedAt || null;
+
+  return clean;
+}
+
+
 
 // 🧭 Experience / Tour
 const initialExperienceData = {
@@ -172,6 +503,9 @@ export function HostProvider({ children }) {
   const [loadingDraft, setLoadingDraft] = useState(true);
 
   const [photosReady, setPhotosReady] = useState(false);
+  // 🖼 Ảnh chỉ lưu trong RAM (KHÔNG localStorage)
+  const [stayPhotosRAM, setStayPhotosRAM] = useState([]);
+
 
   const location = useLocation();
 
@@ -191,38 +525,46 @@ export function HostProvider({ children }) {
     if (type === "stay") {
       // SPECIAL HANDLING: PHOTOS + COVER PHOTO
       if (step === "photos") {
-        setStayData((prev) => {
-          const newPhotos = values.photos || prev.photos || [];
+        // values.photos có thể là:
+        //  - "RAM objects" (có .preview hoặc .file)  -> muốn update stayPhotosRAM
+        //  - "metadata only" (không có preview/file) -> chỉ update stayData.photos (metadata)
+        const incoming = values.photos || [];
+        const hasPreview = Array.isArray(incoming) && incoming.some(p => p.preview || p.file);
 
-          // 1. Nếu host chọn cover → dùng ảnh isCover = true
-          const selectedCover = newPhotos.find((p) => p.isCover);
+        // Nếu incoming chứa preview/file => đó là RAM-like array -> sync to RAM
+        if (hasPreview) {
+          setStayPhotosRAM(incoming);
+        } else {
+          // nếu incoming là metadata không có preview thì KHÔNG ghi đè stayPhotosRAM
+          // (giữ ảnh RAM đang có trong UI)
+        }
 
-          let coverPhoto = selectedCover
-            ? selectedCover.preview || selectedCover.serverUrl || null
-            : prev.coverPhoto;
+        // Lưu metadata cho backend (dù incoming có preview hay không)
+        setStayData((prev) => ({
+          ...prev,
+          photos: (incoming || []).map((p, i) => ({
+            category: p.category,
+            caption: p.caption || "",
+            sortIndex: p.sortIndex ?? i + 1,
+            isCover: p.isCover || false,
+            name: p.name || "",
+            serverUrl: p.serverUrl || "",
+          })),
+          photosPreview: [], // Preview không lưu vào main object
+          coverPhoto: prev.coverPhoto || null,
+        }));
 
-          // 2. Nếu chưa có cover → chọn auto
-          if (!selectedCover && !prev.coverPhoto && newPhotos.length > 0) {
-            // Living Room → Bedroom → First
-            const living = newPhotos.find((p) => p.category === "livingroom");
-            const bed = newPhotos.find((p) => p.category === "bedroom");
+        setCompletedStep((prev) => ({ ...prev, photos: true }));
+        return;
+      }
 
-            const auto = living || bed || newPhotos[0];
-
-            coverPhoto = auto.preview || auto.serverUrl || null;
-
-            // gắn isCover vào ảnh auto
-            newPhotos.forEach((p) => (p.isCover = p === auto));
-          }
-
-          return {
-            ...prev,
-            photos: newPhotos,
-            coverPhoto,
-          };
-        });
-
-        setCompletedStep((prev) => ({ ...prev, [step]: true }));
+      if (step === "choose") {
+        setStayData(prev => ({
+          ...prev,
+          propertyTypeID: values.propertyTypeID,
+          propertyTypeLabel: values.propertyTypeLabel
+        }));
+        setCompletedStep(prev => ({ ...prev, choose: true }));
         return;
       }
 
@@ -232,18 +574,120 @@ export function HostProvider({ children }) {
           ...prev,
           location: { ...prev.location, ...values },
         }));
+        return;
       }
-      // PRICE
-      else if (step === "pricing") {
-        setStayData((prev) => ({
+      if (step === "details") {
+        setStayData(prev => ({
           ...prev,
-          pricing: { ...prev.pricing, ...values },
+          ...values, // bedrooms, beds, bathrooms, accommodates, squareFeet
         }));
+        setCompletedStep(prev => ({ ...prev, details: true }));
+        return;
       }
+      if (step === "title") {
+        setStayData(prev => ({
+          ...prev,
+          listingTitle: values.listingTitle ?? prev.listingTitle
+        }));
+        setCompletedStep(prev => ({ ...prev, title: true }));
+        return;
+      }
+      if (step === "description") {
+        setStayData(prev => ({
+          ...prev,
+          description: values.description ?? prev.description,
+          summary: values.summary ?? prev.summary
+        }));
+        setCompletedStep(prev => ({ ...prev, description: true }));
+        return;
+      }
+      if (step === "amenities") {
+        // values = array
+        setStayData(prev => ({
+          ...prev,
+          amenities: values
+        }));
+        setCompletedStep(prev => ({ ...prev, amenities: true }));
+        return;
+      }
+
+      // PRICE
+      if (step === "pricing") {
+        const patch = values.pricing || values; // chống lỗi UI gửi sai shape
+        setStayData(prev => ({
+          ...prev,
+          pricing: { ...prev.pricing, ...patch }
+        }));
+        setCompletedStep(prev => ({ ...prev, pricing: true }));
+        return;
+      }
+
+      // DISCOUNTS (stay)
+      if (step === "discounts") {
+        setStayData(prev => ({
+          ...prev,
+          pricing: {
+            ...prev.pricing,
+            discounts: {
+              ...prev.pricing.discounts,
+              ...values
+            }
+          }
+        }));
+
+        setCompletedStep(prev => ({ ...prev, discounts: true }));
+        return;
+      }
+
+      //FEES
+      if (step === "fees") {
+        setStayData(prev => ({
+          ...prev,
+          pricing: { ...prev.pricing, ...values }
+        }));
+        setCompletedStep(prev => ({ ...prev, fees: true }));
+        return;
+      }
+      //WEEKDAY PRICE, WEEKEND PRICE
+      if (step === "weekday-price" || step === "weekend-price") {
+        setStayData(prev => ({
+          ...prev,
+          pricing: { ...prev.pricing, ...values.pricing }
+        }));
+        setCompletedStep(prev => ({ ...prev, [step]: true }));
+        return;
+      }
+      if (step === "rules") {
+        setStayData(prev => ({
+          ...prev,
+          rules: { ...prev.rules, ...values }
+        }));
+        setCompletedStep(prev => ({ ...prev, rules: true }));
+        return;
+      }
+      if (step === "houseRules") {
+        setStayData(prev => ({
+          ...prev,
+          houseRules: values
+        }));
+        setCompletedStep(prev => ({ ...prev, houseRules: true }));
+        return;
+      }
+      if (step === "typeofplace") {
+        setStayData(prev => ({
+          ...prev,
+          roomTypeID: values.roomTypeID,
+          roomTypeLabel: values.roomTypeLabel
+        }));
+        setCompletedStep(prev => ({ ...prev, typeofplace: true }));
+        return;
+      }
+
       // OTHER
       else {
-        setStayData((prev) => ({ ...prev, ...values }));
+        console.warn("❌ updateField bị gọi với step không xác định. Bỏ qua để tránh thêm field sai:", step, values);
       }
+
     } else {
       // EXPERIENCE FLOW
       if (step === "location") {
@@ -312,7 +756,7 @@ export function HostProvider({ children }) {
   // ============================================================
   function validateStep(step) {
     if (type === "stay") {
-      if (step === "choose") return !!stayData.propertyType;
+      if (step === "choose") return !!stayData.propertyTypeID;
       if (step === "typeofplace") return !!stayData.roomTypeID;
       if (step === "location")
         return !!stayData.location.lat && !!stayData.location.lng;
@@ -337,14 +781,17 @@ export function HostProvider({ children }) {
         return !isNaN(price) && price > 0;
       }
       if (step === "photos") {
-        const photos = stayData.photos || [];
+        // Prefer RAM (actual preview objects) because BE/LocalStorage metadata may lack previews
+        const ramPhotos = stayPhotosRAM || [];
+        const photosForValidation = (ramPhotos.length > 0) ? ramPhotos : (stayData.photosPreview || []);
 
-        const hasBedroom = photos.some((p) => p.category === "bedroom");
-        const hasBathroom = photos.some((p) => p.category === "bathroom");
-
-        // Bắt buộc ít nhất 1 ảnh bedroom + 1 ảnh bathroom
-        return hasBedroom && hasBathroom;
+        return (
+          photosForValidation.some((p) => p.category === "bedroom") &&
+          photosForValidation.some((p) => p.category === "bathroom")
+        );
       }
+
+
 
       return true;
     } else {
@@ -565,11 +1012,10 @@ export function HostProvider({ children }) {
 
     if (savedStay) {
       try {
-        const stay = JSON.parse(savedStay);
-        setStayData({ ...initialStayData, ...stay });
-      } catch {
-        // nếu lỗi parse thì bỏ qua draft
-      }
+        const parsed = JSON.parse(savedStay);
+        const cleaned = sanitizeStayData(parsed);
+        setStayData(cleaned);
+      } catch { }
     }
 
     const savedExp = localStorage.getItem("host_exp_draft");
@@ -626,10 +1072,26 @@ export function HostProvider({ children }) {
 
   // SAVE STAY DRAFT
   useEffect(() => {
-    if (loaded) {
-      localStorage.setItem("host_stay_draft", JSON.stringify(stayData));
-    }
+    if (!loaded) return;
+
+    const safeData = sanitizeStayData(stayData);
+
+    const clone = { ...safeData };
+    delete clone.photosPreview;
+
+    clone.photos = clone.photos.map(p => ({
+      name: p.name || "",
+      caption: p.caption || "",
+      category: p.category || "",
+      sortIndex: p.sortIndex || 0,
+      isCover: !!p.isCover,
+      serverUrl: p.serverUrl || ""
+    }));
+
+    localStorage.setItem("host_stay_draft", JSON.stringify(clone));
   }, [stayData, loaded]);
+
+
 
   // SAVE EXPERIENCE DRAFT
   useEffect(() => {
@@ -714,6 +1176,8 @@ export function HostProvider({ children }) {
         getDebugData,
         loadingDraft,
         photosReady,
+        stayPhotosRAM,
+        setStayPhotosRAM,
       }}
     >
       {children}
@@ -724,17 +1188,24 @@ export function HostProvider({ children }) {
 // ============================================================
 // 9️⃣ FORMATTER STAY / EXPERIENCE
 // ============================================================
-function formatStayDataForAPI(stayData) {
-  // ========== Helper Functions ==========
-  const truncate = (str, maxLength) => {
-    if (!str) return "";
-    return str.length > maxLength ? str.substring(0, maxLength) : str;
+function formatStayDataForAPI(d) {
+  const num = (v) => {
+    const n = Number(v);
+    return isNaN(n) ? 0 : n;
   };
 
-  const toDecimal = (value) => {
-    const num = Number(value);
-    return isNaN(num) ? null : num;
-  };
+  const safe = (v) => (v === undefined || v === null ? "" : v);
+
+  // ---------------------------------------------------------
+  // PHOTOS
+  // ---------------------------------------------------------
+  const photos = (d.photos || []).map((p, i) => ({
+    url: safe(p.serverUrl || p.preview || ""),
+    caption: safe(p.caption),
+    category: safe(p.category),
+    sortIndex: p.sortIndex ?? i + 1,
+    isCover: !!p.isCover,
+  }));
 
   // Convert photos safely (sync – không cần async)
   // ⚠️ CHỈ dùng serverUrl, KHÔNG dùng preview (preview là base64 chỉ để preview tạm thời)
@@ -782,43 +1253,149 @@ function formatStayDataForAPI(stayData) {
     )
   );
 
-  // Convert to backend format
-  const formattedAmenities = amenityIds.map((id) => ({
-    amenityID: id,
-  }));
+  // ---------------------------------------------------------
+  // AMENITIES
+  // ---------------------------------------------------------
+  const amenities = (d.amenities || [])
+    .map((x) => Number(x))
+    .filter((x) => !isNaN(x))
+    .map((id) => ({ amenityID: id }));
 
-  // ========== LAT / LNG ==========
-  const lat = stayData.location?.lat
-    ? stayData.location.lat.toString()
-    : null;
-  const lng = stayData.location?.lng
-    ? stayData.location.lng.toString()
-    : null;
+  // ---------------------------------------------------------
+  // DISCOUNTS
+  // ---------------------------------------------------------
+  const discounts = {
+    weeklyPercent: num(d.pricing.discounts.weekly.percent),
+    monthlyPercent: num(d.pricing.discounts.monthly.percent),
 
-  // ========== FINAL PAYLOAD ==========
+    seasonal: (d.pricing.discounts.seasonalDiscounts || []).map((s) => ({
+      from: s.from,
+      to: s.to,
+      percentage: num(s.percentage),
+    })),
+
+    earlyBird: (d.pricing.discounts.earlyBird || []).map((e) => ({
+      daysBefore: num(e.daysBefore),
+      percent: num(e.percent),
+    })),
+  };
+
+  // ---------------------------------------------------------
+  // FINAL PAYLOAD
+  // ---------------------------------------------------------
   return {
-    userID: stayData.userID || stayData.hostID || null,
-    listingTitle,
-    description: stayData.description || "",
-    location: stayData.location?.addressLine || "",
-    cityID: stayData.cityID || null,
-    countryID: stayData.countryID || null,
-    roomTypeID: stayData.roomTypeID || null,
-    bedrooms: stayData.bedrooms || null,
-    beds: stayData.beds || null,
-    bathrooms,
-    accommodates: stayData.accommodates || null,
-    price,
-    currency: stayData.pricing?.currency || "USD",
-    active: stayData.active ?? true,
-    propertyType: propertyType || null,
-    lat,
-    lng,
-    houseRules: stayData.houseRules
-      ? JSON.stringify(stayData.houseRules)
-      : null,
+    // =========================
+    // BASIC LISTING INFO
+    // =========================
+    propertyID: d.propertyID || null,
+    hostID: d.hostID || d.userID || null,
+
+    listingTitle: safe(d.listingTitle),
+    description: safe(d.description),
+    summary: safe(d.summary),
+
+    propertyTypeID: d.propertyTypeID || null,
+    propertyTypeLabel: safe(d.propertyTypeLabel),  // ⭐ THÊM VÀO
+
+    roomTypeID: d.roomTypeID || null,
+    roomTypeLabel: safe(d.roomTypeLabel),
+
+    // =========================
+    // LOCATION
+    // =========================
+    location: {
+      addressLine: safe(d.location.addressLine),
+      district: safe(d.location.district),
+      city: safe(d.location.city),
+      country: safe(d.location.country),
+      lat: d.location.lat,
+      lng: d.location.lng,
+    },
+
+    cityID: d.cityID || null,
+    countryID: d.countryID || null,
+
+    // =========================
+    // CAPACITY
+    // =========================
+    bedrooms: num(d.bedrooms),
+    beds: num(d.beds),
+    bathrooms: num(d.bathrooms),
+    accommodates: num(d.accommodates),
+    squareFeet: d.squareFeet || null,
+
+    // =========================
+    // PRICING + FEES
+    // =========================
+    pricing: {
+      basePrice: num(d.pricing.basePrice),
+      currency: safe(d.pricing.currency),
+
+      weekendMultiplier: num(d.pricing.weekendMultiplier),
+
+      cleaningFee: num(d.pricing.cleaningFee),
+      extraPeopleFee: num(d.pricing.extraPeopleFee),
+      extraPeopleThreshold: num(d.pricing.extraPeopleThreshold),
+
+      serviceFeePercent: num(d.pricing.serviceFee.percent),
+      taxFeePercent: num(d.pricing.taxFee.percent),
+
+      discounts,
+    },
+
+    // =========================
+    // BOOKING RULES
+    // =========================
+    bookingRules: {
+      minNights: num(d.pricing.minNights),
+      maxNights: num(d.pricing.maxNights),
+      preparationTime: num(d.pricing.preparationTime),
+      advanceNotice: num(d.pricing.advanceNotice),
+    },
+
+    // =========================
+    // HOUSE RULES & SAFETY
+    // =========================
+    houseRules: d.houseRules || [],
+
+    rules: {
+      checkin_after: safe(d.rules.checkin_after),
+      checkout_before: safe(d.rules.checkout_before),
+
+      no_smoking: !!d.rules.no_smoking,
+      no_open_flames: !!d.rules.no_open_flames,
+      pets_allowed: !!d.rules.pets_allowed,
+
+      covidSafety: !!d.rules.covidSafety,
+      surfacesSanitized: !!d.rules.surfacesSanitized,
+      carbonMonoxideAlarm: !!d.rules.carbonMonoxideAlarm,
+      smokeAlarm: !!d.rules.smokeAlarm,
+
+      selfCheckIn: !!d.rules.selfCheckIn,
+      self_checkin_method: safe(d.rules.self_checkin_method),
+    },
+
+    // =========================
+    // PHOTOS
+    // =========================
+    coverPhoto,
     photos,
-    amenities: formattedAmenities,
+
+    // =========================
+    // AMENITIES
+    // =========================
+    amenities,
+
+    // =========================
+    // STATUS
+    // =========================
+    active: !!d.active,
+    isBusinessReady: !!d.isBusinessReady,
+
+    approval: d.approval || {},
+
+    createdAt: d.createdAt || null,
+    updatedAt: d.updatedAt || null,
   };
 }
 

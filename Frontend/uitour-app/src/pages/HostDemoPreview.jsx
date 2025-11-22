@@ -15,7 +15,11 @@ export default function HostDemoPreview() {
   } = useHost();
 
   const navigate = useNavigate();
+  const debug = getDebugData ? getDebugData() : null;
 
+  // =============================
+  // CLEAR BUTTON ACTIONS
+  // =============================
   const handleClearAll = () => {
     if (!window.confirm("Xóa toàn bộ draft (stay + experience) trong localStorage?")) return;
     reset();
@@ -24,35 +28,31 @@ export default function HostDemoPreview() {
 
   const handleClearStay = () => {
     if (!window.confirm("Xóa draft Stay?")) return;
-    // xóa localStorage stay key + reset stay state
     localStorage.removeItem("host_stay_draft");
-    setStayData && setStayData({ .../* optional: keep initial shape */ {} });
-    // better: call reset then rehydrate experience if you want to keep experience
+    setStayData && setStayData({});
     alert("Đã xóa draft Stay.");
   };
 
   const handleClearExperience = () => {
     if (!window.confirm("Xóa draft Experience?")) return;
     localStorage.removeItem("host_exp_draft");
-    setExperienceData && setExperienceData({ .../* optional: keep initial shape */ {} });
+    setExperienceData && setExperienceData({});
     alert("Đã xóa draft Experience.");
   };
 
   const handleSend = async () => {
     const ok = await sendHostData();
     if (ok) {
-      // nếu muốn xóa draft sau khi gửi, gọi reset() ở đây
       if (window.confirm("Gửi thành công — xóa draft không?")) reset();
     }
   };
-
-  const debug = getDebugData ? getDebugData() : null;
 
   return (
     <div style={{ padding: 32 }}>
       <h2>🔎 Demo Preview Host Data</h2>
 
-      <div style={{ marginBottom: 12, display: "flex", gap: 8 }}>
+      {/* ACTION BUTTONS */}
+      <div style={{ marginBottom: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
         <button onClick={() => navigate("/")}>🏠 Quay lại Trang Chủ</button>
         <button onClick={() => navigate("/host/stay/create/choose")}>🏠 Tạo Stay mới</button>
         <button onClick={() => navigate("/host/experience/create/choose")}>🎭 Tạo Experience mới</button>
@@ -75,24 +75,28 @@ export default function HostDemoPreview() {
         <button onClick={handleClearExperience}>🗑️ Xóa Experience</button>
       </div>
 
-      <h3>📌 RAW — Stay Data</h3>
+      {/* RAW STAY */}
+      <h3>📌 RAW — Stay Data (FE)</h3>
       <pre style={{ background: "#f7f7f7", padding: 16, maxHeight: 300, overflow: "auto" }}>
         {JSON.stringify(stayData, null, 2)}
       </pre>
 
-      <h3>📌 RAW — Experience Data</h3>
+      {/* RAW EXPERIENCE */}
+      <h3>📌 RAW — Experience Data (FE)</h3>
       <pre style={{ background: "#f7f7f7", padding: 16, maxHeight: 300, overflow: "auto" }}>
         {JSON.stringify(experienceData, null, 2)}
       </pre>
 
-      <h3>📌 FINAL DATA (After Format)</h3>
+      {/* FORMATTED FINAL DATA */}
+      <h3>📌 FINAL DATA (After Format — Ready for Backend API)</h3>
       <pre style={{ background: "#eafdee", padding: 16, maxHeight: 300, overflow: "auto" }}>
-        {JSON.stringify(getFinalData(), null, 2)}
+        {JSON.stringify(debug?.formatted, null, 2)}
       </pre>
 
+      {/* DEBUG */}
       {debug && (
         <>
-          <h3>🔧 DEBUG</h3>
+          <h3>🔧 DEBUG (raw + formatted)</h3>
           <pre style={{ background: "#fff7e6", padding: 16, maxHeight: 300, overflow: "auto" }}>
             {JSON.stringify(debug, null, 2)}
           </pre>

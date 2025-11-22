@@ -35,10 +35,14 @@ const ROUTE_FLOW = {
   },
   "/host/stay/create/description": {
     prev: "/host/stay/create/title",
+    next: "/host/stay/create/fees",
+  },
+  "/host/stay/create/fees": {
+    prev: "/host/stay/create/description",
     next: "/host/stay/create/weekday-price",
   },
   "/host/stay/create/weekday-price": {
-    prev: "/host/stay/create/description",
+    prev: "/host/stay/create/fees",
     next: "/host/stay/create/weekend-price",
   },
   "/host/stay/create/weekend-price": {
@@ -47,6 +51,14 @@ const ROUTE_FLOW = {
   },
   "/host/stay/create/discount": {
     prev: "/host/stay/create/weekend-price",
+    next: "/host/stay/create/rules-safety",
+  },
+  "/host/stay/create/rules-safety": {
+    prev: "/host/stay/create/discount",
+    next: "/host/stay/create/preview",
+  },
+  "/host/stay/create/preview": {
+    prev: "/host/stay/create/rules-safety",
     isLast: true,
   },
 
@@ -103,9 +115,9 @@ function HostLayoutContent() {
       <main className="host-main">
         <Outlet />
       </main>
-      <HostFooter 
-        prevPath={prev} 
-        nextPath={next} 
+      <HostFooter
+        prevPath={prev}
+        nextPath={next}
         isLast={isLast}
         disabledNext={disabledNext}
         onPublish={isLast ? handlePublish : undefined}
@@ -116,7 +128,7 @@ function HostLayoutContent() {
 
 export default function HostLayout() {
   return (
-      <HostLayoutContent />
+    <HostLayoutContent />
   );
 }
 
