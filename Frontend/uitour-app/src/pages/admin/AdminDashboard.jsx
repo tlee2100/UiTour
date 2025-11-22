@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './admin.css';
 import adminAPI from '../../services/adminAPI';
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalUsers: 0,
     pendingPosts: 0,
@@ -18,12 +20,15 @@ export default function AdminDashboard() {
   const loadStats = async () => {
     try {
       setLoading(true);
-      const [users, properties] = await Promise.all([
+      const [users, properties, tours] = await Promise.all([
         adminAPI.getAllUsers().catch(() => []),
-        adminAPI.getAllProperties().catch(() => [])
+        adminAPI.getAllProperties().catch(() => []),
+        adminAPI.getAllTours().catch(() => [])
       ]);
 
-      const pendingPosts = (properties || []).filter(p => !p.Active && !p.active).length;
+      const pendingProperties = (properties || []).filter(p => !p.Active && !p.active).length;
+      const pendingTours = (tours || []).filter(t => !t.Active && !t.active).length;
+      const pendingPosts = pendingProperties + pendingTours;
 
       setStats({
         totalUsers: (users || []).length,
@@ -49,9 +54,20 @@ export default function AdminDashboard() {
           <div className="kpi-title">Tổng người dùng</div>
           <div className="kpi-value">{loading ? '...' : formatNumber(stats.totalUsers)}</div>
         </div>
-        <div className="kpi-card">
+        <div 
+          className="kpi-card" 
+          onClick={() => navigate('/admin/posts')}
+          style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
           <div className="kpi-title">Bài đăng chờ duyệt</div>
           <div className="kpi-value">{loading ? '...' : formatNumber(stats.pendingPosts)}</div>
+          {stats.pendingPosts > 0 && (
+            <div style={{ fontSize: '12px', color: '#f59e0b', marginTop: '4px' }}>
+              Click để xem chi tiết →
+            </div>
+          )}
         </div>
         <div className="kpi-card">
           <div className="kpi-title">Doanh thu tháng này</div>

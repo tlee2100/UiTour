@@ -111,13 +111,32 @@ export default function ToursPage() {
           <div className="tours-grid">
             {experiences?.map(tour => {
               if (!tour) return null;
+              
+              // Helper function to normalize image URL
+              const normalizeImageUrl = (url) => {
+                if (!url || url.trim().length === 0) return "/fallback.png";
+                // If already a full URL (http/https), use as is
+                if (url.startsWith('http://') || url.startsWith('https://')) {
+                  return url.trim();
+                }
+                // If relative path starting with /, prepend backend base URL
+                if (url.startsWith('/')) {
+                  return `http://localhost:5069${url}`;
+                }
+                // Otherwise, assume it's a relative path and prepend backend base URL
+                return `http://localhost:5069/${url}`;
+              };
+              
+              const imageUrl = tour.image?.url || tour.image || "/fallback.png";
+              const normalizedImageUrl = normalizeImageUrl(imageUrl);
+              
               return (
                 <div key={tour.id} className="tour-card">
 
                   <div className="tour-image"
                     onClick={() => navigate(`/experience/${tour.id}`)}>
                     <img
-                      src={tour.image?.url || tour.image || "/fallback.png"}
+                      src={normalizedImageUrl}
                       alt={tour.title || "Tour image"}
                     />
                     <button 
