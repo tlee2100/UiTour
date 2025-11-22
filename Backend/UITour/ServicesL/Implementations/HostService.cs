@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using UITour.Models;
 using UITour.DAL.Interfaces;
 using UITour.ServicesL.Interfaces;
+using UITour.Models.DTO;
 
 using HostModel = UITour.Models.Host; // Alias to resolve ambiguity
 
@@ -30,6 +31,46 @@ namespace UITour.ServicesL.Implementations
 
             if (host == null)
                 throw new InvalidOperationException("Host not found");
+
+            return host;
+        }
+
+        public async Task<HostModel> GetByUserIdAsync(int userId)
+        {
+            var host = await _unitOfWork.Hosts.Query()
+                .Include(h => h.User)
+                .Include(h => h.Properties)
+                .Include(h => h.Verifications)
+                .FirstOrDefaultAsync(h => h.UserID == userId);
+
+            // Nếu chưa có Host, tự động tạo mới
+            if (host == null)
+            {
+                // Kiểm tra User có tồn tại không
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                if (user == null)
+                    throw new InvalidOperationException("User not found");
+
+                // Tạo Host mới
+                host = new HostModel
+                {
+                    UserID = userId,
+                    HostSince = DateTime.UtcNow,
+                    IsSuperHost = false,
+                    HostAbout = null,
+                    HostResponseRate = null
+                };
+
+                await _unitOfWork.Hosts.AddAsync(host);
+                await _unitOfWork.SaveChangesAsync();
+
+                // Load lại với includes
+                host = await _unitOfWork.Hosts.Query()
+                    .Include(h => h.User)
+                    .Include(h => h.Properties)
+                    .Include(h => h.Verifications)
+                    .FirstOrDefaultAsync(h => h.HostID == host.HostID);
+            }
 
             return host;
         }
@@ -171,6 +212,68 @@ namespace UITour.ServicesL.Implementations
             return await _unitOfWork.Tours.Query()
                 .Where(p => p.HostID == hostId)
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<HostListingDto>> GetListingsAsync(int hostId)
+        {
+            var listings = new List<HostListingDto>();
+
+            // Get Properties with Photos and Reviews
+            var properties = await _unitOfWork.Properties.Query()
+                .Where(p => p.HostID == hostId)
+                .Include(p => p.Photos)
+                .Include(p => p.Reviews)
+                .ToListAsync();
+
+            foreach (var property in properties)
+            {
+                var avgRating = property.Reviews != null && property.Reviews.Any()
+                    ? property.Reviews.Average(r => (double)r.Rating)
+                    : 0.0;
+
+                var firstPhoto = property.Photos?.OrderBy(p => p.SortIndex).FirstOrDefault();
+
+                listings.Add(new HostListingDto
+                {
+                    Id = property.PropertyID,
+                    Title = property.ListingTitle ?? "Untitled Property",
+                    ImageUrl = firstPhoto?.Url,
+                    Rating = Math.Round(avgRating, 2),
+                    Status = property.Active ? "Listed" : "Unlisted",
+                    Type = "Property",
+                    CreatedAt = property.CreatedAt
+                });
+            }
+
+            // Get Tours with Photos and Reviews
+            var tours = await _unitOfWork.Tours.Query()
+                .Where(t => t.HostID == hostId)
+                .Include(t => t.Photos)
+                .Include(t => t.Reviews)
+                .ToListAsync();
+
+            foreach (var tour in tours)
+            {
+                var avgRating = tour.Reviews != null && tour.Reviews.Any()
+                    ? tour.Reviews.Average(r => (double)r.Rating)
+                    : 0.0;
+
+                var firstPhoto = tour.Photos?.OrderBy(p => p.SortIndex).FirstOrDefault();
+
+                listings.Add(new HostListingDto
+                {
+                    Id = tour.TourID,
+                    Title = tour.TourName ?? "Untitled Tour",
+                    ImageUrl = firstPhoto?.Url,
+                    Rating = Math.Round(avgRating, 2),
+                    Status = tour.Active ? "Listed" : "Unlisted",
+                    Type = "Tour",
+                    CreatedAt = tour.CreatedAt
+                });
+            }
+
+            // Sort by CreatedAt descending (newest first)
+            return listings.OrderByDescending(l => l.CreatedAt);
         }
 
     }

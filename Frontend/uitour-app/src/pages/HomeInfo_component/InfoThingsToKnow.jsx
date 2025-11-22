@@ -90,9 +90,23 @@ export default function InfoThingsToKnow({ property }) {
         {/* ✅ Cancellation Policy */}
         <div className="itk-column">
           <div className="itk-heading">Cancellation policy</div>
-          <div className="itk-subtext">
-            {cancellation?.details || "See full policy"}
-          </div>
+          
+          {cancellation && cancellation.name ? (
+            <>
+              {/* Hiển thị Tên Chính sách */}
+              <div className="itk-subtext" style={{ fontWeight: 'bold' }}>
+                {cancellation.name}
+              </div>
+              {/* Hiển thị Mô tả Chính sách */}
+              <div className="itk-subtext">
+                {cancellation.description}
+              </div>
+            </>
+          ) : (
+            <div className="itk-subtext">
+              No specific cancellation policy provided.
+            </div>
+          )}
 
           <div className="itk-link">
             <span className="itk-link-text">Show details</span>

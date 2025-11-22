@@ -447,6 +447,50 @@ async resetPassword(email, otp, newPassword) {
     }
   }
 
+  // Get host listings (properties and tours) by hostId
+  async getHostListings(hostId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${HOST_BASE_URL}/${hostId}/listings`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch host listings');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Get host listings by userId
+  async getHostListingsByUserId(userId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${HOST_BASE_URL}/user/${userId}/listings`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch host listings');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
   // ============ WISHLIST ============
   async getUserWishlist(userId) {
     try {

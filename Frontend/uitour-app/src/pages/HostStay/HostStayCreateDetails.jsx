@@ -17,7 +17,9 @@ export default function HostStayCreateDetails() {
 
   const {
     minNights = 1,
-    maxNights = 30
+    maxNights = 30,
+    preparationTime = 0,
+    advanceNotice = 0,
   } = pricing;
 
   // 🟢 Update field in root (details fields)
@@ -49,9 +51,10 @@ export default function HostStayCreateDetails() {
           <p className="hs-room-subtitle">
             Set the number of guests, bedrooms, beds and bathrooms available in your place.
           </p>
+
           <div className="hs-room-controls">
             <RoomControl
-              label="Guests"
+              label="Max guests"
               value={accommodates}
               onIncrease={() => handleChange("accommodates", accommodates + 1)}
               onDecrease={() => handleChange("accommodates", Math.max(1, accommodates - 1))}
@@ -80,11 +83,12 @@ export default function HostStayCreateDetails() {
           </div>
         </div>
 
-        {/* 🟦 Min / Max Nights Section */}
+        {/* 🟦 Min / Max Nights + NEW FIELDS */}
         <div className="hs-room-section">
           <h2 className="hs-room-title">Guest stay duration</h2>
 
           <div className="hs-room-controls">
+
             {/* MIN NIGHTS */}
             <RoomControl
               label="Min nights"
@@ -105,14 +109,36 @@ export default function HostStayCreateDetails() {
                 handlePricingChange("maxNights", Math.min(30, maxNights + 1))
               }
               onDecrease={() =>
-                handlePricingChange(
-                  "maxNights",
-                  Math.max(minNights, maxNights - 1)
-                )
+                handlePricingChange("maxNights", Math.max(minNights, maxNights - 1))
+              }
+            />
+
+            {/* NEW: PREPARATION TIME */}
+            <RoomControl
+              label="Prep days between bookings"
+              value={preparationTime}
+              onIncrease={() =>
+                handlePricingChange("preparationTime", preparationTime + 1)
+              }
+              onDecrease={() =>
+                handlePricingChange("preparationTime", Math.max(0, preparationTime - 1))
+              }
+            />
+
+            {/* NEW: ADVANCE NOTICE */}
+            <RoomControl
+              label="Advance notice (days)"
+              value={advanceNotice}
+              onIncrease={() =>
+                handlePricingChange("advanceNotice", advanceNotice + 1)
+              }
+              onDecrease={() =>
+                handlePricingChange("advanceNotice", Math.max(0, advanceNotice - 1))
               }
             />
           </div>
         </div>
+
       </main>
     </div>
   );
