@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UITour.Models;
+using UITour.Models.DTO;
 using UITour.ServicesL.Interfaces;
 
 namespace UITour.Controllers
@@ -22,8 +26,10 @@ namespace UITour.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Tour>>> GetAllTours()
         {
-            var tours = await _tourService.GetAllAsync();
-            return Ok(tours);
+            var allTours = await _tourService.GetAllAsync();
+            // Only return active tours for public access
+            var activeTours = allTours.Where(t => t.Active == true).ToList();
+            return Ok(activeTours);
         }
 
         [HttpGet("{id}")]
@@ -36,12 +42,20 @@ namespace UITour.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Tour>> CreateTour([FromBody] Tour tour)
+        public async Task<ActionResult<Tour>> CreateTour([FromBody] CreateTourDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var createdTour = await _tourService.CreateAsync(tour);
-            return CreatedAtAction(nameof(GetTourById), new { id = createdTour.TourID }, createdTour);
+
+            try
+            {
+                var createdTour = await _tourService.CreateAsync(dto);
+                return CreatedAtAction(nameof(GetTourById), new { id = createdTour.TourID }, createdTour);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]
@@ -57,14 +71,16 @@ namespace UITour.Controllers
             return NoContent();
         }
 
+        // DELETE: api/tour/{id} (Admin only)
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteTour(int id)
         {
             var deleted = await _tourService.DeleteAsync(id);
             if (!deleted)
-                return NotFound($"Tour with ID {id} not found.");
+                return NotFound(new { error = $"Tour with ID {id} not found" });
 
-            return NoContent();
+            return Ok(new { message = "Tour deleted successfully", tourId = id });
         }
 
         // ==================== FILTERS ====================
@@ -73,6 +89,13 @@ namespace UITour.Controllers
         public async Task<ActionResult<IEnumerable<Tour>>> GetToursByHost(int hostId)
         {
             var tours = await _tourService.GetByHostIdAsync(hostId);
+            return Ok(tours);
+        }
+
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<Tour>>> GetToursByUser(int userId)
+        {
+            var tours = await _tourService.GetByUserIdAsync(userId);
             return Ok(tours);
         }
 
@@ -184,5 +207,82 @@ namespace UITour.Controllers
             return Ok(details);
         }
 
+        // PUT: api/tour/5/approve (Admin only)
+        [HttpPut("{id}/approve")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> ApproveTour(int id)
+        {
+            try
+            {
+                var tour = await _tourService.GetByIdAsync(id);
+                if (tour == null)
+                    return NotFound($"Tour with ID {id} not found");
+
+                tour.Active = true;
+                await _tourService.UpdateAsync(tour);
+
+                return Ok(new { message = "Tour approved successfully", tourId = id });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        // PUT: api/tour/5/reject (Admin only)
+        [HttpPut("{id}/reject")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> RejectTour(int id, [FromBody] RejectRequestDto request)
+        {
+            try
+            {
+                Tour tour;
+                try
+                {
+                    tour = await _tourService.GetByIdAsync(id);
+                }
+                catch (InvalidOperationException ex) when (ex.Message.Contains("not found"))
+                {
+                    return NotFound(new { error = $"Tour with ID {id} not found" });
+                }
+
+                if (tour == null)
+                    return NotFound(new { error = $"Tour with ID {id} not found" });
+
+                tour.Active = false;
+                var updateResult = await _tourService.UpdateAsync(tour);
+                
+                if (!updateResult)
+                    return BadRequest(new { error = "Failed to update tour status" });
+
+                return Ok(new { message = "Tour rejected successfully", tourId = id, reason = request?.Reason });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"An error occurred while rejecting tour: {ex.Message}" });
+            }
+        }
+
+        // GET: api/tour/pending (Admin only)
+        [HttpGet("pending")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> GetPendingTours()
+        {
+            try
+            {
+                var allTours = await _tourService.GetAllAsync();
+                // Filter: Active == false or Active == null (not explicitly set to true)
+                var pendingTours = allTours.Where(t => t.Active == false || t.Active == null).ToList();
+                return Ok(pendingTours);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
     }
 }

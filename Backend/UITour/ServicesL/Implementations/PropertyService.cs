@@ -79,7 +79,7 @@ namespace UITour.ServicesL.Implementations
                 Accommodates = dto.Accommodates,
                 Price = dto.Price,
                 Currency = dto.Currency,
-                Active = dto.Active,
+                Active = false, // Set to false (pending) - admin must approve
                 PropertyType = dto.PropertyType,
                 lat = dto.lat,
                 lng = dto.lng,
@@ -159,7 +159,29 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<IEnumerable<Property>> GetByHostIdAsync(int hostId)
         {
-            return await _unitOfWork.Properties.Query().Where(p => p.HostID == hostId).ToListAsync();
+            return await _unitOfWork.Properties.Query()
+                .Include(p => p.Photos)
+                .Include(p => p.Reviews)
+                .Where(p => p.HostID == hostId)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Property>> GetByUserIdAsync(int userId)
+        {
+            // Tìm Host theo UserID, sau đó lấy properties của Host đó
+            var host = await _unitOfWork.Hosts.Query()
+                .FirstOrDefaultAsync(h => h.UserID == userId);
+
+            if (host == null)
+            {
+                return new List<Property>(); // User chưa có Host, không có properties
+            }
+
+            return await _unitOfWork.Properties.Query()
+                .Include(p => p.Photos)
+                .Include(p => p.Reviews)
+                .Where(p => p.HostID == host.HostID)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<Property>> SearchAsync(string location, DateTime? checkIn, DateTime? checkOut, int? guests)
