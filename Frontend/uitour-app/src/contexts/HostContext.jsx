@@ -1316,6 +1316,15 @@ export function HostProvider({ children }) {
         // Format and send property data
         const payload = formatStayDataForAPI({ ...data, userID });
         
+        // Debug: Log fees in payload
+        console.log("💰 Fees in payload:", {
+          CleaningFee: payload.CleaningFee,
+          ServiceFee: payload.ServiceFee,
+          TaxFee: payload.TaxFee,
+          ExtraPeopleFee: payload.ExtraPeopleFee,
+          DiscountRules: payload.DiscountRules
+        });
+        
         // Debug: Log photos in payload
         console.log("📸 Photos in payload:", payload.Photos);
         console.log("📸 Total photos:", payload.Photos?.length || 0);
@@ -1936,6 +1945,20 @@ function formatStayDataForAPI(d) {
     })),
 
     Amenities: amenities,
+
+    // Fees
+    CleaningFee: num(d.pricing.cleaningFee),
+    ExtraPeopleFee: num(d.pricing.extraPeopleFee),
+    // ServiceFee and TaxFee: if it's an object with percent, use percent; otherwise use the value directly
+    ServiceFee: d.pricing.serviceFee?.type === "percentage" 
+      ? num(d.pricing.serviceFee.percent) 
+      : num(d.pricing.serviceFee || 0),
+    TaxFee: d.pricing.taxFee?.type === "percentage" 
+      ? num(d.pricing.taxFee.percent) 
+      : num(d.pricing.taxFee || 0),
+
+    // Note: DiscountPercentage already exists in database, can be used if needed
+    // For now, discount will be calculated on frontend based on DiscountPercentage field
 
     Active: false,
   };

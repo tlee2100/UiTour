@@ -56,6 +56,9 @@ namespace UITour.ServicesL.Implementations
         {
             if (dto == null) throw new ArgumentNullException(nameof(dto));
 
+            // Debug: Log DTO in service
+            System.Diagnostics.Debug.WriteLine($"🔍 PropertyService.CreateAsync - DTO: CleaningFee={dto.CleaningFee}, ServiceFee={dto.ServiceFee}, TaxFee={dto.TaxFee}, ExtraPeopleFee={dto.ExtraPeopleFee}");
+
             // Tìm hoặc tạo Host cho UserID
             int hostID = await GetOrCreateHostAsync(dto.UserID);
 
@@ -94,11 +97,48 @@ namespace UITour.ServicesL.Implementations
                 }).ToList(),
                 PropertyAmenities = distinctAmenityIds
                     .Select(id => new PropertyAmenity { AmenityID = id })
-                    .ToList()
-                };
+                    .ToList(),
+                // Fees
+                CleaningFee = dto.CleaningFee,
+                ExtraPeopleFee = dto.ExtraPeopleFee,
+                ServiceFee = dto.ServiceFee,
+                TaxFee = dto.TaxFee,
+                // Discounts - Use DiscountPercentage (already exists in database)
+                Discount = 0, // Will be calculated at booking time
+                DiscountPercentage = 0 // Can be set if needed, or calculated dynamically
+            };
 
-            await _unitOfWork.Properties.AddAsync(property);
-            await _unitOfWork.SaveChangesAsync();
+            // Debug: Log fees being saved
+            System.Diagnostics.Debug.WriteLine($"🔍 Creating property with fees: CleaningFee={property.CleaningFee}, ServiceFee={property.ServiceFee}, TaxFee={property.TaxFee}, ExtraPeopleFee={property.ExtraPeopleFee}");
+
+            try
+            {
+                await _unitOfWork.Properties.AddAsync(property);
+                await _unitOfWork.SaveChangesAsync();
+
+                // Verify fees were saved
+                var savedProperty = await _unitOfWork.Properties.Query()
+                    .FirstOrDefaultAsync(p => p.PropertyID == property.PropertyID);
+                
+                System.Diagnostics.Debug.WriteLine($"✅ Property {property.PropertyID} saved with fees: CleaningFee={savedProperty?.CleaningFee}, ServiceFee={savedProperty?.ServiceFee}, TaxFee={savedProperty?.TaxFee}, ExtraPeopleFee={savedProperty?.ExtraPeopleFee}");
+                
+                if (savedProperty != null)
+                {
+                    // Check if fees were actually saved
+                    if (savedProperty.CleaningFee != property.CleaningFee)
+                        System.Diagnostics.Debug.WriteLine($"⚠️ WARNING: CleaningFee mismatch! Expected={property.CleaningFee}, Saved={savedProperty.CleaningFee}");
+                    if (savedProperty.ServiceFee != property.ServiceFee)
+                        System.Diagnostics.Debug.WriteLine($"⚠️ WARNING: ServiceFee mismatch! Expected={property.ServiceFee}, Saved={savedProperty.ServiceFee}");
+                    if (savedProperty.TaxFee != property.TaxFee)
+                        System.Diagnostics.Debug.WriteLine($"⚠️ WARNING: TaxFee mismatch! Expected={property.TaxFee}, Saved={savedProperty.TaxFee}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error saving property: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"   Inner exception: {ex.InnerException?.Message}");
+                throw;
+            }
 
             return property;
         }
@@ -141,6 +181,19 @@ namespace UITour.ServicesL.Implementations
             existingProperty.Description = property.Description;
             existingProperty.Price = property.Price;
             existingProperty.HostID = property.HostID;
+            
+            // Update fees if provided
+            if (property.CleaningFee.HasValue)
+                existingProperty.CleaningFee = property.CleaningFee;
+            if (property.ExtraPeopleFee.HasValue)
+                existingProperty.ExtraPeopleFee = property.ExtraPeopleFee;
+            if (property.ServiceFee != 0)
+                existingProperty.ServiceFee = property.ServiceFee;
+            if (property.TaxFee != 0)
+                existingProperty.TaxFee = property.TaxFee;
+            // Update discount percentage if provided
+            if (property.DiscountPercentage != 0)
+                existingProperty.DiscountPercentage = property.DiscountPercentage;
 
             _unitOfWork.Properties.Update(existingProperty);
             await _unitOfWork.SaveChangesAsync();

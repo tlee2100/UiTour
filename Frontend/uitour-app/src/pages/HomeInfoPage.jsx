@@ -305,11 +305,13 @@ const normalizeProperty = (p) => {
 
     price: parseFloat(p.price || p.Price || 0),
     currency: p.currency || p.Currency || "USD",
-    serviceFee: p.serviceFee ?? 0,
-    taxFee: p.taxFee ?? 0,
-    discount: p.discount ?? 0,
+    serviceFee: parseFloat(p.serviceFee || p.ServiceFee || 0),
+    taxFee: parseFloat(p.taxFee || p.TaxFee || 0),
+    discount: parseFloat(p.discount || p.Discount || 0),
     cleaningFee: parseFloat(p.cleaningFee || p.CleaningFee || 0),
     extraGuestFee: parseFloat(p.extraPeopleFee || p.ExtraPeopleFee || 0),
+    // Use DiscountPercentage from database instead of discountRules
+    discountPercentage: parseFloat(p.discountPercentage || p.DiscountPercentage || 0),
     cancellationPolicy: cancellationPolicy,
     // Media
     media: {
@@ -497,7 +499,27 @@ export default function HomeInfoPage() {
     setError(null);
     try {
       const property = await authAPI.getPropertyById(propertyId); // ✅ gọi authAPI
+      
+      // Debug: Log raw property from backend
+      console.log("🔍 Raw property from backend:", {
+        propertyID: property?.propertyID || property?.PropertyID,
+        cleaningFee: property?.cleaningFee || property?.CleaningFee,
+        serviceFee: property?.serviceFee || property?.ServiceFee,
+        taxFee: property?.taxFee || property?.TaxFee,
+        extraPeopleFee: property?.extraPeopleFee || property?.ExtraPeopleFee,
+        rawProperty: property
+      });
+      
       const normalized = normalizeProperty(property); // ✅ normalize dữ liệu
+      
+      // Debug: Log normalized property
+      console.log("🔍 Normalized property:", {
+        cleaningFee: normalized.cleaningFee,
+        serviceFee: normalized.serviceFee,
+        taxFee: normalized.taxFee,
+        extraGuestFee: normalized.extraGuestFee
+      });
+      
       setCurrentProperty(normalized);
     } catch (err) {
       console.error("Error loading property:", err);
