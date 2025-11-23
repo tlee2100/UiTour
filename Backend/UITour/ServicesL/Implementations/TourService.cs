@@ -157,12 +157,51 @@ namespace UITour.ServicesL.Implementations
                 await _unitOfWork.Tours.AddAsync(tour);
                 await _unitOfWork.SaveChangesAsync();
                 
+                // Save ExperienceDetails (itinerary) if provided
+                System.Diagnostics.Debug.WriteLine($"🔍 Checking ExperienceDetails in DTO: {(dto.ExperienceDetails != null ? dto.ExperienceDetails.Count : 0)} items");
+                if (dto.ExperienceDetails != null && dto.ExperienceDetails.Any())
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔍 Processing {dto.ExperienceDetails.Count} ExperienceDetails items");
+                    var experienceDetails = dto.ExperienceDetails
+                        .Where(ed => !string.IsNullOrWhiteSpace(ed.ImageUrl) && !string.IsNullOrWhiteSpace(ed.Title))
+                        .Select((ed, index) => new ExperienceDetails
+                        {
+                            TourID = tour.TourID,
+                            ImageUrl = ed.ImageUrl?.Trim() ?? "",
+                            Title = ed.Title?.Trim() ?? "",
+                            Description = ed.Description?.Trim() ?? "",
+                            SortIndex = ed.SortIndex > 0 ? ed.SortIndex : index + 1
+                        })
+                        .ToList();
+
+                    System.Diagnostics.Debug.WriteLine($"🔍 After filtering: {experienceDetails.Count} valid ExperienceDetails");
+                    if (experienceDetails.Any())
+                    {
+                        foreach (var detail in experienceDetails)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"  Saving detail: Title={detail.Title}, ImageUrl={detail.ImageUrl}, SortIndex={detail.SortIndex}");
+                            await _unitOfWork.ExperienceDetails.AddAsync(detail);
+                        }
+                        await _unitOfWork.SaveChangesAsync();
+                        System.Diagnostics.Debug.WriteLine($"✅ Tour {tour.TourID} saved with {experienceDetails.Count} experience details");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ WARNING: All ExperienceDetails were filtered out (no valid ImageUrl or Title)");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ WARNING: No ExperienceDetails in DTO or DTO.ExperienceDetails is null/empty");
+                }
+                
                 // Verify photos were saved
                 var savedTour = await _unitOfWork.Tours.Query()
                     .Include(t => t.Photos)
+                    .Include(t => t.ExperienceDetails)
                     .FirstOrDefaultAsync(t => t.TourID == tour.TourID);
                 
-                System.Diagnostics.Debug.WriteLine($"Tour {tour.TourID} saved with {savedTour?.Photos?.Count ?? 0} photos in database");
+                System.Diagnostics.Debug.WriteLine($"Tour {tour.TourID} saved with {savedTour?.Photos?.Count ?? 0} photos and {savedTour?.ExperienceDetails?.Count ?? 0} experience details in database");
             }
             catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
             {
