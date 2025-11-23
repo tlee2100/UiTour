@@ -25,12 +25,21 @@ namespace UITour.Models.DTO
         public List<TourPhotoDto> Photos { get; set; }
         public string CoverPhoto { get; set; }
         public List<string> TimeSlots { get; set; }
+        public List<ExperienceDetailDto> ExperienceDetails { get; set; }
     }
 
     public class TourPhotoDto
     {
         public string Url { get; set; }
         public string Caption { get; set; }
+        public int SortIndex { get; set; }
+    }
+
+    public class ExperienceDetailDto
+    {
+        public string ImageUrl { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
         public int SortIndex { get; set; }
     }
 }

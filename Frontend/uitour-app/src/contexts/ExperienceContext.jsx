@@ -182,10 +182,16 @@ export const ExperienceProvider = ({ children }) => {
       tourID: tour?.tourID || tour?.TourID,
       hasPhotosInTour: !!(tour?.photos || tour?.Photos),
       photosCount: (tour?.photos || tour?.Photos || []).length,
-      photos: tour?.photos || tour?.Photos || []
+      photos: tour?.photos || tour?.Photos || [],
+      hasExperienceDetailsInTour: !!(tour?.experienceDetails || tour?.ExperienceDetails),
+      experienceDetailsCount: (tour?.experienceDetails || tour?.ExperienceDetails || []).length,
+      experienceDetails: tour?.experienceDetails || tour?.ExperienceDetails || []
     });
 
     // Related resources
+    // Get ExperienceDetails from tour object first (backend may include them), then fallback to separate API call
+    const tourExperienceDetails = tour?.experienceDetails || tour?.ExperienceDetails || [];
+    
     const [photos, reviews, host, details] = await Promise.all([
       authAPI.getTourPhotos(id).catch((err) => {
         console.warn(`⚠️ Failed to fetch photos separately for tour ${id}:`, err);
@@ -193,10 +199,33 @@ export const ExperienceProvider = ({ children }) => {
       }),
       authAPI.getTourReviews(id).catch(() => []),
       tour?.hostID || tour?.HostID ? authAPI.getHostById(tour.hostID || tour.HostID).catch(() => null) : Promise.resolve(null),
-      authAPI.getTourExperienceDetails(id).catch(() => []),   // ✅ thêm dòng này
+      // Only fetch separately if not already in tour object
+      tourExperienceDetails.length > 0 
+        ? Promise.resolve([]) 
+        : authAPI.getTourExperienceDetails(id).catch((err) => {
+            console.warn(`⚠️ Failed to fetch experienceDetails separately for tour ${id}:`, err);
+            return [];
+          }),
     ]);
     
+    // Use ExperienceDetails from tour object if available, otherwise use from separate API call
+    const allExperienceDetails = tourExperienceDetails.length > 0 ? tourExperienceDetails : (details || []);
+    
     console.log(`🔍 Photos from separate API call:`, photos);
+    console.log(`🔍 ExperienceDetails sources:`, {
+      fromTourObject: tourExperienceDetails.length,
+      fromSeparateAPI: (details || []).length,
+      final: allExperienceDetails.length,
+      allExperienceDetails: allExperienceDetails
+    });
+    
+    // ⚠️ CRITICAL DEBUG: Log full tour object to see if ExperienceDetails exists
+    console.log(`🔍 FULL TOUR OBJECT (checking for ExperienceDetails):`, {
+      tourKeys: Object.keys(tour || {}),
+      hasExperienceDetails: !!(tour?.experienceDetails || tour?.ExperienceDetails),
+      experienceDetails: tour?.experienceDetails || tour?.ExperienceDetails,
+      tourObject: tour
+    });
 
     // Helper function to normalize image URL
     const normalizeImageUrl = (url) => {
@@ -285,14 +314,40 @@ export const ExperienceProvider = ({ children }) => {
       };
     }
 
-    // ✅ Map experienceDetails
-    const mappedDetails = (details || []).map(d => ({
-      id: d.detailID,
-      image: d.imageUrl,
-      title: d.title,
-      description: d.description,
-      sortIndex: d.sortIndex
-    }));
+    // ✅ Map experienceDetails with normalized image URLs
+    console.log(`🔍 Raw experienceDetails before mapping:`, allExperienceDetails);
+    const mappedDetails = allExperienceDetails.map((d, index) => {
+      const imageUrl = d.imageUrl || d.ImageUrl || "";
+      const normalizedImageUrl = imageUrl ? normalizeImageUrl(imageUrl) : null;
+      
+      console.log(`🔍 Mapping detail ${index}:`, {
+        raw: d,
+        imageUrl: imageUrl,
+        normalizedImageUrl: normalizedImageUrl,
+        title: d.title || d.Title
+      });
+      
+      return {
+        id: d.detailID || d.DetailID,
+        image: normalizedImageUrl,
+        title: d.title || d.Title,
+        description: d.description || d.Description,
+        content: d.description || d.Description, // For compatibility
+        sortIndex: d.sortIndex || d.SortIndex || 0
+      };
+    });
+    
+    console.log(`🔍 Mapped experienceDetails (before filter):`, mappedDetails);
+    const filteredDetails = mappedDetails.filter(d => d.image); // Only include details with valid images
+    console.log(`🔍 Filtered experienceDetails (after filter):`, filteredDetails);
+    console.log(`🔍 ExperienceDetails count: ${mappedDetails.length} total, ${filteredDetails.length} with valid images`);
+    
+    if (mappedDetails.length > 0 && filteredDetails.length === 0) {
+      console.warn(`⚠️ WARNING: All ${mappedDetails.length} experienceDetails were filtered out because they have no valid images!`);
+      mappedDetails.forEach((d, i) => {
+        console.warn(`  Detail ${i}:`, { id: d.id, title: d.title, image: d.image });
+      });
+    }
 
     const merged = {
       id: tour?.tourID ?? Number(id),
@@ -316,7 +371,7 @@ export const ExperienceProvider = ({ children }) => {
       hostId: tour?.hostID,
       isActive: !!tour?.active,
       createdAt: tour?.createdAt,
-      experienceDetails: mappedDetails,   // ✅ thêm vào object
+      experienceDetails: filteredDetails,   // ✅ Use filtered details (only those with valid images)
     };
 
     const normalized = normalizeExperience(merged);

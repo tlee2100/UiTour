@@ -928,6 +928,54 @@ export function HostProvider({ children }) {
         mergedData.media.photos = experiencePhotosRAM;
         console.log("📸 Merged experiencePhotosRAM into experienceData:", experiencePhotosRAM.length, "photos");
       }
+      
+      // Merge experienceItineraryRAM into experienceData.experienceDetails
+      // Note: experienceItineraryRAM contains {id, preview, file, serverUrl} for each activity
+      // We need to merge this with experienceData.experienceDetails to preserve serverUrl after upload
+      if (experienceItineraryRAM && experienceItineraryRAM.length > 0) {
+        const existingDetails = mergedData.experienceDetails || [];
+        mergedData.experienceDetails = existingDetails.map(detail => {
+          const ramEntry = experienceItineraryRAM.find(r => r.id === detail.id);
+          if (ramEntry) {
+            // If RAM has serverUrl (after upload), use it
+            if (ramEntry.serverUrl) {
+              return {
+                ...detail,
+                photo: detail.photo ? {
+                  ...detail.photo,
+                  // Prioritize serverUrl from RAM (most up-to-date after upload)
+                  serverUrl: ramEntry.serverUrl,
+                  url: ramEntry.serverUrl
+                } : {
+                  serverUrl: ramEntry.serverUrl,
+                  url: ramEntry.serverUrl,
+                  name: "",
+                  caption: ""
+                }
+              };
+            } else if (detail.photo) {
+              // If RAM doesn't have serverUrl but detail has photo, keep existing
+              return {
+                ...detail,
+                photo: {
+                  ...detail.photo,
+                  serverUrl: detail.photo.serverUrl || detail.photo.url || "",
+                  url: detail.photo.url || detail.photo.serverUrl || ""
+                }
+              };
+            }
+          }
+          return detail;
+        });
+        console.log("📋 Merged experienceItineraryRAM into experienceData:", experienceItineraryRAM.length, "items");
+        console.log("📋 Merged experienceDetails:", mergedData.experienceDetails.map(ed => ({
+          id: ed.id,
+          title: ed.title,
+          hasPhoto: !!ed.photo,
+          serverUrl: ed.photo?.serverUrl || "NO SERVER URL"
+        })));
+      }
+      
       return mergedData;
     }
   }
@@ -1378,8 +1426,161 @@ export function HostProvider({ children }) {
           }
         }
 
+        // Upload itinerary photos (experienceDetails)
+        // CRITICAL: Get itinerary items from experienceData (which has metadata) and match with experienceItineraryRAM (which has files)
+        const itineraryItemsFromData = experienceData.experienceDetails || [];
+        const itineraryPhotosWithFiles = [];
+        
+        // Match items from data with RAM entries (which have files)
+        itineraryItemsFromData.forEach(item => {
+          const ramEntry = experienceItineraryRAM.find(r => r.id === item.id);
+          if (ramEntry?.file && ramEntry.file instanceof File) {
+            itineraryPhotosWithFiles.push({
+              item: item, // Metadata from experienceData
+              file: ramEntry.file, // File from RAM
+              ramEntry: ramEntry // Keep reference to RAM entry
+            });
+          }
+        });
+        
+        console.log(`🔍 Itinerary items to upload: ${itineraryPhotosWithFiles.length} out of ${itineraryItemsFromData.length} total items`);
+
+        // Declare itineraryUploadedUrls outside if block so it can be used later
+        let itineraryUploadedUrls = [];
+        
+        if (itineraryPhotosWithFiles.length > 0) {
+          try {
+            itineraryUploadedUrls = await authAPI.uploadImages(
+              itineraryPhotosWithFiles.map(p => p.file)
+            );
+            
+            if (itineraryUploadedUrls && itineraryUploadedUrls.length > 0) {
+              // Update itinerary items with server URLs
+              itineraryPhotosWithFiles.forEach((itemWithFile, index) => {
+                if (index < itineraryUploadedUrls.length) {
+                  const serverUrl = itineraryUploadedUrls[index];
+                  // Update item metadata
+                  if (itemWithFile.item.photo) {
+                    itemWithFile.item.photo.serverUrl = serverUrl;
+                    itemWithFile.item.photo.url = serverUrl;
+                  } else {
+                    itemWithFile.item.photo = {
+                      serverUrl: serverUrl,
+                      url: serverUrl,
+                      name: "",
+                      caption: ""
+                    };
+                  }
+                  console.log(`✅ Updated itinerary photo ${index} (item ${itemWithFile.item.id}) with URL: ${serverUrl}`);
+                }
+              });
+              
+              // Update experienceData.experienceDetails with serverUrls (for getFinalData to pick up)
+              setExperienceData(prev => ({
+                ...prev,
+                experienceDetails: (prev.experienceDetails || []).map(item => {
+                  const itemWithFile = itineraryPhotosWithFiles.find(iwf => iwf.item.id === item.id);
+                  if (itemWithFile && itemWithFile.item.photo?.serverUrl) {
+                    return {
+                      ...item,
+                      photo: {
+                        ...(item.photo || {}),
+                        serverUrl: itemWithFile.item.photo.serverUrl,
+                        url: itemWithFile.item.photo.serverUrl
+                      }
+                    };
+                  }
+                  return item;
+                })
+              }));
+              
+              // CRITICAL: Update experienceItineraryRAM với serverUrls
+              setExperienceItineraryRAM(prevRAM => {
+                const updatedRAM = prevRAM.map((ramEntry) => {
+                  // Tìm item tương ứng trong itineraryPhotosWithFiles (match by id and file)
+                  const itemWithFile = itineraryPhotosWithFiles.find(
+                    iwf => iwf.ramEntry?.id === ramEntry.id && 
+                           (iwf.file === ramEntry.file || iwf.ramEntry === ramEntry)
+                  );
+                  
+                  if (itemWithFile) {
+                    const uploadedIndex = itineraryPhotosWithFiles.indexOf(itemWithFile);
+                    if (uploadedIndex >= 0 && uploadedIndex < itineraryUploadedUrls.length) {
+                      const serverUrl = itineraryUploadedUrls[uploadedIndex];
+                      console.log(`🔄 Updating RAM itinerary ${ramEntry.id} with serverUrl: ${serverUrl}`);
+                      return {
+                        ...ramEntry,
+                        serverUrl: serverUrl
+                      };
+                    }
+                  }
+                  
+                  // Nếu RAM entry đã có serverUrl, giữ nguyên
+                  if (ramEntry.serverUrl) {
+                    return ramEntry;
+                  }
+                  
+                  return ramEntry;
+                });
+                
+                console.log(`📋 Updated experienceItineraryRAM: ${updatedRAM.length} items, ${updatedRAM.filter(r => r.serverUrl).length} with serverUrl`);
+                console.log(`📋 RAM entries with serverUrl:`, updatedRAM.filter(r => r.serverUrl).map(r => ({
+                  id: r.id,
+                  serverUrl: r.serverUrl
+                })));
+                return updatedRAM;
+              });
+              
+              console.log(`📸 Updated ${itineraryItemsFromData.length} itinerary items with serverUrls`);
+            }
+          } catch (uploadError) {
+            console.error("Upload itinerary error:", uploadError);
+            // Don't throw - continue even if itinerary upload fails
+            console.warn("⚠️ Some itinerary photos failed to upload, continuing...");
+          }
+        }
+
+        // CRITICAL: Get final data AFTER uploading itinerary photos to ensure serverUrl is included
+        // Since setState is async, we need to manually merge the uploaded serverUrls
+        let finalData = getFinalData();
+        finalData.userID = userID;
+        
+        // Manually merge uploaded serverUrls into finalData.experienceDetails
+        // This ensures we have the latest serverUrls even if state hasn't updated yet
+        if (itineraryPhotosWithFiles.length > 0 && itineraryUploadedUrls && itineraryUploadedUrls.length > 0) {
+          finalData.experienceDetails = (finalData.experienceDetails || []).map(item => {
+            const itemWithFile = itineraryPhotosWithFiles.find(iwf => iwf.item.id === item.id);
+            if (itemWithFile) {
+              const uploadedIndex = itineraryPhotosWithFiles.indexOf(itemWithFile);
+              if (uploadedIndex >= 0 && uploadedIndex < itineraryUploadedUrls.length) {
+                const serverUrl = itineraryUploadedUrls[uploadedIndex];
+                return {
+                  ...item,
+                  photo: {
+                    ...(item.photo || {}),
+                    serverUrl: serverUrl,
+                    url: serverUrl
+                  }
+                };
+              }
+            }
+            return item;
+          });
+        }
+        
+        console.log("🔍 Final data before formatExperienceDataForAPI:", {
+          experienceDetailsCount: finalData.experienceDetails?.length || 0,
+          experienceDetails: finalData.experienceDetails?.map(ed => ({
+            id: ed.id,
+            title: ed.title,
+            hasPhoto: !!ed.photo,
+            photoServerUrl: ed.photo?.serverUrl || "NO SERVER URL",
+            photoUrl: ed.photo?.url || "NO URL"
+          })) || []
+        });
+        
         // Backend sẽ tự động tạo Host từ UserID
-        const payload = formatExperienceDataForAPI({ ...data, userID: userID });
+        const payload = formatExperienceDataForAPI(finalData);
         
         // Debug: Log photos in payload
         console.log("📸 Tour photos in payload:", payload.Photos);
@@ -1390,6 +1591,17 @@ export function HostProvider({ children }) {
           });
         } else {
           console.warn("⚠️ WARNING: No photos in tour payload! This tour will have no images.");
+        }
+        
+        // Debug: Log experienceDetails in payload
+        console.log("📋 ExperienceDetails in payload:", payload.ExperienceDetails);
+        console.log("📋 Total experienceDetails:", payload.ExperienceDetails?.length || 0);
+        if (payload.ExperienceDetails && payload.ExperienceDetails.length > 0) {
+          payload.ExperienceDetails.forEach((ed, idx) => {
+            console.log(`  Detail ${idx}:`, { ImageUrl: ed.ImageUrl, Title: ed.Title, Description: ed.Description, SortIndex: ed.SortIndex });
+          });
+        } else {
+          console.warn("⚠️ WARNING: No ExperienceDetails in tour payload! This tour will have no itinerary.");
         }
         
         const result = await authAPI.createTour(payload);
@@ -1788,8 +2000,46 @@ function formatExperienceDataForAPI(d) {
     ? d.booking.timeSlots.map(ts => String(ts || ""))
     : [];
 
+  // Process experienceDetails (itinerary)
+  const experienceDetails = (d.experienceDetails || [])
+    .map((item, index) => {
+      // Try multiple sources for image URL
+      const imageUrl = item.photo?.serverUrl || 
+                       item.photo?.url || 
+                       item.photo?.ImageUrl || 
+                       item.image ||
+                       "";
+      
+      // Skip items without valid image URL or base64 URLs
+      if (!imageUrl || imageUrl.trim().length === 0 || imageUrl.startsWith('data:image')) {
+        console.warn(`⚠️ Experience detail ${index} skipped: no valid image URL`, {
+          item: item,
+          photo: item.photo,
+          imageUrl: imageUrl
+        });
+        return null;
+      }
+      
+      const detail = {
+        ImageUrl: imageUrl.trim(),
+        Title: safe(item.title || ""),
+        Description: safe(item.description || item.content || ""),
+        SortIndex: item.sortIndex || index + 1,
+      };
+      
+      console.log(`✅ Experience detail ${index} included:`, {
+        ImageUrl: detail.ImageUrl,
+        Title: detail.Title,
+        SortIndex: detail.SortIndex
+      });
+      
+      return detail;
+    })
+    .filter(item => item !== null);
+
   console.log("📸 Tour photos in payload:", photos.length);
   console.log("📝 Qualifications:", qualificationsString.substring(0, 100) + "...");
+  console.log("📋 Experience details in payload:", experienceDetails.length);
 
   return {
     // Match CreateTourDto - PascalCase field names
@@ -1816,6 +2066,7 @@ function formatExperienceDataForAPI(d) {
     Photos: photos, // Array with PascalCase fields
     CoverPhoto: coverPhotoUrl, // String URL
     TimeSlots: timeSlots, // List<string>
+    ExperienceDetails: experienceDetails, // Array with PascalCase fields
   };
 }
 
