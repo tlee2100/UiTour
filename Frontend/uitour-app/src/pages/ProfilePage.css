@@ -115,6 +115,10 @@
   transition: background-color 0.2s;
 }
 .profile-primary-btn:hover { background: var(--hover-uitour); }
+.profile-primary-btn:disabled { 
+  opacity: 0.6; 
+  cursor: not-allowed; 
+}
 
 .profile-subsection { grid-column: 1 / -1; padding-top: 8px; }
 .profile-subtitle { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--black); }
@@ -277,19 +281,10 @@
   .profile-section { grid-template-columns: 1fr; }
 }
 
-/* Avatar hiển thị ảnh tròn */
+/* Avatar hiển thị ảnh tròn - đã được định nghĩa ở trên, chỉ thêm overflow */
 .profile-avatar-large {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background: #111827;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  font-weight: 700;
   overflow: hidden; /* quan trọng để ảnh không bị tràn */
+  flex-shrink: 0; /* tránh avatar bị co lại */
 }
 
 /* Thẻ thông tin cá nhân */
@@ -318,14 +313,6 @@
   font-size: 14px;
 }
 
-.info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  color: #333;
-  margin-top: 8px;
-}
-
 /* Style cho form chỉnh sửa thông tin cá nhân */
 .info-grid-edit input,
 .info-grid-edit select {
@@ -345,6 +332,17 @@
   box-shadow: 0 0 0 1px rgba(0, 192, 232, 0.2);
 }
 
+.info-grid-edit input:hover,
+.info-grid-edit select:hover {
+  border-color: #bbb;
+}
+
+.info-grid-edit label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 @media (max-width: 768px) {
   .profile-trip-card {
     grid-template-columns: 1fr;
@@ -352,6 +350,14 @@
 
   .trip-thumb {
     height: 220px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-page {
+    padding: 16px;
   }
 }
 

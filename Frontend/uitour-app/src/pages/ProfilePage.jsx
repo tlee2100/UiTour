@@ -5,8 +5,11 @@ import { useApp } from '../contexts/AppContext';
 import authAPI from '../services/authAPI';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { t } from '../utils/translations';
 
 export default function ProfilePage() {
+  const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState('about'); // about | trips | connections
   const { user, profile, dispatch } = useApp();
   const [userData, setUserData] = useState(null);
@@ -15,17 +18,19 @@ export default function ProfilePage() {
   const [trips, setTrips] = useState([]);
   const [tripsLoading, setTripsLoading] = useState(false);
   const [tripsError, setTripsError] = useState('');
+  const [avatarError, setAvatarError] = useState(false);
   const navigate = useNavigate();
   const goToHomeForBooking = () => navigate('/');
   const { convertToCurrent, format } = useCurrency();
 
   const formatDateRange = useCallback((checkIn, checkOut) => {
-    if (!checkIn || !checkOut) return 'No schedule';
+    if (!checkIn || !checkOut) return t(language, 'profile.noSchedule');
     try {
       const inDate = new Date(checkIn);
       const outDate = new Date(checkOut);
+      const locale = language === 'vi' ? 'vi-VN' : 'en-US';
       const fmt = (date) =>
-        date.toLocaleDateString('vi-VN', {
+        date.toLocaleDateString(locale, {
           day: '2-digit',
           month: 'short',
           year: 'numeric',
@@ -34,23 +39,23 @@ export default function ProfilePage() {
     } catch {
       return `${checkIn} - ${checkOut}`;
     }
-  }, []);
+  }, [language]);
 
   const statusLabel = useCallback((statusRaw) => {
     const status = (statusRaw || '').toLowerCase();
     switch (status) {
       case 'confirmed':
-        return 'Confirmed';
+        return t(language, 'profile.confirmed');
       case 'completed':
-        return 'Completed';
+        return t(language, 'profile.completed');
       case 'cancelled':
       case 'canceled':
-        return 'Cancelled';
+        return t(language, 'profile.cancelled');
       case 'pending':
       default:
-        return 'Pending';
+        return t(language, 'profile.pending');
     }
-  }, []);
+  }, [language]);
 
   const enrichTrips = useCallback(async (bookings) => {
     return Promise.all(
@@ -88,13 +93,15 @@ export default function ProfilePage() {
   useEffect(() => {
     let isMounted = true;
     async function fetchUser() {
-      if (!user || !user.UserID) return;
+      if (!user || !(user.UserID ?? user.userID)) return;
       setLoading(true);
       setError('');
       try {
-        const detail = await authAPI.getUserById(user.UserID);   // 🟢 lấy trực tiếp
+        const userId = user.UserID ?? user.userID;
+        const detail = await authAPI.getUserById(userId);
         if (!isMounted) return;
-        setUserData(detail);                                      // 🟢 set trực tiếp
+        setUserData(detail);
+        setAvatarError(false); // Reset avatar error khi load user mới
         // đẩy vào context để các màn khác dùng (edit, v.v.)
         const displayNameCtx = detail?.fullName ?? detail?.FullName ?? '';
         const aboutCtx = detail?.userAbout ?? detail?.about ?? '';
@@ -113,29 +120,30 @@ export default function ProfilePage() {
           },
         });
       } catch (err) {
-        if (isMounted) setError(err.message || 'Unable to load user information');
+        if (isMounted) setError(err.message || t(language, 'profile.unableToLoadUserInfo'));
       } finally {
         if (isMounted) setLoading(false);
       }
     }
     fetchUser();
     return () => { isMounted = false; };
-  }, [user, dispatch]);
+  }, [user, dispatch, language]);
 
   useEffect(() => {
     let isMounted = true;
     async function fetchTrips() {
-      if (!user || !user.UserID) return;
+      if (!user || !(user.UserID ?? user.userID)) return;
       setTripsLoading(true);
       setTripsError('');
       try {
-        const bookings = await authAPI.getUserBookings(user.UserID);
+        const userId = user.UserID ?? user.userID;
+        const bookings = await authAPI.getUserBookings(userId);
         const normalized = await enrichTrips(bookings ?? []);
         if (!isMounted) return;
         setTrips(normalized);
       } catch (err) {
         if (isMounted) {
-          setTripsError(err.message || 'Không thể tải danh sách chuyến đi');
+          setTripsError(err.message || t(language, 'profile.unableToLoadTrips'));
           setTrips([]);
         }
       } finally {
@@ -146,14 +154,18 @@ export default function ProfilePage() {
     return () => {
       isMounted = false;
     };
-  }, [user, enrichTrips]);
+  }, [user, enrichTrips, language]);
 
   // ==== Lấy dữ liệu linh hoạt theo key hoa/thường (không normalize state) ====
-  const displayName = userData?.fullName ?? userData?.FullName ?? 'Người dùng';
+  const displayName = userData?.fullName ?? userData?.FullName ?? t(language, 'profile.user');
   const email = userData?.email ?? userData?.Email ?? '';
   const about = userData?.userAbout ?? userData?.about ?? '';
   const roleRaw = userData?.role ?? userData?.Role ?? 'Guest';
-  const roleLabel = roleRaw === 'Host' ? 'Chủ nhà' : roleRaw === 'Admin' ? 'Quản trị' : 'Khách';
+  const roleLabel = roleRaw === 'Host' 
+    ? t(language, 'profile.host') 
+    : roleRaw === 'Admin' 
+    ? t(language, 'profile.admin') 
+    : t(language, 'profile.guest');
   const age = userData?.age ?? '';
   const gender = userData?.gender ?? '';
   const nationality = userData?.nationality ?? '';
@@ -181,7 +193,7 @@ export default function ProfilePage() {
     <div className="profile-page">
       {/* Sidebar */}
       <aside className="profile-sidebar">
-        <h1 className="profile-title">Hồ sơ</h1>
+        <h1 className="profile-title">{t(language, 'profile.profile')}</h1>
 
         <nav className="profile-nav">
           <button
@@ -189,7 +201,7 @@ export default function ProfilePage() {
             onClick={() => setActiveTab('about')}
           >
             <span className="nav-icon nav-initial">{initial}</span>
-            <span>About</span>
+            <span>{t(language, 'profile.about')}</span>
           </button>
 
           <button
@@ -197,7 +209,7 @@ export default function ProfilePage() {
             onClick={() => setActiveTab('trips')}
           >
             <Icon icon="mdi:suitcase" width="20" height="20" />
-            <span>Chuyến đi trước đây</span>
+            <span>{t(language, 'profile.pastTrips')}</span>
           </button>
 
           <button
@@ -208,7 +220,7 @@ export default function ProfilePage() {
               <span className="nav-avatar" />
               <span className="nav-avatar" />
             </span>
-            <span>Connections</span>
+            <span>{t(language, 'profile.connections')}</span>
           </button>
         </nav>
       </aside>
@@ -218,20 +230,20 @@ export default function ProfilePage() {
 
       {/* Main */}
       <main className="profile-main">
-        {loading && <div className="profile-section" style={{ padding: 16 }}>Loading information...</div>}
+        {loading && <div className="profile-section" style={{ padding: 16 }}>{t(language, 'profile.loadingInformation')}</div>}
         {!!error && <div className="profile-section" style={{ padding: 16, color: '#c00' }}>{error}</div>}
 
         {activeTab === 'about' && (
           <section className="profile-section">
             {/* Card thông tin cơ bản */}
             <div className="profile-card">
-              {avatarUrl ? (
+              {avatarUrl && !avatarError ? (
                 <img
                   src={avatarUrl}
                   alt="avatar"
                   className="profile-avatar-large"
                   style={{ objectFit: 'cover' }}
-                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  onError={() => setAvatarError(true)}
                 />
               ) : (
                 <div className="profile-avatar-large">{initial}</div>
@@ -245,13 +257,12 @@ export default function ProfilePage() {
 
             {/* Hộp gợi ý hoàn tất hồ sơ */}
             <div className="profile-completion">
-              <div className="profile-completion-title">Complete your profile</div>
+              <div className="profile-completion-title">{t(language, 'profile.completeYourProfile')}</div>
               <p className="profile-completion-text">
-                Your UiTour profile is an important part of every booking. Complete your profile to help guests
-                and other hosts understand more about you.
+                {t(language, 'profile.profileDescription')}
               </p>
               <button className="profile-primary-btn" onClick={() => navigate('/profile/edit')}>
-                {hasProfileInfo ? 'Edit' : 'Get started'}
+                {hasProfileInfo ? t(language, 'profile.edit') : t(language, 'profile.getStarted')}
               </button>
             </div>
 
@@ -259,10 +270,10 @@ export default function ProfilePage() {
             <div className="profile-subsection">
               <div className="profile-subtitle">
                 <Icon icon="mdi:chat-outline" width="18" height="18" />
-                <span>About</span>
+                <span>{t(language, 'profile.aboutSection')}</span>
               </div>
               <div className="profile-empty">
-                {about || 'You haven\'t written an introduction yet.'}
+                {about || t(language, 'profile.noIntroductionYet')}
               </div>
             </div>
 
@@ -270,19 +281,19 @@ export default function ProfilePage() {
             <div className="profile-subsection profile-subsection-info">
               <div className="profile-subtitle">
                 <Icon icon="mdi:account-outline" width="18" height="18" />
-                <span>Personal information</span>
+                <span>{t(language, 'profile.personalInformation')}</span>
               </div>
               <div className="info-grid">
-                <div><strong>Age:</strong> {age || 'Not updated'}</div>
-                <div><strong>Gender:</strong> {gender || 'Not updated'}</div>
-                <div><strong>Nationality:</strong> {nationality || 'Not updated'}</div>
+                <div><strong>{t(language, 'profile.age')}:</strong> {age || t(language, 'profile.notUpdated')}</div>
+                <div><strong>{t(language, 'profile.gender')}:</strong> {gender || t(language, 'profile.notUpdated')}</div>
+                <div><strong>{t(language, 'profile.nationality')}:</strong> {nationality || t(language, 'profile.notUpdated')}</div>
               </div>
             </div>
 
             {/* Sở thích */}
             {interests.length > 0 && (
               <div className="profile-subsection" style={{ marginTop: 16 }}>
-                <div className="profile-subtitle">My interests</div>
+                <div className="profile-subtitle">{t(language, 'profile.myInterests')}</div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   {interests.map((it, idx) => (
                     <span key={idx} className="interest-chip">{it}</span>
@@ -296,7 +307,7 @@ export default function ProfilePage() {
         {activeTab === 'trips' && (
           <section className="profile-trips-section">
             {tripsLoading && (
-              <div className="profile-trips-feedback">Loading trips...</div>
+              <div className="profile-trips-feedback">{t(language, 'profile.loadingTrips')}</div>
             )}
             {!!tripsError && (
               <div className="profile-trips-feedback error">{tripsError}</div>
@@ -305,9 +316,9 @@ export default function ProfilePage() {
               <div className="profile-empty-state">
                 <div className="empty-emoji suitcase" />
                 <p className="empty-text">
-                  After your first trip, you'll find your past bookings here.
+                  {t(language, 'profile.noTripsYet')}
                 </p>
-                <button className="profile-primary-btn" onClick={goToHomeForBooking}>Book a trip</button>
+                <button className="profile-primary-btn" onClick={goToHomeForBooking}>{t(language, 'profile.bookATrip')}</button>
               </div>
             )}
             {!tripsLoading && !tripsError && trips.length > 0 && (
@@ -321,7 +332,7 @@ export default function ProfilePage() {
                     propertyInfo?.media?.photos?.[0]?.url ||
                     tourInfo?.media?.cover?.url ||
                     tourInfo?.image?.url ||
-                    '/fallback.png';
+                    '/fallback.svg';
                   const title =
                     propertyInfo?.listingTitle ||
                     propertyInfo?.title ||
@@ -352,9 +363,15 @@ export default function ProfilePage() {
                       className="profile-trip-card"
                     >
                       <div className="trip-thumb">
-                        <img src={coverImage} alt={title} />
+                        <img 
+                          src={coverImage} 
+                          alt={title}
+                          onError={(e) => {
+                            e.currentTarget.src = '/fallback.svg';
+                          }}
+                        />
                         <span className="trip-type-badge">
-                          {isTour ? 'Trải nghiệm' : 'Chỗ ở'}
+                          {isTour ? t(language, 'profile.experience') : t(language, 'profile.stay')}
                         </span>
                       </div>
                       <div className="trip-info">
@@ -364,7 +381,7 @@ export default function ProfilePage() {
                           {formatDateRange(checkIn, checkOut)}
                         </div>
                         <div className="trip-meta">
-                          <span>{guestsCount} khách</span>
+                          <span>{guestsCount} {t(language, 'profile.guests')}</span>
                           <span className={`trip-status ${status?.toLowerCase()}`}>
                             {statusLabel(status)}
                           </span>
@@ -380,14 +397,14 @@ export default function ProfilePage() {
                               className="profile-secondary-btn"
                               onClick={() => navigate(detailLink)}
                             >
-                              Xem chi tiết
+                              {t(language, 'profile.viewDetails')}
                             </button>
                           ) : (
                             <button
                               className="profile-secondary-btn"
                               onClick={goToHomeForBooking}
                             >
-                              Book another trip
+                              {t(language, 'profile.bookAnotherTrip')}
                             </button>
                           )}
                         </div>
@@ -404,9 +421,9 @@ export default function ProfilePage() {
           <section className="profile-empty-state">
             <div className="empty-emoji people" />
             <p className="empty-text">
-              Khi bạn tham gia trải nghiệm hoặc mời ai đó tham gia chuyến đi, bạn sẽ tìm thấy hồ sơ của những khách khác ở đây.
+              {t(language, 'profile.connectionsDescription')}
             </p>
-            <button className="profile-primary-btn" onClick={goToHomeForBooking}>Book a trip</button>
+            <button className="profile-primary-btn" onClick={goToHomeForBooking}>{t(language, 'profile.bookATrip')}</button>
           </section>
         )}
       </main>

@@ -8,12 +8,37 @@
   border-radius: 8px;
   padding: 16px;
   width: fit-content;
+  min-width: 300px;
 }
 
 .cal-header {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.cal-month-name {
+  font-size: 16px;
+  color: var(--black);
+}
+
+.cal-nav-btn {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--black);
+}
+
+.cal-nav-btn:hover {
+  background: #f3f4f6;
 }
 
 .cal-weekdays {
@@ -21,6 +46,7 @@
   grid-template-columns: repeat(7, 1fr);
   font-weight: 500;
   margin-bottom: 8px;
+  gap: 4px;
 }
 
 .cal-weekday {
@@ -28,35 +54,80 @@
   font-family: "Inter", sans-serif;
   font-size: 12px;
   color: var(--half-subtitle-color);
+  padding: 8px;
+  font-weight: 600;
 }
 
 .cal-days {
   display: grid;
   grid-template-rows: repeat(6, 1fr);
+  gap: 4px;
 }
 
 .cal-week-row {
   display: grid;
-  grid-template-columns: repeat(7, minmax(40px, 1fr));
-  column-gap: 4px;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
 }
 
 .cal-day {
   aspect-ratio: 1 / 1;
   font-family: "Inter", sans-serif;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   height: auto;
   text-align: center;
-  padding: 8px 0;
-  border-radius: 4px;
-  color: black;
+  padding: 0;
+  border-radius: 8px;
+  color: var(--black);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cal-day-empty {
+  aspect-ratio: 1;
+}
+
+.cal-day-btn:hover:not(.cal-day-past) {
+  background: #f3f4f6;
+}
+
+.cal-day-past {
+  color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.cal-day-past:hover {
+  background: transparent;
 }
 
 .cal-today {
-  border: none;
-  font-weight: bold;
-  background-color: black;
-  color: white;
-  border-radius: 50%;
+  font-weight: 600;
+}
+
+.cal-day-start,
+.cal-day-end {
+  background: var(--black) !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+.cal-day-in-range {
+  background: #f3f4f6;
+  border-radius: 0;
+}
+
+.cal-day-in-range.cal-day-start {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.cal-day-in-range.cal-day-end {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
 }

@@ -93,7 +93,7 @@ export default function Header() {
           ref={globeButtonRef}
           className="header_globe"
           onClick={openLanguageCurrency}
-          aria-label="Language and Currency"
+          aria-label={t(language, 'search.languageAndCurrency')}
         >
           <Icon icon="mdi:earth" width="26" height="26" />
         </button>

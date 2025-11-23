@@ -173,10 +173,10 @@ export default function WishlistPage() {
                 >
                   <div className="wishlist-item-image">
                     <img 
-                      src={item.image || '/fallback.png'} 
+                      src={item.image || '/fallback.svg'} 
                       alt={item.title}
                       onError={(e) => {
-                        e.target.src = '/fallback.png';
+                        e.target.src = '/fallback.svg';
                       }}
                     />
                     <button

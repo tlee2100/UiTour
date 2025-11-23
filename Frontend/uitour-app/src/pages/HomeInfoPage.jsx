@@ -319,7 +319,7 @@ const normalizeProperty = (p) => {
       photos: photos
     },
     photos: photos,
-    mainImage: photos.length > 0 ? photos[0].url : "/fallback.png", // URL đã được normalize ở trên
+    mainImage: photos.length > 0 ? photos[0].url : "/fallback.svg", // URL đã được normalize ở trên
 
     // Property details
     propertyType: p.propertyType || p.PropertyType || "",
