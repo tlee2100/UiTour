@@ -38,12 +38,49 @@ function HIBookingBox({
   const reviewsCount = property.reviewsCount ?? 0;
   const maxGuests = property.maxGuests ?? property.booking?.maxGuests ?? 2;
 
-  // ✅ fallback phí (nếu backend thật sẽ điều chỉnh sau)
-  // Giả sử các phí trong database là USD, convert sang currency hiện tại
+  // Debug: Log property fees
+  console.log("🔍 HIBookingBox - Property fees:", {
+    cleaningFee: property.cleaningFee,
+    serviceFee: property.serviceFee,
+    taxFee: property.taxFee,
+    extraGuestFee: property.extraGuestFee,
+    property: property
+  });
+
+  // ✅ Fees - Giả sử các phí trong database là USD, convert sang currency hiện tại
   const cleaningFee = convertToCurrent(property.cleaningFee ?? 0);
-  const serviceFee = convertToCurrent(property.serviceFee ?? 0);
-  const taxFee = convertToCurrent(property.taxFee ?? 0);
-  const discount = convertToCurrent(property.discount ?? 0);
+  // ServiceFee and TaxFee: if stored as percentage, calculate based on total price
+  // Otherwise, use the fixed amount
+  const baseTotal = pricePerNight * nights;
+  const serviceFeePercent = property.serviceFee ?? 0;
+  const taxFeePercent = property.taxFee ?? 0;
+  
+  console.log("🔍 HIBookingBox - Calculated fees:", {
+    cleaningFee,
+    serviceFeePercent,
+    taxFeePercent,
+    baseTotal,
+    nights
+  });
+  const serviceFee = serviceFeePercent > 1 && serviceFeePercent <= 100 
+    ? convertToCurrent(baseTotal * (serviceFeePercent / 100)) // Percentage
+    : convertToCurrent(serviceFeePercent); // Fixed amount
+  const taxFee = taxFeePercent > 1 && taxFeePercent <= 100
+    ? convertToCurrent(baseTotal * (taxFeePercent / 100)) // Percentage
+    : convertToCurrent(taxFeePercent); // Fixed amount
+
+  // ✅ Calculate discount based on DiscountPercentage from database
+  const calculateDiscount = () => {
+    const discountPercentage = property.discountPercentage ?? 0;
+    if (discountPercentage <= 0) return 0;
+    
+    const baseTotal = pricePerNight * nights;
+    const discountAmount = baseTotal * (discountPercentage / 100);
+    
+    return convertToCurrent(discountAmount);
+  };
+
+  const discount = calculateDiscount();
 
   // ✅ Tính tổng
   const totalPrice = pricePerNight * nights;
