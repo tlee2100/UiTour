@@ -42,12 +42,21 @@ namespace UITour.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProperty([FromBody] CreatePropertyDto dto)
         {
+            // Debug: Log DTO received
+            System.Diagnostics.Debug.WriteLine($"🔍 CreateProperty - DTO received: CleaningFee={dto?.CleaningFee}, ServiceFee={dto?.ServiceFee}, TaxFee={dto?.TaxFee}, ExtraPeopleFee={dto?.ExtraPeopleFee}");
+            
             if (!ModelState.IsValid)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ ModelState invalid: {string.Join(", ", ModelState.SelectMany(x => x.Value.Errors.Select(e => $"{x.Key}: {e.ErrorMessage}")))}");
                 return BadRequest(ModelState);
+            }
 
             try
             {
                 Property property = await _propertyService.CreateAsync(dto);
+                
+                // Debug: Log property created
+                System.Diagnostics.Debug.WriteLine($"✅ Property created: ID={property.PropertyID}, CleaningFee={property.CleaningFee}, ServiceFee={property.ServiceFee}, TaxFee={property.TaxFee}");
 
                 // Trả về dữ liệu gọn nhẹ sau khi tạo
                 return Ok(new

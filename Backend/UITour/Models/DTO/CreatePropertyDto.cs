@@ -21,8 +21,28 @@
         public string lng { get; set; }
         public string HouseRules { get; set; }
 
+        // Fees
+        public decimal? CleaningFee { get; set; }
+        public decimal? ExtraPeopleFee { get; set; }
+        public decimal ServiceFee { get; set; } = 0;
+        public decimal TaxFee { get; set; } = 0;
+
+
         public List<PropertyAmenityDto> Amenities { get; set; }
         public List<PropertyPhotoDto> Photos { get; set; }
+    }
+
+    public class SeasonalDiscountDto
+    {
+        public string From { get; set; }
+        public string To { get; set; }
+        public decimal Percentage { get; set; }
+    }
+
+    public class EarlyBirdDiscountDto
+    {
+        public int DaysBefore { get; set; }
+        public decimal Percent { get; set; }
     }
     public class PropertyPhotoDto
     {
