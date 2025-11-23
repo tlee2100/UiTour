@@ -143,7 +143,7 @@ export default function TripsPage() {
               propertyInfo?.media?.photos?.[0]?.url ||
               tourInfo?.media?.cover?.url ||
               tourInfo?.image?.url ||
-              '/fallback.png';
+              '/fallback.svg';
             const title =
               propertyInfo?.listingTitle ||
               propertyInfo?.title ||

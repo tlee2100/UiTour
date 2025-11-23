@@ -65,7 +65,7 @@ export default function HeaderInfo() {
       <form className="headerif_search" onSubmit={handleSearch}>
         <input
           className="headerif_searchInput"
-          placeholder="Start your search..."
+          placeholder={t(language, 'search.startYourSearch')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -100,7 +100,7 @@ export default function HeaderInfo() {
           ref={globeButtonRef}
           className="headerif_globe"
           onClick={openLanguageCurrency}
-          aria-label="Language and Currency"
+          aria-label={t(language, 'search.languageAndCurrency')}
         >
           <Icon className='globe-icon' icon="mdi:earth" width="26" height="26"/>
         </button>

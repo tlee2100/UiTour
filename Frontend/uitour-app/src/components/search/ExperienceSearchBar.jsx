@@ -1,12 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import ExperienceSearchDates from './ExperienceSearchDates';
 import SearchGuests from './SearchGuests';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { t } from '../../utils/translations';
 import './ExperienceSearchBar.css';
 
-export default function ExperienceSearchBar({ initialLocation = '', initialDates = '', initialGuests = '1' }) {
+export default function ExperienceSearchBar({ 
+  initialLocation = '', 
+  initialDates = '', 
+  initialGuests = '1',
+  onSearch,
+  searchPath = '/experiences/search'
+}) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
   const [location, setLocation] = useState(initialLocation);
   const [dates, setDates] = useState(initialDates);
   const [guests, setGuests] = useState(initialGuests);
@@ -14,13 +23,41 @@ export default function ExperienceSearchBar({ initialLocation = '', initialDates
   const [openGuests, setOpenGuests] = useState(false);
   const [guestsData, setGuestsData] = useState({ adults: 1, children: 0, infants: 0, pets: 0 });
 
+  // Sync state when props change (e.g., when URL params change)
+  useEffect(() => {
+    setLocation(initialLocation);
+  }, [initialLocation]);
+
+  useEffect(() => {
+    setDates(initialDates);
+  }, [initialDates]);
+
+  useEffect(() => {
+    setGuests(initialGuests);
+    // Update guestsData based on initialGuests
+    if (initialGuests && initialGuests !== '1') {
+      const count = Number(initialGuests);
+      if (!isNaN(count) && count > 0) {
+        setGuestsData({ adults: Math.max(1, count), children: 0, infants: 0, pets: 0 });
+      }
+    } else {
+      setGuestsData({ adults: 1, children: 0, infants: 0, pets: 0 });
+    }
+  }, [initialGuests]);
+
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (location) params.set('location', location);
     if (dates) params.set('dates', dates);
     if (guests) params.set('guests', guests);
     
-    navigate(`/experiences/search?${params.toString()}`);
+    // If custom onSearch callback is provided, use it
+    if (onSearch) {
+      onSearch({ location, dates, guests, params });
+    } else {
+      // Otherwise, use default navigation
+      navigate(`${searchPath}?${params.toString()}`);
+    }
   };
 
   const handleClearDates = (e) => {
@@ -50,10 +87,10 @@ export default function ExperienceSearchBar({ initialLocation = '', initialDates
       <div className="experience-search-bar">
         {/* Where */}
         <div className="esb-field">
-          <label>Where</label>
+          <label>{t(language, 'search.where')}</label>
           <input
             type="text"
-            placeholder="Search destinations"
+            placeholder={t(language, 'search.searchDestinations')}
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             onClick={() => { setOpenDates(false); setOpenGuests(false); }}
@@ -65,7 +102,7 @@ export default function ExperienceSearchBar({ initialLocation = '', initialDates
           className="esb-field esb-field-clickable"
           onClick={() => { setOpenDates(!openDates); setOpenGuests(false); }}
         >
-          <label>When</label>
+          <label>{t(language, 'search.when')}</label>
           <div className="esb-field-value">
             {dates ? (
               <>
@@ -75,7 +112,7 @@ export default function ExperienceSearchBar({ initialLocation = '', initialDates
                 <span>{dates}</span>
               </>
             ) : (
-              <span className="esb-placeholder">Add dates</span>
+              <span className="esb-placeholder">{t(language, 'search.addDates')}</span>
             )}
           </div>
         </div>
@@ -85,17 +122,17 @@ export default function ExperienceSearchBar({ initialLocation = '', initialDates
           className="esb-field esb-field-clickable"
           onClick={() => { setOpenGuests(!openGuests); setOpenDates(false); }}
         >
-          <label>Who</label>
+          <label>{t(language, 'search.who')}</label>
           <div className="esb-field-value">
             {guests !== '1' || guestsData.children > 0 || guestsData.infants > 0 ? (
               <>
                 <button className="esb-clear-btn" onClick={handleClearGuests}>
                   <Icon icon="mdi:close" width="16" height="16" />
                 </button>
-                <span>{guests} {guests === '1' ? 'guest' : 'guests'}</span>
+                <span>{guests} {guests === '1' ? t(language, 'search.guest') : t(language, 'search.guests')}</span>
               </>
             ) : (
-              <span className="esb-placeholder">Add guests</span>
+              <span className="esb-placeholder">{t(language, 'search.addGuests')}</span>
             )}
           </div>
         </div>
