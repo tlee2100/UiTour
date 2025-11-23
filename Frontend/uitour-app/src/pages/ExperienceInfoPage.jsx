@@ -236,6 +236,10 @@ export default function ExperienceInfoPage() {
 
   const exp = currentExperience;
 
+  // Debug: Log experienceDetails
+  console.log("🔍 ExperienceInfoPage - exp.experienceDetails:", exp?.experienceDetails);
+  console.log("🔍 ExperienceInfoPage - exp.experienceDetails length:", exp?.experienceDetails?.length || 0);
+
   return (
     <div className="experience-info-page">
 
