@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Icon } from '@iconify/react';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { t } from '../../utils/translations';
 import './ExperienceSearchDates.css';
 
 export default function ExperienceSearchDates({ open, onClose, onSelect, value }) {
+  const { language } = useLanguage();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedRange, setSelectedRange] = useState({ start: null, end: null });
 
@@ -40,9 +43,15 @@ export default function ExperienceSearchDates({ open, onClose, onSelect, value }
   thisWeekend.end.setDate(thisWeekend.start.getDate() + 1);
 
   const formatDate = (date) => {
-    const months = ['thg 1', 'thg 2', 'thg 3', 'thg 4', 'thg 5', 'thg 6', 
-                    'thg 7', 'thg 8', 'thg 9', 'thg 10', 'thg 11', 'thg 12'];
-    return `${date.getDate()} ${months[date.getMonth()]}`;
+    if (language === 'vi') {
+      const months = ['thg 1', 'thg 2', 'thg 3', 'thg 4', 'thg 5', 'thg 6', 
+                      'thg 7', 'thg 8', 'thg 9', 'thg 10', 'thg 11', 'thg 12'];
+      return `${date.getDate()} ${months[date.getMonth()]}`;
+    } else {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${months[date.getMonth()]} ${date.getDate()}`;
+    }
   };
 
   const formatRange = (start, end) => {
@@ -119,9 +128,14 @@ export default function ExperienceSearchDates({ open, onClose, onSelect, value }
   };
 
   const days = getDaysInMonth(currentMonth);
-  const weekDays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-  const months = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-                  'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+  const weekDays = language === 'vi' 
+    ? ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
+    : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const months = language === 'vi'
+    ? ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+       'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12']
+    : ['January', 'February', 'March', 'April', 'May', 'June',
+       'July', 'August', 'September', 'October', 'November', 'December'];
 
   const prevMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
@@ -147,7 +161,7 @@ export default function ExperienceSearchDates({ open, onClose, onSelect, value }
   };
 
   return (
-    <div className="esd-popover" role="dialog" aria-label="Select dates">
+    <div className="esd-popover" role="dialog" aria-label={t(language, 'search.selectDates')}>
       <div className="esd-content">
         {/* Quick Select Options */}
         <div className="esd-quick-select">
@@ -155,7 +169,7 @@ export default function ExperienceSearchDates({ open, onClose, onSelect, value }
             className="esd-quick-btn"
             onClick={() => handleQuickSelect('today')}
           >
-            <div className="esd-quick-label">Hôm nay</div>
+            <div className="esd-quick-label">{t(language, 'search.today')}</div>
             <div className="esd-quick-date">{formatDate(today)}</div>
           </button>
           
@@ -163,7 +177,7 @@ export default function ExperienceSearchDates({ open, onClose, onSelect, value }
             className="esd-quick-btn"
             onClick={() => handleQuickSelect('tomorrow')}
           >
-            <div className="esd-quick-label">Ngày mai</div>
+            <div className="esd-quick-label">{t(language, 'search.tomorrow')}</div>
             <div className="esd-quick-date">{formatDate(tomorrow)}</div>
           </button>
           
@@ -171,7 +185,7 @@ export default function ExperienceSearchDates({ open, onClose, onSelect, value }
             className="esd-quick-btn esd-quick-btn-active"
             onClick={() => handleQuickSelect('weekend')}
           >
-            <div className="esd-quick-label">Cuối tuần này</div>
+            <div className="esd-quick-label">{t(language, 'search.thisWeekend')}</div>
             <div className="esd-quick-date">{formatRange(thisWeekend.start, thisWeekend.end)}</div>
           </button>
         </div>

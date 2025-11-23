@@ -242,6 +242,41 @@ async resetPassword(email, otp, newPassword) {
     throw err;
   }
   }
+
+  // Search properties with filters
+  async searchProperties(filters = {}) {
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams();
+      
+      if (filters.location) params.set('location', filters.location);
+      if (filters.checkIn) params.set('checkIn', filters.checkIn);
+      if (filters.checkOut) params.set('checkOut', filters.checkOut);
+      if (filters.guests) params.set('guests', filters.guests.toString());
+
+      const queryString = params.toString();
+      const url = queryString 
+        ? `${PROPERTY_BASE_URL}/search?${queryString}`
+        : PROPERTY_BASE_URL; // If no filters, return all properties
+
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to search properties');
+      }
+
+      const data = await response.json();
+      return data; // [{ propertyID, listingTitle, location, price, ... }]
+    } catch (err) {
+      throw err;
+    }
+  }
   //get property by id
   async getPropertyById(propertyId) {
     try {

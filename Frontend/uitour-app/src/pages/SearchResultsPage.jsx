@@ -25,9 +25,11 @@ export default function SearchResultsPage() {
     // Fetch properties based on search params
     fetchProperties({
       location: location,
+      checkIn: checkIn || null,
+      checkOut: checkOut || null,
       guests: guests ? Number(guests) : null
     });
-  }, [location, guests, fetchProperties]);
+  }, [location, checkIn, checkOut, guests, fetchProperties]);
 
   const handleSearch = () => {
     // Navigate back to home with search params

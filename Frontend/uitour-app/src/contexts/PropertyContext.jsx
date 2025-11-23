@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useMemo, useCallback } from 'react';
 import mockAPI from '../services/mockAPI';
+import authAPI from '../services/authAPI';
 
 // -----------------------------
 // Initial State
@@ -285,7 +286,7 @@ export const PropertyProvider = ({ children }) => {
       (typeof p.media?.cover === "string" && p.media.cover) ||
       p.mainImage ||
       p.photos?.[0]?.url ||
-      "/fallback.png";
+      "/fallback.svg";
 
     return {
       id: p.id,
@@ -311,23 +312,61 @@ export const PropertyProvider = ({ children }) => {
       actions.setLoading(true);
       actions.clearError();
 
-      let list = mockAPI.getMockProperties(); // ✅ lấy dữ liệu đầy đủ
-
-      // ✅ Nếu có filter thì áp dụng thủ công đúng field
-      if (filters.location) {
-        list = list.filter(p =>
-          normalizeLocationString(p).toLowerCase()
-            .includes(filters.location.toLowerCase())
-        );
+      // ✅ Gọi API thật từ backend thay vì mock data
+      let list = [];
+      
+      // Nếu có filters, gọi search API
+      if (filters.location || filters.checkIn || filters.checkOut || filters.guests) {
+        list = await authAPI.searchProperties(filters);
+      } else {
+        // Nếu không có filters, lấy tất cả properties
+        list = await authAPI.getProperties();
       }
 
-      if (filters.guests) {
-        list = list.filter(p =>
-          (p.capacity?.maxGuests ?? p.maxGuests ?? 1) >= filters.guests
-        );
-      }
+      // Normalize dữ liệu từ backend giống như HomePage
+      const normalizedList = list.map(p => {
+        const reviews = Array.isArray(p.reviews) ? p.reviews : [];
+        const avgRating = reviews.length > 0 
+          ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviews.length 
+          : 0;
 
-      const normalizedList = list.map(normalizeHomeCard);
+        // Helper function to normalize image URL
+        const normalizeImageUrl = (url) => {
+          if (!url || url.trim().length === 0) return "/fallback.svg";
+          if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+          }
+          if (url.startsWith('/')) {
+            return `http://localhost:5069${url}`;
+          }
+          return `http://localhost:5069/${url}`;
+        };
+
+        // Get first photo - check multiple possible field names
+        const photos = p.photos || p.Photos || [];
+        const firstPhoto = Array.isArray(photos) && photos.length > 0 
+          ? photos[0] 
+          : null;
+        
+        const imageUrl = firstPhoto 
+          ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || firstPhoto.ServerUrl || "/fallback.svg")
+          : "/fallback.svg";
+
+        return {
+          id: p.propertyID,
+          title: p.listingTitle || 'Untitled',
+          listingTitle: p.listingTitle || 'Untitled', // ✅ Thêm listingTitle để PropertyCard có thể dùng
+          location: p.location || '',
+          price: p.price ?? 0,
+          currency: p.currency ?? "USD",
+          rating: avgRating,
+          reviewsCount: reviews.length,
+          mainImage: normalizeImageUrl(imageUrl),
+          isGuestFavourite: false,
+          dates: null
+        };
+      });
+
       actions.setProperties(normalizedList);
       return normalizedList;
 

@@ -21,6 +21,7 @@ export default function HomePage() {
   const [openWhere, setOpenWhere] = useState(false);
   const [openDates, setOpenDates] = useState(false);
   const [openGuests, setOpenGuests] = useState(false);
+  const [activeField, setActiveField] = useState(null);
 
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -74,7 +75,7 @@ export default function HomePage() {
 
     // Helper function to normalize image URL
     const normalizeImageUrl = (url) => {
-      if (!url || url.trim().length === 0) return "/fallback.png";
+      if (!url || url.trim().length === 0) return "/fallback.svg";
       // If already a full URL (http/https), use as is
       if (url.startsWith('http://') || url.startsWith('https://')) {
         return url;
@@ -95,8 +96,8 @@ export default function HomePage() {
     
     // Try multiple possible URL field names (camelCase, PascalCase, etc.)
     const imageUrl = firstPhoto 
-      ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || firstPhoto.ServerUrl || "/fallback.png")
-      : "/fallback.png";
+      ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || firstPhoto.ServerUrl || "/fallback.svg")
+      : "/fallback.svg";
     
     // Debug logging for missing photos
     if (!firstPhoto && photos.length === 0) {
@@ -134,6 +135,38 @@ export default function HomePage() {
   // Search handler
   // -----------------------
   const handleSearch = () => {
+    // Close all popovers
+    setOpenWhere(false);
+    setOpenDates(false);
+    setOpenGuests(false);
+    setActiveField(null);
+
+    // Validation
+    if (checkIn && checkOut) {
+      const checkInDate = new Date(checkIn);
+      const checkOutDate = new Date(checkOut);
+      if (checkOutDate <= checkInDate) {
+        alert('Check-out date must be after check-in date');
+        setOpenDates(true);
+        setActiveField('checkin');
+        return;
+      }
+    }
+
+    if (checkIn && !checkOut) {
+      alert('Please select both check-in and check-out dates');
+      setOpenDates(true);
+      setActiveField('checkin');
+      return;
+    }
+
+    if (checkOut && !checkIn) {
+      alert('Please select check-in date first');
+      setOpenDates(true);
+      setActiveField('checkin');
+      return;
+    }
+
     const params = new URLSearchParams();
     if (searchLocation) params.set('location', searchLocation);
     if (checkIn) params.set('checkIn', checkIn);
@@ -141,6 +174,29 @@ export default function HomePage() {
     if (guests) params.set('guests', guests);
 
     navigate(`/search?${params.toString()}`);
+  };
+
+  const handleClearLocation = (e) => {
+    e.stopPropagation();
+    setSearchLocation('');
+  };
+
+  const handleClearDates = (e) => {
+    e.stopPropagation();
+    setCheckIn('');
+    setCheckOut('');
+  };
+
+  const handleClearGuests = (e) => {
+    e.stopPropagation();
+    setGuests('');
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${months[date.getMonth()]} ${date.getDate()}`;
   };
 
   const categories = [
@@ -171,24 +227,84 @@ export default function HomePage() {
       <section className="search-section">
         <div className="search-container">
           <div className="search-bar">
-            <button className="search-field search-field-btn" onClick={() => { setOpenWhere(!openWhere); setOpenDates(false); setOpenGuests(false); }}>
+            <button 
+              className={`search-field search-field-btn ${activeField === 'where' ? 'active' : ''} ${searchLocation ? 'has-value' : ''}`}
+              onClick={() => { 
+                setOpenWhere(!openWhere); 
+                setOpenDates(false); 
+                setOpenGuests(false);
+                setActiveField(openWhere ? null : 'where');
+              }}
+            >
               <label>Where</label>
-              <div className="sf-value">{searchLocation || 'Search destinations'}</div>
+              <div className="sf-value-wrapper">
+                <div className="sf-value">{searchLocation || 'Search destinations'}</div>
+                {searchLocation && (
+                  <button className="sf-clear" onClick={handleClearLocation}>
+                    <Icon icon="mdi:close-circle" width="16" height="16" />
+                  </button>
+                )}
+              </div>
             </button>
 
-            <button className="search-field search-field-btn" onClick={() => { setOpenDates(!openDates); setOpenWhere(false); setOpenGuests(false); }}>
+            <button 
+              className={`search-field search-field-btn ${activeField === 'checkin' ? 'active' : ''} ${checkIn ? 'has-value' : ''}`}
+              onClick={() => { 
+                setOpenDates(!openDates); 
+                setOpenWhere(false); 
+                setOpenGuests(false);
+                setActiveField(openDates ? null : 'checkin');
+              }}
+            >
               <label>Check in</label>
-              <div className="sf-value">{checkIn || 'Add dates'}</div>
+              <div className="sf-value-wrapper">
+                <div className="sf-value">{checkIn ? formatDate(checkIn) : 'Add dates'}</div>
+                {checkIn && (
+                  <button className="sf-clear" onClick={handleClearDates}>
+                    <Icon icon="mdi:close-circle" width="16" height="16" />
+                  </button>
+                )}
+              </div>
             </button>
 
-            <button className="search-field search-field-btn" onClick={() => { setOpenDates(!openDates); setOpenWhere(false); setOpenGuests(false); }}>
+            <button 
+              className={`search-field search-field-btn ${activeField === 'checkout' ? 'active' : ''} ${checkOut ? 'has-value' : ''}`}
+              onClick={() => { 
+                setOpenDates(!openDates); 
+                setOpenWhere(false); 
+                setOpenGuests(false);
+                setActiveField(openDates ? null : 'checkout');
+              }}
+            >
               <label>Check out</label>
-              <div className="sf-value">{checkOut || 'Add dates'}</div>
+              <div className="sf-value-wrapper">
+                <div className="sf-value">{checkOut ? formatDate(checkOut) : 'Add dates'}</div>
+                {checkOut && (
+                  <button className="sf-clear" onClick={handleClearDates}>
+                    <Icon icon="mdi:close-circle" width="16" height="16" />
+                  </button>
+                )}
+              </div>
             </button>
 
-            <button className="search-field search-field-btn" onClick={() => { setOpenGuests(!openGuests); setOpenWhere(false); setOpenDates(false); }}>
+            <button 
+              className={`search-field search-field-btn ${activeField === 'guests' ? 'active' : ''} ${guests ? 'has-value' : ''}`}
+              onClick={() => { 
+                setOpenGuests(!openGuests); 
+                setOpenWhere(false); 
+                setOpenDates(false);
+                setActiveField(openGuests ? null : 'guests');
+              }}
+            >
               <label>Who</label>
-              <div className="sf-value">{guests ? `${guests} guests` : 'Add guests'}</div>
+              <div className="sf-value-wrapper">
+                <div className="sf-value">{guests ? `${guests} guests` : 'Add guests'}</div>
+                {guests && (
+                  <button className="sf-clear" onClick={handleClearGuests}>
+                    <Icon icon="mdi:close-circle" width="16" height="16" />
+                  </button>
+                )}
+              </div>
             </button>
 
             <button className="search-button" onClick={handleSearch}>
@@ -198,22 +314,35 @@ export default function HomePage() {
 
           <SearchWhere
             open={openWhere}
-            onClose={() => setOpenWhere(false)}
-            onSelectRegion={(r) => setSearchLocation(r.title)}
+            onClose={() => { setOpenWhere(false); setActiveField(null); }}
+            onSelectRegion={(r) => {
+              setSearchLocation(r.title);
+              setOpenWhere(false);
+              setActiveField(null);
+            }}
           />
 
           <SearchDates
             open={openDates}
-            onClose={() => setOpenDates(false)}
+            onClose={() => { setOpenDates(false); setActiveField(null); }}
             value={{ checkIn, checkOut }}
-            onChange={(v) => { setCheckIn(v.checkIn || ''); setCheckOut(v.checkOut || ''); }}
+            onChange={(v) => { 
+              setCheckIn(v.checkIn || ''); 
+              setCheckOut(v.checkOut || '');
+              if (v.checkIn && v.checkOut) {
+                setOpenDates(false);
+                setActiveField(null);
+              }
+            }}
           />
 
           <SearchGuests
             open={openGuests}
-            onClose={() => setOpenGuests(false)}
+            onClose={() => { setOpenGuests(false); setActiveField(null); }}
             guests={{ adults: Number(guests) || 1, children: 0, infants: 0, pets: 0 }}
-            onChange={(g) => setGuests(String(g.adults + g.children))}
+            onChange={(g) => {
+              setGuests(String(g.adults + g.children));
+            }}
           />
         </div>
       </section>
@@ -231,7 +360,13 @@ export default function HomePage() {
               }}
             >
               <div className="property-image">
-                <img src={property.mainImage} alt={property.title} />
+                <img 
+                  src={property.mainImage} 
+                  alt={property.title}
+                  onError={(e) => {
+                    e.target.src = '/fallback.svg';
+                  }}
+                />
                 {property.isGuestFavourite && (
                   <div className="guest-favourite-badge">Guest favourite</div>
                 )}
