@@ -253,7 +253,7 @@ export default function HostMessages() {
                         ref={globeButtonRef}
                         className="globe-btn"
                         onClick={openLanguageCurrency}
-                        aria-label="Language and Currency"
+                        aria-label={t(language, 'search.languageAndCurrency')}
                     >
                         <Icon icon="mdi:earth" width="24" height="24" />
                     </button>
@@ -271,7 +271,7 @@ export default function HostMessages() {
                         <button
                             className="header_menu"
                             onClick={() => setMenuOpen((prev) => !prev)}
-                            aria-label="Open host navigation menu"
+                            aria-label={t(language, 'host.openHostNavigationMenu')}
                             aria-expanded={menuOpen}
                         >
                             <Icon icon="mdi:menu" width="22" height="22" />
@@ -280,7 +280,7 @@ export default function HostMessages() {
                         <button
                             className="header_avatarButton"
                             onClick={() => setMenuOpen((prev) => !prev)}
-                            aria-label="Open host navigation menu"
+                            aria-label={t(language, 'host.openHostNavigationMenu')}
                             aria-expanded={menuOpen}
                         >
                             <Icon icon="mdi:account-circle" width="28" height="28" />
@@ -300,7 +300,7 @@ export default function HostMessages() {
                         className="host-menu-panel"
                         role="dialog"
                         aria-modal="true"
-                        aria-label="Host navigation menu"
+                        aria-label={t(language, 'host.hostNavigationMenu')}
                     >
                         <div className="host-menu-header">
                             <h2>{t(language, 'host.menu')}</h2>

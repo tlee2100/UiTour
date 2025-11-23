@@ -33,6 +33,36 @@ export default function ToursPage() {
   const dates = searchParams.get('dates') || '';
   const guests = searchParams.get('guests') || '1';
 
+  // Filter experiences based on search params
+  const filteredExperiences = experiences?.filter(tour => {
+    if (!tour) return false;
+
+    // Filter by location
+    if (location) {
+      const tourLocation = tour.location || tour.locationObj?.city || '';
+      if (!tourLocation.toLowerCase().includes(location.toLowerCase())) {
+        return false;
+      }
+    }
+
+    // Filter by guests (if tour has maxGuests field)
+    if (guests && guests !== '1') {
+      const guestCount = Number(guests);
+      if (!isNaN(guestCount) && tour.maxGuests) {
+        if (tour.maxGuests < guestCount) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }) || [];
+
+  // Handle search from ExperienceSearchBar
+  const handleSearch = ({ location, dates, guests, params }) => {
+    navigate(`/tours?${params.toString()}`);
+  };
+
   // Load saved property IDs from wishlist
   const loadSavedProperties = useCallback(async () => {
     if (!user || !user.UserID) {
@@ -79,6 +109,8 @@ export default function ToursPage() {
             initialLocation={location}
             initialDates={dates}
             initialGuests={guests}
+            onSearch={handleSearch}
+            searchPath="/tours"
           />
         </div>
       </section>
@@ -111,12 +143,13 @@ export default function ToursPage() {
       <section className="tours-grid-section">
         <div className="container">
           <div className="tours-grid">
-            {experiences?.map(tour => {
+            {filteredExperiences.length > 0 ? (
+              filteredExperiences.map(tour => {
               if (!tour) return null;
               
               // Helper function to normalize image URL
               const normalizeImageUrl = (url) => {
-                if (!url || url.trim().length === 0) return "/fallback.png";
+                if (!url || url.trim().length === 0) return "/fallback.svg";
                 // If already a full URL (http/https), use as is
                 if (url.startsWith('http://') || url.startsWith('https://')) {
                   return url.trim();
@@ -129,7 +162,7 @@ export default function ToursPage() {
                 return `http://localhost:5069/${url}`;
               };
               
-              const imageUrl = tour.image?.url || tour.image || "/fallback.png";
+              const imageUrl = tour.image?.url || tour.image || "/fallback.svg";
               const normalizedImageUrl = normalizeImageUrl(imageUrl);
               
               return (
@@ -222,7 +255,12 @@ export default function ToursPage() {
                   </div>
                 </div>
               );
-            })}
+            })
+            ) : (
+              <div className="no-results">
+                <p>No tours found matching your search criteria.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

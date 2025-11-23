@@ -281,7 +281,7 @@ export default function HostListings() {
                             }
                             openLanguageCurrency();
                         }}
-                        aria-label="Language and Currency"
+                        aria-label={t(language, 'search.languageAndCurrency')}
                     >
                         <Icon icon="mdi:earth" width="24" height="24" />
                     </button>
@@ -304,7 +304,7 @@ export default function HostListings() {
                                 }
                                 setMenuOpen((prev) => !prev);
                             }}
-                            aria-label="Open host navigation menu"
+                            aria-label={t(language, 'host.openHostNavigationMenu')}
                             aria-expanded={menuOpen}
                         >
                             <Icon icon="mdi:menu" width="22" height="22" />
@@ -318,7 +318,7 @@ export default function HostListings() {
                                 }
                                 setMenuOpen((prev) => !prev);
                             }}
-                            aria-label="Open host navigation menu"
+                            aria-label={t(language, 'host.openHostNavigationMenu')}
                             aria-expanded={menuOpen}
                         >
                             <Icon icon="mdi:account-circle" width="28" height="28" />
@@ -338,7 +338,7 @@ export default function HostListings() {
                         className="host-menu-panel"
                         role="dialog"
                         aria-modal="true"
-                        aria-label="Host navigation menu"
+                        aria-label={t(language, 'host.hostNavigationMenu')}
                     >
                         <div className="host-menu-header">
                             <h2>{t(language, 'host.menu')}</h2>
@@ -475,7 +475,7 @@ export default function HostListings() {
                                 className="listing-delete-btn"
                                 onClick={() => handleDeleteClick(item)}
                                 disabled={deletingId === item.id}
-                                aria-label={`Delete ${item.title}`}
+                                aria-label={`${t(language, 'host.deleteItem')} ${item.title}`}
                             >
                                 {deletingId === item.id ? (
                                     <Icon icon="mdi:loading" width="18" height="18" className="spinning" />
