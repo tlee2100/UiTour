@@ -167,31 +167,13 @@ namespace UITour.Controllers
         // ==================== PARTICIPANTS ====================
 
         [HttpGet("{tourId}/participants")]
-        public async Task<ActionResult<IEnumerable<TourParticipant>>> GetParticipants(int tourId)
+        public async Task<ActionResult<IEnumerable<Booking>>> GetParticipants(int tourId)
         {
             var participants = await _tourService.GetParticipantsAsync(tourId);
             return Ok(participants);
         }
 
-        [HttpPost("{tourId}/participants/{userId}")]
-        public async Task<IActionResult> AddParticipant(int tourId, int userId)
-        {
-            var added = await _tourService.AddParticipantAsync(tourId, userId);
-            if (!added)
-                return Conflict("Participant already joined this tour.");
-
-            return Ok("Participant added successfully.");
-        }
-
-        [HttpDelete("{tourId}/participants/{userId}")]
-        public async Task<IActionResult> RemoveParticipant(int tourId, int userId)
-        {
-            var removed = await _tourService.RemoveParticipantAsync(tourId, userId);
-            if (!removed)
-                return NotFound("Participant not found.");
-
-            return Ok("Participant removed successfully.");
-        }
+    
 
         // ==================== REVIEWS ====================
 
