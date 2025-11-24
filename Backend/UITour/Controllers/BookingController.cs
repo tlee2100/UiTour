@@ -205,6 +205,35 @@ namespace UITour.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        // POST: api/booking/5/confirm-transfer
+        [HttpPost("{id:int}/confirm-transfer")]
+        public async Task<IActionResult> ConfirmTransfer([FromRoute] int id)
+        {
+            try
+            {
+                if (id <= 0)
+                {
+                    return BadRequest(new { error = "Invalid booking ID" });
+                }
+
+                var transaction = await _bookingService.ConfirmTransferAsync(id);
+                return Ok(new { 
+                    message = "Transfer confirmed. Booking is now pending approval.",
+                    transactionId = transaction.TransactionID,
+                    bookingId = id,
+                    status = "Pending Approval"
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 
  
