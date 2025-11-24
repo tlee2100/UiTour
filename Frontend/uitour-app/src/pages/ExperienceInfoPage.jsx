@@ -209,19 +209,20 @@ export default function ExperienceInfoPage() {
     setBookingFeedback(null);
     setBookingLoading(true);
     try {
-      await authAPI.createBooking(payload);
-      setBookingFeedback({
-        type: "success",
-        message: "Đặt tour thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.",
+      const createdBooking = await authAPI.createBooking(payload);
+      // Navigate to payment page with booking data
+      navigate("/payment", {
+        state: {
+          bookingData: createdBooking,
+          tourData: currentExperience,
+          bookingType: "tour"
+        }
       });
-      // Reset booking state
-      setBookingState({ guests: 1, selectedDate: null });
     } catch (err) {
       setBookingFeedback({
         type: "error",
         message: err.message || "Không thể đặt tour. Vui lòng thử lại.",
       });
-    } finally {
       setBookingLoading(false);
     }
   }, [currentExperience, id, navigate, user]);

@@ -16,5 +16,6 @@ namespace UITour.ServicesL.Interfaces
         Task<decimal> CalculateTotalPriceAsync(int propertyId, DateTime checkIn, DateTime checkOut);
         Task<bool> UpdateBookingStatusAsync(int bookingId, string status);
         Task<IEnumerable<DateTime>> GetBlockedDatesAsync(int propertyId);
+        Task<Transaction> ConfirmTransferAsync(int bookingId);
     }
 }

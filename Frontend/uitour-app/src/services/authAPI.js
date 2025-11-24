@@ -1050,6 +1050,56 @@ async updateUserProfile(userId, form) {
     }
   }
 
+  // Confirm transfer - update booking status to "Pending Approval"
+  async confirmTransfer(bookingId) {
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Ensure bookingId is a number
+      const id = parseInt(bookingId, 10);
+      if (isNaN(id) || id <= 0) {
+        throw new Error('Invalid booking ID');
+      }
+      
+      const url = `${BOOKING_BASE_URL}/${id}/confirm-transfer`;
+      console.log('Calling confirm transfer endpoint:', url);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      // Read response as text first to avoid "body stream already read" error
+      const responseText = await response.text();
+      
+      if (!response.ok) {
+        let errorMessage = 'Failed to confirm transfer';
+        try {
+          // Try to parse as JSON
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          // If not JSON, use the text directly or status text
+          errorMessage = responseText || response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Parse successful response
+      try {
+        return JSON.parse(responseText);
+      } catch {
+        return { message: responseText || 'Transfer confirmed successfully' };
+      }
+    } catch (err) {
+      console.error('confirmTransfer error:', err);
+      throw err;
+    }
+  }
+
 }
 
 // Create singleton instance

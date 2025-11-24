@@ -1,6 +1,8 @@
 import React from "react";
 import "./HIBookingBox.css";
 import { useCurrency } from "../../contexts/CurrencyContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 
 function HIBookingBox({
   property,
@@ -17,6 +19,7 @@ function HIBookingBox({
   if (!property) return null;
 
   const { convertToCurrent, format } = useCurrency();
+  const { language } = useLanguage();
 
   // ✅ Mapping dữ liệu từ Experience format → Booking UI
   // Giả sử giá trong database là USD, convert sang currency hiện tại
@@ -117,13 +120,13 @@ function HIBookingBox({
         <div className="hib-price">
           <span className="hib-price-value">{format(pricePerNight)}</span>
           <span className="hib-price-slash">/</span>
-          <span className="hib-price-night">night</span>
+          <span className="hib-price-night">{t(language, "booking.night")}</span>
         </div>
         <div className="hib-rating">
           <div className="hib-rating-star">⭐</div>
           <span className="hib-rating-score">{rating}</span>
           <div className="hib-rating-dot"></div>
-          <span className="hib-rating-reviews">{reviewsCount} reviews</span>
+          <span className="hib-rating-reviews">{reviewsCount} {t(language, "booking.reviews")}</span>
         </div>
       </div>
 
@@ -131,7 +134,7 @@ function HIBookingBox({
       <div className="hib-details">
         <div className="hib-details-row">
           <div className="hib-attribute">
-            <span className="hib-attribute-label">CHECK-IN</span>
+            <span className="hib-attribute-label">{t(language, "booking.checkIn")}</span>
             <input
               type="date"
               className="hib-input"
@@ -141,7 +144,7 @@ function HIBookingBox({
             />
           </div>
           <div className="hib-attribute">
-            <span className="hib-attribute-label">CHECKOUT</span>
+            <span className="hib-attribute-label">{t(language, "booking.checkOut")}</span>
             <input
               type="date"
               className="hib-input"
@@ -155,7 +158,7 @@ function HIBookingBox({
         <div className="hib-details-row">
           <div className="hib-guests">
             <div className="hib-guests-label">
-              <span className="hib-guests-title">GUESTS</span>
+              <span className="hib-guests-title">{t(language, "booking.guests")}</span>
               <input
                 type="number"
                 className="hib-input"
@@ -165,7 +168,7 @@ function HIBookingBox({
                 onChange={(e) => handleGuestsChange(e.target.value)}
               />
             </div>
-            <div className="hib-chevron">max {maxGuests}</div>
+            <div className="hib-chevron">{t(language, "booking.max")} {maxGuests}</div>
           </div>
         </div>
       </div>
@@ -177,11 +180,11 @@ function HIBookingBox({
         disabled={bookingLoading}
       >
         <span className="hib-book-text">
-          {bookingLoading ? "Processing..." : "Book now"}
+          {bookingLoading ? t(language, "booking.processing") : t(language, "booking.bookNow")}
         </span>
       </button>
 
-      <div className="hib-note">You won't be charged yet</div>
+      <div className="hib-note">{t(language, "booking.youWontBeChargedYet")}</div>
 
       {bookingFeedback?.message && (
         <div className={`hib-feedback ${bookingFeedback.type}`}>
@@ -193,37 +196,37 @@ function HIBookingBox({
       <div className="hib-price-details">
         <div className="hib-row">
           <span className="hib-row-label">
-            {format(pricePerNight)} x {nights} night{nights > 1 ? 's' : ''}
+            {format(pricePerNight)} x {nights} {nights > 1 ? t(language, "booking.nights") : t(language, "booking.night")}
           </span>
           <span className="hib-row-value">{format(totalPrice)}</span>
         </div>
 
         <div className="hib-row">
-          <span className="hib-row-label">Discount</span>
+          <span className="hib-row-label">{t(language, "booking.discount")}</span>
           <span className="hib-row-value hib-discount">
             -{format(discount)}
           </span>
         </div>
 
         <div className="hib-row">
-          <span className="hib-row-label">Cleaning fee</span>
+          <span className="hib-row-label">{t(language, "booking.cleaningFee")}</span>
           <span className="hib-row-value">{format(cleaningFee)}</span>
         </div>
 
         <div className="hib-row">
-          <span className="hib-row-label">Service fee</span>
+          <span className="hib-row-label">{t(language, "booking.serviceFee")}</span>
           <span className="hib-row-value">{format(serviceFee)}</span>
         </div>
 
         <div className="hib-row">
-          <span className="hib-row-label">Taxes and fees</span>
+          <span className="hib-row-label">{t(language, "booking.taxesAndFees")}</span>
           <span className="hib-row-value">{format(taxFee)}</span>
         </div>
 
         <div className="hib-divider"></div>
 
         <div className="hib-row hib-total">
-          <span className="hib-row-label">Total</span>
+          <span className="hib-row-label">{t(language, "booking.total")}</span>
           <span className="hib-row-value">{format(discountedTotal)}</span>
         </div>
       </div>
