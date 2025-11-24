@@ -333,35 +333,84 @@ export const PropertyProvider = ({ children }) => {
         // Helper function to normalize image URL
         const normalizeImageUrl = (url) => {
           if (!url || url.trim().length === 0) return "/fallback.svg";
+          // Skip base64 images (they might be truncated)
+          if (url.startsWith('data:image')) return "/fallback.svg";
+          // If already a full URL (http/https), use as is
           if (url.startsWith('http://') || url.startsWith('https://')) {
-            return url;
+            return url.trim();
           }
+          // If relative path starting with /, prepend backend base URL
           if (url.startsWith('/')) {
             return `http://localhost:5069${url}`;
           }
+          // Otherwise, assume it's a relative path and prepend backend base URL
           return `http://localhost:5069/${url}`;
         };
 
-        // Get first photo - check multiple possible field names
+        // Get first photo - check multiple possible field names and structures
         const photos = p.photos || p.Photos || [];
-        const firstPhoto = Array.isArray(photos) && photos.length > 0 
-          ? photos[0] 
-          : null;
-        
-        const imageUrl = firstPhoto 
-          ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || firstPhoto.ServerUrl || "/fallback.svg")
-          : "/fallback.svg";
+        let firstPhoto = null;
+        let imageUrl = "/fallback.svg";
+
+        if (Array.isArray(photos) && photos.length > 0) {
+          // Sort by SortIndex if available, otherwise use first photo
+          const sortedPhotos = [...photos].sort((a, b) => {
+            const aIndex = a.sortIndex ?? a.SortIndex ?? 0;
+            const bIndex = b.sortIndex ?? b.SortIndex ?? 0;
+            return aIndex - bIndex;
+          });
+          firstPhoto = sortedPhotos[0];
+        }
+
+        if (firstPhoto) {
+          // Try multiple possible URL field names (camelCase, PascalCase, etc.)
+          imageUrl = firstPhoto.url || 
+                     firstPhoto.Url || 
+                     firstPhoto.serverUrl || 
+                     firstPhoto.ServerUrl || 
+                     firstPhoto.imageUrl ||
+                     firstPhoto.ImageUrl ||
+                     "/fallback.svg";
+        }
+
+        // Debug logging for missing photos
+        if (!firstPhoto || imageUrl === "/fallback.svg") {
+          console.warn(`⚠️ Property ${p.propertyID || p.PropertyID} has no valid photos:`, {
+            propertyID: p.propertyID || p.PropertyID,
+            photosCount: photos.length,
+            photos: photos,
+            firstPhoto: firstPhoto
+          });
+        }
+
+        // Extract location coordinates
+        const lat = parseFloat(p.lat) || null;
+        const lng = parseFloat(p.lng) || null;
 
         return {
-          id: p.propertyID,
-          title: p.listingTitle || 'Untitled',
-          listingTitle: p.listingTitle || 'Untitled', // ✅ Thêm listingTitle để PropertyCard có thể dùng
-          location: p.location || '',
-          price: p.price ?? 0,
-          currency: p.currency ?? "USD",
+          id: p.propertyID || p.PropertyID,
+          title: p.listingTitle || p.ListingTitle || 'Untitled',
+          listingTitle: p.listingTitle || p.ListingTitle || 'Untitled', // ✅ Thêm listingTitle để PropertyCard có thể dùng
+          location: p.location || p.Location || '',
+          locationObj: {
+            address: p.location || p.Location || '',
+            city: p.city?.name || p.City?.name || '',
+            country: p.country?.name || p.Country?.name || 'Vietnam',
+            lat: lat,
+            lng: lng
+          },
+          price: p.price || p.Price || 0,
+          currency: p.currency || p.Currency || "USD",
           rating: avgRating,
           reviewsCount: reviews.length,
           mainImage: normalizeImageUrl(imageUrl),
+          // Property details for PropertyCard
+          propertyType: p.propertyType || p.PropertyType || 'Entire home',
+          maxGuests: p.accommodates || p.Accommodates || 1,
+          accommodates: p.accommodates || p.Accommodates || 1,
+          bedrooms: p.bedrooms || p.Bedrooms || 0,
+          beds: p.beds || p.Beds || 0,
+          bathrooms: parseFloat(p.bathrooms || p.Bathrooms || 0),
           isGuestFavourite: false,
           dates: null
         };
