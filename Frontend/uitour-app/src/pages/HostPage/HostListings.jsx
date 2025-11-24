@@ -41,6 +41,31 @@ export default function HostListings() {
         loadListings();
     }, [user]);
 
+    // Auto-refresh listings when page becomes visible (e.g., after admin approves)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (!document.hidden && user) {
+                // Page became visible, refresh listings
+                loadListings();
+            }
+        };
+
+        const handleFocus = () => {
+            if (user) {
+                // Window got focus, refresh listings
+                loadListings();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleFocus);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleFocus);
+        };
+    }, [user]);
+
     // Helper function to normalize image URL
     const normalizeImageUrl = (url) => {
         if (!url || typeof url !== 'string' || url.trim().length === 0) {
@@ -113,9 +138,18 @@ export default function HostListings() {
                     ? reviews.reduce((sum, r) => sum + (r.Rating || r.rating || 0), 0) / reviews.length 
                     : 0;
                 
+                // Debug: Log Active status for each property
+                const activeStatus = p.Active !== undefined ? p.Active : (p.active !== undefined ? p.active : false);
+                console.log(`Property ${p.PropertyID || p.propertyID || p.id} - Active status:`, {
+                    Active: p.Active,
+                    active: p.active,
+                    finalActive: activeStatus,
+                    rawProperty: p
+                });
+                
                 return {
                     id: p.PropertyID || p.propertyID || p.id,
-                    status: p.Active ? t(language, 'host.listed') : t(language, 'host.pending'),
+                    status: activeStatus ? t(language, 'host.approved') : t(language, 'host.pending'),
                     title: p.ListingTitle || p.listingTitle || "Untitled",
                     rating: avgRating,
                     image: imageUrl || sampleImg,
@@ -166,9 +200,18 @@ export default function HostListings() {
                             ? reviews.reduce((sum, r) => sum + (r.Rating || r.rating || 0), 0) / reviews.length
                             : 0;
                         
+                        // Debug: Log Active status for each tour
+                        const activeStatus = tour.Active !== undefined ? tour.Active : (tour.active !== undefined ? tour.active : false);
+                        console.log(`Tour ${tour.TourID || tour.tourID || tour.id} - Active status:`, {
+                            Active: tour.Active,
+                            active: tour.active,
+                            finalActive: activeStatus,
+                            rawTour: tour
+                        });
+                        
                         return {
                             id: tour.TourID || tour.tourID || tour.id,
-                            status: tour.Active ? t(language, 'host.listed') : t(language, 'host.pending'),
+                            status: activeStatus ? t(language, 'host.approved') : t(language, 'host.pending'),
                             title: tour.TourName || tour.tourName || tour.title || "Untitled",
                             rating: avgRating,
                             image: imageUrl || sampleImg,
@@ -456,7 +499,10 @@ export default function HostListings() {
                 ) : (
                     listings.map((item) => (
                         <div className="listing-card" key={`${item.type}-${item.id}`}>
-                            <div className={`listing-status ${item.status === t(language, 'host.pending') ? "pending" : ""}`}>
+                            <div className={`listing-status ${
+                                item.status === t(language, 'host.pending') ? "pending" : 
+                                item.status === t(language, 'host.approved') ? "approved" : ""
+                            }`}>
                                 {item.status}
                             </div>
                             
