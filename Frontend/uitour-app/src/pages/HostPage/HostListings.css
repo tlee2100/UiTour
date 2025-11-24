@@ -113,6 +113,10 @@
     background: #f59e0b;
 }
 
+.listing-status.approved {
+    background: #10b981; /* Green color for approved status */
+}
+
 .listing-info {
     padding: 16px;
 }

@@ -30,7 +30,8 @@ namespace UITour.Controllers
             var allTours = await _tourService.GetAllAsync();
             
             // Check if user is authenticated
-            var userIdClaim = User?.FindFirst("UserID")?.Value;
+            // JWT uses ClaimTypes.NameIdentifier for UserID
+            var userIdClaim = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
             {
                 // User is logged in: return their tours (including inactive) + all active tours
@@ -89,16 +90,48 @@ namespace UITour.Controllers
             return NoContent();
         }
 
-        // DELETE: api/tour/{id} (Admin only)
+        // DELETE: api/tour/{id} (Admin or Owner only)
         [HttpDelete("{id}")]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize]
         public async Task<IActionResult> DeleteTour(int id)
         {
-            var deleted = await _tourService.DeleteAsync(id);
-            if (!deleted)
-                return NotFound(new { error = $"Tour with ID {id} not found" });
+            try
+            {
+                // Get current user ID and role from JWT
+                // JWT uses ClaimTypes.NameIdentifier for UserID and ClaimTypes.Role for role
+                var userIdClaim = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userRole = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                {
+                    return Unauthorized(new { error = "User ID not found in token" });
+                }
 
-            return Ok(new { message = "Tour deleted successfully", tourId = id });
+                // Get tour to check ownership
+                var tour = await _tourService.GetByIdAsync(id);
+                if (tour == null)
+                    return NotFound(new { error = $"Tour with ID {id} not found" });
+
+                // Check if user is Admin or Owner
+                bool isAdmin = userRole?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
+                bool isOwner = tour.Host?.UserID == userId;
+
+                if (!isAdmin && !isOwner)
+                {
+                    return StatusCode(403, new { error = "You do not have permission to delete this tour. Only the owner or an admin can delete it." });
+                }
+
+                // Proceed with deletion
+                var deleted = await _tourService.DeleteAsync(id);
+                if (!deleted)
+                    return NotFound(new { error = $"Tour with ID {id} not found" });
+
+                return Ok(new { message = "Tour deleted successfully", tourId = id });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         // ==================== FILTERS ====================
@@ -134,31 +167,13 @@ namespace UITour.Controllers
         // ==================== PARTICIPANTS ====================
 
         [HttpGet("{tourId}/participants")]
-        public async Task<ActionResult<IEnumerable<TourParticipant>>> GetParticipants(int tourId)
+        public async Task<ActionResult<IEnumerable<Booking>>> GetParticipants(int tourId)
         {
             var participants = await _tourService.GetParticipantsAsync(tourId);
             return Ok(participants);
         }
 
-        [HttpPost("{tourId}/participants/{userId}")]
-        public async Task<IActionResult> AddParticipant(int tourId, int userId)
-        {
-            var added = await _tourService.AddParticipantAsync(tourId, userId);
-            if (!added)
-                return Conflict("Participant already joined this tour.");
-
-            return Ok("Participant added successfully.");
-        }
-
-        [HttpDelete("{tourId}/participants/{userId}")]
-        public async Task<IActionResult> RemoveParticipant(int tourId, int userId)
-        {
-            var removed = await _tourService.RemoveParticipantAsync(tourId, userId);
-            if (!removed)
-                return NotFound("Participant not found.");
-
-            return Ok("Participant removed successfully.");
-        }
+    
 
         // ==================== REVIEWS ====================
 

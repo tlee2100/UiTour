@@ -22,9 +22,7 @@ namespace UITour.ServicesL.Interfaces
         Task<IEnumerable<Tour>> GetByCountryIdAsync(int countryId);
 
         // ======== PARTICIPANTS ========
-        Task<IEnumerable<TourParticipant>> GetParticipantsAsync(int tourId);
-        Task<bool> AddParticipantAsync(int tourId, int userId);
-        Task<bool> RemoveParticipantAsync(int tourId, int userId); 
+        Task<IEnumerable<Booking>> GetParticipantsAsync(int tourId);
 
         // ======== REVIEWS ========
         Task<IEnumerable<TourReview>> GetReviewsAsync(int tourId);

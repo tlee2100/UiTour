@@ -36,7 +36,6 @@ namespace UITour.DAL
             FavoriteLists = new FavoriteListRepository(_context);
             Messages = new MessageRepository(_context);
             Tours = new TourRepository(_context);
-            TourParticipants = new TourParticipantRepository(_context);
             TourPhotos = new TourPhotoRepository(_context);
             TourReviews = new TourReviewRepository(_context);
             ExperienceDetails = new ExperienceDetailsRepository(_context);
@@ -65,7 +64,7 @@ namespace UITour.DAL
         public IMessageRepository Messages { get; }
 
         public ITourReviewRepository TourReviews { get; }
-        public ITourParticipantRepository TourParticipants { get; }
+  
         public ITourPhotoRepository TourPhotos { get; }
         public ITourRepository Tours { get; }
         public IExperienceDetailsRepository ExperienceDetails { get; }
