@@ -1957,8 +1957,15 @@ function formatStayDataForAPI(d) {
       ? num(d.pricing.taxFee.percent) 
       : num(d.pricing.taxFee || 0),
 
-    // Note: DiscountPercentage already exists in database, can be used if needed
-    // For now, discount will be calculated on frontend based on DiscountPercentage field
+    // Discount: Use monthly discount if available, otherwise use weekly discount
+    // Monthly has higher priority than weekly (as per business logic)
+    DiscountPercentage: (() => {
+      const discounts = d.pricing?.discounts || {};
+      const monthly = discounts.monthly?.percent || 0;
+      const weekly = discounts.weekly?.percent || 0;
+      // Prefer monthly if > 0, otherwise use weekly
+      return monthly > 0 ? monthly : weekly;
+    })(),
 
     Active: false,
   };

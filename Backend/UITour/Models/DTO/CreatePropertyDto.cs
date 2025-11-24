@@ -26,6 +26,9 @@
         public decimal? ExtraPeopleFee { get; set; }
         public decimal ServiceFee { get; set; } = 0;
         public decimal TaxFee { get; set; } = 0;
+        
+        // Discount
+        public decimal DiscountPercentage { get; set; } = 0;
 
 
         public List<PropertyAmenityDto> Amenities { get; set; }
