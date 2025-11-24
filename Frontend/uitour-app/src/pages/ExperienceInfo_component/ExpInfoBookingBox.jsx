@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "./ExpInfoBookingBox.css";
 import { useCurrency } from "../../contexts/CurrencyContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 
 function ExpInfoBookingBox({ 
   booking, 
@@ -12,6 +14,7 @@ function ExpInfoBookingBox({
   bookingFeedback = null
 }) {
   const { convertToCurrent, format } = useCurrency();
+  const { language } = useLanguage();
   
   // ✅ Chuẩn hóa booking object
   const safeBooking = booking && typeof booking === "object" ? booking : {};
@@ -53,15 +56,15 @@ function ExpInfoBookingBox({
       <div className="expib-header">
         <div className="expib-price">
           <span className="expib-price-text">
-            From {format(basePrice)}
+            {t(language, "booking.from")} {format(basePrice)}
           </span>
-          <span className="expib-per">/ person</span>
+          <span className="expib-per">{t(language, "booking.perPerson")}</span>
         </div>
       </div>
 
       {/* ✅ Date Selection */}
       <div className="expib-field">
-        <label className="expib-label">Select Date</label>
+        <label className="expib-label">{t(language, "booking.selectDate")}</label>
         <input
           type="date"
           className="expib-input"
@@ -73,7 +76,7 @@ function ExpInfoBookingBox({
 
       {/* ✅ Guests Selection */}
       <div className="expib-field">
-        <label className="expib-label">Number of Guests</label>
+        <label className="expib-label">{t(language, "booking.numberOfGuests")}</label>
         <input
           type="number"
           className="expib-input"
@@ -82,13 +85,13 @@ function ExpInfoBookingBox({
           value={guests}
           onChange={handleGuestsChange}
         />
-        <span className="expib-hint">Max {maxGuests} guests</span>
+        <span className="expib-hint">{t(language, "booking.max")} {maxGuests} {t(language, "booking.guests")}</span>
       </div>
 
       {/* ✅ Total Price */}
       {guests > 1 && (
         <div className="expib-total">
-          <span className="expib-total-label">Total:</span>
+          <span className="expib-total-label">{t(language, "booking.total")}:</span>
           <span className="expib-total-price">
             {format(totalPrice)}
           </span>
@@ -108,7 +111,7 @@ function ExpInfoBookingBox({
         onClick={handleBookNow}
         disabled={bookingLoading || !selectedDate}
       >
-        {bookingLoading ? "Booking..." : "Book now"}
+        {bookingLoading ? t(language, "booking.processing") : t(language, "booking.bookNow")}
       </button>
 
       {/* ✅ Time Slots (if available) */}
@@ -116,19 +119,19 @@ function ExpInfoBookingBox({
         <>
           <div className="expib-divider" />
           <div className="expib-slots">
-            <p className="expib-slots-title">Available Time Slots:</p>
+            <p className="expib-slots-title">{t(language, "booking.availableTimeSlots")}:</p>
             {timeSlots.map((slot) => (
               <div className="expib-slot-item" key={slot.id}>
                 <div className="expib-slot-label">
                   {slot.date
-                    ? new Date(slot.date).toLocaleDateString("en-US", {
+                    ? new Date(slot.date).toLocaleDateString(language === "vi" ? "vi-VN" : "en-US", {
                         month: "long",
                         day: "numeric",
                       })
-                    : "Flexible"}
+                    : t(language, "booking.flexible")}
                 </div>
                 <div className="expib-slot-info">
-                  {slot.time} — {slot.spotsAvailable} spots left
+                  {slot.time} — {slot.spotsAvailable} {t(language, "booking.spotsLeft")}
                 </div>
               </div>
             ))}

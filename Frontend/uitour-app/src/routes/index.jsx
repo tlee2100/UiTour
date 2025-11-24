@@ -64,6 +64,7 @@ import HostDemoPreview from "../pages/HostDemoPreview";
 import { HostProvider } from "../contexts/HostContext";
 
 import ResetPasswordPage from "../pages/ResetPasswordPage";
+import PaymentPage from "../pages/PaymentPage";
 
 const AppRoutes = () => {
   return (
@@ -80,6 +81,7 @@ const AppRoutes = () => {
         <Route path="trips" element={<RequireAuth><TripsPage /></RequireAuth>} />
         <Route path="notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
         <Route path="account" element={<RequireAuth><AccountSettingsPage /></RequireAuth>} />
+        <Route path="payment" element={<RequireAuth><PaymentPage /></RequireAuth>} />
         <Route
           path="profile"
           element={(

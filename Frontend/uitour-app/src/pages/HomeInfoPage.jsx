@@ -696,17 +696,20 @@ export default function HomeInfoPage() {
     setBookingFeedback(null);
     setBookingLoading(true);
     try {
-      await authAPI.createBooking(payload);
-      setBookingFeedback({
-        type: "success",
-        message: "Đặt phòng thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.",
+      const createdBooking = await authAPI.createBooking(payload);
+      // Navigate to payment page with booking data
+      navigate("/payment", {
+        state: {
+          bookingData: createdBooking,
+          propertyData: currentProperty,
+          bookingType: "property"
+        }
       });
     } catch (err) {
       setBookingFeedback({
         type: "error",
         message: err.message || "Không thể đặt phòng. Vui lòng thử lại.",
       });
-    } finally {
       setBookingLoading(false);
     }
   };
