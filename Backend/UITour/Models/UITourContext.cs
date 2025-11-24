@@ -49,7 +49,6 @@ namespace UITour.Models
 
         // ================= Tours =================
         public DbSet<Tour> Tours { get; set; }                
-        public DbSet<TourParticipant> TourParticipants { get; set; } 
         public DbSet<TourReview> TourReviews { get; set; }   
         public DbSet<TourPhoto> TourPhotos { get; set; }
         public DbSet<ExperienceDetails> ExperienceDetails { get; set; }
@@ -124,8 +123,7 @@ namespace UITour.Models
                 .OnDelete(DeleteBehavior.Restrict);
 
             
-            modelBuilder.Entity<TourParticipant>()
-               .HasKey(tb => new { tb.UserID, tb.TourID });
+           
 
             modelBuilder.Entity<Tour>()
                 .HasOne(t => t.Host)
@@ -133,17 +131,6 @@ namespace UITour.Models
                 .HasForeignKey(t => t.HostID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<TourParticipant>()
-                .HasOne(tp => tp.Tour)
-                .WithMany(t => t.Participants)
-                .HasForeignKey(tp => tp.TourID)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TourParticipant>()
-                .HasOne(tp => tp.User)
-                .WithMany()
-                .HasForeignKey(tp => tp.UserID)
-                .OnDelete(DeleteBehavior.Restrict);
             
             modelBuilder.Entity<TourReview>()
                 .HasOne(tr => tr.Tour)
