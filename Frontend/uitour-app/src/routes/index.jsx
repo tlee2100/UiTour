@@ -60,7 +60,7 @@ import HostListings from "../pages/HostPage/HostListings";
 import HostMessages from "../pages/HostPage/HostMessages";
 import ProfileEditPage from "../pages/ProfileEditPage";
 
-import HostDemoPreview from "../pages/HostDemoPreview";
+//import HostDemoPreview from "../pages/HostDemoPreview";
 import { HostProvider } from "../contexts/HostContext";
 
 import ResetPasswordPage from "../pages/ResetPasswordPage";
@@ -136,7 +136,7 @@ const AppRoutes = () => {
         }
       >
         {/* Các route con */}
-        <Route path="demo-preview" element={<HostDemoPreview />} />
+        {/*<Route path="demo-preview" element={<HostDemoPreview />} />*/}
 
 
         {/* Flow tạo Stay */}
