@@ -1601,7 +1601,7 @@
   border-left: 4px solid #ffca28;
   border-radius: 6px;
   font-size: 15px;
-  margin: 20px 0 32px 0;
+  margin: 20px auto 32px auto;
   max-width: 900px;
   line-height: 1.5;
 }
