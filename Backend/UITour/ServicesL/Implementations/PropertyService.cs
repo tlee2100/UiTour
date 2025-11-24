@@ -103,13 +103,13 @@ namespace UITour.ServicesL.Implementations
                 ExtraPeopleFee = dto.ExtraPeopleFee,
                 ServiceFee = dto.ServiceFee,
                 TaxFee = dto.TaxFee,
-                // Discounts - Use DiscountPercentage (already exists in database)
+                // Discounts - Use DiscountPercentage from DTO
                 Discount = 0, // Will be calculated at booking time
-                DiscountPercentage = 0 // Can be set if needed, or calculated dynamically
+                DiscountPercentage = dto.DiscountPercentage
             };
 
-            // Debug: Log fees being saved
-            System.Diagnostics.Debug.WriteLine($"🔍 Creating property with fees: CleaningFee={property.CleaningFee}, ServiceFee={property.ServiceFee}, TaxFee={property.TaxFee}, ExtraPeopleFee={property.ExtraPeopleFee}");
+            // Debug: Log fees and discount being saved
+            System.Diagnostics.Debug.WriteLine($"🔍 Creating property with fees: CleaningFee={property.CleaningFee}, ServiceFee={property.ServiceFee}, TaxFee={property.TaxFee}, ExtraPeopleFee={property.ExtraPeopleFee}, DiscountPercentage={property.DiscountPercentage}");
 
             try
             {
@@ -120,7 +120,7 @@ namespace UITour.ServicesL.Implementations
                 var savedProperty = await _unitOfWork.Properties.Query()
                     .FirstOrDefaultAsync(p => p.PropertyID == property.PropertyID);
                 
-                System.Diagnostics.Debug.WriteLine($"✅ Property {property.PropertyID} saved with fees: CleaningFee={savedProperty?.CleaningFee}, ServiceFee={savedProperty?.ServiceFee}, TaxFee={savedProperty?.TaxFee}, ExtraPeopleFee={savedProperty?.ExtraPeopleFee}");
+                System.Diagnostics.Debug.WriteLine($"✅ Property {property.PropertyID} saved with fees: CleaningFee={savedProperty?.CleaningFee}, ServiceFee={savedProperty?.ServiceFee}, TaxFee={savedProperty?.TaxFee}, ExtraPeopleFee={savedProperty?.ExtraPeopleFee}, DiscountPercentage={savedProperty?.DiscountPercentage}");
                 
                 if (savedProperty != null)
                 {

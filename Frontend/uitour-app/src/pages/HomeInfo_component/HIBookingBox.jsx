@@ -72,6 +72,16 @@ function HIBookingBox({
   // ✅ Calculate discount based on DiscountPercentage from database
   const calculateDiscount = () => {
     const discountPercentage = property.discountPercentage ?? 0;
+    
+    // Debug: Log discount calculation
+    console.log("🔍 HIBookingBox - Discount calculation:", {
+      discountPercentage: discountPercentage,
+      pricePerNight: pricePerNight,
+      nights: nights,
+      baseTotal: pricePerNight * nights,
+      property: property
+    });
+    
     if (discountPercentage <= 0) return 0;
     
     const baseTotal = pricePerNight * nights;
