@@ -31,7 +31,7 @@
         IMessageRepository Messages { get; }
 
          ITourRepository Tours { get; }
-         ITourParticipantRepository TourParticipants { get; }
+     
          ITourPhotoRepository TourPhotos { get; }
          ITourReviewRepository TourReviews { get; }
 

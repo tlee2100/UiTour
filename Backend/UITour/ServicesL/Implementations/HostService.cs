@@ -14,10 +14,12 @@ namespace UITour.ServicesL.Implementations
     public class HostService : IHostService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IUserService _userService;
 
-        public HostService(IUnitOfWork unitOfWork)
+        public HostService(IUnitOfWork unitOfWork, IUserService userService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
         public async Task<HostModel> GetByIdAsync(int id)
@@ -49,6 +51,8 @@ namespace UITour.ServicesL.Implementations
             // Set default values
             host.HostSince = DateTime.UtcNow;
             host.IsSuperHost = false;
+            await _userService.UpdateUserRoleAsync(user.UserID, "Host");
+
 
             await _unitOfWork.Hosts.AddAsync(host);
             await _unitOfWork.SaveChangesAsync();

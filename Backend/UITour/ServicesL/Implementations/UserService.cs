@@ -72,7 +72,7 @@ namespace UITour.ServicesL.Implementations
             user.Email = user.Email.Trim();
             user.FullName = user.FullName?.Trim() ?? string.Empty;
             user.Phone = user.Phone?.Trim();
-
+            user.Role = "Guest";
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
             user.RegisteredAt = DateTime.Now;
             await _unitOfWork.Users.AddAsync(user);

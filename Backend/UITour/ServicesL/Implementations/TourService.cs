@@ -38,9 +38,10 @@ namespace UITour.ServicesL.Implementations
         {
             var tour = await _unitOfWork.Tours.Query()
                 .Include(t => t.Photos)
-                .Include(t => t.Participants)
+                //.Include(t => t.Bookings)
                 .Include(t => t.Reviews).ThenInclude(r => r.User)
                 .Include(t => t.ExperienceDetails)
+                .Include(t => t.Host).ThenInclude(h => h.User) // ✅ Include Host for ownership check
                 .FirstOrDefaultAsync(t => t.TourID == id);
             if (tour == null)
                 throw new InvalidOperationException("Tour not found");
@@ -339,43 +340,15 @@ namespace UITour.ServicesL.Implementations
 
         // ==================== PARTICIPANTS ====================
 
-        public async Task<IEnumerable<TourParticipant>> GetParticipantsAsync(int tourId)
+        public async Task<IEnumerable<Booking>> GetParticipantsAsync(int tourId)
         {
-            return await _unitOfWork.TourParticipants.Query()
+            return await _unitOfWork.Bookings.Query()
                 .Include(p => p.User)
                 .Where(p => p.TourID == tourId)
                 .ToListAsync();
         }
 
-        public async Task<bool> AddParticipantAsync(int tourId, int userId)
-        {
-            var exists = await _unitOfWork.TourParticipants.Query()
-                .AnyAsync(p => p.TourID == tourId && p.UserID == userId);
-
-            if (exists) return false;
-
-            var participant = new TourParticipant
-            {
-                TourID = tourId,
-                UserID = userId
-            };
-
-            await _unitOfWork.TourParticipants.AddAsync(participant);
-            await _unitOfWork.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> RemoveParticipantAsync(int tourId, int userId)
-        {
-            var participant = await _unitOfWork.TourParticipants.Query()
-                .FirstOrDefaultAsync(p => p.TourID == tourId && p.UserID == userId);
-
-            if (participant == null) return false;
-
-            _unitOfWork.TourParticipants.Remove(participant);
-            await _unitOfWork.SaveChangesAsync();
-            return true;
-        }
+    
 
         // ==================== REVIEWS ====================
 

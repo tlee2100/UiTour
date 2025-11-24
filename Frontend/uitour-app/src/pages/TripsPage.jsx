@@ -14,6 +14,65 @@ export default function TripsPage() {
   const { user } = useApp();
   const { convertToCurrent, format } = useCurrency();
 
+  // Helper function to normalize image URL
+  const normalizeImageUrl = useCallback((url) => {
+    if (!url || typeof url !== 'string' || url.trim().length === 0) {
+      return null;
+    }
+    
+    const trimmedUrl = url.trim();
+    
+    // If it's base64 or invalid, skip
+    if (trimmedUrl.startsWith('data:image') || trimmedUrl.length < 10) {
+      return null;
+    }
+    
+    // If it's already a full URL (http/https), use directly
+    if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+      return trimmedUrl;
+    }
+    
+    // If it's a relative path (starts with /), add base URL
+    if (trimmedUrl.startsWith('/')) {
+      return `http://localhost:5069${trimmedUrl}`;
+    }
+    
+    // If it doesn't start with /, add / and base URL
+    return `http://localhost:5069/${trimmedUrl}`;
+  }, []);
+
+  // Helper function to get first photo URL from property/tour
+  const getFirstPhotoUrl = useCallback((item) => {
+    if (!item) return null;
+    
+    // Try multiple ways to get photos: Photos (PascalCase) or photos (camelCase)
+    const photos = item.Photos || item.photos || item.media?.photos || item.media?.Photos || [];
+    
+    if (!Array.isArray(photos) || photos.length === 0) {
+      return null;
+    }
+    
+    // Sort by SortIndex if available, otherwise use first photo
+    const sortedPhotos = [...photos].sort((a, b) => {
+      const aIndex = a.sortIndex ?? a.SortIndex ?? 0;
+      const bIndex = b.sortIndex ?? b.SortIndex ?? 0;
+      return aIndex - bIndex;
+    });
+    
+    const firstPhoto = sortedPhotos[0];
+    
+    // Try multiple ways to get URL
+    const url = firstPhoto?.url || 
+                firstPhoto?.Url || 
+                firstPhoto?.serverUrl || 
+                firstPhoto?.ServerUrl ||
+                firstPhoto?.imageUrl ||
+                firstPhoto?.ImageUrl ||
+                null;
+    
+    return normalizeImageUrl(url);
+  }, [normalizeImageUrl]);
+
   const formatDateRange = useCallback((checkIn, checkOut) => {
     if (!checkIn || !checkOut) return '';
     try {
@@ -138,12 +197,16 @@ export default function TripsPage() {
             const propertyInfo = trip.propertyInfo;
             const tourInfo = trip.tourInfo;
             const isTour = !!tourInfo && !propertyInfo;
-            const coverImage =
-              propertyInfo?.photos?.[0]?.url ||
-              propertyInfo?.media?.photos?.[0]?.url ||
-              tourInfo?.media?.cover?.url ||
-              tourInfo?.image?.url ||
-              '/fallback.svg';
+            
+            // Get cover image using helper function
+            const coverImage = propertyInfo 
+              ? (getFirstPhotoUrl(propertyInfo) || '/fallback.svg')
+              : tourInfo
+              ? (getFirstPhotoUrl(tourInfo) || 
+                 tourInfo?.media?.cover?.url || 
+                 tourInfo?.image?.url ||
+                 '/fallback.svg')
+              : '/fallback.svg';
             const title =
               propertyInfo?.listingTitle ||
               propertyInfo?.title ||
