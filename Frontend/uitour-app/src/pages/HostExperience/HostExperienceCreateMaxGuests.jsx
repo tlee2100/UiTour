@@ -8,7 +8,7 @@ export default function HostExperienceCreateMaxGuests() {
   // Load từ context
   const initialTime = experienceData.booking?.timeSlots?.[0]?.startTime || null;
   const initialMax = experienceData.capacity?.maxGuests || 1;
-  const initialPrice = Number(experienceData.pricing?.basePrice) || 0;
+  const initialPrice = Number(experienceData.pricing?.basePrice) || 1;
   const initialDuration = experienceData.durationHours || 1;
 
   // Parse time
@@ -176,22 +176,18 @@ export default function HostExperienceCreateMaxGuests() {
                 className="he-input"
                 type="number"
                 min={1}
-                value={pricePerGuest === 0 ? "" : pricePerGuest}
+                value={pricePerGuest}
                 placeholder="Enter price..."
                 onChange={(e) => {
                   const v = e.target.value;
-                  if (v === "") {
-                    setPricePerGuest("");
-                    return;
-                  }
-                  setPricePerGuest(Number(v));
+                  const num = Number(v);
+                  setPricePerGuest(num);
                 }}
                 onBlur={() => {
                   let v = Number(pricePerGuest);
-                  if (!v || v < 1) v = 1;   // nếu rỗng hoặc <1 → set 1
+                  if (!v || v < 1) v = 1;
                   setPricePerGuest(v);
                 }}
-
               />
             </div>
           </div>

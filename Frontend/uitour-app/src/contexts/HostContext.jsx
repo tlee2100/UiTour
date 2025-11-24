@@ -928,7 +928,7 @@ export function HostProvider({ children }) {
         mergedData.media.photos = experiencePhotosRAM;
         console.log("📸 Merged experiencePhotosRAM into experienceData:", experiencePhotosRAM.length, "photos");
       }
-      
+
       // Merge experienceItineraryRAM into experienceData.experienceDetails
       // Note: experienceItineraryRAM contains {id, preview, file, serverUrl} for each activity
       // We need to merge this with experienceData.experienceDetails to preserve serverUrl after upload
@@ -975,7 +975,7 @@ export function HostProvider({ children }) {
           serverUrl: ed.photo?.serverUrl || "NO SERVER URL"
         })));
       }
-      
+
       return mergedData;
     }
   }
@@ -1208,11 +1208,11 @@ export function HostProvider({ children }) {
 
   async function sendHostData() {
     const data = getFinalData();
-    
+
     try {
       // Import authAPI dynamically
       const authAPI = (await import("../services/authAPI")).default;
-      
+
       // Get user from localStorage
       const userStr = localStorage.getItem("user");
       const user = userStr ? JSON.parse(userStr) : null;
@@ -1227,23 +1227,23 @@ export function HostProvider({ children }) {
         // Upload photos first
         const photos = data.photos || [];
         const photosWithFiles = photos.filter(p => p.file && p.file instanceof File);
-        
+
         console.log("Photos to upload:", photosWithFiles.length, "out of", photos.length);
-        
+
         if (photosWithFiles.length > 0) {
           try {
             console.log("Starting upload...");
             const uploadedUrls = await authAPI.uploadImages(photosWithFiles.map(p => p.file));
             console.log("Uploaded URLs:", uploadedUrls);
-            
+
             if (!uploadedUrls || uploadedUrls.length === 0) {
               throw new Error("Không có ảnh nào được upload thành công");
             }
-            
+
             if (uploadedUrls.length !== photosWithFiles.length) {
               console.warn(`Warning: Uploaded ${uploadedUrls.length} files but expected ${photosWithFiles.length}`);
             }
-            
+
             // Update photos with server URLs - update both in photos array AND stayPhotosRAM
             photos.forEach((photo, photoIndex) => {
               if (photo.file) {
@@ -1264,7 +1264,7 @@ export function HostProvider({ children }) {
                 console.warn(`⚠️ Photo ${photoIndex} has no file and no URL - will be skipped`);
               }
             });
-            
+
             // CRITICAL: Update stayPhotosRAM với serverUrls để photos được lưu vào database
             // Match photos by index since they should be in the same order
             setStayPhotosRAM(prevRAM => {
@@ -1272,17 +1272,17 @@ export function HostProvider({ children }) {
                 // Tìm photo tương ứng trong photos array
                 // Ưu tiên match bằng file object, sau đó bằng index
                 let updatedPhoto = null;
-                
+
                 if (ramPhoto.file) {
                   // Tìm bằng file object (chính xác nhất)
                   updatedPhoto = photos.find(p => p.file === ramPhoto.file);
                 }
-                
+
                 if (!updatedPhoto && ramIndex < photos.length) {
                   // Fallback: match bằng index
                   updatedPhoto = photos[ramIndex];
                 }
-                
+
                 if (updatedPhoto && updatedPhoto.serverUrl) {
                   console.log(`🔄 Updating RAM photo ${ramIndex} with serverUrl: ${updatedPhoto.serverUrl}`);
                   return {
@@ -1291,15 +1291,15 @@ export function HostProvider({ children }) {
                     url: updatedPhoto.serverUrl
                   };
                 }
-                
+
                 // Nếu RAM photo đã có serverUrl, giữ nguyên
                 if (ramPhoto.serverUrl) {
                   return ramPhoto;
                 }
-                
+
                 return ramPhoto;
               });
-              
+
               console.log(`📸 Updated stayPhotosRAM: ${updatedRAM.length} photos, ${updatedRAM.filter(p => p.serverUrl).length} with serverUrl`);
               return updatedRAM;
             });
@@ -1315,7 +1315,7 @@ export function HostProvider({ children }) {
 
         // Format and send property data
         const payload = formatStayDataForAPI({ ...data, userID });
-        
+
         // Debug: Log fees in payload
         console.log("💰 Fees in payload:", {
           CleaningFee: payload.CleaningFee,
@@ -1324,7 +1324,7 @@ export function HostProvider({ children }) {
           ExtraPeopleFee: payload.ExtraPeopleFee,
           DiscountRules: payload.DiscountRules
         });
-        
+
         // Debug: Log photos in payload
         console.log("📸 Photos in payload:", payload.Photos);
         console.log("📸 Total photos:", payload.Photos?.length || 0);
@@ -1335,24 +1335,26 @@ export function HostProvider({ children }) {
         } else {
           console.warn("⚠️ WARNING: No photos in payload! This property will have no images.");
         }
-        
+
         const result = await authAPI.createProperty(payload);
-        
-        alert("Property đã được tạo thành công! Đang chờ admin duyệt.");
-        return true;
+        return {
+          ok: true,
+          message: "Your property has been submitted successfully!\nPlease wait for admin approval."
+        };
+
       } else {
         // Experience/Tour flow
         const photos = data.media?.photos || [];
         const photosWithFiles = photos.filter(p => p.file && p.file instanceof File);
-        
+
         if (photosWithFiles.length > 0) {
           try {
             const uploadedUrls = await authAPI.uploadImages(photosWithFiles.map(p => p.file));
-            
+
             if (!uploadedUrls || uploadedUrls.length === 0) {
               throw new Error("Không có ảnh nào được upload thành công");
             }
-            
+
             // Update photos with server URLs - CRITICAL: Update both in photos array AND data.media.photos
             photos.forEach((photo, photoIndex) => {
               if (photo.file) {
@@ -1373,7 +1375,7 @@ export function HostProvider({ children }) {
                 console.warn(`⚠️ Tour photo ${photoIndex} has no file and no URL - will be skipped`);
               }
             });
-            
+
             // CRITICAL: Update data.media.photos to ensure formatExperienceDataForAPI can access serverUrls
             if (!data.media) {
               data.media = {};
@@ -1381,14 +1383,14 @@ export function HostProvider({ children }) {
             if (!data.media.photos) {
               data.media.photos = [];
             }
-            
+
             // Sync photos array to data.media.photos
             data.media.photos = photos.map(p => ({
               ...p,
               serverUrl: p.serverUrl || p.url || "",
               url: p.url || p.serverUrl || ""
             }));
-            
+
             // CRITICAL: Update experiencePhotosRAM với serverUrls để photos được lưu vào database
             // Match photos by index since they should be in the same order
             setExperiencePhotosRAM(prevRAM => {
@@ -1396,17 +1398,17 @@ export function HostProvider({ children }) {
                 // Tìm photo tương ứng trong photos array
                 // Ưu tiên match bằng file object, sau đó bằng index
                 let updatedPhoto = null;
-                
+
                 if (ramPhoto.file) {
                   // Tìm bằng file object (chính xác nhất)
                   updatedPhoto = photos.find(p => p.file === ramPhoto.file);
                 }
-                
+
                 if (!updatedPhoto && ramIndex < photos.length) {
                   // Fallback: match bằng index
                   updatedPhoto = photos[ramIndex];
                 }
-                
+
                 if (updatedPhoto && updatedPhoto.serverUrl) {
                   console.log(`🔄 Updating RAM tour photo ${ramIndex} with serverUrl: ${updatedPhoto.serverUrl}`);
                   return {
@@ -1415,19 +1417,19 @@ export function HostProvider({ children }) {
                     url: updatedPhoto.serverUrl
                   };
                 }
-                
+
                 // Nếu RAM photo đã có serverUrl, giữ nguyên
                 if (ramPhoto.serverUrl) {
                   return ramPhoto;
                 }
-                
+
                 return ramPhoto;
               });
-              
+
               console.log(`📸 Updated experiencePhotosRAM: ${updatedRAM.length} photos, ${updatedRAM.filter(p => p.serverUrl).length} with serverUrl`);
               return updatedRAM;
             });
-            
+
             console.log(`📸 Updated data.media.photos: ${data.media.photos.length} photos with serverUrls`);
           } catch (uploadError) {
             console.error("Upload error:", uploadError);
@@ -1439,7 +1441,7 @@ export function HostProvider({ children }) {
         // CRITICAL: Get itinerary items from experienceData (which has metadata) and match with experienceItineraryRAM (which has files)
         const itineraryItemsFromData = experienceData.experienceDetails || [];
         const itineraryPhotosWithFiles = [];
-        
+
         // Match items from data with RAM entries (which have files)
         itineraryItemsFromData.forEach(item => {
           const ramEntry = experienceItineraryRAM.find(r => r.id === item.id);
@@ -1451,18 +1453,18 @@ export function HostProvider({ children }) {
             });
           }
         });
-        
+
         console.log(`🔍 Itinerary items to upload: ${itineraryPhotosWithFiles.length} out of ${itineraryItemsFromData.length} total items`);
 
         // Declare itineraryUploadedUrls outside if block so it can be used later
         let itineraryUploadedUrls = [];
-        
+
         if (itineraryPhotosWithFiles.length > 0) {
           try {
             itineraryUploadedUrls = await authAPI.uploadImages(
               itineraryPhotosWithFiles.map(p => p.file)
             );
-            
+
             if (itineraryUploadedUrls && itineraryUploadedUrls.length > 0) {
               // Update itinerary items with server URLs
               itineraryPhotosWithFiles.forEach((itemWithFile, index) => {
@@ -1483,7 +1485,7 @@ export function HostProvider({ children }) {
                   console.log(`✅ Updated itinerary photo ${index} (item ${itemWithFile.item.id}) with URL: ${serverUrl}`);
                 }
               });
-              
+
               // Update experienceData.experienceDetails with serverUrls (for getFinalData to pick up)
               setExperienceData(prev => ({
                 ...prev,
@@ -1502,16 +1504,16 @@ export function HostProvider({ children }) {
                   return item;
                 })
               }));
-              
+
               // CRITICAL: Update experienceItineraryRAM với serverUrls
               setExperienceItineraryRAM(prevRAM => {
                 const updatedRAM = prevRAM.map((ramEntry) => {
                   // Tìm item tương ứng trong itineraryPhotosWithFiles (match by id and file)
                   const itemWithFile = itineraryPhotosWithFiles.find(
-                    iwf => iwf.ramEntry?.id === ramEntry.id && 
-                           (iwf.file === ramEntry.file || iwf.ramEntry === ramEntry)
+                    iwf => iwf.ramEntry?.id === ramEntry.id &&
+                      (iwf.file === ramEntry.file || iwf.ramEntry === ramEntry)
                   );
-                  
+
                   if (itemWithFile) {
                     const uploadedIndex = itineraryPhotosWithFiles.indexOf(itemWithFile);
                     if (uploadedIndex >= 0 && uploadedIndex < itineraryUploadedUrls.length) {
@@ -1523,15 +1525,15 @@ export function HostProvider({ children }) {
                       };
                     }
                   }
-                  
+
                   // Nếu RAM entry đã có serverUrl, giữ nguyên
                   if (ramEntry.serverUrl) {
                     return ramEntry;
                   }
-                  
+
                   return ramEntry;
                 });
-                
+
                 console.log(`📋 Updated experienceItineraryRAM: ${updatedRAM.length} items, ${updatedRAM.filter(r => r.serverUrl).length} with serverUrl`);
                 console.log(`📋 RAM entries with serverUrl:`, updatedRAM.filter(r => r.serverUrl).map(r => ({
                   id: r.id,
@@ -1539,7 +1541,7 @@ export function HostProvider({ children }) {
                 })));
                 return updatedRAM;
               });
-              
+
               console.log(`📸 Updated ${itineraryItemsFromData.length} itinerary items with serverUrls`);
             }
           } catch (uploadError) {
@@ -1553,7 +1555,7 @@ export function HostProvider({ children }) {
         // Since setState is async, we need to manually merge the uploaded serverUrls
         let finalData = getFinalData();
         finalData.userID = userID;
-        
+
         // Manually merge uploaded serverUrls into finalData.experienceDetails
         // This ensures we have the latest serverUrls even if state hasn't updated yet
         if (itineraryPhotosWithFiles.length > 0 && itineraryUploadedUrls && itineraryUploadedUrls.length > 0) {
@@ -1576,7 +1578,7 @@ export function HostProvider({ children }) {
             return item;
           });
         }
-        
+
         console.log("🔍 Final data before formatExperienceDataForAPI:", {
           experienceDetailsCount: finalData.experienceDetails?.length || 0,
           experienceDetails: finalData.experienceDetails?.map(ed => ({
@@ -1587,10 +1589,10 @@ export function HostProvider({ children }) {
             photoUrl: ed.photo?.url || "NO URL"
           })) || []
         });
-        
+
         // Backend sẽ tự động tạo Host từ UserID
         const payload = formatExperienceDataForAPI(finalData);
-        
+
         // Debug: Log photos in payload
         console.log("📸 Tour photos in payload:", payload.Photos);
         console.log("📸 Total photos:", payload.Photos?.length || 0);
@@ -1601,7 +1603,7 @@ export function HostProvider({ children }) {
         } else {
           console.warn("⚠️ WARNING: No photos in tour payload! This tour will have no images.");
         }
-        
+
         // Debug: Log experienceDetails in payload
         console.log("📋 ExperienceDetails in payload:", payload.ExperienceDetails);
         console.log("📋 Total experienceDetails:", payload.ExperienceDetails?.length || 0);
@@ -1612,16 +1614,20 @@ export function HostProvider({ children }) {
         } else {
           console.warn("⚠️ WARNING: No ExperienceDetails in tour payload! This tour will have no itinerary.");
         }
-        
+
         const result = await authAPI.createTour(payload);
-        
-        alert("Tour đã được tạo thành công! Đang chờ admin duyệt.");
-        return true;
+        return {
+          ok: true,
+          message: "Your tour has been submitted successfully!\nPlease wait for admin approval."
+        };
+
       }
     } catch (err) {
       console.error("[SEND HOST DATA ERROR]", err);
-      alert("Gửi dữ liệu thất bại: " + (err.message || "Có lỗi xảy ra"));
-      return false;
+      return {
+        ok: false,
+        message: "Submit failed: " + (err.message || "Unknown error")
+      };
     }
   }
 
@@ -1950,11 +1956,11 @@ function formatStayDataForAPI(d) {
     CleaningFee: num(d.pricing.cleaningFee),
     ExtraPeopleFee: num(d.pricing.extraPeopleFee),
     // ServiceFee and TaxFee: if it's an object with percent, use percent; otherwise use the value directly
-    ServiceFee: d.pricing.serviceFee?.type === "percentage" 
-      ? num(d.pricing.serviceFee.percent) 
+    ServiceFee: d.pricing.serviceFee?.type === "percentage"
+      ? num(d.pricing.serviceFee.percent)
       : num(d.pricing.serviceFee || 0),
-    TaxFee: d.pricing.taxFee?.type === "percentage" 
-      ? num(d.pricing.taxFee.percent) 
+    TaxFee: d.pricing.taxFee?.type === "percentage"
+      ? num(d.pricing.taxFee.percent)
       : num(d.pricing.taxFee || 0),
 
     // Discount: Use monthly discount if available, otherwise use weekly discount
@@ -1997,9 +2003,9 @@ function formatExperienceDataForAPI(d) {
   }
 
   // Build location string from location object
-  const locationString = d.location?.addressLine || 
-    d.location?.address || 
-    (d.location && typeof d.location === 'string' ? d.location : "") || 
+  const locationString = d.location?.addressLine ||
+    d.location?.address ||
+    (d.location && typeof d.location === 'string' ? d.location : "") ||
     "";
 
   // Process photos - only use serverUrl (not base64 preview)
@@ -2020,13 +2026,13 @@ function formatExperienceDataForAPI(d) {
     .filter(p => p !== null);
 
   // Get cover photo URL (string, not object)
-  const coverPhotoUrl = d.media?.cover?.serverUrl || 
-    d.media?.cover?.url || 
-    d.media?.cover || 
+  const coverPhotoUrl = d.media?.cover?.serverUrl ||
+    d.media?.cover?.url ||
+    d.media?.cover ||
     (photos.length > 0 ? photos[0].Url : null);
 
   // Process time slots - ensure they're strings
-  const timeSlots = Array.isArray(d.booking?.timeSlots) 
+  const timeSlots = Array.isArray(d.booking?.timeSlots)
     ? d.booking.timeSlots.map(ts => String(ts || ""))
     : [];
 
@@ -2034,12 +2040,12 @@ function formatExperienceDataForAPI(d) {
   const experienceDetails = (d.experienceDetails || [])
     .map((item, index) => {
       // Try multiple sources for image URL
-      const imageUrl = item.photo?.serverUrl || 
-                       item.photo?.url || 
-                       item.photo?.ImageUrl || 
-                       item.image ||
-                       "";
-      
+      const imageUrl = item.photo?.serverUrl ||
+        item.photo?.url ||
+        item.photo?.ImageUrl ||
+        item.image ||
+        "";
+
       // Skip items without valid image URL or base64 URLs
       if (!imageUrl || imageUrl.trim().length === 0 || imageUrl.startsWith('data:image')) {
         console.warn(`⚠️ Experience detail ${index} skipped: no valid image URL`, {
@@ -2049,20 +2055,20 @@ function formatExperienceDataForAPI(d) {
         });
         return null;
       }
-      
+
       const detail = {
         ImageUrl: imageUrl.trim(),
         Title: safe(item.title || ""),
         Description: safe(item.description || item.content || ""),
         SortIndex: item.sortIndex || index + 1,
       };
-      
+
       console.log(`✅ Experience detail ${index} included:`, {
         ImageUrl: detail.ImageUrl,
         Title: detail.Title,
         SortIndex: detail.SortIndex
       });
-      
+
       return detail;
     })
     .filter(item => item !== null);
@@ -2109,14 +2115,3 @@ export function useHost() {
   return useContext(HostContext);
 }
 
-//////////////////////////
-/*
-
-Thêm trường Duration, Booking, Admin duyệt(nếu thiếu) và so lại với Stay để chuẩn data cuối
-Style lại 1 số chỗ của Experience, đặc biệt là phần Title & Description lỗi style khi nhập dài
-Style lại phần nhập chữ khi mở editor vì trông ko thống nhất và cứng nhắc
-Thêm cảnh báo reload sẽ mất ảnh ở tất cả trang upload ảnh
-Thêm final validate để check lần cuối đảm bảo ko cho publish khi Host reload mất ảnh ở cả 2 Exp và Stay
-Format lại Exp lần cuối để hoàn thành
-
-*/

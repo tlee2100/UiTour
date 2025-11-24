@@ -116,6 +116,28 @@ export default function HostStayCreateDiscount() {
         return;
       }
 
+      // Rule: Seasonal range cannot exceed 365 days
+      const from = new Date(fromDate);
+      const to = new Date(toDate);
+      const diffDays = (to - from) / (1000 * 60 * 60 * 24);
+
+      if (diffDays > 365) {
+        setError("Seasonal discount cannot exceed 1 year");
+        return;
+      }
+
+      // Rule: Start date cannot be more than 1 year from today
+      const startLimit = new Date();
+      startLimit.setFullYear(startLimit.getFullYear() + 1);
+
+      const fromd = new Date(fromDate);
+
+      if (fromd > startLimit) {
+        setError("Seasonal discount cannot start more than 1 year from today");
+        return;
+      }
+
+
       // ❗ RULE 4: Check overlap
       for (let s of seasonList) {
         const existingFrom = s.from;
@@ -153,6 +175,12 @@ export default function HostStayCreateDiscount() {
         setError("Days must be > 0");
         return;
       }
+
+      if (d > 365) {
+        setError("Early-bird cannot exceed 365 days before the stay");
+        return;
+      }
+
 
       // ❗ RULE 5: Check duplicate daysBefore
       if (earlyList.some((e) => e.daysBefore === d)) {
