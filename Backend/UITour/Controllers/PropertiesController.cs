@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using UITour.Models;
 using UITour.Models.DTO;
 using UITour.ServicesL.Interfaces;
@@ -96,14 +97,46 @@ namespace UITour.API.Controllers
             return Ok(updated);
         }
 
-        // DELETE: api/properties/5 (Admin only)
+        // DELETE: api/properties/5 (Admin or Owner only)
         [HttpDelete("{id:int}")]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
-            var success = await _propertyService.DeleteAsync(id);
-            if (!success) return NotFound(new { error = $"Property with ID {id} not found" });
-            return Ok(new { message = "Property deleted successfully", propertyId = id });
+            try
+            {
+                // Get current user ID and role from JWT
+                // JWT uses ClaimTypes.NameIdentifier for UserID and ClaimTypes.Role for role
+                var userIdClaim = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userRole = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                {
+                    return Unauthorized(new { error = "User ID not found in token" });
+                }
+
+                // Get property to check ownership
+                var property = await _propertyService.GetByIdAsync(id);
+                if (property == null)
+                    return NotFound(new { error = $"Property with ID {id} not found" });
+
+                // Check if user is Admin or Owner
+                bool isAdmin = userRole?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
+                bool isOwner = property.Host?.UserID == userId;
+
+                if (!isAdmin && !isOwner)
+                {
+                    return StatusCode(403, new { error = "You do not have permission to delete this property. Only the owner or an admin can delete it." });
+                }
+
+                // Proceed with deletion
+                var success = await _propertyService.DeleteAsync(id);
+                if (!success) return NotFound(new { error = $"Property with ID {id} not found" });
+                return Ok(new { message = "Property deleted successfully", propertyId = id });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         // GET: api/properties/host/3
