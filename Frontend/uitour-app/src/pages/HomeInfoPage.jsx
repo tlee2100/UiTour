@@ -507,6 +507,7 @@ export default function HomeInfoPage() {
         serviceFee: property?.serviceFee || property?.ServiceFee,
         taxFee: property?.taxFee || property?.TaxFee,
         extraPeopleFee: property?.extraPeopleFee || property?.ExtraPeopleFee,
+        discountPercentage: property?.discountPercentage || property?.DiscountPercentage,
         rawProperty: property
       });
       
@@ -517,7 +518,8 @@ export default function HomeInfoPage() {
         cleaningFee: normalized.cleaningFee,
         serviceFee: normalized.serviceFee,
         taxFee: normalized.taxFee,
-        extraGuestFee: normalized.extraGuestFee
+        extraGuestFee: normalized.extraGuestFee,
+        discountPercentage: normalized.discountPercentage
       });
       
       setCurrentProperty(normalized);
