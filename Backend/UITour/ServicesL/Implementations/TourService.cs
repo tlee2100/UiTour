@@ -41,6 +41,7 @@ namespace UITour.ServicesL.Implementations
                 .Include(t => t.Participants)
                 .Include(t => t.Reviews).ThenInclude(r => r.User)
                 .Include(t => t.ExperienceDetails)
+                .Include(t => t.Host).ThenInclude(h => h.User) // ✅ Include Host for ownership check
                 .FirstOrDefaultAsync(t => t.TourID == id);
             if (tour == null)
                 throw new InvalidOperationException("Tour not found");
