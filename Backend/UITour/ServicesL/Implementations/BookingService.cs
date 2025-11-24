@@ -149,5 +149,32 @@ namespace UITour.ServicesL.Implementations
             await _unitOfWork.SaveChangesAsync();
             return true;
         }
+
+        public async Task<Transaction> ConfirmTransferAsync(int bookingId)
+        {
+            var booking = await GetByIdAsync(bookingId);
+            if (booking == null)
+                throw new InvalidOperationException("Booking not found");
+
+            // Update booking status to "Pending Approval"
+            booking.Status = "Pending Approval";
+            _unitOfWork.Bookings.Update(booking);
+
+            // Create a transaction with status "awaiting_approval"
+            var transaction = new Transaction
+            {
+                BookingID = bookingId,
+                Amount = booking.TotalPrice,
+                Currency = booking.Currency ?? "USD",
+                PaymentMethod = "Bank Transfer",
+                PaymentStatus = "awaiting_approval",
+                ProcessedAt = DateTime.Now
+            };
+
+            await _unitOfWork.Transactions.AddAsync(transaction);
+            await _unitOfWork.SaveChangesAsync();
+
+            return transaction;
+        }
     }
 }
