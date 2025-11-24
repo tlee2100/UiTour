@@ -3,6 +3,8 @@
   height: 100%;
   position: relative;
   background: #f8fafc;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .map-loading {
@@ -17,6 +19,83 @@
   width: 100%;
   height: 100%;
   position: relative;
+}
+
+/* Price marker styles */
+.price-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.price-marker-content {
+  background: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--black);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid #ff385c;
+  white-space: nowrap;
+}
+
+.price-marker-content:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.price-marker-text {
+  color: #ff385c;
+}
+
+/* Map popup styles */
+.map-popup-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.map-popup-image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.map-popup-info h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--black);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-popup-location {
+  margin: 0;
+  font-size: 14px;
+  color: var(--subtitle-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-popup-price {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.map-popup-price span {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--subtitle-color);
 }
 
 .map-placeholder {
