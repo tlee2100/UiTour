@@ -1,18 +1,19 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import HostHeader from "../components/HostHeader";
 import HostFooter from "../components/HostFooter";
 import { HostProvider, useHost } from "../contexts/HostContext";
-import ErrorModal from "../components/ErrorModal";
+import ErrorModal from "../components/modals/ErrorModal";
+import SuccessModal from "../components/modals/SuccessModal";
 import "./HostLayout.css";
 
 // Tạo bảng flow định nghĩa "trang trước" và "trang sau"
 const ROUTE_FLOW = {
   // Stay Creation Flow
-  "/host/stay/create/choose": { 
+  "/host/stay/create/choose": {
     prev: "/host/today",
-    next: "/host/stay/create/typeofplace" 
+    next: "/host/stay/create/typeofplace"
   },
   "/host/stay/create/typeofplace": {
     prev: "/host/stay/create/choose",
@@ -68,9 +69,9 @@ const ROUTE_FLOW = {
   },
 
   // Experience Creation Flow
-  "/host/experience/create/choose": { 
+  "/host/experience/create/choose": {
     prev: "/host/today",
-    next: "/host/experience/create/years" 
+    next: "/host/experience/create/years"
   },
   "/host/experience/create/years": {
     prev: "/host/experience/create/choose",
@@ -114,6 +115,7 @@ const ROUTE_FLOW = {
 function HostLayoutContent() {
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const { pathname } = useLocation();
   const { prev, next, isLast } = ROUTE_FLOW[pathname] || {};
@@ -121,17 +123,24 @@ function HostLayoutContent() {
   const navigate = useNavigate();
   const stepKey = pathname.split("/").pop();
   const disabledNext = next && !host.canMoveToStep(stepKey);
+
   async function handlePublish() {
     const result = host.validateAll();
-
     if (!result.ok) {
-      // ❌ Hiện modal thay vì alert
       setErrorMessage(result.message);
       return;
     }
 
-    const ok = await host.sendHostData();
-    if (ok) navigate("/host/demo-preview");
+    const response = await host.sendHostData();
+
+    if (!response.ok) {
+      setErrorMessage(response.message);
+      return;
+    }
+
+    // success
+    setSuccessMessage(response.message);
+    host.reset();
   }
 
   return (
@@ -150,6 +159,13 @@ function HostLayoutContent() {
       <ErrorModal
         message={errorMessage}
         onClose={() => setErrorMessage("")}
+      />
+      <SuccessModal
+        message={successMessage}
+        onClose={() => {
+          setSuccessMessage("");
+          navigate("/host/listings");
+        }}
       />
     </div>
   );
