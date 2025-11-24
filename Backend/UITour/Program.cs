@@ -77,7 +77,6 @@ builder.Services.AddScoped<ISavedListingsRepository, SavedListingsRepository>();
 builder.Services.AddScoped<IFavoriteListRepository, FavoriteListRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<ITourRepository, TourRepository>();
-builder.Services.AddScoped<ITourParticipantRepository, TourParticipantRepository>();
 builder.Services.AddScoped<ITourPhotoRepository, TourPhotoRepository>();
 builder.Services.AddScoped<ITourReviewRepository, TourReviewRepository>();
 // Service registrations
