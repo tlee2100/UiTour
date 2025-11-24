@@ -121,7 +121,13 @@ export default function SearchResultsPage() {
                     <span>Search as I move the map</span>
                   </label>
                 </div>
-                <MapView properties={properties} />
+                <MapView 
+                  properties={properties} 
+                  onMarkerClick={(property) => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    navigate(`/property/${property.id}`);
+                  }}
+                />
               </div>
             )}
           </>

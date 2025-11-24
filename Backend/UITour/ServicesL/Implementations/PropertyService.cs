@@ -239,7 +239,15 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<IEnumerable<Property>> SearchAsync(string location, DateTime? checkIn, DateTime? checkOut, int? guests)
         {
-            var query = _unitOfWork.Properties.Query().AsQueryable();
+            var query = _unitOfWork.Properties.Query()
+                .Include(p => p.Photos) // ✅ Include Photos để frontend có thể hiển thị ảnh
+                .Include(p => p.Reviews)
+                .Include(p => p.City)
+                .Include(p => p.Country)
+                .AsQueryable();
+
+            // Only return active properties
+            query = query.Where(p => p.Active == true);
 
             if (!string.IsNullOrEmpty(location))
                 query = query.Where(p => p.Location.Contains(location));
