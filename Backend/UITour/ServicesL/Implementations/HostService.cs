@@ -167,6 +167,16 @@ namespace UITour.ServicesL.Implementations
         {
             return await _unitOfWork.Bookings.Query()
                 .Where(p => p.HostID == hostId)
+                .Include(b => b.Property)
+                    .ThenInclude(p => p.Photos)
+                .Include(b => b.Property)
+                    .ThenInclude(p => p.Reviews)
+                .Include(b => b.Tour)
+                    .ThenInclude(t => t.Photos)
+                .Include(b => b.Tour)
+                    .ThenInclude(t => t.Reviews)
+                .Include(b => b.User)
+                .Include(b => b.Host)
                 .ToListAsync();
         }
 

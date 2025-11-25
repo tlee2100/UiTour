@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using UITour.Models;
 using UITour.ServicesL.Interfaces;
+using UITour.DAL.Interfaces;
 
 using HostModel = UITour.Models.Host; // Alias to resolve ambiguity
 
@@ -11,10 +13,12 @@ namespace UITour.Controllers
     public class HostController : ControllerBase
     {
         private readonly IHostService _hostService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public HostController(IHostService hostService)
+        public HostController(IHostService hostService, IUnitOfWork unitOfWork)
         {
             _hostService = hostService;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: api/host/5
@@ -197,7 +201,243 @@ namespace UITour.Controllers
             try
             {
                 var bookings = await _hostService.GetBookingsAsync(id);
-                return Ok(bookings);
+                System.Diagnostics.Debug.WriteLine($"Loaded {bookings.Count()} bookings for host {id}");
+                
+                // Check what's loaded
+                foreach (var b in bookings)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Booking {b.BookingID}: PropertyID={b.PropertyID}, Property loaded={b.Property != null}, TourID={b.TourID}, Tour loaded={b.Tour != null}, UserID={b.UserID}, User loaded={b.User != null}");
+                }
+                
+                // Load all transactions for these bookings at once
+                var bookingIds = bookings.Select(b => b.BookingID).ToList();
+                var transactions = await _unitOfWork.Transactions.Query()
+                    .Where(t => bookingIds.Contains(t.BookingID))
+                    .ToListAsync();
+                var transactionDict = transactions.ToDictionary(t => t.BookingID);
+                
+                // Load all Properties and Tours that are referenced but not loaded
+                var allPropertyIds = bookings.Where(b => b.PropertyID.HasValue)
+                    .Select(b => b.PropertyID.Value).Distinct().ToList();
+                var allProperties = allPropertyIds.Any() 
+                    ? await _unitOfWork.Properties.Query()
+                        .Include(p => p.Photos)
+                        .Include(p => p.Reviews)
+                        .Where(p => allPropertyIds.Contains(p.PropertyID))
+                        .ToListAsync()
+                    : new List<Property>();
+                System.Diagnostics.Debug.WriteLine($"Loaded {allProperties.Count} properties for IDs: {string.Join(", ", allPropertyIds)}");
+                var propertyDict = allProperties.ToDictionary(p => p.PropertyID);
+                
+                var allTourIds = bookings.Where(b => b.TourID.HasValue)
+                    .Select(b => b.TourID.Value).Distinct().ToList();
+                var allTours = allTourIds.Any()
+                    ? await _unitOfWork.Tours.Query()
+                        .Include(t => t.Photos)
+                        .Include(t => t.Reviews)
+                        .Where(t => allTourIds.Contains(t.TourID))
+                        .ToListAsync()
+                    : new List<Tour>();
+                System.Diagnostics.Debug.WriteLine($"Loaded {allTours.Count} tours for IDs: {string.Join(", ", allTourIds)}");
+                var tourDict = allTours.ToDictionary(t => t.TourID);
+                
+                // Load all Users that are referenced but not loaded
+                var allUserIds = bookings.Where(b => b.UserID > 0)
+                    .Select(b => b.UserID).Distinct().ToList();
+                var allUsers = allUserIds.Any()
+                    ? await _unitOfWork.Users.Query()
+                        .Where(u => allUserIds.Contains(u.UserID))
+                        .ToListAsync()
+                    : new List<User>();
+                System.Diagnostics.Debug.WriteLine($"Loaded {allUsers.Count} users for IDs: {string.Join(", ", allUserIds)}");
+                var userDict = allUsers.ToDictionary(u => u.UserID);
+                
+                // Build response with properly serialized navigation properties
+                var bookingsWithTransactions = new List<object>();
+                
+                foreach (var b in bookings)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Processing booking {b.BookingID}: PropertyID={b.PropertyID}, TourID={b.TourID}, UserID={b.UserID}");
+                    
+                    // Get transaction for this booking
+                    transactionDict.TryGetValue(b.BookingID, out var transaction);
+                    
+                    // Get Property - always use dict (more reliable than navigation property)
+                    Property property = null;
+                    if (b.PropertyID.HasValue)
+                    {
+                        if (propertyDict.TryGetValue(b.PropertyID.Value, out property))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"✓ Found property {b.PropertyID.Value} (Title: {property?.ListingTitle}) for booking {b.BookingID}");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"✗ Property {b.PropertyID.Value} NOT FOUND in database for booking {b.BookingID}");
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Booking {b.BookingID} has no PropertyID");
+                    }
+                    
+                    // Build property object if exists
+                    object propertyObj = null;
+                    if (property != null)
+                    {
+                        var photos = property.Photos != null ? property.Photos.Select(p => new
+                        {
+                            p.PhotoID,
+                            p.Url,
+                            p.Caption,
+                            p.SortIndex
+                        }).Cast<object>().ToList() : new List<object>();
+                        
+                        var reviews = property.Reviews != null ? property.Reviews.Select(r => new
+                        {
+                            r.ReviewID,
+                            r.Rating,
+                            r.Comments
+                        }).Cast<object>().ToList() : new List<object>();
+                        
+                        propertyObj = new
+                        {
+                            property.PropertyID,
+                            property.ListingTitle,
+                            property.Description,
+                            property.Location,
+                            Photos = photos,
+                            Reviews = reviews
+                        };
+                        
+                        System.Diagnostics.Debug.WriteLine($"Built property object with {photos.Count} photos and {reviews.Count} reviews");
+                    }
+                    
+                    // Get Tour - always use dict (more reliable than navigation property)
+                    Tour tour = null;
+                    if (b.TourID.HasValue)
+                    {
+                        if (tourDict.TryGetValue(b.TourID.Value, out tour))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"✓ Found tour {b.TourID.Value} (Name: {tour?.TourName}) for booking {b.BookingID}");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"✗ Tour {b.TourID.Value} NOT FOUND in database for booking {b.BookingID}");
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Booking {b.BookingID} has no TourID");
+                    }
+                    
+                    // Build tour object if exists
+                    object tourObj = null;
+                    if (tour != null)
+                    {
+                        var photos = tour.Photos != null ? tour.Photos.Select(p => new
+                        {
+                            p.PhotoID,
+                            p.Url,
+                            p.Caption,
+                            p.SortIndex
+                        }).Cast<object>().ToList() : new List<object>();
+                        
+                        var reviews = tour.Reviews != null ? tour.Reviews.Select(r => new
+                        {
+                            r.ReviewID,
+                            r.Rating,
+                            r.Comment
+                        }).Cast<object>().ToList() : new List<object>();
+                        
+                        tourObj = new
+                        {
+                            tour.TourID,
+                            tour.TourName,
+                            tour.Description,
+                            tour.Location,
+                            Photos = photos,
+                            Reviews = reviews
+                        };
+                        
+                        System.Diagnostics.Debug.WriteLine($"Built tour object with {photos.Count} photos and {reviews.Count} reviews");
+                    }
+                    
+                    // Get User - always use dict (more reliable than navigation property)
+                    User user = null;
+                    if (b.UserID > 0)
+                    {
+                        if (userDict.TryGetValue(b.UserID, out user))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"✓ Found user {b.UserID} (Name: {user?.FullName}, Email: {user?.Email}) for booking {b.BookingID}");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"✗ User {b.UserID} NOT FOUND in database for booking {b.BookingID}");
+                            System.Diagnostics.Debug.WriteLine($"Available user IDs in dict: {string.Join(", ", userDict.Keys)}");
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Booking {b.BookingID} has invalid UserID: {b.UserID}");
+                    }
+                    
+                    // Build user object if exists
+                    object userObj = null;
+                    if (user != null)
+                    {
+                        userObj = new
+                        {
+                            user.UserID,
+                            user.FullName,
+                            user.Email,
+                            user.Phone
+                        };
+                        System.Diagnostics.Debug.WriteLine($"Built user object: {user.FullName}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"User object is NULL for booking {b.BookingID}");
+                    }
+                    
+                    var bookingObj = new
+                    {
+                        b.BookingID,
+                        b.PropertyID,
+                        b.TourID,
+                        b.UserID,
+                        b.HostID,
+                        b.CheckIn,
+                        b.CheckOut,
+                        b.Nights,
+                        b.GuestsCount,
+                        b.BasePrice,
+                        b.CleaningFee,
+                        b.ServiceFee,
+                        b.TotalPrice,
+                        b.Currency,
+                        b.Status,
+                        b.CreatedAt,
+                        Property = propertyObj,
+                        Tour = tourObj,
+                        User = userObj,
+                        Transaction = transaction != null ? new
+                        {
+                            transaction.TransactionID,
+                            transaction.BookingID,
+                            transaction.Amount,
+                            transaction.Currency,
+                            transaction.PaymentMethod,
+                            transaction.PaymentStatus,
+                            transaction.ProcessedAt
+                        } : null
+                    };
+                    
+                    System.Diagnostics.Debug.WriteLine($"Final booking object - Property: {(propertyObj != null ? "EXISTS" : "NULL")}, Tour: {(tourObj != null ? "EXISTS" : "NULL")}, User: {(userObj != null ? "EXISTS" : "NULL")}");
+                    
+                    bookingsWithTransactions.Add(bookingObj);
+                }
+                
+                return Ok(bookingsWithTransactions);
             }
             catch (Exception ex)
             {
