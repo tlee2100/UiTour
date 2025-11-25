@@ -3,10 +3,13 @@ import { useNavigate } from "react-router-dom";
 import LocationPicker from "../../components/LocationPicker";
 import "./HostExperience.css";
 import { useHost } from "../../contexts/HostContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 
 export default function HostExperienceCreateLocate() {
   const navigate = useNavigate();
   const { experienceData, updateField, setFlowType, type } = useHost();
+  const { language } = useLanguage();
 
   // Ensure correct flow
   useEffect(() => {
@@ -69,13 +72,13 @@ export default function HostExperienceCreateLocate() {
     });
 
     setCenter([latitude, longitude]);
-    setQuery(address); // Update readonly input
+    setQuery(address);
   };
 
-  // Use current location
+  // Use current device location
   const useMyLocation = () => {
     if (!navigator.geolocation) {
-      return alert("Your browser does not support GPS.");
+      return alert(t(language, "hostExperience.location.gpsNotSupported"));
     }
 
     setLoadingGps(true);
@@ -104,7 +107,7 @@ export default function HostExperienceCreateLocate() {
         setLoadingGps(false);
       },
       () => {
-        alert("❌ Cannot access your location.");
+        alert(t(language, "hostExperience.location.gpsDenied"));
         setLoadingGps(false);
       }
     );
@@ -113,15 +116,17 @@ export default function HostExperienceCreateLocate() {
   return (
     <div className="he-page">
       <main className="he-main">
-        <h1 className="he-title">Where’s your experience located?</h1>
+
+        <h1 className="he-title">
+          {t(language, "hostExperience.location.title")}
+        </h1>
 
         <div className="he-map-card">
 
-          {/* SEARCH + CURRENT LOCATION */}
           <div className="hs-map-search-row" style={{ marginBottom: 6 }}>
             <div className="he-map-search">
 
-              {/* ICON ghim bản đồ */}
+              {/* ICON */}
               <div className="he-map-icon">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -138,29 +143,31 @@ export default function HostExperienceCreateLocate() {
                 </svg>
               </div>
 
-              {/* READ-ONLY INPUT */}
+              {/* READONLY INPUT */}
               <input
                 type="text"
-                placeholder="Move the map to select a location"
+                placeholder={t(language, "hostExperience.location.searchPlaceholder")}
                 className="he-map-search-input"
                 value={query}
-                readOnly     // ⭐ không cho nhập
+                readOnly
                 style={{
                   userSelect: "none",
-                  pointerEvents: "none", // ⭐ không cho click
+                  pointerEvents: "none",
                   opacity: 0.9,
                   background: "transparent",
                 }}
               />
             </div>
 
-            {/* BUTTON CURRENT LOCATION */}
+            {/* CURRENT LOCATION BUTTON */}
             <button
               className="hs-use-current-btn"
               disabled={loadingGps}
               onClick={useMyLocation}
             >
-              {loadingGps ? "Locating..." : "📍 Use current location"}
+              {loadingGps
+                ? t(language, "hostExperience.location.locating")
+                : `${t(language, "hostExperience.location.useCurrent")}`}
             </button>
           </div>
 

@@ -236,3 +236,28 @@
 .hib-total .hib-row-value {
   font-weight: 500;
 }
+
+/* Ensure all booking box text uses Inter */
+.hib-booking-box,
+.hib-price-slash,
+.hib-price-night,
+.hib-rating,
+.hib-rating-star,
+.hib-rating-dot,
+.hib-details,
+.hib-details-row,
+.hib-attribute,
+.hib-guests,
+.hib-guests-title,
+.hib-guests-value,
+.hib-chevron,
+.hib-book-button,
+.hib-note,
+.hib-feedback,
+.hib-price-details,
+.hib-row,
+.hib-row-label,
+.hib-row-value,
+.hib-total {
+  font-family: "Inter", sans-serif;
+}

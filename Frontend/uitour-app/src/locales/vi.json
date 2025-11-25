@@ -322,6 +322,139 @@
     "loadingPaymentDetails": "Đang tải chi tiết thanh toán...",
     "bookingIdNotFound": "Không tìm thấy mã đặt chỗ",
     "failedToConfirmTransfer": "Không thể xác nhận chuyển khoản. Vui lòng thử lại."
+  },
+  "hostExperience": {
+    "choose": {
+      "title": "Bạn sẽ cung cấp trải nghiệm gì cho khách?",
+      "categories": {
+        "art": "Nghệ thuật và thiết kế",
+        "fitness": "Thể hình và sức khỏe",
+        "food": "Ẩm thực",
+        "history": "Lịch sử và văn hóa",
+        "nature": "Thiên nhiên và ngoài trời"
+      }
+    },
+    "discount": {
+      "title": "Thêm ưu đãi",
+      "earlyBirdTitle": "Ưu đãi đặt sớm",
+      "earlyBirdSubtitle": "Áp dụng cho đặt chỗ trước ít nhất 2 tuần",
+      "discountByDays": "Ưu đãi theo số ngày đặt sớm",
+      "discountByGroups": "Ưu đãi theo nhóm đông",
+      "addEarlyBooking": "Thêm ưu đãi đặt sớm",
+      "addEarlyBookingSubtitle": "Giảm giá cho khách đặt sớm",
+      "addGroupDiscount": "Thêm ưu đãi nhóm",
+      "addGroupDiscountSubtitle": "Giảm giá cho nhóm đông",
+      "modalTitleDays": "Thêm ưu đãi đặt sớm",
+      "modalTitleGroup": "Thêm ưu đãi nhóm",
+      "labelPercent": "Phần trăm giảm giá (%)",
+      "labelMinDays": "Số ngày đặt sớm tối thiểu",
+      "labelMinGroup": "Số người tối thiểu",
+      "save": "Lưu",
+      "cancel": "Hủy",
+      "errorPercent": "Phần trăm phải từ 1–100",
+      "errorDays": "Số ngày phải từ 1 đến 365",
+      "errorGroupMin": "Nhóm phải từ 2 người trở lên",
+      "errorGroupMax": "Nhóm không được vượt quá số khách tối đa ({{value}})",
+      "errorDuplicateDays": "Ưu đãi cho đặt ≥ {{value}} ngày đã tồn tại",
+      "errorDuplicateGroup": "Ưu đãi cho nhóm ≥ {{value}} người đã tồn tại",
+      "daysItemTitle": "Đặt trước ≥ {{value}} ngày",
+      "groupItemTitle": "Nhóm từ ≥ {{value}} khách"
+    },
+    "itinerary": {
+      "title": "Lịch trình trải nghiệm",
+      "photoWarning": "Cảnh báo: Ảnh chỉ được lưu tạm thời. Tải lại trang hoặc rời đi trước khi đăng sẽ làm ảnh bị mất.",
+      "addActivity": "Thêm hoạt động",
+      "activityTitlePlaceholder": "Tiêu đề hoạt động",
+      "activityContentPlaceholder": "Mô tả hoạt động",
+      "modalDeleteTitle": "Xóa hoạt động",
+      "modalDeleteContent": "Bạn có chắc muốn xóa hoạt động này?",
+      "delete": "Xóa",
+      "errNoActivities": "Hãy thêm ít nhất một hoạt động",
+      "saved": "Đã lưu",
+      "deleted": "Đã xóa hoạt động",
+      "cannotRead": "Không thể đọc tệp",
+      "needTitleDetail": "Hãy nhập tiêu đề và nội dung"
+    },
+    "location": {
+      "title": "Chuyến trải nghiệm của bạn diễn ra ở đâu?",
+      "searchPlaceholder": "Di chuyển bản đồ để chọn vị trí",
+      "useCurrent": "📍 Sử dụng vị trí hiện tại",
+      "locating": "Đang tìm vị trí...",
+      "gpsNotSupported": "Trình duyệt của bạn không hỗ trợ GPS.",
+      "gpsDenied": "Không thể truy cập vị trí của bạn."
+    },
+    "maxGuests": {
+      "title": "Chọn giờ, thời lượng và số khách",
+      "startTime": "Giờ bắt đầu",
+      "capacityPricing": "Sức chứa & giá",
+      "maxGuests": "Số khách tối đa",
+      "durationHours": "Thời lượng (giờ)",
+      "durationHint": "Thời lượng phải từ 1–24",
+      "pricePerGuest": "Giá mỗi khách (USD)",
+      "enterPrice": "Nhập giá...",
+      "enterDuration": "Nhập thời lượng..."
+    },
+    "qualification": {
+      "title": "Chia sẻ trình độ và kinh nghiệm",
+      "intro": "Giới thiệu",
+      "expertise": "Chuyên môn",
+      "recognition": "Thành tựu / chứng nhận",
+      "editDetails": "Thêm thông tin",
+      "writeHere": "Viết tại đây...",
+      "addDetails": "Thêm chi tiết",
+      "close": "Đóng",
+      "save": "Lưu",
+      "cancel": "Hủy"
+    },
+    "years": {
+      "title": "Bạn đã làm trong lĩnh vực này bao nhiêu năm?",
+      "increase": "Tăng",
+      "decrease": "Giảm"
+    },
+    "describe": {
+      "title": "Mô tả trải nghiệm của bạn",
+      "titleLabel": "Tiêu đề",
+      "contentLabel": "Nội dung",
+      "titlePlaceholder": "Viết tại đây...",
+      "summaryPlaceholder": "Một vài mô tả về trải nghiệm..."
+    },
+    "preview": {
+      "basicInfo": "Thông tin cơ bản",
+      "category": "Danh mục",
+      "yearsOfExperience": "Số năm kinh nghiệm",
+      "years": "năm",
+      "description": "Mô tả",
+      "qualifications": "Trình độ",
+      "location": "Vị trí",
+      "address": "Địa chỉ",
+      "city": "Thành phố",
+      "country": "Quốc gia",
+      "pricing": "Giá",
+      "basePrice": "Giá cơ bản",
+      "currency": "Tiền tệ",
+      "pricePer": "Giá theo",
+      "capacity": "Sức chứa khách",
+      "maxGuests": "Số khách tối đa",
+      "timeSlots": "Khung giờ có sẵn",
+      "noTimeSlots": "Chưa có khung giờ nào",
+      "itinerary": "Lịch trình trải nghiệm",
+      "noActivities": "Chưa có hoạt động nào",
+      "photos": "Hình ảnh"
+    },
+    "categories": {
+      "fitness": "Thể hình / Gym",
+      "cooking": "Nấu ăn",
+      "crafting": "Thủ công",
+      "adventure": "Phiêu lưu",
+      "art": "Nghệ thuật & sáng tạo"
+    },
+    "photos": {
+      "loading": "Đang tải ảnh của bạn...",
+      "title": "Thêm ảnh để thể hiện kỹ năng của bạn",
+      "warningTitle": "Cảnh báo:",
+      "warningMessage": " Ảnh chỉ được lưu tạm thời. Nếu tải lại trang hoặc thoát trước khi xuất bản, ảnh sẽ bị mất.",
+      "addPhotos": "Thêm ảnh",
+      "coverTag": "Ảnh bìa"
+    }
   }
 }
-
