@@ -55,7 +55,14 @@ const LoginPage = () => {
       dispatch({ type: "SET_USER", payload: userObj });
       if (token) dispatch({ type: "SET_TOKEN", payload: token });
 
-      navigate("/");
+      // Điều hướng theo vai trò
+      const normalizedRole = (userObj.Role || "").toString().toUpperCase();
+      if (normalizedRole === "ADMIN") {
+        navigate("/admin/dashboard");
+      } else {
+        // guest / host hoặc các role khác → điều hướng trang chủ
+        navigate("/");
+      }
     } catch (err) {
       setError(err.message || "Login failed. Please check your email and password.");
     } finally {

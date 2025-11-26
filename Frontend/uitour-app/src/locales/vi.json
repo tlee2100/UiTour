@@ -245,6 +245,29 @@
     "hostNavigationMenu": "Menu điều hướng chủ nhà",
     "deleteItem": "Xóa"
   },
+  "support": {
+    "kicker": "Hỗ trợ chủ nhà",
+    "title": "Cần trợ giúp thêm? Chúng tôi luôn sẵn sàng",
+    "description": "Tìm bài viết, mẹo nhanh và hỗ trợ trực tiếp giúp bạn quản lý đặt chỗ, thanh toán và khách thuê dễ dàng.",
+    "contactUs": "Liên hệ hỗ trợ",
+    "heroIllustration": "Luôn sẵn sàng hỗ trợ riêng cho bạn",
+    "heroAlt": "Ảnh minh họa hỗ trợ chủ nhà",
+    "emailLabel": "Email hỗ trợ",
+    "hotlineLabel": "Hotline",
+    "chatbot": "Trò chuyện với chatbot",
+    "section1": {
+      "title": "Đặt chỗ & thanh toán",
+      "content": "Tìm hiểu cách thanh toán hoạt động, lên lịch dọn dẹp và xem lại chi tiết đặt phòng."
+    },
+    "section2": {
+      "title": "Khách & lưu trú",
+      "content": "Nhận hướng dẫn về giao tiếp với khách, check-in và chuẩn bị cho mọi đặt phòng."
+    },
+    "section3": {
+      "title": "Công cụ cho chủ nhà",
+      "content": "Tìm hiểu các công cụ quảng bá, đồng bộ lịch và quản lý nhiều danh sách."
+    }
+  },
   "search": {
     "where": "Ở đâu",
     "when": "Khi nào",
@@ -335,6 +358,71 @@
     "loadingPaymentDetails": "Đang tải chi tiết thanh toán...",
     "bookingIdNotFound": "Không tìm thấy mã đặt chỗ",
     "failedToConfirmTransfer": "Không thể xác nhận chuyển khoản. Vui lòng thử lại."
+  },
+  "adminDashboard": {
+    "totalUsers": "Tổng người dùng",
+    "pendingPosts": "Bài đăng chờ duyệt",
+    "monthRevenue": "Doanh thu tháng này",
+    "unresolvedReports": "Báo cáo chưa xử lý",
+    "clickToView": "Click để xem chi tiết →",
+    "revenueByMonth": "Doanh thu theo tháng (mock)",
+    "userGrowth": "Tăng trưởng người dùng (mock)",
+    "latestReports": "Báo cáo mới nhất",
+    "reporter": "Người báo cáo",
+    "reason": "Lý do",
+    "date": "Ngày",
+    "status": "Trạng thái",
+    "noReports": "Chưa có báo cáo"
+  },
+  "adminNav": {
+    "dashboard": "Bảng điều khiển",
+    "posts": "Bài đăng",
+    "users": "Người dùng",
+    "reports": "Báo cáo",
+    "transactions": "Giao dịch"
+  },
+  "adminUsers": {
+    "title": "Danh sách người dùng",
+    "fullName": "Họ và tên",
+    "role": "Vai trò",
+    "status": "Trạng thái",
+    "actions": "Thao tác",
+    "roleUser": "Người dùng",
+    "roleHost": "Chủ nhà",
+    "roleAdmin": "Quản trị viên",
+    "loadError": "Không thể tải danh sách người dùng"
+  },
+  "adminTransactions": {
+    "title": "Giao dịch gần đây",
+    "user": "Người dùng",
+    "amount": "Số tiền",
+    "date": "Ngày",
+    "status": "Trạng thái",
+    "loadError": "Không thể tải danh sách giao dịch"
+  },
+  "adminReports": {
+    "title": "Danh sách báo cáo",
+    "detailTitle": "Chi tiết báo cáo",
+    "reporter": "Người báo cáo",
+    "target": "Đối tượng",
+    "reason": "Lý do",
+    "date": "Ngày",
+    "status": "Trạng thái",
+    "selectPrompt": "Chọn một báo cáo để xem chi tiết",
+    "resolve": "Giải quyết báo cáo",
+    "markProcessing": "Đánh dấu đang xử lý"
+  },
+  "adminSettings": {
+    "categoryTitle": "Quản lý danh mục",
+    "roomType": "Loại phòng",
+    "tourType": "Loại tour",
+    "location": "Địa điểm",
+    "feeTitle": "Quản lý phí dịch vụ (%)",
+    "serviceFee": "Phí dịch vụ (%)",
+    "vat": "Thuế VAT (%)",
+    "saveChanges": "Lưu thay đổi",
+    "bannerTitle": "Banner & sự kiện",
+    "addBanner": "+ Thêm banner mới"
   },
   "hostExperience": {
     "choose": {
