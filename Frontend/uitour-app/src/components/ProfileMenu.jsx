@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useApp } from '../contexts/AppContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -14,6 +14,7 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
   const { language } = useLanguage();
   const { openModal: openLanguageCurrency } = useLanguageCurrencyModal();
   const navigate = useNavigate();
+  const location = useLocation();
   const isLoggedIn = !!user;
   const [tripCount, setTripCount] = useState(null);
   const [tripLoading, setTripLoading] = useState(false);
@@ -49,6 +50,48 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
 
   // Menu khi đã đăng nhập
   if (isLoggedIn) {
+    const isAdminRoute = location.pathname.startsWith('/admin');
+
+    if (isAdminRoute) {
+      // Admin context: chỉ giữ Account (under AdminLayout), Language & Region, Logout
+      return (
+        <div ref={ref} className="profile-menu" role="menu" aria-label="Admin menu">
+          <div className="profile-menu_section">
+            <button
+              className="profile-menu_item"
+              onClick={() => { onClose(); navigate('/admin/account'); }}
+              role="menuitem"
+            >
+              <Icon icon="mdi:cog-outline" width="20" height="20" />
+              <span>{t(language, 'profile.account')}</span>
+            </button>
+            <button 
+              className="profile-menu_item" 
+              onClick={() => { 
+                onClose(); 
+                openLanguageCurrency(); 
+              }} 
+              role="menuitem"
+            >
+              <Icon icon="mdi:earth" width="20" height="20" />
+              <span>{t(language, 'language.title')}</span>
+            </button>
+          </div>
+          <div className="profile-menu_divider" />
+          <div className="profile-menu_section">
+            <button 
+              className="profile-menu_item profile-menu_item-logout" 
+              onClick={handleLogout} 
+              role="menuitem"
+            >
+              <span>{t(language, 'profile.logout')}</span>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Normal (non-admin) menu
     return (
       <div ref={ref} className="profile-menu" role="menu" aria-label="User menu">
         <div className="profile-menu_section">
