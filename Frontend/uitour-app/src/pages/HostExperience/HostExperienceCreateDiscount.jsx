@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { useHost } from "../../contexts/HostContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 import "./HostExperience.css";
 
 export default function HostExperienceCreateDiscount() {
   const { updateField, experienceData, loadingDraft } = useHost();
+  const { language } = useLanguage();
 
   // ---- LOAD FROM CONTEXT ----
   const initEarlyBird = experienceData.discounts?.earlyBird ?? false;
@@ -20,32 +23,26 @@ export default function HostExperienceCreateDiscount() {
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
 
-  // ---- SYNC SAU KHI LOAD DRAFT ----
-  // ---- SYNC SAU KHI LOAD DRAFT ----
+  // ---- SYNC AFTER DRAFT LOAD ----
   useEffect(() => {
     if (loadingDraft) return;
 
     const d = experienceData.discounts || {};
-
     setEarlyBird(d.earlyBird ?? false);
     setDaysBefore(d.byDaysBefore ?? []);
     setGroupSize(d.byGroupSize ?? []);
-
   }, [loadingDraft]);
-
 
   useEffect(() => {
     if (loadingDraft) return;
 
     const old = experienceData.discounts || {};
-
     const next = {
       earlyBird,
       byDaysBefore: daysBefore,
       byGroupSize: groupSize
     };
 
-    // 🛑 STOP nếu không thay đổi gì → tránh loop
     if (
       old.earlyBird === next.earlyBird &&
       JSON.stringify(old.byDaysBefore) === JSON.stringify(next.byDaysBefore) &&
@@ -55,11 +52,9 @@ export default function HostExperienceCreateDiscount() {
     }
 
     updateField("discounts", next);
-
   }, [loadingDraft, earlyBird, daysBefore, groupSize]);
 
-
-  // Reset modal fields
+  // Reset modal input
   const resetForm = () => {
     setPercent("");
     setValue("");
@@ -74,57 +69,61 @@ export default function HostExperienceCreateDiscount() {
 
     setError("");
 
-    // --- VALIDATE PERCENT ---
+    // ===== VALIDATIONS =====
     if (isNaN(p) || p <= 0 || p > 100) {
-      setError("Percent must be between 1–100");
+      setError(t(language, "hostExperience.discount.errorPercent"));
       return;
     }
 
-    // =====================================================
-    // RULE 3: DAYS BEFORE MUST BE <= 365
-    // =====================================================
     if (formType === "days" && (isNaN(v) || v <= 0 || v > 365)) {
-      setError("Days must be between 1 and 365");
+      setError(t(language, "hostExperience.discount.errorDays"));
       return;
     }
 
-    // =====================================================
-    // RULE 2: GROUP SIZE MUST NOT EXCEED MAX GUESTS
-    // =====================================================
     if (formType === "group" && (isNaN(v) || v <= 1)) {
-      setError("Group size must be at least 2");
+      setError(t(language, "hostExperience.discount.errorGroupMin"));
       return;
     }
 
     if (formType === "group" && v > maxGuests) {
-      setError(`Group size cannot exceed max guests (${maxGuests})`);
+      setError(
+        t(language, "hostExperience.discount.errorGroupMax").replace(
+          "{{value}}",
+          maxGuests
+        )
+      );
       return;
     }
 
-    // =====================================================
-    // RULE 1: NO DUPLICATES (same condition, different percent also blocked)
-    // =====================================================
+    // ===== NO DUPLICATES =====
     if (formType === "days") {
       const duplicated = daysBefore.some((d) => d.days === v);
       if (duplicated) {
-        setError(`A discount for booking ≥ ${v} days already exists`);
+        setError(
+          t(language, "hostExperience.discount.errorDuplicateDays").replace(
+            "{{value}}",
+            v
+          )
+        );
         return;
       }
-
       setDaysBefore((prev) => [...prev, { days: v, percent: p }]);
     }
 
     if (formType === "group") {
       const duplicated = groupSize.some((g) => g.guests === v);
       if (duplicated) {
-        setError(`A discount for group size ≥ ${v} guests already exists`);
+        setError(
+          t(language, "hostExperience.discount.errorDuplicateGroup").replace(
+            "{{value}}",
+            v
+          )
+        );
         return;
       }
-
       setGroupSize((prev) => [...prev, { guests: v, percent: p }]);
     }
 
-    // Done
     setFormType(null);
     resetForm();
   };
@@ -132,19 +131,25 @@ export default function HostExperienceCreateDiscount() {
   return (
     <div className="he-page">
       <main className="he-main he-discounts">
-        <h1 className="he-title">Add discounts</h1>
+
+        {/* TITLE */}
+        <h1 className="he-title">
+          {t(language, "hostExperience.discount.title")}
+        </h1>
 
         {/* -------- EARLY BIRD -------- */}
         <div className="he-discount-card-group">
           <button
             className={`he-discount-card ${earlyBird ? "is-active" : ""}`}
-            onClick={() => setEarlyBird((p) => !p)}
+            onClick={() => setEarlyBird((prev) => !prev)}
           >
             <div className="he-discount-value">20%</div>
             <div className="he-discount-body">
-              <div className="he-discount-title">Early bird discount</div>
+              <div className="he-discount-title">
+                {t(language, "hostExperience.discount.earlyBirdTitle")}
+              </div>
               <div className="he-discount-subtitle">
-                Applies to bookings made 2+ weeks early.
+                {t(language, "hostExperience.discount.earlyBirdSubtitle")}
               </div>
             </div>
             <div className="he-discount-action">
@@ -157,8 +162,10 @@ export default function HostExperienceCreateDiscount() {
           </button>
         </div>
 
-        {/* -------- BY DAYS BEFORE BOOKING -------- */}
-        <h2 className="he-subsection-title">Discount by days booked early</h2>
+        {/* -------- DISCOUNT BY DAYS BEFORE BOOKING -------- */}
+        <h2 className="he-subsection-title">
+          {t(language, "hostExperience.discount.discountByDays")}
+        </h2>
 
         {daysBefore.map((d, i) => (
           <button
@@ -171,10 +178,11 @@ export default function HostExperienceCreateDiscount() {
             <div className="he-discount-value">{d.percent}%</div>
             <div className="he-discount-body">
               <div className="he-discount-title">
-                Book ≥ {d.days} days early
+                {t(language, "hostExperience.discount.daysItemTitle")
+                  .replace("{{value}}", d.days)}
               </div>
               <div className="he-discount-subtitle">
-                Early booking discount
+                {t(language, "hostExperience.discount.addEarlyBooking")}
               </div>
             </div>
             <div className="he-discount-action">
@@ -183,7 +191,7 @@ export default function HostExperienceCreateDiscount() {
           </button>
         ))}
 
-        {/* ADD BUTTON */}
+        {/* ADD BUTTON FOR DAYS */}
         <button
           className="he-add-discount-card"
           onClick={() => {
@@ -194,15 +202,19 @@ export default function HostExperienceCreateDiscount() {
           <div className="he-add-discount-icon">+</div>
 
           <div className="he-add-discount-body">
-            <div className="he-add-discount-title">Add early-booking discount</div>
+            <div className="he-add-discount-title">
+              {t(language, "hostExperience.discount.addEarlyBooking")}
+            </div>
             <div className="he-add-discount-subtitle">
-              Give a discount for booking early
+              {t(language, "hostExperience.discount.addEarlyBookingSubtitle")}
             </div>
           </div>
         </button>
 
         {/* -------- BY GROUP SIZE -------- */}
-        <h2 className="he-subsection-title">Discount by group size</h2>
+        <h2 className="he-subsection-title">
+          {t(language, "hostExperience.discount.discountByGroups")}
+        </h2>
 
         {groupSize.map((g, i) => (
           <button
@@ -215,10 +227,11 @@ export default function HostExperienceCreateDiscount() {
             <div className="he-discount-value">{g.percent}%</div>
             <div className="he-discount-body">
               <div className="he-discount-title">
-                Group of ≥ {g.guests} people
+                {t(language, "hostExperience.discount.groupItemTitle")
+                  .replace("{{value}}", g.guests)}
               </div>
               <div className="he-discount-subtitle">
-                Large group discount
+                {t(language, "hostExperience.discount.addGroupDiscount")}
               </div>
             </div>
             <div className="he-discount-action">
@@ -227,7 +240,7 @@ export default function HostExperienceCreateDiscount() {
           </button>
         ))}
 
-        {/* ADD BUTTON */}
+        {/* ADD BUTTON FOR GROUP */}
         <button
           className="he-add-discount-card"
           onClick={() => {
@@ -238,9 +251,11 @@ export default function HostExperienceCreateDiscount() {
           <div className="he-add-discount-icon">+</div>
 
           <div className="he-add-discount-body">
-            <div className="he-add-discount-title">Add group discount</div>
+            <div className="he-add-discount-title">
+              {t(language, "hostExperience.discount.addGroupDiscount")}
+            </div>
             <div className="he-add-discount-subtitle">
-              Give discount for large groups
+              {t(language, "hostExperience.discount.addGroupDiscountSubtitle")}
             </div>
           </div>
         </button>
@@ -249,29 +264,25 @@ export default function HostExperienceCreateDiscount() {
       {/* -------- MODAL ADD DISCOUNT -------- */}
       {formType && (
         <div className="he-modal">
-          <div
-            className="he-modal-backdrop"
-            onClick={() => setFormType(null)}
-          />
+          <div className="he-modal-backdrop" onClick={() => setFormType(null)} />
 
           <div className="he-modal-card he-discount-modal">
             <div className="he-modal-header">
               <div className="he-modal-title">
                 {formType === "days"
-                  ? "Add early-booking discount"
-                  : "Add group discount"}
+                  ? t(language, "hostExperience.discount.modalTitleDays")
+                  : t(language, "hostExperience.discount.modalTitleGroup")}
               </div>
-              <button
-                className="he-modal-close"
-                onClick={() => setFormType(null)}
-              >
+              <button className="he-modal-close" onClick={() => setFormType(null)}>
                 ×
               </button>
             </div>
 
             <div className="he-modal-body">
               <div className="he-field">
-                <label>Discount percent (%)</label>
+                <label>
+                  {t(language, "hostExperience.discount.labelPercent")}
+                </label>
                 <input
                   className="he-input"
                   type="number"
@@ -283,8 +294,8 @@ export default function HostExperienceCreateDiscount() {
               <div className="he-field">
                 <label>
                   {formType === "days"
-                    ? "Minimum days before booking"
-                    : "Minimum group size"}
+                    ? t(language, "hostExperience.discount.labelMinDays")
+                    : t(language, "hostExperience.discount.labelMinGroup")}
                 </label>
                 <input
                   className="he-input"
@@ -298,15 +309,12 @@ export default function HostExperienceCreateDiscount() {
             </div>
 
             <div className="he-modal-footer">
-              <button
-                className="he-tertiary-btn"
-                onClick={() => setFormType(null)}
-              >
-                Cancel
+              <button className="he-tertiary-btn" onClick={() => setFormType(null)}>
+                {t(language, "hostExperience.discount.cancel")}
               </button>
 
               <button className="he-primary-btn" onClick={submitAdd}>
-                Save
+                {t(language, "hostExperience.discount.save")}
               </button>
             </div>
           </div>

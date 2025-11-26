@@ -2,37 +2,33 @@ import React from "react";
 import { useHost } from "../../contexts/HostContext";
 import { useNavigate } from "react-router-dom";
 import "./HostExperience.css";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 
 export default function HostExperiencePreview() {
   const { experienceData, experiencePhotosRAM, experienceItineraryRAM } = useHost();
+  const { language } = useLanguage();
+
   const d = experienceData;
   const navigate = useNavigate();
 
   const photos = experiencePhotosRAM || [];
 
-  // ===== PICK COVER ==================================================
   const cover =
     photos.find((p) => p.isCover) ||
     photos[0] ||
     null;
 
-  // ===== CATEGORY LABELS (optional) ==================================
-  const CATEGORY_LABELS = {
-    fitness: "Fitness / Gym",
-    cooking: "Cooking",
-    crafting: "Crafting",
-    adventure: "Adventure",
-    art: "Art & Creativity",
-  };
+  // i18n Category labels
+  const categoryLabel = t(language, `hostExperience.choose.categories.${d.mainCategory}`);
 
   return (
     <div className="he-preview-page">
       <div className="he-preview-container">
 
-        {/* ======================================================= */}
-        {/*  HERO / COVER                                           */}
-        {/* ======================================================= */}
+        {/* HERO */}
         <div className="he-preview-hero">
+
           {cover && (
             <img
               src={cover.preview}
@@ -52,166 +48,166 @@ export default function HostExperiencePreview() {
               📍 {d.location.addressLine}
             </div>
           )}
-
         </div>
 
+        {/* BASIC INFORMATION */}
         <section className="he-preview-section">
-          <h2 className="he-preview-section-title">Basic information</h2>
+          <h2 className="he-preview-section-title">
+            {t(language, "hostExperience.preview.basicInfo")}
+          </h2>
 
           <div className="he-preview-card">
             <div className="he-row-safe">
-              <b>Category:</b>
-              <span className="he-text-safe">
-                {CATEGORY_LABELS[d.mainCategory] || d.mainCategory}
-              </span>
+              <b>{t(language, "hostExperience.preview.category")}:</b>
+              <span className="he-text-safe">{categoryLabel}</span>
             </div>
 
             <div className="he-row-safe">
-              <b>Years of experience:</b>
-              <span className="he-text-safe">{d.yearsOfExperience} years</span>
+              <b>{t(language, "hostExperience.preview.yearsOfExperience")}:</b>
+              <span className="he-text-safe">
+                {d.yearsOfExperience} {t(language, "hostExperience.preview.years")}
+              </span>
             </div>
 
             <div className="he-preview-divider"></div>
 
             <div className="he-row-safe">
-              <b>Description:</b>
+              <b>{t(language, "hostExperience.preview.description")}:</b>
               <span className="he-text-safe">{d.description}</span>
             </div>
           </div>
         </section>
 
-        {/* ======================================================= */}
-        {/*  QUALIFICATIONS                                         */}
-        {/* ======================================================= */}
+        {/* QUALIFICATIONS */}
         <section className="he-preview-section">
-          <h2 className="he-preview-section-title">Qualifications</h2>
+          <h2 className="he-preview-section-title">
+            {t(language, "hostExperience.preview.qualifications")}
+          </h2>
 
           <div className="he-preview-card">
             <div className="he-row-safe">
-              <b>Introduction:</b>
+              <b>{t(language, "hostExperience.qualification.intro")}:</b>
               <span className="he-text-safe">{d.qualifications.intro}</span>
             </div>
 
             <div className="he-row-safe">
-              <b>Expertise:</b>
+              <b>{t(language, "hostExperience.qualification.expertise")}:</b>
               <span className="he-text-safe">{d.qualifications.expertise}</span>
             </div>
 
             <div className="he-row-safe">
-              <b>Recognition:</b>
+              <b>{t(language, "hostExperience.qualification.recognition")}:</b>
               <span className="he-text-safe">{d.qualifications.recognition}</span>
             </div>
           </div>
-
         </section>
 
-        {/* ======================================================= */}
-        {/*  LOCATION                                               */}
-        {/* ======================================================= */}
+        {/* LOCATION */}
         <section className="he-preview-section">
-          <h2 className="he-preview-section-title">Location</h2>
+          <h2 className="he-preview-section-title">
+            {t(language, "hostExperience.preview.location")}
+          </h2>
 
           <div className="he-preview-card">
             <div className="he-row-safe">
-              <b>Address:</b>
+              <b>{t(language, "hostExperience.preview.address")}:</b>
               <span className="he-text-safe">{d.location.addressLine}</span>
             </div>
 
             <div className="he-row-safe">
-              <b>City:</b>
+              <b>{t(language, "hostExperience.preview.city")}:</b>
               <span className="he-text-safe">{d.location.city}</span>
             </div>
 
             <div className="he-row-safe">
-              <b>Country:</b>
+              <b>{t(language, "hostExperience.preview.country")}:</b>
               <span className="he-text-safe">{d.location.country}</span>
             </div>
           </div>
-
         </section>
 
-        {/* ======================================================= */}
-        {/*  PRICING                                                */}
-        {/* ======================================================= */}
+        {/* PRICING */}
         <section className="he-preview-section">
-          <h2 className="he-preview-section-title">Pricing</h2>
+          <h2 className="he-preview-section-title">
+            {t(language, "hostExperience.preview.pricing")}
+          </h2>
 
           <div className="he-preview-card">
             <div className="he-row-safe">
-              <b>Base price:</b>
+              <b>{t(language, "hostExperience.preview.basePrice")}:</b>
               <span className="he-text-safe">${d.pricing.basePrice}</span>
             </div>
 
             <div className="he-row-safe">
-              <b>Currency:</b>
+              <b>{t(language, "hostExperience.preview.currency")}:</b>
               <span className="he-text-safe">{d.pricing.currency}</span>
             </div>
 
             <div className="he-row-safe">
-              <b>Price per:</b>
+              <b>{t(language, "hostExperience.preview.pricePer")}:</b>
               <span className="he-text-safe">{d.pricing.priceUnit}</span>
             </div>
           </div>
-
         </section>
 
-        {/* ======================================================= */}
-        {/*  CAPACITY                                               */}
-        {/* ======================================================= */}
+        {/* CAPACITY */}
         <section className="he-preview-section">
-          <h2 className="he-preview-section-title">Guest Capacity</h2>
+          <h2 className="he-preview-section-title">
+            {t(language, "hostExperience.preview.capacity")}
+          </h2>
 
           <div className="he-preview-card">
-            <div><b>Maximum guests:</b> {d.capacity.maxGuests}</div>
+            <div>
+              <b>{t(language, "hostExperience.preview.maxGuests")}:</b>{" "}
+              {d.capacity.maxGuests}
+            </div>
           </div>
         </section>
 
-        {/* ======================================================= */}
-        {/*  TIME SLOTS                                             */}
-        {/* ======================================================= */}
+        {/* TIME SLOTS */}
         <section className="he-preview-section">
-          <h2 className="he-preview-section-title">Available time slots</h2>
+          <h2 className="he-preview-section-title">
+            {t(language, "hostExperience.preview.timeSlots")}
+          </h2>
 
           <div className="he-preview-card">
             {d.booking.timeSlots.length === 0 ? (
-              <div>No time slots added</div>
+              <div>{t(language, "hostExperience.preview.noTimeSlots")}</div>
             ) : (
-              d.booking.timeSlots.map((t, i) => (
-                <div key={i} className="he-text-safe">• {t.startTime}</div>
+              d.booking.timeSlots.map((tSlot, i) => (
+                <div key={i} className="he-text-safe">
+                  • {tSlot.startTime}
+                </div>
               ))
             )}
           </div>
-
         </section>
 
-        {/* ======================================================= */}
-        {/*  ITINERARY / EXPERIENCE DETAILS                         */}
-        {/* ======================================================= */}
+        {/* ITINERARY */}
         <section className="he-preview-section">
-          <h2 className="he-preview-section-title">Experience Itinerary</h2>
+          <h2 className="he-preview-section-title">
+            {t(language, "hostExperience.preview.itinerary")}
+          </h2>
 
           <div className="he-preview-card">
             {d.experienceDetails.length === 0 ? (
-              <div>No activities added</div>
+              <div>{t(language, "hostExperience.preview.noActivities")}</div>
             ) : (
               d.experienceDetails.map((item, i) => {
-                const preview = experienceItineraryRAM.find(x => x.id === item.id);
-
+                const ram = experienceItineraryRAM.find(x => x.id === item.id);
                 return (
                   <div key={i} className="he-preview-itinerary-item">
-                    {preview?.preview && (
+                    {ram?.preview && (
                       <img
-                        src={preview.preview}
+                        src={ram.preview}
                         alt=""
                         className="he-preview-itinerary-photo"
                       />
                     )}
-
                     <div className="he-preview-itinerary-text">
                       <h3 className="he-text-safe">{item.title}</h3>
                       <p className="he-text-safe">{item.content}</p>
                     </div>
-
                   </div>
                 );
               })
@@ -219,11 +215,11 @@ export default function HostExperiencePreview() {
           </div>
         </section>
 
-        {/* ======================================================= */}
-        {/*  PHOTOS                                                 */}
-        {/* ======================================================= */}
+        {/* PHOTOS */}
         <section className="he-preview-section">
-          <h2 className="he-preview-section-title">Photos</h2>
+          <h2 className="he-preview-section-title">
+            {t(language, "hostExperience.preview.photos")}
+          </h2>
 
           <div className="he-preview-photo-grid">
             {photos.map((p, i) => (

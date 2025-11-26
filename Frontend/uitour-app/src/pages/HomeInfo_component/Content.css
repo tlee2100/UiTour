@@ -278,7 +278,7 @@ body {
   padding: 0;
   gap: 32px;
   width: 670px;
-  height: 356px;
+  height: auto;
   flex: none;
   order: 7;
   flex-grow: 0;
@@ -286,7 +286,7 @@ body {
 
 .content-amen-title {
   width: 670px;
-  height: 32px;
+  height: auto;
   font-family: 'Inter';
   font-style: normal;
   font-weight: 500;
@@ -377,7 +377,7 @@ body {
   align-items: flex-start;
   padding: 0;
   width: 275px;
-  height: 24px;
+  height: auto;
   flex: none;
   order: 1;
   flex-grow: 1;

@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { useHost } from "../../contexts/HostContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 import "./HostStay.css";
 
 export default function HostStayCreateDiscount() {
   const { stayData, updateField, loadingDraft } = useHost();
+  const { language } = useLanguage();
 
-  // ---- LOAD DISCOUNTS FROM CONTEXT ----
+  // ---- LOAD DISCOUNTS ----
   const initMonthly = stayData.pricing?.discounts?.monthly?.percent ?? 0;
   const initWeekly = stayData.pricing?.discounts?.weekly?.percent ?? 0;
   const initSeason = stayData.pricing?.discounts?.seasonalDiscounts ?? [];
@@ -17,8 +20,7 @@ export default function HostStayCreateDiscount() {
   const [seasonList, setSeasonList] = useState(initSeason);
   const [earlyList, setEarlyList] = useState(initEarly);
 
-  // Modal state
-  const [modalType, setModalType] = useState(null); // "monthly" | "weekly" | "season" | "early"
+  const [modalType, setModalType] = useState(null);
   const [percent, setPercent] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -26,8 +28,6 @@ export default function HostStayCreateDiscount() {
   const [error, setError] = useState("");
   const today = new Date().toISOString().split("T")[0];
 
-
-  // -------- RESET FORM --------
   const resetForm = () => {
     setPercent("");
     setFromDate("");
@@ -36,7 +36,7 @@ export default function HostStayCreateDiscount() {
     setError("");
   };
 
-  // -------- SYNC FROM DRAFT --------
+  // Sync draft
   useEffect(() => {
     if (loadingDraft) return;
 
@@ -48,7 +48,7 @@ export default function HostStayCreateDiscount() {
     setEarlyList(d.earlyBird ?? []);
   }, [loadingDraft]);
 
-  // -------- SYNC TO CONTEXT --------
+  // Sync to context
   useEffect(() => {
     if (loadingDraft) return;
 
@@ -60,29 +60,25 @@ export default function HostStayCreateDiscount() {
     });
   }, [monthly, weekly, seasonList, earlyList, loadingDraft]);
 
-  // ==========================
-  //  SUBMIT ADD / EDIT
-  // ==========================
+  // SUBMIT
   const submitModal = () => {
     const p = Number(percent);
 
-    // MONTHLY / WEEKLY cho phép = 0
+    // MONTHLY / WEEKLY allow 0–100
     if (modalType === "monthly" || modalType === "weekly") {
       if (isNaN(p) || p < 0 || p > 100) {
-        setError("Percent must be between 0 and 100");
+        setError(t(language, "hostStay.discount.error.percent0to100"));
         return;
       }
     }
 
-    // SEASON & EARLY: percent > 0
+    // SEASON / EARLY require 1–100
     if ((modalType === "season" || modalType === "early") && (isNaN(p) || p <= 0 || p > 100)) {
-      setError("Percent must be between 1 and 100");
+      setError(t(language, "hostStay.discount.error.percent1to100"));
       return;
     }
 
-    // -----------------------------
-    // MONTHLY / WEEKLY
-    // -----------------------------
+    // MONTHLY
     if (modalType === "monthly") {
       setMonthly(p);
       setModalType(null);
@@ -90,6 +86,7 @@ export default function HostStayCreateDiscount() {
       return;
     }
 
+    // WEEKLY
     if (modalType === "weekly") {
       setWeekly(p);
       setModalType(null);
@@ -97,94 +94,68 @@ export default function HostStayCreateDiscount() {
       return;
     }
 
-    // -----------------------------
-    // ADD SEASONAL
-    // -----------------------------
+    // SEASONAL
     if (modalType === "season") {
       if (!fromDate || !toDate) {
-        setError("Select both start and end dates");
+        setError(t(language, "hostStay.discount.error.selectDate"));
         return;
       }
 
       if (fromDate < today || toDate < today) {
-        setError("Dates cannot be in the past");
+        setError(t(language, "hostStay.discount.error.pastDate"));
         return;
       }
 
       if (fromDate > toDate) {
-        setError("Start date must be earlier than end date");
+        setError(t(language, "hostStay.discount.error.startBeforeEnd"));
         return;
       }
 
-      // Rule: Seasonal range cannot exceed 365 days
       const from = new Date(fromDate);
       const to = new Date(toDate);
-      const diffDays = (to - from) / (1000 * 60 * 60 * 24);
+      const diff = (to - from) / (1000 * 60 * 60 * 24);
 
-      if (diffDays > 365) {
-        setError("Seasonal discount cannot exceed 1 year");
+      if (diff > 365) {
+        setError(t(language, "hostStay.discount.error.seasonTooLong"));
         return;
       }
 
-      // Rule: Start date cannot be more than 1 year from today
-      const startLimit = new Date();
-      startLimit.setFullYear(startLimit.getFullYear() + 1);
+      const limit = new Date();
+      limit.setFullYear(limit.getFullYear() + 1);
 
-      const fromd = new Date(fromDate);
-
-      if (fromd > startLimit) {
-        setError("Seasonal discount cannot start more than 1 year from today");
+      if (from > limit) {
+        setError(t(language, "hostStay.discount.error.seasonTooFar"));
         return;
       }
 
-
-      // ❗ RULE 4: Check overlap
+      // Overlap
       for (let s of seasonList) {
-        const existingFrom = s.from;
-        const existingTo = s.to;
-
-        // Nếu KHÔNG rơi vào 2 trường hợp: trước toàn bộ hoặc sau toàn bộ → overlap
-        const noOverlap =
-          toDate < existingFrom || fromDate > existingTo;
-
+        const noOverlap = toDate < s.from || fromDate > s.to;
         if (!noOverlap) {
-          setError("This date range overlaps an existing seasonal discount");
+          setError(t(language, "hostStay.discount.error.seasonOverlap"));
           return;
         }
       }
 
-      const newItem = {
-        from: fromDate,
-        to: toDate,
-        percentage: p,
-      };
-
-      setSeasonList((prev) => [...prev, newItem]);
+      setSeasonList((prev) => [...prev, { from: fromDate, to: toDate, percentage: p }]);
       setModalType(null);
       resetForm();
       return;
     }
 
-    // -----------------------------
-    // ADD EARLY-BIRD
-    // -----------------------------
+    // EARLY-BIRD
     if (modalType === "early") {
       const d = Number(daysBefore);
-
       if (isNaN(d) || d <= 0) {
-        setError("Days must be > 0");
+        setError(t(language, "hostStay.discount.error.daysPositive"));
         return;
       }
-
       if (d > 365) {
-        setError("Early-bird cannot exceed 365 days before the stay");
+        setError(t(language, "hostStay.discount.error.daysMax365"));
         return;
       }
-
-
-      // ❗ RULE 5: Check duplicate daysBefore
       if (earlyList.some((e) => e.daysBefore === d)) {
-        setError("This early-bird rule already exists");
+        setError(t(language, "hostStay.discount.error.duplicateEarly"));
         return;
       }
 
@@ -194,11 +165,6 @@ export default function HostStayCreateDiscount() {
       return;
     }
   };
-
-
-  // ==========================
-  // UI COMPONENTS
-  // ==========================
 
   const DiscountCard = ({ value, title, subtitle, onClick, showDelete }) => (
     <button className="he-discount-card is-active" onClick={onClick}>
@@ -220,50 +186,54 @@ export default function HostStayCreateDiscount() {
   return (
     <div className="he-page">
       <main className="he-main he-discounts">
-        <h1 className="he-title">Add discounts</h1>
+        <h1 className="he-title">
+          {t(language, "hostStay.discount.title")}
+        </h1>
 
-        {/* ===================== */}
-        {/*   MONTHLY + WEEKLY    */}
-        {/* ===================== */}
-        <h2 className="he-subsection-title">Long-stay discounts</h2>
+        {/* ==================== */}
+        {/* MONTHLY + WEEKLY */}
+        {/* ==================== */}
+        <h2 className="he-subsection-title">
+          {t(language, "hostStay.discount.longStay")}
+        </h2>
 
         <div className="he-discount-card-group">
           <DiscountCard
             value={monthly}
-            title="Monthly discount"
-            subtitle="For stays of 28 nights or more"
+            title={t(language, "hostStay.discount.monthly")}
+            subtitle={t(language, "hostStay.discount.monthlyDesc")}
             onClick={() => {
               resetForm();
               setModalType("monthly");
               setPercent(monthly);
             }}
-            showDelete={false}
           />
 
           <DiscountCard
             value={weekly}
-            title="Weekly discount"
-            subtitle="For stays of 7 nights or more"
+            title={t(language, "hostStay.discount.weekly")}
+            subtitle={t(language, "hostStay.discount.weeklyDesc")}
             onClick={() => {
               resetForm();
               setModalType("weekly");
               setPercent(weekly);
             }}
-            showDelete={false}
           />
         </div>
 
-        {/* ===================== */}
-        {/*  SEASONAL DISCOUNTS   */}
-        {/* ===================== */}
-        <h2 className="he-subsection-title">Seasonal discounts</h2>
+        {/* ==================== */}
+        {/* SEASONAL */}
+        {/* ==================== */}
+        <h2 className="he-subsection-title">
+          {t(language, "hostStay.discount.seasonal")}
+        </h2>
 
         {seasonList.map((s, i) => (
           <DiscountCard
             key={i}
             value={s.percentage}
             title={`${s.from} → ${s.to}`}
-            subtitle="Seasonal discount"
+            subtitle={t(language, "hostStay.discount.seasonLabel")}
             showDelete={true}
             onClick={() =>
               setSeasonList((prev) => prev.filter((_, idx) => idx !== i))
@@ -280,24 +250,29 @@ export default function HostStayCreateDiscount() {
         >
           <div className="he-add-discount-icon">+</div>
           <div className="he-add-discount-body">
-            <div className="he-add-discount-title">Add seasonal discount</div>
+            <div className="he-add-discount-title">
+              {t(language, "hostStay.discount.addSeason")}
+            </div>
             <div className="he-add-discount-subtitle">
-              Apply discounts during selected dates
+              {t(language, "hostStay.discount.addSeasonDesc")}
             </div>
           </div>
         </button>
 
-        {/* ===================== */}
-        {/*   EARLY-BIRD          */}
-        {/* ===================== */}
-        <h2 className="he-subsection-title">Early-bird discounts</h2>
+        {/* ==================== */}
+        {/* EARLY-BIRD */}
+        {/* ==================== */}
+        <h2 className="he-subsection-title">
+          {t(language, "hostStay.discount.earlyBird")}
+        </h2>
 
         {earlyList.map((e, i) => (
           <DiscountCard
             key={i}
             value={e.percent}
-            title={`Book ≥ ${e.daysBefore} days early`}
-            subtitle="Early-bird promotion"
+            title={t(language, "hostStay.discount.earlyTitle")
+              .replace("{{days}}", e.daysBefore)}
+            subtitle={t(language, "hostStay.discount.earlyLabel")}
             showDelete={true}
             onClick={() =>
               setEarlyList((prev) => prev.filter((_, idx) => idx !== i))
@@ -314,44 +289,39 @@ export default function HostStayCreateDiscount() {
         >
           <div className="he-add-discount-icon">+</div>
           <div className="he-add-discount-body">
-            <div className="he-add-discount-title">Add early-bird discount</div>
+            <div className="he-add-discount-title">
+              {t(language, "hostStay.discount.addEarly")}
+            </div>
             <div className="he-add-discount-subtitle">
-              Discount for bookings made far in advance
+              {t(language, "hostStay.discount.addEarlyDesc")}
             </div>
           </div>
         </button>
       </main>
 
-      {/* ===================== */}
-      {/*       MODAL          */}
-      {/* ===================== */}
+      {/* ==================== */}
+      {/* MODAL */}
+      {/* ==================== */}
       {modalType && (
         <div className="he-modal">
-          <div
-            className="he-modal-backdrop"
-            onClick={() => setModalType(null)}
-          />
+          <div className="he-modal-backdrop" onClick={() => setModalType(null)} />
 
           <div className="he-modal-card he-discount-modal">
             <div className="he-modal-header">
               <div className="he-modal-title">
-                {modalType === "monthly" && "Edit monthly discount"}
-                {modalType === "weekly" && "Edit weekly discount"}
-                {modalType === "season" && "Add seasonal discount"}
-                {modalType === "early" && "Add early-bird discount"}
+                {t(language, `hostStay.discount.modal.${modalType}`)}
               </div>
-              <button
-                className="he-modal-close"
-                onClick={() => setModalType(null)}
-              >
+
+              <button className="he-modal-close" onClick={() => setModalType(null)}>
                 ×
               </button>
             </div>
 
             <div className="he-modal-body">
-              {/* Percent input */}
               <div className="he-field">
-                <label>Discount percent (%)</label>
+                <label>
+                  {t(language, "hostStay.discount.label.percent")}
+                </label>
                 <input
                   className="he-input"
                   type="number"
@@ -360,66 +330,42 @@ export default function HostStayCreateDiscount() {
                 />
               </div>
 
-              {/* Seasonal fields */}
               {modalType === "season" && (
                 <>
                   <div className="he-field">
-                    <label>From date</label>
+                    <label>{t(language, "hostStay.discount.label.from")}</label>
                     <input
-                      className="he-input"
                       type="date"
+                      className="he-input"
                       value={fromDate}
                       onChange={(e) => {
-                        const newFrom = e.target.value;
-
-                        if (newFrom < today) {
-                          setError("Start date cannot be in the past");
-                          return;
-                        }
-
-                        setFromDate(newFrom);
-
-                        if (toDate && newFrom > toDate) {
-                          setToDate(newFrom);
-                        }
+                        const f = e.target.value;
+                        setFromDate(f);
                       }}
                     />
                   </div>
 
                   <div className="he-field">
-                    <label>To date</label>
+                    <label>{t(language, "hostStay.discount.label.to")}</label>
                     <input
-                      className="he-input"
                       type="date"
+                      className="he-input"
                       value={toDate}
                       onChange={(e) => {
-                        const newTo = e.target.value;
-
-                        if (newTo < today) {
-                          setError("End date cannot be in the past");
-                          return;
-                        }
-
-                        if (fromDate && newTo < fromDate) {
-                          setError("End date must be after start date");
-                          return;
-                        }
-
-                        setToDate(newTo);
-                        setError("");
+                        const t = e.target.value;
+                        setToDate(t);
                       }}
                     />
                   </div>
                 </>
               )}
 
-              {/* Early bird field */}
               {modalType === "early" && (
                 <div className="he-field">
-                  <label>Days before booking</label>
+                  <label>{t(language, "hostStay.discount.label.daysBefore")}</label>
                   <input
-                    className="he-input"
                     type="number"
+                    className="he-input"
                     value={daysBefore}
                     onChange={(e) => setDaysBefore(e.target.value)}
                   />
@@ -430,15 +376,12 @@ export default function HostStayCreateDiscount() {
             </div>
 
             <div className="he-modal-footer">
-              <button
-                className="he-tertiary-btn"
-                onClick={() => setModalType(null)}
-              >
-                Cancel
+              <button className="he-tertiary-btn" onClick={() => setModalType(null)}>
+                {t(language, "common.cancel")}
               </button>
 
               <button className="he-primary-btn" onClick={submitModal}>
-                Save
+                {t(language, "common.save")}
               </button>
             </div>
           </div>
