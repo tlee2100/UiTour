@@ -1,0 +1,246 @@
+/* =========================================================
+   HOSTDASHBOARD (prefixed with hostd- to avoid overrides)
+   ========================================================= */
+html,
+body {
+    background: #fff !important;
+}
+
+
+/* wrapper */
+.hostd-dashboard {
+    padding: 120px 80px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color: #111827;
+}
+
+/* CHART GRID: bar (left) bigger than pie (right) */
+.hostd-charts-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+    margin-bottom: 40px;
+    align-items: start;
+    grid-auto-rows: auto;
+}
+
+/* CARD */
+.hostd-chart-card {
+    display: block !important;
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.hostd-chart-card:hover {
+    transform: translateY(-4px);
+    transition: transform 0.18s ease;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.hostd-chart-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 18px 0;
+}
+
+/* ========== BAR CHART (GRID with 12 columns) ========== */
+.hostd-bar-chart-container {
+    display: grid !important;
+    grid-template-columns: repeat(12, minmax(44px, 1fr)) !important;
+    gap: 12px;
+
+    height: 380px;
+    /* adjust this value to make chart taller/shorter */
+    padding-bottom: 12px;
+    box-sizing: border-box;
+    overflow-x: auto;
+    /* allow horizontal scroll on narrow screens */
+}
+
+/* one column wrapper */
+.hostd-bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 44px !important;
+    flex-shrink: 0 !important;
+}
+
+/* the actual bar (height controlled inline via style attr) */
+.hostd-bar {
+    width: 100%;
+    border-radius: 6px 6px 0 0;
+    background: linear-gradient(180deg, var(--uitour-color) 0%, var(--hover-uitour) 100%);
+    box-shadow: 0 6px 18px rgba(255, 56, 92, 0.14);
+    transition: transform 0.18s ease;
+    will-change: transform;
+    margin-top: 10px;
+}
+
+/* small hover lift */
+.hostd-bar:hover {
+    transform: translateY(-6px);
+}
+
+.hostd-bar-label {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ========== PIE CHART ========== */
+.hostd-pie-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 420px;
+    /* ensures card is tall enough to contain pie + center text + legend */
+    position: relative;
+    gap: 10px;
+}
+
+.hostd-pie-svg {
+    width: 240px;
+    height: 240px;
+    display: block;
+    border-radius: 999px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+/* center text sits absolutely in the middle for consistent centering */
+.hostd-pie-wrapper {
+    position: relative;
+}
+
+.hostd-pie-center-text {
+    position: absolute;
+    top: calc(70% + 8px);
+    /* pushes slightly down so visually centered */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+/* legend under the pie */
+.hostd-pie-legend {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 111px;
+}
+
+.hostd-legend-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.hostd-legend-color {
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
+    flex: 0 0 18px;
+}
+
+.hostd-legend-color--stay {
+    background: #0087A0;
+}
+
+.hostd-legend-color--exp {
+    background: #7DEFFF;
+}
+
+.hostd-legend-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.hostd-legend-value {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* ========== STATS GRID (bottom) ========== */
+.hostd-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.hostd-stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+.hostd-stat-label {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.hostd-stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #0f172a;
+}
+
+.hostd-stat-change {
+    font-size: 13px;
+    color: #008489;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+    .hostd-charts-section {
+        grid-template-columns: 1fr;
+    }
+
+    .hostd-pie-svg {
+        width: 200px;
+        height: 200px;
+    }
+
+    .hostd-bar-chart-container {
+        height: 320px;
+        grid-template-columns: repeat(12, minmax(36px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .hostd-dashboard {
+        padding: 80px 16px 32px;
+    }
+
+    .hostd-pie-svg {
+        width: 180px;
+        height: 180px;
+    }
+
+    .hostd-bar-chart-container {
+        height: 260px;
+        grid-template-columns: repeat(12, minmax(30px, 1fr));
+    }
+
+    .hostd-chart-title {
+        text-align: left;
+    }
+}
