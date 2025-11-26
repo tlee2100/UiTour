@@ -1,8 +1,9 @@
-// HostExperienceCreateItinerary.jsx — FIXED (keeps RAM previews after save)
 import React, { useRef, useState, useEffect, useMemo } from "react";
 import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
 import { useHost } from "../../contexts/HostContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 import "./HostExperience.css";
 
 function fileToBase64(file) {
@@ -10,7 +11,7 @@ function fileToBase64(file) {
     if (!file) return resolve(null);
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result);
-    reader.onerror = (e) => reject(e);
+    reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
@@ -25,38 +26,34 @@ export default function HostExperienceCreateItinerary() {
     setExperienceItineraryRAM,
   } = useHost();
 
-  // Build a quick lookup map for RAM by id (used for safe merging)
+  const { language } = useLanguage();
+
+  // RAM map
   const ramMap = useMemo(() => {
     const m = new Map();
     (experienceItineraryRAM || []).forEach((r) => m.set(r.id, r));
     return m;
   }, [experienceItineraryRAM]);
 
-  // Merge persisted metadata (experienceData.experienceDetails) with RAM previews
-  // image priority: RAM.preview (base64) -> RAM.file (createObjectURL) -> serverUrl -> null
+  // Merge metadata + RAM previews
   const activities = (experienceData.experienceDetails || []).map((item) => {
     const ram = ramMap.get(item.id);
+
     let image = null;
     if (ram?.preview) image = ram.preview;
     else if (ram?.file) {
       try {
         image = URL.createObjectURL(ram.file);
-      } catch {
-        image = null;
-      }
+      } catch {}
     } else if (item.photo?.serverUrl) image = item.photo.serverUrl;
-    return {
-      ...item,
-      image,
-      _file: ram?.file || null,
-    };
+
+    return { ...item, image };
   });
 
   const [editing, setEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  // image state for editor — contains { preview, file, name, caption, serverUrl }
   const [image, setImage] = useState(null);
 
   const inputRef = useRef(null);
@@ -65,11 +62,11 @@ export default function HostExperienceCreateItinerary() {
 
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(""), 1600);
-    return () => clearTimeout(t);
+    const tmt = setTimeout(() => setToast(""), 1600);
+    return () => clearTimeout(tmt);
   }, [toast]);
 
-  // START ADD
+  // =============== ADD ===============
   const startAdd = () => {
     setEditing(true);
     setEditingId(null);
@@ -78,7 +75,7 @@ export default function HostExperienceCreateItinerary() {
     setImage(null);
   };
 
-  // START EDIT
+  // =============== EDIT ===============
   const startEdit = (item) => {
     setEditing(true);
     setEditingId(item.id);
@@ -86,7 +83,7 @@ export default function HostExperienceCreateItinerary() {
     setContent(item.content || "");
 
     const ram = ramMap.get(item.id);
-    // prefer RAM preview -> RAM file (as blob URL) -> serverUrl
+
     if (ram?.preview) {
       setImage({
         preview: ram.preview,
@@ -96,15 +93,12 @@ export default function HostExperienceCreateItinerary() {
         serverUrl: item.photo?.serverUrl || "",
       });
     } else if (ram?.file) {
-      // show createObjectURL for file in editor if no base64 preview available
-      let blobUrl = null;
+      let blob = null;
       try {
-        blobUrl = URL.createObjectURL(ram.file);
-      } catch (err) {
-        blobUrl = null;
-      }
+        blob = URL.createObjectURL(ram.file);
+      } catch {}
       setImage({
-        preview: blobUrl,
+        preview: blob,
         file: ram.file,
         name: item.photo?.name || "",
         caption: item.photo?.caption || "",
@@ -123,77 +117,74 @@ export default function HostExperienceCreateItinerary() {
     }
   };
 
-  // FILE PICK
+  // =============== FILE PICK ===============
   const onPick = async (e) => {
     try {
       const f = e.target.files?.[0];
       if (!f) return;
       const base64 = await fileToBase64(f);
-      setImage({ preview: base64, file: f, name: f.name, caption: "", serverUrl: "" });
-    } catch (err) {
-      console.error("file read error", err);
-      setToast("Cannot read file");
+      setImage({
+        preview: base64,
+        file: f,
+        name: f.name,
+        caption: "",
+        serverUrl: "",
+      });
+    } catch {
+      setToast(t(language, "hostExperience.itinerary.cannotRead"));
     }
   };
 
-  // SAVE ACTIVITY
+  // =============== SAVE ===============
   const saveActivity = () => {
     if (!title.trim() || !content.trim()) {
-      setToast("Please provide title and details");
+      setToast(t(language, "hostExperience.itinerary.needTitleDetail"));
       return;
     }
 
     const id = editingId ?? Date.now();
 
-    // UI-level object (may include preview/file)
     const activityForUI = {
       id,
       title,
       content,
       photo: image
         ? {
-          preview: image.preview || null,
-          file: image.file || null,
-          name: image.name || image.file?.name || "",
-          caption: image.caption || "",
-          serverUrl: image.serverUrl || "",
-        }
+            preview: image.preview || null,
+            file: image.file || null,
+            name: image.name || image.file?.name || "",
+            caption: image.caption || "",
+            serverUrl: image.serverUrl || "",
+          }
         : null,
     };
 
-    // Build new UI activities array (used to compute cleaned data)
     const newActivities = editingId
       ? activities.map((a) => (a.id === editingId ? activityForUI : a))
       : [...activities, activityForUI];
 
-    // --- Build/merge RAM map locally so we can persist previews safely ---
-    const nextRamMap = new Map(ramMap); // clone current RAM entries
-    if (image && (image.preview || image.file)) {
-      // set/overwrite this id's ram entry with latest preview/file
-      nextRamMap.set(id, { id, preview: image.preview || null, file: image.file || null });
-    } else {
-      // if UI didn't provide image (e.g. user removed image) -> keep existing nextRamMap as-is
-      if (!nextRamMap.has(id) && activityForUI.photo === null) {
-        nextRamMap.set(id, { id, preview: null, file: null });
-      }
+    const nextRam = new Map(ramMap);
+    if (image) {
+      nextRam.set(id, {
+        id,
+        preview: image.preview || null,
+        file: image.file || null,
+      });
     }
 
-    // Convert nextRamMap to array to store into RAM state
-    const nextRamArray = Array.from(nextRamMap.values());
+    setExperienceItineraryRAM(Array.from(nextRam.values()));
 
-    // 1) update RAM state immediately
-    setExperienceItineraryRAM(nextRamArray);
-
-    // 2) create cleaned array for context (strip preview/file for metadata)
     const cleanedForContext = newActivities.map((a) => {
-      const existing = (experienceData.experienceDetails || []).find((x) => x.id === a.id);
+      const exists = (experienceData.experienceDetails || []).find(
+        (x) => x.id === a.id
+      );
 
       if (!a.photo) {
         return {
           id: a.id,
           title: a.title,
           content: a.content,
-          photo: existing?.photo ? { ...existing.photo } : null,
+          photo: exists?.photo ? { ...exists.photo } : null,
         };
       }
 
@@ -209,14 +200,10 @@ export default function HostExperienceCreateItinerary() {
       };
     });
 
-    // 3) Build values passed to updateField so context can both persist metadata
-    //    and also derive RAM entries (we include preview/file into the object we pass,
-    //    so context's setExperienceItineraryRAM (if it sets RAM from values) will pick them up).
     const valuesForContext = cleanedForContext.map((meta) => {
-      const ramEntry = nextRamMap.get(meta.id);
+      const ramEntry = nextRam.get(meta.id);
       return {
         ...meta,
-        // attach photo.preview & photo.file so context can reconstruct RAM if it uses values to set RAM
         photo: {
           ...(meta.photo || {}),
           preview: ramEntry?.preview ?? null,
@@ -225,20 +212,18 @@ export default function HostExperienceCreateItinerary() {
       };
     });
 
-    // 4) send to context (context will save metadata; because we included preview/file on `valuesForContext`
-    //    any logic in context that creates RAM entries from values will preserve their preview/file)
     updateField("itinerary", valuesForContext);
 
-    // Reset editor UI
     setEditing(false);
     setEditingId(null);
     setTitle("");
     setContent("");
     setImage(null);
-    setToast("Saved");
+
+    setToast(t(language, "hostExperience.itinerary.saved"));
   };
 
-  // DELETE
+  // =============== DELETE ===============
   const handleContextDelete = (id, e) => {
     e.preventDefault();
     setConfirmId(id);
@@ -248,40 +233,41 @@ export default function HostExperienceCreateItinerary() {
     const id = confirmId;
     if (!id) return;
 
-    // Remove RAM preview first
     setExperienceItineraryRAM((prev = []) => prev.filter((r) => r.id !== id));
 
-    // Remove from persisted metadata
-    const newActivities = (experienceData.experienceDetails || []).filter((a) => a.id !== id);
-    // Context expects an array for itinerary step; it will map accordingly
-    updateField("itinerary", newActivities);
+    const newList = (experienceData.experienceDetails || []).filter(
+      (a) => a.id !== id
+    );
+    updateField("itinerary", newList);
 
-    // Reset editor
     setEditing(false);
     setEditingId(null);
     setTitle("");
     setContent("");
     setImage(null);
-
     setConfirmId(null);
-    setToast("Activity deleted");
+
+    setToast(t(language, "hostExperience.itinerary.deleted"));
   };
 
   const handleNext = () => {
     if (!validateStep("itinerary")) {
-      setToast("Please add at least one activity");
+      setToast(t(language, "hostExperience.itinerary.errNoActivities"));
       return;
     }
     navigate("/host/experience/create/max-guests");
   };
 
+  // =============== UI ===============
   return (
     <div className="he-page">
       <main className="he-main">
-        <h1 className="he-title">Your itinerary</h1>
+        <h1 className="he-title">
+          {t(language, "hostExperience.itinerary.title")}
+        </h1>
+
         <div className="he-photo-warning">
-          ⚠️ <strong>Warning:</strong> Photos are stored temporarily.
-          Reloading or leaving the hosting setup before publishing will cause them to be lost.
+          ⚠️ {t(language, "hostExperience.itinerary.photoWarning")}
         </div>
 
         <div className="he-itinerary">
@@ -297,7 +283,7 @@ export default function HostExperienceCreateItinerary() {
                     <img src={a.image} alt={a.title} />
                   ) : (
                     <div className="he-activity-placeholder">
-                      <Icon icon="mdi:image-outline" width={18} height={18} />
+                      <Icon icon="mdi:image-outline" width={18} />
                     </div>
                   )}
                 </div>
@@ -314,13 +300,11 @@ export default function HostExperienceCreateItinerary() {
                     <div
                       className="he-editor-thumb"
                       onClick={() => inputRef.current?.click()}
-                      role="button"
-                      tabIndex={0}
                     >
                       {image ? (
                         <img src={image.preview || image.serverUrl} alt="preview" />
                       ) : (
-                        <Icon icon="mdi:camera-outline" width={32} height={32} />
+                        <Icon icon="mdi:camera-outline" width={32} />
                       )}
                     </div>
 
@@ -336,17 +320,17 @@ export default function HostExperienceCreateItinerary() {
                   <div className="he-editor-right">
                     <input
                       className="he-editor-title"
-                      type="text"
                       value={title}
                       onChange={(e) => {
                         const v = e.target.value;
                         if (v.length <= 50) setTitle(v);
                       }}
-
-                      placeholder="Activity title"
+                      placeholder={t(
+                        language,
+                        "hostExperience.itinerary.activityTitlePlaceholder"
+                      )}
                     />
                     <div className="he-char-count">{title.length}/50</div>
-
 
                     <textarea
                       className="he-editor-content"
@@ -356,8 +340,10 @@ export default function HostExperienceCreateItinerary() {
                         const v = e.target.value;
                         if (v.length <= 150) setContent(v);
                       }}
-
-                      placeholder="Activity details"
+                      placeholder={t(
+                        language,
+                        "hostExperience.itinerary.activityContentPlaceholder"
+                      )}
                     />
                     <div className="he-char-count">{content.length}/150</div>
 
@@ -372,7 +358,7 @@ export default function HostExperienceCreateItinerary() {
                           setImage(null);
                         }}
                       >
-                        Cancel
+                        {t(language, "common.cancel")}
                       </button>
 
                       {editingId !== null && (
@@ -381,12 +367,12 @@ export default function HostExperienceCreateItinerary() {
                           onClick={() => setConfirmId(editingId)}
                           style={{ marginLeft: "auto" }}
                         >
-                          Delete
+                          {t(language, "hostExperience.itinerary.delete")}
                         </button>
                       )}
 
                       <button className="he-primary-btn" onClick={saveActivity}>
-                        Save
+                        {t(language, "common.save")}
                       </button>
                     </div>
                   </div>
@@ -395,22 +381,27 @@ export default function HostExperienceCreateItinerary() {
             </div>
           ))}
 
-          {/* Add new button */}
           {!editing && (
             <div style={{ marginTop: 18 }}>
               <button className="he-add-activity" onClick={startAdd}>
                 <span className="he-add-icon">+</span>
-                Add Activity
+                {t(language, "hostExperience.itinerary.addActivity")}
               </button>
             </div>
           )}
 
-          {/* Inline editor for new activity */}
           {editing && editingId === null && (
             <div className="he-activity-editor">
               <div className="he-editor-left">
-                <div className="he-editor-thumb" onClick={() => inputRef.current?.click()}>
-                  {image ? <img src={image.preview || image.serverUrl} alt="preview" /> : <Icon icon="mdi:camera-outline" width={32} height={32} />}
+                <div
+                  className="he-editor-thumb"
+                  onClick={() => inputRef.current?.click()}
+                >
+                  {image ? (
+                    <img src={image.preview || image.serverUrl} alt="preview" />
+                  ) : (
+                    <Icon icon="mdi:camera-outline" width={32} />
+                  )}
                 </div>
 
                 <input
@@ -425,17 +416,17 @@ export default function HostExperienceCreateItinerary() {
               <div className="he-editor-right">
                 <input
                   className="he-editor-title"
-                  type="text"
                   value={title}
                   onChange={(e) => {
                     const v = e.target.value;
                     if (v.length <= 50) setTitle(v);
                   }}
-
-                  placeholder="Activity title"
+                  placeholder={t(
+                    language,
+                    "hostExperience.itinerary.activityTitlePlaceholder"
+                  )}
                 />
                 <div className="he-char-count">{title.length}/50</div>
-
 
                 <textarea
                   className="he-editor-content"
@@ -445,8 +436,10 @@ export default function HostExperienceCreateItinerary() {
                     const v = e.target.value;
                     if (v.length <= 150) setContent(v);
                   }}
-
-                  placeholder="Activity details"
+                  placeholder={t(
+                    language,
+                    "hostExperience.itinerary.activityContentPlaceholder"
+                  )}
                 />
                 <div className="he-char-count">{content.length}/150</div>
 
@@ -460,10 +453,11 @@ export default function HostExperienceCreateItinerary() {
                       setImage(null);
                     }}
                   >
-                    Cancel
+                    {t(language, "common.cancel")}
                   </button>
+
                   <button className="he-primary-btn" onClick={saveActivity}>
-                    Save
+                    {t(language, "common.save")}
                   </button>
                 </div>
               </div>
@@ -472,19 +466,42 @@ export default function HostExperienceCreateItinerary() {
         </div>
       </main>
 
-      {/* Confirm delete modal */}
       {confirmId && (
         <div className="he-modal" role="dialog" aria-modal="true">
-          <div className="he-modal-backdrop" onClick={() => setConfirmId(null)} />
+          <div
+            className="he-modal-backdrop"
+            onClick={() => setConfirmId(null)}
+          />
+
           <div className="he-modal-card he-confirm-modal">
             <div className="he-modal-header">
-              <div className="he-modal-title">Delete activity</div>
-              <button className="he-modal-close" onClick={() => setConfirmId(null)} aria-label="Close">×</button>
+              <div className="he-modal-title">
+                {t(language, "hostExperience.itinerary.modalDeleteTitle")}
+              </div>
+              <button
+                className="he-modal-close"
+                onClick={() => setConfirmId(null)}
+                aria-label="Close"
+              >
+                ×
+              </button>
             </div>
-            <div className="he-modal-body">Are you sure you want to delete this activity?</div>
+
+            <div className="he-modal-body">
+              {t(language, "hostExperience.itinerary.modalDeleteContent")}
+            </div>
+
             <div className="he-modal-footer">
-              <button className="he-tertiary-btn" onClick={() => setConfirmId(null)}>Cancel</button>
-              <button className="he-danger-btn" onClick={confirmDelete}>Delete</button>
+              <button
+                className="he-tertiary-btn"
+                onClick={() => setConfirmId(null)}
+              >
+                {t(language, "common.cancel")}
+              </button>
+
+              <button className="he-danger-btn" onClick={confirmDelete}>
+                {t(language, "hostExperience.itinerary.delete")}
+              </button>
             </div>
           </div>
         </div>

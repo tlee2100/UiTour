@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./HostToday.css";
 import { Icon } from "@iconify/react";
 import sampleImg from "../../assets/sample-room.jpg";
@@ -303,12 +303,17 @@ export default function HostToday() {
         </div>
 
         {/* NAVBAR */}
-        <nav className="nav-tabs">
-          <Link to="/host/today" className="active">
-            {t(language, 'host.today')}
-          </Link>
-          <Link to="/host/listings">{t(language, 'host.listings')}</Link>
-          <Link to="/host/messages">{t(language, 'host.messages')}</Link>
+        <nav className="nav-tabs" ref={navRef}>
+          {navItems.map(item => (
+            <Link
+              key={item.id}
+              to={item.path}
+              className={isActiveNav(item.path) ? "active" : ""}
+            >
+              {item.label}
+            </Link>
+          ))}
+          <span className="nav-highlight" ref={highlightRef}></span>
         </nav>
 
         {/* RIGHT SIDE */}
@@ -405,7 +410,7 @@ export default function HostToday() {
                 className="host-menu-link"
                 onClick={() => {
                   closeMenu();
-                  navigate("/account/settings");
+                  navigate("/account");
                 }}
               >
                 <Icon icon="mdi:cog-outline" width="20" height="20" />
@@ -421,17 +426,15 @@ export default function HostToday() {
                 <Icon icon="mdi:earth" width="20" height="20" />
                 <span>{t(language, 'host.languageCurrency')}</span>
               </button>
-              <button className="host-menu-link">
-                <Icon icon="mdi:book-open-page-variant" width="20" height="20" />
-                <span>{t(language, 'host.hostingResources')}</span>
-              </button>
-              <button className="host-menu-link">
+              <button
+                className="host-menu-link"
+                onClick={() => {
+                  closeMenu();
+                  navigate("/support");
+                }}
+              >
                 <Icon icon="mdi:lifebuoy" width="20" height="20" />
                 <span>{t(language, 'host.getSupport')}</span>
-              </button>
-              <button className="host-menu-link">
-                <Icon icon="mdi:account-group-outline" width="20" height="20" />
-                <span>{t(language, 'host.findCoHost')}</span>
               </button>
               <button 
                 className="host-menu-link"
@@ -442,10 +445,6 @@ export default function HostToday() {
               >
                 <Icon icon="mdi:plus-circle-outline" width="20" height="20" />
                 <span>{t(language, 'host.createNewListing')}</span>
-              </button>
-              <button className="host-menu-link">
-                <Icon icon="mdi:gift-outline" width="20" height="20" />
-                <span>{t(language, 'host.referAnotherHost')}</span>
               </button>
               <div className="host-menu-divider" />
               <button 

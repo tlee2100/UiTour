@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import './admin.css';
 import adminAPI from '../../services/adminAPI';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { t } from '../../utils/translations';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { language } = useLanguage();
 
   useEffect(() => {
     loadUsers();
@@ -17,7 +20,7 @@ export default function AdminUsers() {
       const data = await adminAPI.getAllUsers();
       setUsers(data || []);
     } catch (err) {
-      setError(err.message || 'Unable to load users list');
+      setError(err.message || t(language, 'adminUsers.loadError'));
     } finally {
       setLoading(false);
     }
@@ -50,8 +53,8 @@ export default function AdminUsers() {
     return (
       <div className="admin-page">
         <div className="table-card">
-          <div className="table-title">Users list</div>
-          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+          <div className="table-title">{t(language, 'adminUsers.title')}</div>
+          <div style={{ padding: '20px', textAlign: 'center' }}>{t(language, 'common.loading')}</div>
         </div>
       </div>
     );
@@ -61,7 +64,7 @@ export default function AdminUsers() {
     return (
       <div className="admin-page">
         <div className="table-card">
-          <div className="table-title">Users list</div>
+          <div className="table-title">{t(language, 'adminUsers.title')}</div>
           <div style={{ padding: '20px', color: '#b91c1c' }}>{error}</div>
         </div>
       </div>
@@ -70,12 +73,21 @@ export default function AdminUsers() {
 
   return (
     <div className="admin-page">
-      <div className="table-card">
-        <div className="table-title">Danh sách người dùng ({users.length})</div>
+        <div className="table-card">
+          <div className="table-title">
+            {t(language, 'adminUsers.title')} ({users.length})
+          </div>
         <div className="table">
-          <div className="row head" data-columns="6"><div>ID</div><div>Full name</div><div>Email</div><div>Role</div><div>Status</div><div>Actions</div></div>
+          <div className="row head" data-columns="6">
+            <div>ID</div>
+            <div>{t(language, 'adminUsers.fullName')}</div>
+            <div>Email</div>
+            <div>{t(language, 'adminUsers.role')}</div>
+            <div>{t(language, 'adminUsers.status')}</div>
+            <div>{t(language, 'adminUsers.actions')}</div>
+          </div>
           {users.length === 0 ? (
-            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>No data</div>
+            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>{t(language, 'common.noData')}</div>
           ) : (
             users.map(u => {
               const userId = u.UserID || u.userID || u.id;
@@ -97,9 +109,9 @@ export default function AdminUsers() {
                         cursor: 'pointer'
                       }}
                     >
-                      <option value="User">User</option>
-                      <option value="Host">Host</option>
-                      <option value="Admin">Admin</option>
+                      <option value="User">{t(language, 'adminUsers.roleUser')}</option>
+                      <option value="Host">{t(language, 'adminUsers.roleHost')}</option>
+                      <option value="Admin">{t(language, 'adminUsers.roleAdmin')}</option>
                     </select>
                   </div>
                   <div>{getStatus(u)}</div>

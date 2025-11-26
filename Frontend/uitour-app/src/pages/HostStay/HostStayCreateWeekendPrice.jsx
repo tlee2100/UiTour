@@ -1,10 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useHost } from "../../contexts/HostContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 import "./HostStay.css";
 
 export default function HostStayCreateWeekendPrice() {
   const navigate = useNavigate();
   const { stayData, updateField, validateStep } = useHost();
+  const { language } = useLanguage();
 
   const pricing = stayData.pricing || {};
 
@@ -28,7 +31,7 @@ export default function HostStayCreateWeekendPrice() {
   // Slider converts percent → multiplier
   const handleMultiplierChange = (percentValue) => {
     const p = Number(percentValue);
-    const multiplier = 1 + p / 100;         // convert to 1.00 – 2.00
+    const multiplier = 1 + p / 100;
 
     updateField("weekend-price", {
       pricing: {
@@ -50,7 +53,7 @@ export default function HostStayCreateWeekendPrice() {
     <div className="hs-page">
       <main className="hs-weekend-main">
         <h1 className="hs-weekend-heading">
-          Now, set your weekend base price
+          {t(language, "hostStay.weekendPrice.title")}
         </h1>
 
         <div className="hs-weekend-center">
@@ -62,17 +65,24 @@ export default function HostStayCreateWeekendPrice() {
           </div>
 
           <div className="hs-weekend-subtext">
-            Guest price including fees:{" "}
-            <strong>${finalCustomerPrice.toLocaleString("en-US")}</strong>
+            {t(language, "hostStay.weekendPrice.guestPrice")}{" "}
+            <strong>
+              ${finalCustomerPrice.toLocaleString("en-US")}
+            </strong>
             <br />
             <small>
-              (Service {servicePercent}% + Tax {taxPercent}%)
+              {t(language, "hostStay.weekendPrice.fees")
+                .replace("{{service}}", servicePercent)
+                .replace("{{tax}}", taxPercent)}
             </small>
           </div>
         </div>
 
         <div className="hs-weekend-premium">
-          <span className="hs-weekend-label">Weekend increase</span>
+          <span className="hs-weekend-label">
+            {t(language, "hostStay.weekendPrice.increase")}
+          </span>
+
           <div className="hs-weekend-control">
             <input
               type="range"

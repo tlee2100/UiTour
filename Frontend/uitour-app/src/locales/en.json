@@ -18,7 +18,10 @@
     "close": "Close",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "next": "Next",
+    "back": "Back",
+    "publish": "Publish"
   },
   "language": {
     "title": "Language & Region",
@@ -245,6 +248,30 @@
     "hostNavigationMenu": "Host navigation menu",
     "deleteItem": "Delete"
   },
+  "support": {
+    "kicker": "Host Support",
+    "title": "Still need help? We’re here for you",
+    "description": "Find articles, quick tips, and personal support that will help you manage bookings, payouts, and guest questions like a pro.",
+    "contactUs": "Contact support",
+    "browseTopics": "Browse help topics",
+    "heroIllustration": "Personalized help, always on call",
+    "heroAlt": "Illustration of host support",
+    "emailLabel": "Support email",
+    "hotlineLabel": "Hotline",
+    "chatbot": "Talk to our chatbot",
+    "section1": {
+      "title": "Booking & payouts",
+      "content": "Understand how payouts work, schedule cleanings, or review booking details anytime."
+    },
+    "section2": {
+      "title": "Guests & stays",
+      "content": "Get guidance on guest communication, check-ins, and staying ready for every reservation."
+    },
+    "section3": {
+      "title": "Host tools",
+      "content": "Learn about promotional tools, calendar syncing, and managing multiple listings."
+    }
+  },
   "search": {
     "where": "Where",
     "when": "When",
@@ -335,6 +362,473 @@
     "loadingPaymentDetails": "Loading payment details...",
     "bookingIdNotFound": "Booking ID not found",
     "failedToConfirmTransfer": "Failed to confirm transfer. Please try again."
+  },
+  "adminDashboard": {
+    "totalUsers": "Total users",
+    "pendingPosts": "Pending posts",
+    "monthRevenue": "Revenue this month",
+    "unresolvedReports": "Unresolved reports",
+    "clickToView": "Click to view details →",
+    "revenueByMonth": "Revenue by month (mock)",
+    "userGrowth": "User growth (mock)",
+    "latestReports": "Latest reports",
+    "reporter": "Reporter",
+    "reason": "Reason",
+    "date": "Date",
+    "status": "Status",
+    "noReports": "No reports yet"
+  },
+  "adminNav": {
+    "dashboard": "Dashboard",
+    "posts": "Posts",
+    "users": "Users",
+    "reports": "Reports",
+    "transactions": "Transactions"
+  },
+  "adminUsers": {
+    "title": "Users list",
+    "fullName": "Full name",
+    "role": "Role",
+    "status": "Status",
+    "actions": "Actions",
+    "roleUser": "User",
+    "roleHost": "Host",
+    "roleAdmin": "Admin",
+    "loadError": "Unable to load users list"
+  },
+  "adminTransactions": {
+    "title": "Recent transactions",
+    "user": "User",
+    "amount": "Amount",
+    "date": "Date",
+    "status": "Status",
+    "loadError": "Unable to load transactions list"
+  },
+  "adminReports": {
+    "title": "Reports list",
+    "detailTitle": "Report details",
+    "reporter": "Reporter",
+    "target": "Target",
+    "reason": "Reason",
+    "date": "Date",
+    "status": "Status",
+    "selectPrompt": "Select a report to view details",
+    "resolve": "Resolve report",
+    "markProcessing": "Mark as in progress"
+  },
+  "adminSettings": {
+    "categoryTitle": "Category management",
+    "roomType": "Room type",
+    "tourType": "Tour type",
+    "location": "Location",
+    "feeTitle": "Service fee management (%)",
+    "serviceFee": "Service fee (%)",
+    "vat": "VAT tax (%)",
+    "saveChanges": "Save changes",
+    "bannerTitle": "Banner & events",
+    "addBanner": "+ Add new banner"
+  },
+  "hostExperience": {
+    "choose": {
+      "title": "What experience will you offer guests?",
+      "categories": {
+        "art": "Art and design",
+        "fitness": "Fitness and wellness",
+        "food": "Food and drink",
+        "history": "History and culture",
+        "nature": "Nature and outdoors"
+      }
+    },
+    "discount": {
+      "title": "Add discounts",
+      "earlyBirdTitle": "Early bird discount",
+      "earlyBirdSubtitle": "Applies to bookings made 2+ weeks early",
+      "discountByDays": "Discount by days booked early",
+      "discountByGroups": "Discount by group size",
+      "addEarlyBooking": "Add early-booking discount",
+      "addEarlyBookingSubtitle": "Give a discount for booking early",
+      "addGroupDiscount": "Add group discount",
+      "addGroupDiscountSubtitle": "Give discount for large groups",
+      "modalTitleDays": "Add early-booking discount",
+      "modalTitleGroup": "Add group discount",
+      "labelPercent": "Discount percent (%)",
+      "labelMinDays": "Minimum days before booking",
+      "labelMinGroup": "Minimum group size",
+      "save": "Save",
+      "cancel": "Cancel",
+      "errorPercent": "Percent must be between 1–100",
+      "errorDays": "Days must be between 1 and 365",
+      "errorGroupMin": "Group size must be at least 2",
+      "errorGroupMax": "Group size cannot exceed max guests",
+      "errorDuplicateDays": "A discount for booking ≥ {{value}} days already exists",
+      "errorDuplicateGroup": "A discount for group size ≥ {{value}} guests already exists",
+      "daysItemTitle": "Bookings made ≥ {{value}} days early",
+      "groupItemTitle": "Groups of ≥ {{value}} guests"
+    },
+    "itinerary": {
+      "title": "Your itinerary",
+      "photoWarning": "Warning: Photos are stored temporarily. Reloading or leaving before publishing will cause them to be lost.",
+      "addActivity": "Add Activity",
+      "activityTitlePlaceholder": "Activity title",
+      "activityContentPlaceholder": "Activity details",
+      "modalDeleteTitle": "Delete activity",
+      "modalDeleteContent": "Are you sure you want to delete this activity?",
+      "delete": "Delete",
+      "errNoActivities": "Please add at least one activity",
+      "saved": "Saved",
+      "deleted": "Activity deleted",
+      "cannotRead": "Cannot read file",
+      "needTitleDetail": "Please provide title and details"
+    },
+    "location": {
+      "title": "Where’s your experience located?",
+      "searchPlaceholder": "Move the map to select a location",
+      "useCurrent": "📍 Use current location",
+      "locating": "Locating...",
+      "gpsNotSupported": "Your browser does not support GPS.",
+      "gpsDenied": "Cannot access your location."
+    },
+    "maxGuests": {
+      "title": "Pick a time, duration and number of guests",
+      "startTime": "Start time",
+      "capacityPricing": "Capacity & pricing",
+      "maxGuests": "Max guests",
+      "durationHours": "Duration (hours)",
+      "durationHint": "Duration must be between 1–24",
+      "pricePerGuestUSD": "Price per guest (USD)",
+      "pricePerGuestVND": "Price per guest (VND)",
+      "enterPrice": "Enter price...",
+      "enterDuration": "Enter duration..."
+    },
+    "qualification": {
+      "title": "Share your qualifications",
+      "intro": "Introduction",
+      "expertise": "Expertise",
+      "recognition": "Recognition",
+      "editDetails": "Add details",
+      "writeHere": "Write here...",
+      "close": "Close",
+      "addDetails": "Add details",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "years": {
+      "title": "How many years have you worked in?",
+      "increase": "Increase",
+      "decrease": "Decrease"
+    },
+    "describe": {
+      "title": "Describe your experience",
+      "titleLabel": "Title",
+      "contentLabel": "Content",
+      "titlePlaceholder": "Write here...",
+      "summaryPlaceholder": "Something about your experience..."
+    },
+    "preview": {
+      "basicInfo": "Basic information",
+      "category": "Category",
+      "yearsOfExperience": "Years of experience",
+      "years": "years",
+      "description": "Description",
+      "qualifications": "Qualifications",
+      "location": "Location",
+      "address": "Address",
+      "city": "City",
+      "country": "Country",
+      "pricing": "Pricing",
+      "basePrice": "Base price",
+      "currency": "Currency",
+      "pricePer": "Price per",
+      "capacity": "Guest capacity",
+      "maxGuests": "Maximum guests",
+      "timeSlots": "Available time slots",
+      "noTimeSlots": "No time slots added",
+      "itinerary": "Experience itinerary",
+      "noActivities": "No activities added",
+      "photos": "Photos"
+    },
+    "categories": {
+      "fitness": "Fitness / Gym",
+      "cooking": "Cooking",
+      "crafting": "Crafting",
+      "adventure": "Adventure",
+      "art": "Art & Creativity"
+    },
+    "photos": {
+      "loading": "Loading your photos...",
+      "title": "Add photos that showcase your skills",
+      "warningTitle": "Warning:",
+      "warningMessage": " Photos are stored temporarily. Reloading or leaving the hosting setup before publishing will cause them to be lost.",
+      "addPhotos": "Add photos",
+      "coverTag": "Cover"
+    }
+  },
+  "hostStay": {
+    "amenities": {
+      "title": "What amenities does your place have?",
+      "wifi": "Wi-Fi",
+      "tv": "TV",
+      "ac": "Air conditioning",
+      "kitchen": "Kitchen",
+      "washer": "Washer",
+      "dryer": "Dryer",
+      "heating": "Heating",
+      "iron": "Iron",
+      "gym": "Gym",
+      "freeParking": "Free parking",
+      "hotTub": "Hot tub",
+      "pool": "Pool",
+      "bbq": "BBQ grill",
+      "evCharger": "EV charger",
+      "smokeAlarm": "Smoke alarm",
+      "breakfast": "Breakfast",
+      "workspace": "Dedicated workspace",
+      "kingBed": "King bed",
+      "hairDryer": "Hair dryer"
+    },
+    "choose": {
+      "title": "Which of these best describes your place?",
+      "house": "House",
+      "apartment": "Apartment",
+      "guestHouse": "Guest house",
+      "hotel": "Hotel"
+    },
+    "description": {
+      "title": "Create your description",
+      "placeholder": "The whole group will be comfortable in this spacious and unique space.",
+      "count": "{{count}}/70"
+    },
+    "details": {
+      "title": "Let’s start with the basics",
+      "guestCapacityTitle": "How many people can stay here?",
+      "guestCapacitySubtitle": "Set the number of guests, bedrooms, beds and bathrooms available in your place.",
+      "maxGuests": "Max guests",
+      "bedrooms": "Bedrooms",
+      "beds": "Beds",
+      "bathrooms": "Bathrooms",
+      "stayDurationTitle": "Guest stay duration",
+      "minNights": "Min nights",
+      "maxNights": "Max nights",
+      "prepDays": "Prep days between bookings",
+      "advanceNotice": "Advance notice (days)"
+    },
+    "discount": {
+      "title": "Add discounts",
+      "longStay": "Long-stay discounts",
+      "monthly": "Monthly discount",
+      "monthlyDesc": "For stays of 28 nights or more",
+      "weekly": "Weekly discount",
+      "weeklyDesc": "For stays of 7 nights or more",
+      "seasonal": "Seasonal discounts",
+      "seasonLabel": "Seasonal discount",
+      "addSeason": "Add seasonal discount",
+      "addSeasonDesc": "Apply discounts during selected dates",
+      "earlyBird": "Early-bird discounts",
+      "earlyLabel": "Early-bird promotion",
+      "earlyTitle": "Book ≥ {{days}} days early",
+      "addEarly": "Add early-bird discount",
+      "addEarlyDesc": "Discount for bookings made far in advance",
+      "modal": {
+        "monthly": "Edit monthly discount",
+        "weekly": "Edit weekly discount",
+        "season": "Add seasonal discount",
+        "early": "Add early-bird discount"
+      },
+      "label": {
+        "percent": "Discount percent (%)",
+        "from": "From date",
+        "to": "To date",
+        "daysBefore": "Days before booking"
+      },
+      "error": {
+        "percent0to100": "Percent must be between 0 and 100",
+        "percent1to100": "Percent must be between 1 and 100",
+        "selectDate": "Select both start and end dates",
+        "pastDate": "Dates cannot be in the past",
+        "startBeforeEnd": "Start date must be earlier than end date",
+        "seasonTooLong": "Seasonal discount cannot exceed 1 year",
+        "seasonTooFar": "Seasonal discount cannot start more than 1 year from today",
+        "seasonOverlap": "This date range overlaps an existing seasonal discount",
+        "daysPositive": "Days must be greater than 0",
+        "daysMax365": "Early-bird days cannot exceed 365",
+        "duplicateEarly": "This early-bird rule already exists"
+      }
+    },
+    "fees": {
+      "title": "Add fees for your place",
+      "section": {
+        "standard": "Standard fees",
+        "extra": "Additional guest charges"
+      },
+      "cleaning": {
+        "title": "Cleaning fee",
+        "subtitle": "A fixed cleaning charge per booking"
+      },
+      "service": {
+        "title": "Service fee (%)",
+        "subtitle": "Platform service fee (locked)"
+      },
+      "tax": {
+        "title": "Tax fee (%)",
+        "subtitle": "Government tax (locked)"
+      },
+      "extraThreshold": {
+        "title": "Extra guest threshold",
+        "subtitle": "Guests after this number will be charged"
+      },
+      "extraFee": {
+        "title": "Extra guest fee",
+        "subtitle": "Fee applied per additional guest"
+      },
+      "unit": {
+        "guests": "guests"
+      },
+      "modal": {
+        "title": "Set value"
+      },
+      "error": {
+        "thresholdMin": "Threshold must be at least 1",
+        "thresholdMax": "Cannot exceed max guests ({{max}})"
+      }
+    },
+    "locate": {
+      "title": "Where’s your place located?",
+      "searchPlaceholder": "Move the map to select a location",
+      "useCurrent": "Use current location",
+      "loading": "Locating...",
+      "error": {
+        "noGps": "Your browser does not support GPS.",
+        "cannotAccess": "Unable to access your location. Please try again."
+      }
+    },
+    "photos": {
+      "title": "Add photos for each part of your property",
+      "warningTitle": "Warning:",
+      "warningContent": "Photos are stored temporarily. Reloading or leaving before publishing will cause them to be lost.",
+      "add": "Add",
+      "cover": {
+        "title": "Cover Photo",
+        "description": "This photo will be used as your listing’s main thumbnail.",
+        "none": "No cover photo selected yet.",
+        "badge": "Cover Photo"
+      },
+      "category": {
+        "bedroom": "Bedroom",
+        "bathroom": "Bathroom",
+        "livingroom": "Living Room",
+        "kitchen": "Kitchen",
+        "other": "Other"
+      }
+    },
+    "rules": {
+      "title": "House rules & Safety",
+      "checkInOut": {
+        "title": "Check-in & Check-out",
+        "after": "Check-in after",
+        "before": "Check-out before"
+      },
+      "house": {
+        "title": "House Rules",
+        "quietHours": "Quiet hours (22:00 – 07:00)",
+        "noParties": "No parties or events",
+        "noVisitors": "No unregistered guests",
+        "noChildren": "Not suitable for children",
+        "noShoes": "Remove shoes inside",
+        "noFoodBedrooms": "No food in bedrooms"
+      },
+      "quick": {
+        "title": "Quick Rules",
+        "noSmoking": "No smoking",
+        "noFlames": "No open flames (candles, stoves)",
+        "petsAllowed": "Pets allowed"
+      },
+      "safety": {
+        "title": "Safety & Security",
+        "enhancedCleaning": "Enhanced cleaning",
+        "sanitized": "Surfaces sanitized",
+        "coAlarm": "Carbon monoxide alarm",
+        "smokeAlarm": "Smoke alarm"
+      },
+      "selfCheckIn": {
+        "title": "Self check-in",
+        "available": "Self check-in available",
+        "select": "Select method",
+        "methods": {
+          "lockbox": "Lockbox",
+          "smartlock": "Smart lock",
+          "keypad": "Keypad",
+          "staff": "Building staff",
+          "other": "Other"
+        }
+      }
+    },
+    "title": {
+      "heading": "Now, let’s give your house a title",
+      "placeholder": "Write something..."
+    },
+    "typePlace": {
+      "title": "What type of place do guests have?",
+      "entire": "An entire place",
+      "entireDesc": "Guests have the whole place to themselves.",
+      "room": "A room",
+      "roomDesc": "Guests have their own room plus access to shared spaces."
+    },
+    "weekdayPrice": {
+      "title": "Now, set a weekday base price",
+      "placeholder": "200",
+      "guestSee": "Guests will see approximately:",
+      "includes": "(Includes {{service}}% service fee + {{tax}}% tax)"
+    },
+    "weekendPrice": {
+      "title": "Now, set your weekend base price",
+      "guestPrice": "Guest price including fees:",
+      "fees": "(Service {{service}}% + Tax {{tax}}%)",
+      "increase": "Weekend increase"
+    },
+    "preview": {
+      "cannotPublish": "Cannot publish",
+      "basicInfo": "Basic information",
+      "propertyType": "Property type",
+      "typeOfPlace": "Type of place",
+      "bedrooms": "Bedrooms",
+      "beds": "Beds",
+      "bathrooms": "Bathrooms",
+      "accommodates": "Accommodates",
+      "location": "Location",
+      "address": "Address",
+      "city": "City",
+      "country": "Country",
+      "amenities": "Amenities",
+      "noAmenities": "No amenities selected",
+      "pricing": "Pricing & Fees",
+      "basePrice": "Base price",
+      "weekendMultiplier": "Weekend multiplier",
+      "cleaningFee": "Cleaning fee",
+      "extraFee": "Extra people fee",
+      "extraThreshold": "Extra guest threshold",
+      "serviceFee": "Service fee",
+      "tax": "Tax",
+      "discounts": "Discounts",
+      "weekly": "Weekly discount",
+      "monthly": "Monthly discount",
+      "seasonal": "Seasonal discounts",
+      "earlyBird": "Early-bird discounts",
+      "bookBefore": "Book ≥ {{days}} days early → ",
+      "rulesSafety": "Rules & Safety",
+      "houseRules": "House rules",
+      "quickRules": "Quick rules",
+      "safety": "Safety",
+      "selfCheckin": "Self check-in",
+      "method": "Method:",
+      "photos": "Photos"
+    }
+  },
+  "becomeHost": {
+    "back": "Back",
+    "title": "What would you like to host?",
+    "home": "Home",
+    "experience": "Experience",
+    "homeAlt": "Place to stay",
+    "experienceAlt": "Activity experience"
   }
 }
-
