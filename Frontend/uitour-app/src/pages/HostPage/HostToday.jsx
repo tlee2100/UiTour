@@ -58,51 +58,144 @@ export default function HostToday() {
 
       // Lấy bookings theo host ID (userID)
       const bookingsData = await authAPI.getBookingsByHost(userID);
+      console.log('Bookings data from API:', bookingsData);
       
-      // Format bookings để hiển thị
-      const formatted = bookingsData.map(booking => {
-        const checkIn = new Date(booking.CheckIn || booking.checkIn);
-        const checkOut = new Date(booking.CheckOut || booking.checkOut);
-        
-        // Xác định status
-        const now = new Date();
-        let status = t(language, 'host.upcoming');
-        if (checkIn <= now && checkOut >= now) {
-          status = t(language, 'host.staying');
-        } else if (checkIn.toDateString() === now.toDateString()) {
-          status = t(language, 'host.checkInToday');
-        } else if (checkIn < now && checkOut < now) {
-          status = t(language, 'host.completed');
-        }
+      // Format bookings để hiển thị - hiển thị tất cả bookings
+      const formatted = bookingsData
+        .map(booking => {
+          const checkInOriginal = new Date(booking.CheckIn || booking.checkIn);
+          const checkOut = new Date(booking.CheckOut || booking.checkOut);
+          const now = new Date();
+          
+          // Xác định status dựa trên ngày check-in/check-out
+          let status = t(language, 'host.upcoming');
+          if (checkInOriginal <= now && checkOut >= now) {
+            status = t(language, 'host.staying');
+          } else if (checkInOriginal.toDateString() === now.toDateString()) {
+            status = t(language, 'host.checkInToday');
+          } else if (checkInOriginal < now && checkOut < now) {
+            status = t(language, 'host.completed');
+          }
+          
+          // Lấy payment status từ Transaction
+          const transaction = booking.Transaction || booking.transaction;
+          let paymentStatus = 'noPayment';
+          if (transaction) {
+            const statusLower = (transaction.PaymentStatus || transaction.paymentStatus || '').toLowerCase();
+            if (statusLower === 'paid' || statusLower === 'completed' || statusLower === 'success') {
+              paymentStatus = 'paid';
+            } else if (statusLower === 'pending' || statusLower === 'processing') {
+              paymentStatus = 'pending';
+            } else if (statusLower === 'failed' || statusLower === 'declined' || statusLower === 'error') {
+              paymentStatus = 'failed';
+            } else if (statusLower === 'refunded' || statusLower === 'refund') {
+              paymentStatus = 'refunded';
+            }
+          }
 
         // Format duration
-        const duration = `${checkIn.getDate()} ${checkIn.toLocaleDateString('en-US', { month: 'short' })} – ${checkOut.getDate()} ${checkOut.toLocaleDateString('en-US', { month: 'short' })}`;
+        const duration = `${checkInOriginal.getDate()} ${checkInOriginal.toLocaleDateString('en-US', { month: 'short' })} – ${checkOut.getDate()} ${checkOut.toLocaleDateString('en-US', { month: 'short' })}`;
+        
+        // Lấy số đêm và số khách
+        const nights = booking.Nights || booking.nights || 1;
+        const guestsCount = booking.GuestsCount || booking.guestsCount || 1;
 
         // Lấy thông tin property hoặc tour
         const property = booking.Property || booking.property;
         const tour = booking.Tour || booking.tour;
         const listing = property || tour;
         
-        const title = listing 
-          ? (property ? (listing.ListingTitle || listing.listingTitle || "Property") : (listing.TourName || listing.tourName || "Tour"))
-          : "Unknown Listing";
-        
-        // Lấy ảnh
-        const photos = listing?.Photos || listing?.Photos || [];
-        const image = photos?.[0]?.Url || photos?.[0]?.url || null;
-        let imageUrl = image;
-        if (imageUrl && imageUrl.startsWith('/')) {
-          imageUrl = `http://localhost:5069${imageUrl}`;
+        // Debug logging
+        if (!listing) {
+          console.warn('Booking has no Property or Tour:', booking);
         }
-        if (!imageUrl || imageUrl.startsWith('data:image')) {
+        
+        // Lấy title - thử nhiều cách
+        let title = "Unknown Listing";
+        if (listing) {
+          if (property) {
+            title = listing.ListingTitle || 
+                    listing.listingTitle || 
+                    listing.Title || 
+                    listing.title || 
+                    "Property";
+            console.log('Property title:', title, 'from listing:', listing);
+          } else if (tour) {
+            title = listing.TourName || 
+                    listing.tourName || 
+                    listing.Title || 
+                    listing.title || 
+                    "Tour";
+            console.log('Tour title:', title, 'from listing:', listing);
+          }
+        }
+        
+        // Lấy ảnh - thử nhiều cách
+        let imageUrl = null;
+        if (listing) {
+          // Thử lấy từ Photos (PascalCase hoặc camelCase)
+          const photos = listing.Photos || listing.photos || [];
+          console.log('Photos for listing:', photos, 'listing:', listing);
+          
+          if (Array.isArray(photos) && photos.length > 0) {
+            // Sort theo SortIndex nếu có
+            const sortedPhotos = [...photos].sort((a, b) => {
+              const aIndex = a.SortIndex ?? a.sortIndex ?? 0;
+              const bIndex = b.SortIndex ?? b.sortIndex ?? 0;
+              return aIndex - bIndex;
+            });
+            
+            const firstPhoto = sortedPhotos[0];
+            const url = firstPhoto?.Url || 
+                       firstPhoto?.url || 
+                       firstPhoto?.ImageUrl ||
+                       firstPhoto?.imageUrl ||
+                       null;
+            
+            console.log('First photo:', firstPhoto, 'URL:', url);
+            
+            if (url && typeof url === 'string' && url.trim().length > 0) {
+              imageUrl = url.trim();
+            }
+          } else {
+            console.warn('No photos found for listing:', listing);
+          }
+        }
+        
+        // Normalize image URL
+        if (imageUrl) {
+          // Bỏ qua base64 images
+          if (imageUrl.startsWith('data:image')) {
+            imageUrl = null;
+          } else if (imageUrl.startsWith('/')) {
+            imageUrl = `http://localhost:5069${imageUrl}`;
+          } else if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+            imageUrl = `http://localhost:5069/${imageUrl}`;
+          }
+        }
+        
+        // Fallback to sample image
+        if (!imageUrl) {
           imageUrl = sampleImg;
         }
 
-        // Lấy thông tin guest
+        // Lấy thông tin guest - thử nhiều cách
         const guest = booking.User || booking.user;
-        const guestName = guest 
-          ? (guest.FullName || guest.fullName || guest.Email || guest.email || "Guest")
-          : "Guest";
+        let guestName = "Guest";
+        if (guest) {
+          guestName = guest.FullName || 
+                     guest.fullName || 
+                     guest.Name ||
+                     guest.name ||
+                     guest.Email ||
+                     guest.email ||
+                     guest.UserName ||
+                     guest.userName ||
+                     "Guest";
+          console.log('Guest name:', guestName, 'from guest:', guest);
+        } else {
+          console.warn('No guest/user found for booking:', booking);
+        }
 
         // Lấy rating từ reviews nếu có
         const reviews = listing?.Reviews || listing?.reviews || [];
@@ -110,30 +203,46 @@ export default function HostToday() {
           ? reviews.reduce((sum, r) => sum + (r.Rating || r.rating || 0), 0) / reviews.length
           : 0;
 
-        return {
-          id: booking.BookingID || booking.bookingID || booking.id,
-          status,
-          title,
-          rating: rating > 0 ? rating.toFixed(2) : null,
-          guest: guestName,
-          duration,
-          image: imageUrl,
-          checkIn: checkIn.toISOString(),
-          checkOut: checkOut.toISOString(),
-          type: property ? "property" : "tour"
-        };
-      });
+          return {
+            id: booking.BookingID || booking.bookingID || booking.id,
+            status,
+            title,
+            rating: rating > 0 ? rating.toFixed(2) : null,
+            guest: guestName,
+            duration,
+            nights,
+            guestsCount,
+            image: imageUrl,
+            checkIn: checkInOriginal.toISOString(),
+            checkOut: checkOut.toISOString(),
+            type: property ? "property" : "tour",
+            paymentStatus,
+            totalPrice: booking.TotalPrice || booking.totalPrice || 0,
+            currency: booking.Currency || booking.currency || 'USD'
+          };
+        })
+        .filter(booking => booking !== null); // Remove null entries
 
-      // Sắp xếp: Check-in today > Staying > Upcoming > Completed
+      // Sắp xếp: Check-in today > Staying > Upcoming > Completed, sau đó theo payment status
       const checkInToday = t(language, 'host.checkInToday');
       const staying = t(language, 'host.staying');
       const upcoming = t(language, 'host.upcoming');
       const completed = t(language, 'host.completed');
       const statusOrder = { [checkInToday]: 0, [staying]: 1, [upcoming]: 2, [completed]: 3 };
+      const paymentStatusOrder = { paid: 0, pending: 1, failed: 2, refunded: 3, noPayment: 4 };
+      
       formatted.sort((a, b) => {
-        const orderA = statusOrder[a.status] ?? 99;
-        const orderB = statusOrder[b.status] ?? 99;
-        if (orderA !== orderB) return orderA - orderB;
+        // Ưu tiên sắp xếp theo status trước
+        const statusOrderA = statusOrder[a.status] ?? 99;
+        const statusOrderB = statusOrder[b.status] ?? 99;
+        if (statusOrderA !== statusOrderB) return statusOrderA - statusOrderB;
+        
+        // Sau đó sắp xếp theo payment status
+        const paymentOrderA = paymentStatusOrder[a.paymentStatus] ?? 99;
+        const paymentOrderB = paymentStatusOrder[b.paymentStatus] ?? 99;
+        if (paymentOrderA !== paymentOrderB) return paymentOrderA - paymentOrderB;
+        
+        // Cuối cùng sắp xếp theo ngày check-in
         return new Date(a.checkIn) - new Date(b.checkIn);
       });
 
@@ -363,6 +472,11 @@ export default function HostToday() {
               >
                 {b.status}
               </div>
+              <div
+                className={`payment-status-badge payment-status-${b.paymentStatus}`}
+              >
+                {t(language, `host.${b.paymentStatus}`)}
+              </div>
               <img 
                 src={b.image} 
                 alt={b.title} 
@@ -378,6 +492,19 @@ export default function HostToday() {
                 </h3>
                 <p>{t(language, 'host.guestName')}: {b.guest}</p>
                 <p>{t(language, 'host.stayDuration')}: {b.duration}</p>
+                <p>
+                  {b.nights} {b.nights === 1 ? t(language, 'host.night') : t(language, 'host.nights')} · {b.guestsCount} {b.guestsCount === 1 ? t(language, 'host.guest') : t(language, 'host.guests')}
+                </p>
+                <p className="booking-price">
+                  {b.totalPrice > 0 && (
+                    <>
+                      {new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: b.currency || 'USD'
+                      }).format(b.totalPrice)}
+                    </>
+                  )}
+                </p>
               </div>
             </div>
           ))
