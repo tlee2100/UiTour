@@ -4,22 +4,26 @@ import { Icon } from "@iconify/react";
 import logo from "../../assets/UiTour.png";
 import "./HostExperience.css";
 import { useHost } from "../../contexts/HostContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 
 export default function HostExperienceCreateChoose() {
   const navigate = useNavigate();
   const { experienceData, updateField, validateStep, setFlowType, type } = useHost();
+  const { language } = useLanguage();
 
-  // ✅ Bắt buộc: đặt flow là "experience" khi vào trang này
+  // Khi vào trang này phải đảm bảo flow type là "experience"
   useEffect(() => {
     if (type !== "experience") setFlowType("experience");
   }, [type, setFlowType]);
 
+  // 🔥 Categories đã được chuyển sang dùng key dịch
   const categories = [
-    { id: "art", label: "Art and design", icon: "mdi:palette" },
-    { id: "fitness", label: "Fitness and wellness", icon: "mdi:arm-flex" },
-    { id: "food", label: "Food and drink", icon: "mdi:hamburger" },
-    { id: "history", label: "History and culture", icon: "mdi:bank" },
-    { id: "nature", label: "Nature and outdoors", icon: "mdi:tree" },
+    { id: "art", labelKey: "hostExperience.choose.categories.art", icon: "mdi:palette" },
+    { id: "fitness", labelKey: "hostExperience.choose.categories.fitness", icon: "mdi:arm-flex" },
+    { id: "food", labelKey: "hostExperience.choose.categories.food", icon: "mdi:hamburger" },
+    { id: "history", labelKey: "hostExperience.choose.categories.history", icon: "mdi:bank" },
+    { id: "nature", labelKey: "hostExperience.choose.categories.nature", icon: "mdi:tree" }
   ];
 
   const handleSelect = (id) => {
@@ -34,7 +38,12 @@ export default function HostExperienceCreateChoose() {
   return (
     <div className="he-page">
       <main className="he-main">
-        <h1 className="he-title">What experience will you offer guests?</h1>
+        
+        {/* 🔥 Tiêu đề cũng chuyển sang i18n */}
+        <h1 className="he-title">
+          {t(language, "hostExperience.choose.title")}
+        </h1>
+
         <div className="he-card-grid">
           {categories.map((c) => (
             <button
@@ -47,7 +56,11 @@ export default function HostExperienceCreateChoose() {
               <div className="he-card-icon">
                 <Icon icon={c.icon} width="48" height="48" />
               </div>
-              <div className="he-card-label">{c.label}</div>
+
+              {/* 🔥 Nhãn category theo ngôn ngữ */}
+              <div className="he-card-label">
+                {t(language, c.labelKey)}
+              </div>
             </button>
           ))}
         </div>

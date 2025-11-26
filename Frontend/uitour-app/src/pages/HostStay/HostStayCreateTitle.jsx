@@ -1,14 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import "./HostStay.css";
 import { useHost } from "../../contexts/HostContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 
 export default function HostStayCreateTitle() {
   const navigate = useNavigate();
   const { stayData, updateField, validateStep } = useHost();
-  const title = stayData.listingTitle || ""; // ✅ đổi từ title → listingTitle
+  const { language } = useLanguage();
+
+  const title = stayData.listingTitle || "";
 
   const handleChange = (e) => {
-    updateField("title", { listingTitle: e.target.value }); // ✅ cập nhật đúng key backend
+    updateField("title", { listingTitle: e.target.value });
   };
 
   const handleNext = () => {
@@ -19,11 +23,14 @@ export default function HostStayCreateTitle() {
   return (
     <div className="hs-page">
       <main className="hs-title-main">
-        <h1 className="hs-title-heading">Now, let’s give your house a title</h1>
+        <h1 className="hs-title-heading">
+          {t(language, "hostStay.title.heading")}
+        </h1>
+
         <div className="hs-title-box">
           <textarea
             className="hs-title-input"
-            placeholder="Write something..."
+            placeholder={t(language, "hostStay.title.placeholder")}
             value={title}
             maxLength={50}
             onChange={handleChange}

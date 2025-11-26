@@ -2,7 +2,7 @@ import React from "react";
 import "./HostFooter.css";
 import { useNavigate } from "react-router-dom";
 
-export default function HostFooter({ prevPath, nextPath, isLast, disabledNext, onPublish }) {
+export default function HostFooter({ prevPath, nextPath, isLast, disabledNext, onPublish, nextLabel, backLabel, publishLabel }) {
   const navigate = useNavigate();
 
   const handleNextClick = () => {
@@ -22,7 +22,7 @@ export default function HostFooter({ prevPath, nextPath, isLast, disabledNext, o
           onClick={() => prevPath && navigate(prevPath)}
           disabled={!prevPath}
         >
-          Back
+          {backLabel || "Back"}
         </button>
 
         <button
@@ -30,7 +30,7 @@ export default function HostFooter({ prevPath, nextPath, isLast, disabledNext, o
           onClick={handleNextClick}
           disabled={!!disabledNext || (!nextPath && !isLast)}
         >
-          {isLast ? "Publish" : "Next"}
+          {isLast ? publishLabel || "Publish" : nextLabel || "Next"}
         </button>
       </div>
       {/* Optionally, show error/info below Next if disabledNext is true */}

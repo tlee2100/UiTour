@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import './admin.css';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { t } from '../../utils/translations';
 
 export default function AdminReports() {
   const [selectedReport, setSelectedReport] = useState(null);
+  const { language } = useLanguage();
   
   // Mock data - replace with API call when backend is ready
   const rows = [
@@ -30,11 +33,18 @@ export default function AdminReports() {
   return (
     <div className="admin-page admin-split">
       <div className="table-card">
-        <div className="table-title">Danh sách báo cáo</div>
+        <div className="table-title">{t(language, 'adminReports.title')}</div>
         <div className="table">
-          <div className="row head"><div>ID</div><div>Người báo cáo</div><div>Đối tượng</div><div>Lý do</div><div>Ngày</div><div>Trạng thái</div></div>
+          <div className="row head">
+            <div>ID</div>
+            <div>{t(language, 'adminReports.reporter')}</div>
+            <div>{t(language, 'adminReports.target')}</div>
+            <div>{t(language, 'adminReports.reason')}</div>
+            <div>{t(language, 'adminReports.date')}</div>
+            <div>{t(language, 'adminReports.status')}</div>
+          </div>
           {rows.length === 0 ? (
-            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>Không có báo cáo</div>
+            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>{t(language, 'common.noData')}</div>
           ) : (
             rows.map(r => (
               <div 
@@ -55,27 +65,27 @@ export default function AdminReports() {
         </div>
       </div>
       <aside className="detail-card">
-        <div className="table-title">Chi tiết báo cáo</div>
+        <div className="table-title">{t(language, 'adminReports.detailTitle')}</div>
         <div className="detail-body">
           {selectedReport ? (
             <div>
               <p><strong>ID:</strong> #{selectedReport.id}</p>
-              <p><strong>Người báo cáo:</strong> {selectedReport.reporter}</p>
-              <p><strong>Đối tượng:</strong> {selectedReport.target}</p>
-              <p><strong>Lý do:</strong> {selectedReport.reason}</p>
-              <p><strong>Ngày:</strong> {selectedReport.date}</p>
-              <p><strong>Trạng thái:</strong> {selectedReport.state}</p>
+              <p><strong>{t(language, 'adminReports.reporter')}:</strong> {selectedReport.reporter}</p>
+              <p><strong>{t(language, 'adminReports.target')}:</strong> {selectedReport.target}</p>
+              <p><strong>{t(language, 'adminReports.reason')}:</strong> {selectedReport.reason}</p>
+              <p><strong>{t(language, 'adminReports.date')}:</strong> {selectedReport.date}</p>
+              <p><strong>{t(language, 'adminReports.status')}:</strong> {selectedReport.state}</p>
             </div>
           ) : (
-            <div style={{ color: '#666' }}>Chọn một báo cáo để xem chi tiết</div>
+            <div style={{ color: '#666' }}>{t(language, 'adminReports.selectPrompt')}</div>
           )}
         </div>
         <div className="button-row">
           <button className="primary" onClick={handleResolve} disabled={!selectedReport}>
-            Giải quyết báo cáo
+            {t(language, 'adminReports.resolve')}
           </button>
           <button className="ghost" onClick={handleMarkProcessing} disabled={!selectedReport}>
-            Đánh dấu đang xử lý
+            {t(language, 'adminReports.markProcessing')}
           </button>
         </div>
       </aside>
