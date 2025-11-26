@@ -18,7 +18,10 @@
     "close": "Đóng",
     "confirm": "Xác nhận",
     "yes": "Có",
-    "no": "Không"
+    "no": "Không",
+    "next": "Tiếp tục",
+    "back": "Quay lại",
+    "publish": "Đăng tải"
   },
   "language": {
     "title": "Ngôn ngữ & Khu vực",
@@ -466,5 +469,273 @@
       "addPhotos": "Thêm ảnh",
       "coverTag": "Ảnh bìa"
     }
+  },
+  "hostStay": {
+    "amenities": {
+      "title": "Chỗ ở của bạn có những tiện nghi nào?",
+      "wifi": "Wi-Fi",
+      "tv": "TV",
+      "ac": "Điều hoà",
+      "kitchen": "Nhà bếp",
+      "washer": "Máy giặt",
+      "dryer": "Máy sấy",
+      "heating": "Máy sưởi",
+      "iron": "Bàn ủi",
+      "gym": "Phòng gym",
+      "freeParking": "Đỗ xe miễn phí",
+      "hotTub": "Bồn tắm nước nóng",
+      "pool": "Hồ bơi",
+      "bbq": "Bếp nướng BBQ",
+      "evCharger": "Trạm sạc xe điện",
+      "smokeAlarm": "Báo khói",
+      "breakfast": "Bữa sáng",
+      "workspace": "Khu làm việc riêng",
+      "kingBed": "Giường king",
+      "hairDryer": "Máy sấy tóc"
+    },
+    "choose": {
+      "title": "Chỗ ở của bạn thuộc loại nào?",
+      "house": "Nhà riêng",
+      "apartment": "Căn hộ",
+      "guestHouse": "Nhà khách",
+      "hotel": "Khách sạn"
+    },
+    "description": {
+      "title": "Tạo mô tả cho chỗ ở của bạn",
+      "placeholder": "Một không gian rộng rãi và khác biệt, nơi cả nhóm có thể thư giãn và tận hưởng.",
+      "count": "{{count}}/70"
+    },
+    "details": {
+      "title": "Bắt đầu với những thông tin cơ bản",
+      "guestCapacityTitle": "Có thể đón bao nhiêu khách?",
+      "guestCapacitySubtitle": "Thiết lập số lượng khách, phòng ngủ, giường và phòng tắm mà chỗ ở của bạn cung cấp.",
+      "maxGuests": "Số khách tối đa",
+      "bedrooms": "Phòng ngủ",
+      "beds": "Giường",
+      "bathrooms": "Phòng tắm",
+      "stayDurationTitle": "Thời gian lưu trú",
+      "minNights": "Số đêm tối thiểu",
+      "maxNights": "Số đêm tối đa",
+      "prepDays": "Số ngày chuẩn bị giữa các lượt đặt",
+      "advanceNotice": "Thông báo trước (ngày)"
+    },
+    "discount": {
+      "title": "Thêm ưu đãi",
+      "longStay": "Ưu đãi cho kỳ lưu trú dài",
+      "monthly": "Giảm giá theo tháng",
+      "monthlyDesc": "Áp dụng cho các lượt ở từ 28 đêm trở lên",
+      "weekly": "Giảm giá theo tuần",
+      "weeklyDesc": "Áp dụng cho các lượt ở từ 7 đêm trở lên",
+      "seasonal": "Ưu đãi theo mùa",
+      "seasonLabel": "Giảm giá theo mùa",
+      "addSeason": "Thêm ưu đãi theo mùa",
+      "addSeasonDesc": "Áp dụng ưu đãi cho ngày bạn chọn",
+      "earlyBird": "Ưu đãi đặt sớm",
+      "earlyLabel": "Khuyến mãi đặt sớm",
+      "earlyTitle": "Đặt trước ≥ {{days}} ngày",
+      "addEarly": "Thêm ưu đãi đặt sớm",
+      "addEarlyDesc": "Giảm giá cho khách đặt trước từ xa",
+      "modal": {
+        "monthly": "Chỉnh sửa ưu đãi theo tháng",
+        "weekly": "Chỉnh sửa ưu đãi theo tuần",
+        "season": "Thêm ưu đãi theo mùa",
+        "early": "Thêm ưu đãi đặt sớm"
+      },
+      "label": {
+        "percent": "Phần trăm giảm (%)",
+        "from": "Ngày bắt đầu",
+        "to": "Ngày kết thúc",
+        "daysBefore": "Số ngày đặt trước"
+      },
+      "error": {
+        "percent0to100": "Phần trăm phải từ 0 đến 100",
+        "percent1to100": "Phần trăm phải từ 1 đến 100",
+        "selectDate": "Vui lòng chọn đầy đủ ngày bắt đầu và kết thúc",
+        "pastDate": "Ngày không được ở trong quá khứ",
+        "startBeforeEnd": "Ngày bắt đầu phải trước ngày kết thúc",
+        "seasonTooLong": "Ưu đãi theo mùa không được dài hơn 1 năm",
+        "seasonTooFar": "Ưu đãi theo mùa không được bắt đầu sau 1 năm kể từ hôm nay",
+        "seasonOverlap": "Khoảng ngày này bị trùng với ưu đãi theo mùa khác",
+        "daysPositive": "Số ngày phải lớn hơn 0",
+        "daysMax365": "Ưu đãi đặt sớm không quá 365 ngày",
+        "duplicateEarly": "Ưu đãi đặt sớm này đã tồn tại"
+      }
+    },
+    "fees": {
+      "title": "Thêm các loại phí cho chỗ ở của bạn",
+      "section": {
+        "standard": "Phí tiêu chuẩn",
+        "extra": "Phí khách thêm"
+      },
+      "cleaning": {
+        "title": "Phí dọn dẹp",
+        "subtitle": "Phí dọn dẹp cố định cho mỗi lượt đặt"
+      },
+      "service": {
+        "title": "Phí dịch vụ (%)",
+        "subtitle": "Phí nền tảng (không chỉnh sửa)"
+      },
+      "tax": {
+        "title": "Thuế (%)",
+        "subtitle": "Thuế nhà nước (không chỉnh sửa)"
+      },
+      "extraThreshold": {
+        "title": "Ngưỡng khách thêm",
+        "subtitle": "Khách vượt quá số này sẽ bị tính phí"
+      },
+      "extraFee": {
+        "title": "Phí khách thêm",
+        "subtitle": "Phí cho mỗi khách vượt ngưỡng"
+      },
+      "unit": {
+        "guests": "khách"
+      },
+      "modal": {
+        "title": "Nhập giá trị"
+      },
+      "error": {
+        "thresholdMin": "Số khách phải từ 1 trở lên",
+        "thresholdMax": "Không được vượt quá số khách tối đa ({{max}})"
+      }
+    },
+    "locate": {
+      "title": "Chỗ ở của bạn nằm ở đâu?",
+      "searchPlaceholder": "Di chuyển bản đồ để chọn vị trí",
+      "useCurrent": "Dùng vị trí hiện tại",
+      "loading": "Đang lấy vị trí...",
+      "error": {
+        "noGps": "Trình duyệt không hỗ trợ GPS.",
+        "cannotAccess": "Không thể truy cập vị trí của bạn. Vui lòng thử lại."
+      }
+    },
+    "photos": {
+      "title": "Thêm ảnh cho từng khu vực trong chỗ ở của bạn",
+      "warningTitle": "Lưu ý:",
+      "warningContent": "Ảnh chỉ được lưu tạm thời. Tải lại trang hoặc thoát trước khi đăng có thể làm mất ảnh.",
+      "add": "Thêm",
+      "cover": {
+        "title": "Ảnh đại diện",
+        "description": "Ảnh này sẽ được dùng làm hình thu nhỏ chính của chỗ ở.",
+        "none": "Chưa có ảnh đại diện.",
+        "badge": "Ảnh đại diện"
+      },
+      "category": {
+        "bedroom": "Phòng ngủ",
+        "bathroom": "Phòng tắm",
+        "livingroom": "Phòng khách",
+        "kitchen": "Nhà bếp",
+        "other": "Khác"
+      }
+    },
+    "rules": {
+      "title": "Nội quy & An toàn",
+      "checkInOut": {
+        "title": "Giờ nhận – trả phòng",
+        "after": "Nhận phòng sau",
+        "before": "Trả phòng trước"
+      },
+      "house": {
+        "title": "Nội quy nhà",
+        "quietHours": "Giờ yên tĩnh (22:00 – 07:00)",
+        "noParties": "Không tổ chức tiệc hoặc sự kiện",
+        "noVisitors": "Không tiếp khách không đăng ký",
+        "noChildren": "Không phù hợp cho trẻ em",
+        "noShoes": "Không mang giày dép vào nhà",
+        "noFoodBedrooms": "Không ăn uống trong phòng ngủ"
+      },
+      "quick": {
+        "title": "Quy tắc nhanh",
+        "noSmoking": "Không hút thuốc",
+        "noFlames": "Không dùng lửa (nến, bếp ga)",
+        "petsAllowed": "Cho phép thú cưng"
+      },
+      "safety": {
+        "title": "An toàn & Bảo mật",
+        "enhancedCleaning": "Vệ sinh tăng cường",
+        "sanitized": "Đã khử khuẩn bề mặt",
+        "coAlarm": "Báo động khí CO",
+        "smokeAlarm": "Báo cháy"
+      },
+      "selfCheckIn": {
+        "title": "Tự nhận phòng",
+        "available": "Hỗ trợ tự nhận phòng",
+        "select": "Chọn phương thức",
+        "methods": {
+          "lockbox": "Hộp khóa",
+          "smartlock": "Khóa thông minh",
+          "keypad": "Bàn phím mã số",
+          "staff": "Nhân viên tòa nhà",
+          "other": "Khác"
+        }
+      }
+    },
+    "title": {
+      "heading": "Hãy đặt một tiêu đề cho chỗ ở của bạn",
+      "placeholder": "Viết gì đó..."
+    },
+    "typePlace": {
+      "title": "Khách sẽ sử dụng loại chỗ ở nào?",
+      "entire": "Toàn bộ chỗ ở",
+      "entireDesc": "Khách có toàn quyền sử dụng toàn bộ chỗ ở.",
+      "room": "Một phòng riêng",
+      "roomDesc": "Khách có phòng riêng và dùng chung các khu vực khác."
+    },
+    "weekdayPrice": {
+      "title": "Hãy đặt giá cơ bản cho ngày trong tuần",
+      "placeholder": "200",
+      "guestSee": "Giá ước tính hiển thị cho khách:",
+      "includes": "(Đã bao gồm {{service}}% phí dịch vụ + {{tax}}% thuế)"
+    },
+    "weekendPrice": {
+      "title": "Hãy đặt giá cơ bản cho cuối tuần",
+      "guestPrice": "Giá khách phải trả sau phí:",
+      "fees": "(Bao gồm {{service}}% phí dịch vụ + {{tax}}% thuế)",
+      "increase": "Mức tăng giá cuối tuần"
+    },
+    "preview": {
+      "cannotPublish": "Không thể đăng",
+      "basicInfo": "Thông tin cơ bản",
+      "propertyType": "Loại bất động sản",
+      "typeOfPlace": "Dạng chỗ ở",
+      "bedrooms": "Phòng ngủ",
+      "beds": "Giường",
+      "bathrooms": "Phòng tắm",
+      "accommodates": "Số khách tối đa",
+      "location": "Vị trí",
+      "address": "Địa chỉ",
+      "city": "Thành phố",
+      "country": "Quốc gia",
+      "amenities": "Tiện ích",
+      "noAmenities": "Chưa chọn tiện ích nào",
+      "pricing": "Giá & Phí",
+      "basePrice": "Giá cơ bản",
+      "weekendMultiplier": "Hệ số cuối tuần",
+      "cleaningFee": "Phí dọn dẹp",
+      "extraFee": "Phí khách thêm",
+      "extraThreshold": "Ngưỡng tính khách thêm",
+      "serviceFee": "Phí dịch vụ",
+      "tax": "Thuế",
+      "discounts": "Giảm giá",
+      "weekly": "Giảm giá theo tuần",
+      "monthly": "Giảm giá theo tháng",
+      "seasonal": "Giảm giá theo mùa",
+      "earlyBird": "Giảm giá đặt sớm",
+      "bookBefore": "Đặt trước ≥ {{days}} ngày → ",
+      "rulesSafety": "Nội quy & An toàn",
+      "houseRules": "Nội quy nhà",
+      "quickRules": "Nội quy nhanh",
+      "safety": "An toàn",
+      "selfCheckin": "Tự nhận phòng",
+      "method": "Phương thức:",
+      "photos": "Hình ảnh"
+    }
+  },
+  "becomeHost": {
+    "back": "Quay lại",
+    "title": "Bạn muốn đăng nội dung nào?",
+    "home": "Lưu trú",
+    "experience": "Trải nghiệm",
+    "homeAlt": "Nơi lưu trú",
+    "experienceAlt": "Trải nghiệm hoạt động"
   }
 }
