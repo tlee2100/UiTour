@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { useHost } from "../../contexts/HostContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 import "./HostExperience.css";
 
 export default function HostExperienceCreateMaxGuests() {
   const { updateField, experienceData, loadingDraft } = useHost();
+  const { language } = useLanguage();
 
   // Load từ context
   const initialTime = experienceData.booking?.timeSlots?.[0]?.startTime || null;
@@ -15,24 +18,22 @@ export default function HostExperienceCreateMaxGuests() {
   const now = new Date();
   const parsed = initialTime ? initialTime.split(/[: ]/) : null;
 
-  const [hour, setHour] = useState(parsed ? parsed[0] : String(((now.getHours() + 11) % 12) + 1).padStart(2, "0"));
-  const [minute, setMinute] = useState(parsed ? parsed[1] : String(now.getMinutes()).padStart(2, "0"));
+  const [hour, setHour] = useState(
+    parsed ? parsed[0] : String(((now.getHours() + 11) % 12) + 1).padStart(2, "0")
+  );
+  const [minute, setMinute] = useState(
+    parsed ? parsed[1] : String(now.getMinutes()).padStart(2, "0")
+  );
   const [ampm, setAmpm] = useState(parsed ? parsed[2] : now.getHours() >= 12 ? "PM" : "AM");
 
   const [maxGuests, setMaxGuests] = useState(initialMax);
-
-  // ⚡ Price: dùng number, tránh NaN và tránh "" gây validate fail
   const [pricePerGuest, setPricePerGuest] = useState(initialPrice);
-
-  // Duration Hours
   const [durationHours, setDurationHours] = useState(initialDuration);
 
   const hours = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
   const minutesArr = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
 
-  // ===========================
-  // Sync lại draft từ context
-  // ===========================
+  // Sync draft
   useEffect(() => {
     if (loadingDraft) return;
 
@@ -53,40 +54,27 @@ export default function HostExperienceCreateMaxGuests() {
     }
   }, [loadingDraft, experienceData]);
 
-  // ===========================
-  // Auto save time slot
-  // ===========================
+  // Auto save time
   useEffect(() => {
     const startTime = `${hour}:${minute} ${ampm}`;
     updateField("booking", { timeSlots: [{ startTime }] });
   }, [hour, minute, ampm]);
 
-  // ===========================
   // Auto save max guests
-  // ===========================
   useEffect(() => {
     updateField("capacity", { maxGuests });
   }, [maxGuests]);
 
-  // ===========================
   // Auto save price
-  // ===========================
   useEffect(() => {
-    if (pricePerGuest === "") {
-      // Khi user đang xoá, không save gì cả
-      return;
-    }
+    if (pricePerGuest === "") return;
 
-    // Bình thường thì save số
     updateField("pricing", {
-      basePrice: Number(pricePerGuest)
+      basePrice: Number(pricePerGuest),
     });
   }, [pricePerGuest]);
 
-
-  // ===========================
   // Auto save duration
-  // ===========================
   useEffect(() => {
     if (durationHours === "") return;
 
@@ -96,11 +84,17 @@ export default function HostExperienceCreateMaxGuests() {
   return (
     <div className="he-page">
       <main className="he-main he-time">
-        <h1 className="he-title">Pick a time, duration and number of guests</h1>
+
+        {/* TITLE */}
+        <h1 className="he-title">
+          {t(language, "hostExperience.maxGuests.title")}
+        </h1>
 
         {/* START TIME */}
         <div className="he-time-card">
-          <div className="he-time-label">Start time</div>
+          <div className="he-time-label">
+            {t(language, "hostExperience.maxGuests.startTime")}
+          </div>
 
           <div className="he-time-columns">
             <select className="he-time-select" value={hour} onChange={(e) => setHour(e.target.value)}>
@@ -122,13 +116,16 @@ export default function HostExperienceCreateMaxGuests() {
 
         {/* CAPACITY + PRICE */}
         <div className="he-price-card">
-          <div className="he-time-label">Capacity & pricing</div>
+
+          <div className="he-time-label">
+            {t(language, "hostExperience.maxGuests.capacityPricing")}
+          </div>
 
           <div className="he-price-grid">
 
-            {/* Max Guests */}
+            {/* MAX GUESTS */}
             <div className="he-field">
-              <label>Max guests</label>
+              <label>{t(language, "hostExperience.maxGuests.maxGuests")}</label>
               <select
                 className="he-input"
                 value={maxGuests}
@@ -140,15 +137,17 @@ export default function HostExperienceCreateMaxGuests() {
               </select>
             </div>
 
-            {/* Duration Hours */}
+            {/* DURATION */}
             <div className="he-field">
-              <label>Duration (hours)</label>
+              <label>{t(language, "hostExperience.maxGuests.durationHours")}</label>
+
               <input
                 type="number"
                 className="he-input"
                 min={1}
                 max={24}
                 value={durationHours}
+                placeholder={t(language, "hostExperience.maxGuests.enterDuration")}
                 onChange={(e) => {
                   const val = e.target.value;
                   if (val === "") {
@@ -163,21 +162,25 @@ export default function HostExperienceCreateMaxGuests() {
                   if (v > 24) v = 24;
                   setDurationHours(v);
                 }}
-                placeholder="Enter duration..."
               />
-              <div className="he-time-hint">Duration must be between 1–24</div>
+
+              <div className="he-time-hint">
+                {t(language, "hostExperience.maxGuests.durationHint")}
+              </div>
             </div>
 
             {/* PRICE */}
             <div className="he-field">
-              <label>Price per guest (USD)</label>
+              <label>
+                {t(language, "hostExperience.maxGuests.pricePerGuestUSD")}
+              </label>
 
               <input
                 className="he-input"
                 type="number"
                 min={1}
                 value={pricePerGuest}
-                placeholder="Enter price..."
+                placeholder={t(language, "hostExperience.maxGuests.enterPrice")}
                 onChange={(e) => {
                   const v = e.target.value;
                   const num = Number(v);
@@ -190,6 +193,7 @@ export default function HostExperienceCreateMaxGuests() {
                 }}
               />
             </div>
+
           </div>
         </div>
       </main>

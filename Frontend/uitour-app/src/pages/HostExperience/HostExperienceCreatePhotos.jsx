@@ -1,7 +1,9 @@
 import { useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useHost } from "../../contexts/HostContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { Icon } from "@iconify/react";
+import { t } from "../../utils/translations";
 import Loading from "../../components/Loading";
 import "./HostExperience.css";
 
@@ -30,12 +32,14 @@ export default function HostExperienceCreatePhotos() {
     type,
   } = useHost();
 
+  const { language } = useLanguage();
+
   useEffect(() => {
     if (type !== "experience") setFlowType("experience");
   }, [type, setFlowType]);
 
   if (loadingDraft || !photosReady) {
-    return <Loading message="Loading your photos..." />;
+    return <Loading message={t(language, "hostExperience.photos.loading")} />;
   }
 
   const photos = experiencePhotosRAM || [];
@@ -138,11 +142,16 @@ export default function HostExperienceCreatePhotos() {
   return (
     <div className="he-page">
       <main className="he-main">
-        <h1 className="he-title">Add photos that showcase your skills</h1>
+
+        <h1 className="he-title">
+          {t(language, "hostExperience.photos.title")}
+        </h1>
+
         <div className="he-photo-warning">
-          ⚠️ <strong>Warning:</strong> Photos are stored temporarily.
-          Reloading or leaving the hosting setup before publishing will cause them to be lost.
+          ⚠️ <strong>{t(language, "hostExperience.photos.warningTitle")}</strong>
+          {t(language, "hostExperience.photos.warningMessage")}
         </div>
+
         {/* DROPZONE */}
         <div
           className={`he-photos-dropzone ${photos.length === 0 ? "large" : "small"}`}
@@ -151,11 +160,12 @@ export default function HostExperienceCreatePhotos() {
         >
           <div className="he-photos-placeholder">
             <Icon icon="mdi:camera-outline" width="56" height="56" />
+
             <button
               className="he-tertiary-btn"
               onClick={() => inputRef.current?.click()}
             >
-              Add photos
+              {t(language, "hostExperience.photos.addPhotos")}
             </button>
 
             <input
@@ -190,7 +200,12 @@ export default function HostExperienceCreatePhotos() {
                 >
                   <div className="he-photo-thumb">
                     <img src={p.preview} alt="photo" />
-                    {p.isCover && <div className="he-photo-cover-badge">Cover</div>}
+
+                    {p.isCover && (
+                      <div className="he-photo-cover-badge">
+                        {t(language, "hostExperience.photos.coverTag")}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
