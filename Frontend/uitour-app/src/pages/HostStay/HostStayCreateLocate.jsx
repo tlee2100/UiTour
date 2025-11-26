@@ -2,9 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useHost } from "../../contexts/HostContext";
 import LocationPicker from "../../components/LocationPicker";
 import "./HostStay.css";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 
 export default function HostStayCreateLocate() {
   const { stayData, updateField, setFlowType, type } = useHost();
+  const { language } = useLanguage();
+
   const location = stayData.location || {};
 
   // Ensure correct flow
@@ -19,20 +23,15 @@ export default function HostStayCreateLocate() {
   ]);
   const [loading, setLoading] = useState(false);
 
-  // ==========================================
-  // Reverse Geocode → lấy đúng 3 cấp: 
-  // addressLine, city, country
-  // ==========================================
+  // Reverse geocode
   const reverseGeocode = async (lat, lng) => {
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
       );
       const data = await res.json();
-
       const addr = data.address || {};
 
-      // city fallback chain theo chuẩn OSM
       const city =
         addr.city ||
         addr.town ||
@@ -42,7 +41,6 @@ export default function HostStayCreateLocate() {
         "";
 
       const country = addr.country || "";
-
       const addressLine = data.display_name || "";
 
       return { addressLine, city, country };
@@ -51,14 +49,9 @@ export default function HostStayCreateLocate() {
     }
   };
 
-  // ============================
   // When map changes
-  // ============================
   const handleMapChange = async ({ latitude, longitude }) => {
-    const { addressLine, city, country } = await reverseGeocode(
-      latitude,
-      longitude
-    );
+    const { addressLine, city, country } = await reverseGeocode(latitude, longitude);
 
     updateField("location", {
       lat: latitude,
@@ -72,12 +65,10 @@ export default function HostStayCreateLocate() {
     setQuery(addressLine);
   };
 
-  // ============================
-  // Use current GPS
-  // ============================
+  // Use GPS
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
-      alert("Trình duyệt không hỗ trợ định vị GPS.");
+      alert(t(language, "hostStay.locate.error.noGps"));
       return;
     }
 
@@ -86,10 +77,8 @@ export default function HostStayCreateLocate() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
-        const { addressLine, city, country } = await reverseGeocode(
-          latitude,
-          longitude
-        );
+
+        const { addressLine, city, country } = await reverseGeocode(latitude, longitude);
 
         updateField("location", {
           lat: latitude,
@@ -104,7 +93,7 @@ export default function HostStayCreateLocate() {
         setLoading(false);
       },
       () => {
-        alert("Không thể lấy vị trí hiện tại. Vui lòng thử lại.");
+        alert(t(language, "hostStay.locate.error.cannotAccess"));
         setLoading(false);
       }
     );
@@ -113,7 +102,10 @@ export default function HostStayCreateLocate() {
   return (
     <div className="hs-page">
       <main className="hs-main">
-        <h1 className="hs-title">Where’s your place located?</h1>
+
+        <h1 className="hs-title">
+          {t(language, "hostStay.locate.title")}
+        </h1>
 
         <div className="hs-map-card">
           <div className="hs-map-search-row">
@@ -136,7 +128,7 @@ export default function HostStayCreateLocate() {
 
               <input
                 type="text"
-                placeholder="Move the map to select a location"
+                placeholder={t(language, "hostStay.locate.searchPlaceholder")}
                 className="hs-map-search-input"
                 value={query}
                 readOnly
@@ -153,7 +145,9 @@ export default function HostStayCreateLocate() {
               onClick={handleUseCurrentLocation}
               disabled={loading}
             >
-              {loading ? "Locating..." : "📍 Use current location"}
+              {loading
+                ? t(language, "hostStay.locate.loading")
+                : `📍 ${t(language, "hostStay.locate.useCurrent")}`}
             </button>
           </div>
 

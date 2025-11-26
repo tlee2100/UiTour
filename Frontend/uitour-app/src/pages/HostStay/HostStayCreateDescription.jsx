@@ -1,10 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import "./HostStay.css";
 import { useHost } from "../../contexts/HostContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 
 export default function HostStayCreateDescription() {
   const navigate = useNavigate();
   const { stayData, updateField, validateStep } = useHost();
+  const { language } = useLanguage();
+
   const description = stayData.description || "";
 
   const handleChange = (e) => {
@@ -22,17 +26,25 @@ export default function HostStayCreateDescription() {
   return (
     <div className="hs-page">
       <main className="hs-desc-main">
-        <h1 className="hs-desc-heading">Create your description</h1>
+
+        <h1 className="hs-desc-heading">
+          {t(language, "hostStay.description.title")}
+        </h1>
+
         <div className="hs-desc-box">
           <textarea
             className="hs-desc-input"
-            placeholder="The whole group will be comfortable in this spacious and unique space."
+            placeholder={t(language, "hostStay.description.placeholder")}
             value={description}
             maxLength={70}
             onChange={handleChange}
           />
-          <div className="hs-desc-count">{description.length}/70</div>
+
+          <div className="hs-desc-count">
+            {t(language, "hostStay.description.count").replace("{{count}}", description.length)}
+          </div>
         </div>
+
       </main>
     </div>
   );

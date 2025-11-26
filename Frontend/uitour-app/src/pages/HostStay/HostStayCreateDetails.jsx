@@ -1,10 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import "./HostStay.css";
 import { useHost } from "../../contexts/HostContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 
 export default function HostStayCreateDetails() {
   const navigate = useNavigate();
   const { stayData, updateField, validateStep } = useHost();
+  const { language } = useLanguage();
 
   // Rooms & Guests
   const {
@@ -22,16 +25,16 @@ export default function HostStayCreateDetails() {
     advanceNotice = 0,
   } = pricing;
 
-  // 🟢 Update field in root (details fields)
+  // Update root details fields
   const handleChange = (field, value) => {
     updateField("details", { [field]: value });
   };
 
-  // 🟢 Update nested pricing fields
+  // Update nested pricing
   const handlePricingChange = (field, value) => {
     updateField("pricing", {
       ...pricing,
-      [field]: value
+      [field]: value,
     });
   };
 
@@ -43,55 +46,70 @@ export default function HostStayCreateDetails() {
   return (
     <div className="hs-page">
       <main className="hs-main">
-        <h1 className="hs-title">Let’s start with the basics</h1>
+        <h1 className="hs-title">
+          {t(language, "hostStay.details.title")}
+        </h1>
 
         {/* Guests, Rooms, Bathrooms */}
         <div className="hs-room-section">
-          <h2 className="hs-room-title">How many people can stay here?</h2>
+          <h2 className="hs-room-title">
+            {t(language, "hostStay.details.guestCapacityTitle")}
+          </h2>
+
           <p className="hs-room-subtitle">
-            Set the number of guests, bedrooms, beds and bathrooms available in your place.
+            {t(language, "hostStay.details.guestCapacitySubtitle")}
           </p>
 
           <div className="hs-room-controls">
+
             <RoomControl
-              label="Max guests"
+              label={t(language, "hostStay.details.maxGuests")}
               value={accommodates}
               onIncrease={() => handleChange("accommodates", accommodates + 1)}
-              onDecrease={() => handleChange("accommodates", Math.max(1, accommodates - 1))}
+              onDecrease={() =>
+                handleChange("accommodates", Math.max(1, accommodates - 1))
+              }
             />
 
             <RoomControl
-              label="Bedrooms"
+              label={t(language, "hostStay.details.bedrooms")}
               value={bedrooms}
               onIncrease={() => handleChange("bedrooms", bedrooms + 1)}
-              onDecrease={() => handleChange("bedrooms", Math.max(0, bedrooms - 1))}
+              onDecrease={() =>
+                handleChange("bedrooms", Math.max(0, bedrooms - 1))
+              }
             />
 
             <RoomControl
-              label="Beds"
+              label={t(language, "hostStay.details.beds")}
               value={beds}
               onIncrease={() => handleChange("beds", beds + 1)}
-              onDecrease={() => handleChange("beds", Math.max(0, beds - 1))}
+              onDecrease={() =>
+                handleChange("beds", Math.max(0, beds - 1))
+              }
             />
 
             <RoomControl
-              label="Bathrooms"
+              label={t(language, "hostStay.details.bathrooms")}
               value={bathrooms}
               onIncrease={() => handleChange("bathrooms", bathrooms + 1)}
-              onDecrease={() => handleChange("bathrooms", Math.max(0, bathrooms - 1))}
+              onDecrease={() =>
+                handleChange("bathrooms", Math.max(0, bathrooms - 1))
+              }
             />
           </div>
         </div>
 
-        {/* 🟦 Min / Max Nights + NEW FIELDS */}
+        {/* Stay duration */}
         <div className="hs-room-section">
-          <h2 className="hs-room-title">Guest stay duration</h2>
+          <h2 className="hs-room-title">
+            {t(language, "hostStay.details.stayDurationTitle")}
+          </h2>
 
           <div className="hs-room-controls">
 
-            {/* MIN NIGHTS */}
             <RoomControl
-              label="Min nights"
+              label={t(language, "hostStay.details.minNights")}
               value={minNights}
               onIncrease={() =>
                 handlePricingChange("minNights", Math.min(minNights + 1, maxNights))
@@ -101,9 +119,8 @@ export default function HostStayCreateDetails() {
               }
             />
 
-            {/* MAX NIGHTS */}
             <RoomControl
-              label="Max nights"
+              label={t(language, "hostStay.details.maxNights")}
               value={maxNights}
               onIncrease={() =>
                 handlePricingChange("maxNights", Math.min(30, maxNights + 1))
@@ -113,9 +130,8 @@ export default function HostStayCreateDetails() {
               }
             />
 
-            {/* NEW: PREPARATION TIME */}
             <RoomControl
-              label="Prep days between bookings"
+              label={t(language, "hostStay.details.prepDays")}
               value={preparationTime}
               onIncrease={() =>
                 handlePricingChange("preparationTime", preparationTime + 1)
@@ -125,9 +141,8 @@ export default function HostStayCreateDetails() {
               }
             />
 
-            {/* NEW: ADVANCE NOTICE */}
             <RoomControl
-              label="Advance notice (days)"
+              label={t(language, "hostStay.details.advanceNotice")}
               value={advanceNotice}
               onIncrease={() =>
                 handlePricingChange("advanceNotice", advanceNotice + 1)
@@ -136,9 +151,9 @@ export default function HostStayCreateDetails() {
                 handlePricingChange("advanceNotice", Math.max(0, advanceNotice - 1))
               }
             />
+
           </div>
         </div>
-
       </main>
     </div>
   );
@@ -148,6 +163,7 @@ function RoomControl({ label, value, onIncrease, onDecrease }) {
   return (
     <div className="hs-room-control">
       <span className="hs-room-label">{label}</span>
+
       <div className="hs-room-actions">
         <button className="hs-circle-btn" onClick={onDecrease}>–</button>
         <span className="hs-room-value">{value}</span>

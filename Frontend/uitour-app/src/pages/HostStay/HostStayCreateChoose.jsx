@@ -1,17 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
-import logo from "../../assets/UiTour.png";
 import "./HostStay.css";
 import { useHost } from "../../contexts/HostContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 
 export default function HostStayCreateChoose() {
-  const { stayData, updateField, validateStep } = useHost();
+  const { stayData, updateField } = useHost();
+  const { language } = useLanguage();
 
   const categories = [
-    { id: 1, label: "House", icon: "mdi:home-outline" },
-    { id: 2, label: "Apartment", icon: "ph:building-apartment-light" },
-    { id: 3, label: "Guest house", icon: "hugeicons:house-04" },
-    { id: 4, label: "Hotel", icon: "hugeicons:hotel-01" },
+    { id: 1, label: t(language, "hostStay.choose.house"), icon: "mdi:home-outline" },
+    { id: 2, label: t(language, "hostStay.choose.apartment"), icon: "ph:building-apartment-light" },
+    { id: 3, label: t(language, "hostStay.choose.guestHouse"), icon: "hugeicons:house-04" },
+    { id: 4, label: t(language, "hostStay.choose.hotel"), icon: "hugeicons:hotel-01" }
   ];
 
   const handleSelect = (id, label) => {
@@ -23,11 +25,9 @@ export default function HostStayCreateChoose() {
 
   return (
     <div className="hs-page hs-choose">
-      {/* Header */}
-      {/* Main */}
       <main className="hs-main hs-choose-main">
         <h1 className="hs-choose-title">
-          Which of these best describes your place?
+          {t(language, "hostStay.choose.title")}
         </h1>
 
         <div className="hs-choose-grid">
@@ -35,8 +35,9 @@ export default function HostStayCreateChoose() {
             <button
               key={c.id}
               onClick={() => handleSelect(c.id, c.label)}
-              className={`hs-card ${stayData.propertyTypeID === c.id ? "hs-card--active" : ""
-                }`}
+              className={`hs-card ${
+                stayData.propertyTypeID === c.id ? "hs-card--active" : ""
+              }`}
             >
               <Icon icon={c.icon} width="48" height="48" />
               <span>{c.label}</span>
