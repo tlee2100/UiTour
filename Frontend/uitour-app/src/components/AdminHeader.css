@@ -1,7 +1,7 @@
 /* Top Dark Grey Strip */
 .admin-header-top {
   height: 4px;
-  background: #2d2d2d;
+  background: var(--uitour-color);
   width: 100%;
 }
 
@@ -10,9 +10,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 40px;
+  padding: 24px 160px;
   background: #fff;
   border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 900;
 }
 
 /* Left - Logo */
@@ -29,37 +32,47 @@
 
 /* Center - Navigation Tabs */
 .admin-header-nav {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 32px;
   flex: 1;
   justify-content: center;
+  padding-bottom: 8px;
 }
 
 .admin-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  position: relative;
   text-decoration: none;
   color: var(--black);
-  padding: 8px 12px;
-  border-radius: 8px;
-  transition: background-color 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 0;
+  transition: color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
 }
 
 .admin-nav-item:hover {
-  background-color: #f5f5f5;
+  color: var(--uitour-color);
 }
 
 .admin-nav-item.active {
-  border-bottom: 3px solid var(--black);
+  color: var(--uitour-color);
   font-weight: 600;
 }
 
-.admin-nav-item span {
-  font-size: 14px;
-  font-weight: 500;
+.admin-nav-highlight {
+  position: absolute;
+  bottom: 0;
+  height: 3px;
+  background: var(--uitour-color);
+  border-radius: 999px;
+  transition: transform 0.3s ease, width 0.3s ease;
+  width: 0;
+  left: 0;
 }
 
 /* Right - User Controls */

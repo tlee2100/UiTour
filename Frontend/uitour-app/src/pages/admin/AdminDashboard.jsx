@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './admin.css';
 import adminAPI from '../../services/adminAPI';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { t } from '../../utils/translations';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -12,6 +14,7 @@ export default function AdminDashboard() {
     pendingReports: 0
   });
   const [loading, setLoading] = useState(true);
+  const { language } = useLanguage();
 
   useEffect(() => {
     loadStats();
@@ -51,42 +54,47 @@ export default function AdminDashboard() {
     <div className="admin-page">
       <div className="kpi-grid">
         <div className="kpi-card">
-          <div className="kpi-title">Tổng người dùng</div>
+          <div className="kpi-title">{t(language, 'adminDashboard.totalUsers')}</div>
           <div className="kpi-value">{loading ? '...' : formatNumber(stats.totalUsers)}</div>
         </div>
-        <div 
-          className="kpi-card" 
+        <div
+          className="kpi-card clickable"
           onClick={() => navigate('/admin/posts')}
-          style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          <div className="kpi-title">Bài đăng chờ duyệt</div>
+          <div className="kpi-title">{t(language, 'adminDashboard.pendingPosts')}</div>
           <div className="kpi-value">{loading ? '...' : formatNumber(stats.pendingPosts)}</div>
           {stats.pendingPosts > 0 && (
             <div style={{ fontSize: '12px', color: '#f59e0b', marginTop: '4px' }}>
-              Click để xem chi tiết →
+              {t(language, 'adminDashboard.clickToView')}
             </div>
           )}
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">Doanh thu tháng này</div>
+          <div className="kpi-title">{t(language, 'adminDashboard.monthRevenue')}</div>
           <div className="kpi-value">{loading ? '...' : `₫${formatNumber(stats.revenue)}`}</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">Báo cáo chưa xử lý</div>
+          <div className="kpi-title">{t(language, 'adminDashboard.unresolvedReports')}</div>
           <div className="kpi-value">{loading ? '...' : formatNumber(stats.pendingReports)}</div>
         </div>
       </div>
       <div className="chart-grid">
-        <div className="chart-card">Doanh thu theo tháng (mock)</div>
-        <div className="chart-card">Tăng trưởng người dùng (mock)</div>
+        <div className="chart-card">{t(language, 'adminDashboard.revenueByMonth')}</div>
+        <div className="chart-card">{t(language, 'adminDashboard.userGrowth')}</div>
       </div>
       <div className="table-card">
-        <div className="table-title">Báo cáo mới nhất</div>
+        <div className="table-title">{t(language, 'adminDashboard.latestReports')}</div>
         <div className="table">
-          <div className="row head"><div>ID</div><div>Người báo cáo</div><div>Lý do</div><div>Ngày</div><div>Trạng thái</div></div>
-          <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>Chưa có báo cáo</div>
+          <div className="row head">
+            <div>ID</div>
+            <div>{t(language, 'adminDashboard.reporter')}</div>
+            <div>{t(language, 'adminDashboard.reason')}</div>
+            <div>{t(language, 'adminDashboard.date')}</div>
+            <div>{t(language, 'adminDashboard.status')}</div>
+          </div>
+          <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+            {t(language, 'adminDashboard.noReports')}
+          </div>
         </div>
       </div>
     </div>
