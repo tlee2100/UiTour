@@ -293,6 +293,22 @@ export default function HostToday() {
     navigate('/');
   };
 
+    // ========== NAVBAR REFS ==========
+  const navRef = React.useRef(null);
+  const highlightRef = React.useRef(null);
+
+const navItems = useMemo(() => [
+    { id: "today", label: t(language, 'host.today'), path: "/host/today" },
+    { id: "listings", label: t(language, 'host.listings'), path: "/host/listings" },
+    { id: "messages", label: t(language, 'host.messages'), path: "/host/messages" }
+  ], [language]);
+
+  const isActiveNav = (path) => {
+    if (path === "/host/listings" && location.pathname.startsWith("/host/stay")) return true;
+    if (path === "/host/listings" && location.pathname.startsWith("/host/experience")) return true;
+    return location.pathname.startsWith(path);
+  };
+
   return (
     <div className="host-today">
       {/* ================= HEADER ================= */}
