@@ -227,6 +227,7 @@
   font-size: 12px;
   font-weight: 500;
   color: #fff;
+  z-index: 2;
 }
 
 .status-badge.staying {
@@ -246,6 +247,41 @@
   color: #333;
 }
 
+/* Payment status badges */
+.payment-status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  z-index: 2;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payment-status-paid {
+  background: #10b981;
+}
+
+.payment-status-pending {
+  background: #f59e0b;
+}
+
+.payment-status-failed {
+  background: #ef4444;
+}
+
+.payment-status-refunded {
+  background: #6b7280;
+}
+
+.payment-status-noPayment {
+  background: #9ca3af;
+}
+
 .booking-info {
   padding: 16px;
 }
@@ -262,6 +298,13 @@
   margin: 2px 0;
   font-size: 13px;
   color: #555;
+}
+
+.booking-price {
+  margin-top: 8px !important;
+  font-weight: 600 !important;
+  color: #111 !important;
+  font-size: 14px !important;
 }
 
 /* =====================================
