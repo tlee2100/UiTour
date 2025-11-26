@@ -17,54 +17,41 @@ export default function HostToday() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user, dispatch } = useApp();
+  const { user, profile, dispatch } = useApp();
   const { language } = useLanguage();
   const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } = useLanguageCurrencyModal();
   const globeButtonRef = React.useRef(null);
-  const navRef = React.useRef(null);
-  const highlightRef = React.useRef(null);
-  const navItems = useMemo(() => [
-    { id: "today", label: t(language, 'host.today'), path: "/host/today" },
-    { id: "listings", label: t(language, 'host.listings'), path: "/host/listings" },
-    { id: "messages", label: t(language, 'host.messages'), path: "/host/messages" }
-  ], [language]);
-
-  const isActiveNav = (path) => {
-    if (path === "/host/listings" && location.pathname.startsWith("/host/stay")) return true;
-    if (path === "/host/listings" && location.pathname.startsWith("/host/experience")) return true;
-    return location.pathname.startsWith(path);
-  };
-
-  const updateHighlight = () => {
-    const navEl = navRef.current;
-    const highlightEl = highlightRef.current;
-    if (!navEl || !highlightEl) return;
-
-    const activeLink = navEl.querySelector("a.active");
-    if (!activeLink) {
-      highlightEl.style.width = "0px";
-      highlightEl.style.transform = "translateX(0)";
-      return;
+  const normalizeImageUrl = (rawUrl) => {
+    if (!rawUrl || typeof rawUrl !== "string") {
+      return null;
     }
-
-    const navRect = navEl.getBoundingClientRect();
-    const linkRect = activeLink.getBoundingClientRect();
-    const offset = linkRect.left - navRect.left;
-    highlightEl.style.width = `${linkRect.width}px`;
-    highlightEl.style.transform = `translateX(${offset}px)`;
+    const trimmed = rawUrl.trim();
+    if (!trimmed || trimmed.startsWith("data:image")) {
+      return null;
+    }
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      return trimmed;
+    }
+    if (trimmed.startsWith("/")) {
+      return `http://localhost:5069${trimmed}`;
+    }
+    return `http://localhost:5069/${trimmed}`;
   };
 
-  useEffect(() => {
-    updateHighlight();
-  }, [location.pathname, navItems]);
+  const resolveHostIdentifier = (userData) => {
+    if (!userData) return null;
+    const hostId =
+      userData.HostID ??
+      userData.hostID ??
+      userData?.Host?.HostID ??
+      userData?.host?.HostID ??
+      userData?.host?.hostID ??
+      userData?.hostProfile?.HostID ??
+      userData?.hostProfile?.hostID ??
+      null;
 
-  useEffect(() => {
-    const handleResize = () => updateHighlight();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
+    return typeof hostId === "number" && hostId > 0 ? hostId : null;
+  };
 
   useEffect(() => {
     const handleEsc = (event) => {
@@ -82,170 +69,166 @@ export default function HostToday() {
 
   useEffect(() => {
     loadBookings();
-  }, [user]);
+  }, [user, language]);
 
   const loadBookings = async () => {
     try {
       setLoading(true);
       setError(null);
-      
       if (!user) {
         setBookings([]);
         return;
       }
 
-      const userID = user.UserID || user.userID || user.id;
-      if (!userID) {
+      let hostIdentifier = resolveHostIdentifier(user);
+
+      // If we still don't have a HostID, try resolving via userId -> host API
+      if (!hostIdentifier) {
+        const userId =
+          user.UserID ??
+          user.userID ??
+          user.id ??
+          null;
+
+        if (userId) {
+          try {
+            const host = await authAPI.getHostByUserId(userId);
+            hostIdentifier = host?.HostID ?? host?.hostID ?? null;
+          } catch (e) {
+            console.error("Failed to resolve host by user id:", e);
+          }
+        }
+      }
+
+      if (!hostIdentifier) {
+        setBookings([]);
+        setError(t(language, 'host.notHostYet'));
+        return;
+      }
+
+      const bookingsData = await authAPI.getBookingsByHost(hostIdentifier);
+      if (!Array.isArray(bookingsData)) {
         setBookings([]);
         return;
       }
 
-      // Lấy bookings theo host ID (userID)
-      const bookingsData = await authAPI.getBookingsByHost(userID);
-      console.log('Bookings data from API:', bookingsData);
-      
-      // Format bookings để hiển thị - hiển thị tất cả bookings
       const formatted = bookingsData
-        .map(booking => {
+        .map((booking) => {
           const checkInOriginal = new Date(booking.CheckIn || booking.checkIn);
           const checkOut = new Date(booking.CheckOut || booking.checkOut);
-          const now = new Date();
-          
-          // Xác định status dựa trên ngày check-in/check-out
-          let status = t(language, 'host.upcoming');
-          if (checkInOriginal <= now && checkOut >= now) {
-            status = t(language, 'host.staying');
-          } else if (checkInOriginal.toDateString() === now.toDateString()) {
-            status = t(language, 'host.checkInToday');
-          } else if (checkInOriginal < now && checkOut < now) {
-            status = t(language, 'host.completed');
+          if (isNaN(checkInOriginal.getTime()) || isNaN(checkOut.getTime())) {
+            console.warn("Invalid booking dates", booking);
+            return null;
           }
-          
-          // Lấy payment status từ Transaction
+
+          const now = new Date();
+
+          let status = t(language, "host.upcoming");
+          if (checkInOriginal.toDateString() === now.toDateString()) {
+            status = t(language, "host.checkInToday");
+          } else if (checkInOriginal <= now && checkOut >= now) {
+            status = t(language, "host.staying");
+          } else if (checkInOriginal < now && checkOut < now) {
+            status = t(language, "host.completed");
+          }
+
           const transaction = booking.Transaction || booking.transaction;
-          let paymentStatus = 'noPayment';
+          let paymentStatus = "noPayment";
           if (transaction) {
-            const statusLower = (transaction.PaymentStatus || transaction.paymentStatus || '').toLowerCase();
-            if (statusLower === 'paid' || statusLower === 'completed' || statusLower === 'success') {
-              paymentStatus = 'paid';
-            } else if (statusLower === 'pending' || statusLower === 'processing') {
-              paymentStatus = 'pending';
-            } else if (statusLower === 'failed' || statusLower === 'declined' || statusLower === 'error') {
-              paymentStatus = 'failed';
-            } else if (statusLower === 'refunded' || statusLower === 'refund') {
-              paymentStatus = 'refunded';
+            const statusLower = (transaction.PaymentStatus || transaction.paymentStatus || "").toLowerCase();
+            if (["paid", "completed", "success"].includes(statusLower)) {
+              paymentStatus = "paid";
+            } else if (["pending", "processing"].includes(statusLower)) {
+              paymentStatus = "pending";
+            } else if (["failed", "declined", "error"].includes(statusLower)) {
+              paymentStatus = "failed";
+            } else if (["refunded", "refund"].includes(statusLower)) {
+              paymentStatus = "refunded";
             }
           }
 
-        // Format duration
-        const duration = `${checkInOriginal.getDate()} ${checkInOriginal.toLocaleDateString('en-US', { month: 'short' })} – ${checkOut.getDate()} ${checkOut.toLocaleDateString('en-US', { month: 'short' })}`;
-        
-        // Lấy số đêm và số khách
-        const nights = booking.Nights || booking.nights || 1;
-        const guestsCount = booking.GuestsCount || booking.guestsCount || 1;
+          const duration = `${checkInOriginal.getDate()} ${checkInOriginal.toLocaleDateString("en-US", { month: "short" })} – ${checkOut.getDate()} ${checkOut.toLocaleDateString("en-US", { month: "short" })}`;
 
-        // Lấy thông tin property hoặc tour
-        const property = booking.Property || booking.property;
-        const tour = booking.Tour || booking.tour;
-        const listing = property || tour;
-        
-        // Debug logging
-        if (!listing) {
-          console.warn('Booking has no Property or Tour:', booking);
-        }
-        
-        // Lấy title - thử nhiều cách
-        let title = "Unknown Listing";
-        if (listing) {
-          if (property) {
-            title = listing.ListingTitle || 
-                    listing.listingTitle || 
-                    listing.Title || 
-                    listing.title || 
-                    "Property";
-            console.log('Property title:', title, 'from listing:', listing);
-          } else if (tour) {
-            title = listing.TourName || 
-                    listing.tourName || 
-                    listing.Title || 
-                    listing.title || 
-                    "Tour";
-            console.log('Tour title:', title, 'from listing:', listing);
+          const nights = booking.Nights || booking.nights || 1;
+          const guestsCount = booking.GuestsCount || booking.guestsCount || 1;
+
+          const property = booking.Property || booking.property;
+          const tour = booking.Tour || booking.tour;
+          const listing = property || tour;
+
+          if (!listing) {
+            console.warn("Booking has no Property or Tour:", booking);
           }
-        }
-        
-        // Lấy ảnh - thử nhiều cách
-        let imageUrl = null;
-        if (listing) {
-          // Thử lấy từ Photos (PascalCase hoặc camelCase)
-          const photos = listing.Photos || listing.photos || [];
-          console.log('Photos for listing:', photos, 'listing:', listing);
-          
+
+          let title = "Unknown Listing";
+          if (listing) {
+            if (property) {
+              title =
+                listing.ListingTitle ||
+                listing.listingTitle ||
+                listing.Title ||
+                listing.title ||
+                "Property";
+            } else if (tour) {
+              title =
+                listing.TourName ||
+                listing.tourName ||
+                listing.Title ||
+                listing.title ||
+                "Tour";
+            }
+          }
+
+          const photos = listing?.Photos || listing?.photos || [];
+          let imageUrl = null;
           if (Array.isArray(photos) && photos.length > 0) {
-            // Sort theo SortIndex nếu có
             const sortedPhotos = [...photos].sort((a, b) => {
               const aIndex = a.SortIndex ?? a.sortIndex ?? 0;
               const bIndex = b.SortIndex ?? b.sortIndex ?? 0;
               return aIndex - bIndex;
             });
-            
+
             const firstPhoto = sortedPhotos[0];
-            const url = firstPhoto?.Url || 
-                       firstPhoto?.url || 
-                       firstPhoto?.ImageUrl ||
-                       firstPhoto?.imageUrl ||
-                       null;
-            
-            console.log('First photo:', firstPhoto, 'URL:', url);
-            
-            if (url && typeof url === 'string' && url.trim().length > 0) {
-              imageUrl = url.trim();
-            }
+            const rawUrl =
+              firstPhoto?.Url ||
+              firstPhoto?.url ||
+              firstPhoto?.ImageUrl ||
+              firstPhoto?.imageUrl ||
+              firstPhoto?.serverUrl ||
+              null;
+            imageUrl = normalizeImageUrl(rawUrl);
+          }
+
+          if (!imageUrl) {
+            imageUrl = sampleImg;
+          }
+
+          const guest = booking.User || booking.user;
+          let guestName = "Guest";
+          if (guest) {
+            guestName =
+              guest.FullName ||
+              guest.fullName ||
+              guest.Name ||
+              guest.name ||
+              guest.Email ||
+              guest.email ||
+              guest.UserName ||
+              guest.userName ||
+              "Guest";
           } else {
-            console.warn('No photos found for listing:', listing);
+            console.warn("No guest/user found for booking:", booking);
           }
-        }
-        
-        // Normalize image URL
-        if (imageUrl) {
-          // Bỏ qua base64 images
-          if (imageUrl.startsWith('data:image')) {
-            imageUrl = null;
-          } else if (imageUrl.startsWith('/')) {
-            imageUrl = `http://localhost:5069${imageUrl}`;
-          } else if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
-            imageUrl = `http://localhost:5069/${imageUrl}`;
-          }
-        }
-        
-        // Fallback to sample image
-        if (!imageUrl) {
-          imageUrl = sampleImg;
-        }
 
-        // Lấy thông tin guest - thử nhiều cách
-        const guest = booking.User || booking.user;
-        let guestName = "Guest";
-        if (guest) {
-          guestName = guest.FullName || 
-                     guest.fullName || 
-                     guest.Name ||
-                     guest.name ||
-                     guest.Email ||
-                     guest.email ||
-                     guest.UserName ||
-                     guest.userName ||
-                     "Guest";
-          console.log('Guest name:', guestName, 'from guest:', guest);
-        } else {
-          console.warn('No guest/user found for booking:', booking);
-        }
+          const reviews = listing?.Reviews || listing?.reviews || [];
+          const rating =
+            reviews.length > 0
+              ? reviews.reduce((sum, r) => sum + (r.Rating || r.rating || 0), 0) / reviews.length
+              : 0;
 
-        // Lấy rating từ reviews nếu có
-        const reviews = listing?.Reviews || listing?.reviews || [];
-        const rating = reviews.length > 0
-          ? reviews.reduce((sum, r) => sum + (r.Rating || r.rating || 0), 0) / reviews.length
-          : 0;
+          const type = property ? "property" : "tour";
+          const typeLabel = t(language, property ? "host.propertyListingLabel" : "host.tourListingLabel");
+          const location = listing?.Location || listing?.location || "";
 
           return {
             id: booking.BookingID || booking.bookingID || booking.id,
@@ -259,13 +242,15 @@ export default function HostToday() {
             image: imageUrl,
             checkIn: checkInOriginal.toISOString(),
             checkOut: checkOut.toISOString(),
-            type: property ? "property" : "tour",
+            type,
+            typeLabel,
             paymentStatus,
             totalPrice: booking.TotalPrice || booking.totalPrice || 0,
-            currency: booking.Currency || booking.currency || 'USD'
+            currency: booking.Currency || booking.currency || "USD",
+            location
           };
         })
-        .filter(booking => booking !== null); // Remove null entries
+        .filter(Boolean);
 
       // Sắp xếp: Check-in today > Staying > Upcoming > Completed, sau đó theo payment status
       const checkInToday = t(language, 'host.checkInToday');
@@ -520,6 +505,9 @@ export default function HostToday() {
               >
                 {t(language, `host.${b.paymentStatus}`)}
               </div>
+              <div className={`listing-type-badge type-${b.type}`}>
+                {b.typeLabel}
+              </div>
               <img 
                 src={b.image} 
                 alt={b.title} 
@@ -533,6 +521,9 @@ export default function HostToday() {
                   {b.title} 
                   {b.rating && <span>★ {b.rating}</span>}
                 </h3>
+                {b.location && (
+                  <p className="booking-location">{b.location}</p>
+                )}
                 <p>{t(language, 'host.guestName')}: {b.guest}</p>
                 <p>{t(language, 'host.stayDuration')}: {b.duration}</p>
                 <p>

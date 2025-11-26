@@ -36,6 +36,29 @@ namespace UITour.Controllers
             }
         }
 
+        // GET: api/host/by-user/{userId}
+        [HttpGet("by-user/{userId:int}")]
+        public async Task<IActionResult> GetByUserId(int userId)
+        {
+            try
+            {
+                var host = await _unitOfWork.Hosts.Query()
+                    .Include(h => h.User)
+                    .FirstOrDefaultAsync(h => h.UserID == userId);
+
+                if (host == null)
+                {
+                    return NotFound(new { error = $"Host not found for UserID {userId}" });
+                }
+
+                return Ok(host);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         // POST: api/host/register
         [HttpPost("register")]
         public async Task<IActionResult> RegisterHost([FromBody] HostRegistrationRequest request)
@@ -200,8 +223,18 @@ namespace UITour.Controllers
         {
             try
             {
-                var bookings = await _hostService.GetBookingsAsync(id);
-                System.Diagnostics.Debug.WriteLine($"Loaded {bookings.Count()} bookings for host {id}");
+                var host = await _unitOfWork.Hosts.Query()
+                    .Include(h => h.User)
+                    .FirstOrDefaultAsync(h => h.HostID == id);
+
+                if (host == null)
+                {
+                    return NotFound(new { error = $"Host not found for HostID {id}" });
+                }
+
+                var resolvedHostId = host.HostID;
+                var bookings = await _hostService.GetBookingsAsync(resolvedHostId);
+                System.Diagnostics.Debug.WriteLine($"Loaded {bookings.Count()} bookings for host {resolvedHostId}");
                 
                 // Check what's loaded
                 foreach (var b in bookings)
