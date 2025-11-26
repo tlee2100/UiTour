@@ -1027,11 +1027,11 @@ async updateUserProfile(userId, form) {
     }
   }
 
-  // Get bookings by host ID
+  // Get bookings for listings owned by the host (hostId or userId)
   async getBookingsByHost(hostId) {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${BOOKING_BASE_URL}/host/${hostId}`, {
+      const response = await fetch(`${HOST_BASE_URL}/${hostId}/bookings`, {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -1046,6 +1046,29 @@ async updateUserProfile(userId, form) {
       return await response.json();
     } catch (err) {
       console.error('getBookingsByHost error:', err);
+      throw err;
+    }
+  }
+
+  // Get host profile by associated user ID
+  async getHostByUserId(userId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${HOST_BASE_URL}/by-user/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch host by user id');
+      }
+
+      return await response.json();
+    } catch (err) {
+      console.error('getHostByUserId error:', err);
       throw err;
     }
   }
