@@ -363,6 +363,106 @@ namespace UITour.Controllers
             }
         }
 
+        // POST: api/booking/{bookingId}/reviews
+        [HttpPost("{bookingId:int}/reviews")]
+        public async Task<IActionResult> CreateReviewForBooking(int bookingId, [FromBody] CreateReviewDto request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { error = "Review payload is required" });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var booking = await _unitOfWork.Bookings.Query()
+                .FirstOrDefaultAsync(b => b.BookingID == bookingId);
+
+            if (booking == null)
+            {
+                return NotFound(new { error = $"Booking with ID {bookingId} not found" });
+            }
+
+            if (request.UserId.HasValue && booking.UserID != request.UserId)
+            {
+                return StatusCode(403, new { error = "You can only review your own bookings" });
+            }
+
+            var status = booking.Status?.Trim().ToLowerInvariant();
+            if (status != "confirmed")
+            {
+                return BadRequest(new { error = "Only confirmed bookings can be reviewed" });
+            }
+
+            var trimmedComment = request.Comments?.Trim() ?? string.Empty;
+
+            if (booking.PropertyID.HasValue)
+            {
+                var existingReview = await _unitOfWork.Reviews.Query()
+                    .AnyAsync(r => r.BookingID == bookingId ||
+                        (r.PropertyID == booking.PropertyID && r.UserID == booking.UserID));
+
+                if (existingReview)
+                {
+                    return Conflict(new { error = "You have already reviewed this stay." });
+                }
+
+                var review = new Review
+                {
+                    PropertyID = booking.PropertyID,
+                    BookingID = booking.BookingID,
+                    UserID = booking.UserID,
+                    Rating = request.Rating,
+                    Comments = trimmedComment,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.Reviews.AddAsync(review);
+                await _unitOfWork.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Review submitted successfully",
+                    reviewType = "property",
+                    review
+                });
+            }
+
+            if (booking.TourID.HasValue)
+            {
+                var existingTourReview = await _unitOfWork.TourReviews.Query()
+                    .AnyAsync(r => r.TourID == booking.TourID && r.UserID == booking.UserID);
+
+                if (existingTourReview)
+                {
+                    return Conflict(new { error = "You have already reviewed this experience." });
+                }
+
+                var review = new TourReview
+                {
+                    TourID = booking.TourID.Value,
+                    UserID = booking.UserID,
+                    Rating = request.Rating,
+                    Comment = trimmedComment,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.TourReviews.AddAsync(review);
+                await _unitOfWork.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Review submitted successfully",
+                    reviewType = "tour",
+                    review
+                });
+            }
+
+            return BadRequest(new { error = "Booking is not linked to a property or tour" });
+        }
+
         // PUT: api/booking/5/cancel
         [HttpPut("{id:int}/cancel")]
         public async Task<IActionResult> CancelBooking(int id)
