@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./HostListings.css";
 import { Icon } from "@iconify/react";
 import sampleImg from "../../assets/sample-room.jpg";
@@ -18,10 +18,53 @@ export default function HostListings() {
     const [deletingId, setDeletingId] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const navigate = useNavigate();
+    const location = useLocation();
     const { user, dispatch } = useApp();
     const { language } = useLanguage();
     const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } = useLanguageCurrencyModal();
     const globeButtonRef = React.useRef(null);
+    const navRef = React.useRef(null);
+    const highlightRef = React.useRef(null);
+    const navItems = useMemo(() => [
+        { id: "today", label: t(language, 'host.today'), path: "/host/today" },
+        { id: "listings", label: t(language, 'host.listings'), path: "/host/listings" },
+        { id: "messages", label: t(language, 'host.messages'), path: "/host/messages" }
+    ], [language]);
+
+    const isActiveNav = (path) => {
+        if (path === "/host/listings" && location.pathname.startsWith("/host/stay")) return true;
+        if (path === "/host/listings" && location.pathname.startsWith("/host/experience")) return true;
+        return location.pathname.startsWith(path);
+    };
+
+    const updateHighlight = () => {
+        const navEl = navRef.current;
+        const highlightEl = highlightRef.current;
+        if (!navEl || !highlightEl) return;
+
+        const activeLink = navEl.querySelector("a.active");
+        if (!activeLink) {
+            highlightEl.style.width = "0px";
+            highlightEl.style.transform = "translateX(0)";
+            return;
+        }
+
+        const navRect = navEl.getBoundingClientRect();
+        const linkRect = activeLink.getBoundingClientRect();
+        const offset = linkRect.left - navRect.left;
+        highlightEl.style.width = `${linkRect.width}px`;
+        highlightEl.style.transform = `translateX(${offset}px)`;
+    };
+
+    useEffect(() => {
+        updateHighlight();
+    }, [location.pathname, navItems]);
+
+    useEffect(() => {
+        const handleResize = () => updateHighlight();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     useEffect(() => {
         const handleEsc = (event) => {
@@ -297,12 +340,17 @@ export default function HostListings() {
                 </div>
 
                 {/* NAVBAR */}
-                <nav className="nav-tabs">
-                    <Link to="/host/today">{t(language, 'host.today')}</Link>
-                    <Link to="/host/listings" className="active">
-                        {t(language, 'host.listings')}
-                    </Link>
-                    <Link to="/host/messages">{t(language, 'host.messages')}</Link>
+                <nav className="nav-tabs" ref={navRef}>
+                    {navItems.map(item => (
+                        <Link
+                            key={item.id}
+                            to={item.path}
+                            className={isActiveNav(item.path) ? "active" : ""}
+                        >
+                            {item.label}
+                        </Link>
+                    ))}
+                    <span className="nav-highlight" ref={highlightRef}></span>
                 </nav>
 
                 {/* RIGHT SIDE */}
@@ -414,7 +462,7 @@ export default function HostListings() {
                                 className="host-menu-link"
                                 onClick={() => {
                                     closeMenu();
-                                    navigate("/account/settings");
+                                navigate("/account");
                                 }}
                             >
                                 <Icon icon="mdi:cog-outline" width="20" height="20" />
@@ -437,10 +485,16 @@ export default function HostListings() {
                                 <Icon icon="mdi:book-open-page-variant" width="20" height="20" />
                                 <span>{t(language, 'host.hostingResources')}</span>
                             </button>
-                            <button className="host-menu-link">
-                                <Icon icon="mdi:lifebuoy" width="20" height="20" />
-                                <span>{t(language, 'host.getSupport')}</span>
-                            </button>
+              <button
+                className="host-menu-link"
+                onClick={() => {
+                  closeMenu();
+                  navigate("/support");
+                }}
+              >
+                <Icon icon="mdi:lifebuoy" width="20" height="20" />
+                <span>{t(language, 'host.getSupport')}</span>
+              </button>
                             <button className="host-menu-link">
                                 <Icon icon="mdi:account-group-outline" width="20" height="20" />
                                 <span>{t(language, 'host.findCoHost')}</span>

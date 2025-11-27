@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import './admin.css';
 import adminAPI from '../../services/adminAPI';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { t } from '../../utils/translations';
 
 export default function AdminTransactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { language } = useLanguage();
 
   useEffect(() => {
     loadTransactions();
@@ -17,7 +20,7 @@ export default function AdminTransactions() {
       const data = await adminAPI.getAllTransactions();
       setTransactions(data || []);
     } catch (err) {
-      setError(err.message || 'Unable to load transactions list');
+      setError(err.message || t(language, 'adminTransactions.loadError'));
     } finally {
       setLoading(false);
     }
@@ -43,8 +46,8 @@ export default function AdminTransactions() {
     return (
       <div className="admin-page">
         <div className="table-card">
-          <div className="table-title">Recent transactions</div>
-          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+          <div className="table-title">{t(language, 'adminTransactions.title')}</div>
+          <div style={{ padding: '20px', textAlign: 'center' }}>{t(language, 'common.loading')}</div>
         </div>
       </div>
     );
@@ -54,7 +57,7 @@ export default function AdminTransactions() {
     return (
       <div className="admin-page">
         <div className="table-card">
-          <div className="table-title">Recent transactions</div>
+          <div className="table-title">{t(language, 'adminTransactions.title')}</div>
           <div style={{ padding: '20px', color: '#b91c1c' }}>{error}</div>
         </div>
       </div>
@@ -62,13 +65,21 @@ export default function AdminTransactions() {
   }
 
   return (
-    <div className="admin-page">
-      <div className="table-card">
-        <div className="table-title">Giao dịch gần đây ({transactions.length})</div>
+      <div className="admin-page">
+        <div className="table-card">
+          <div className="table-title">
+            {t(language, 'adminTransactions.title')} ({transactions.length})
+          </div>
         <div className="table">
-          <div className="row head"><div>ID</div><div>User</div><div>Amount</div><div>Date</div><div>Status</div></div>
+          <div className="row head">
+            <div>ID</div>
+            <div>{t(language, 'adminTransactions.user')}</div>
+            <div>{t(language, 'adminTransactions.amount')}</div>
+            <div>{t(language, 'adminTransactions.date')}</div>
+            <div>{t(language, 'adminTransactions.status')}</div>
+          </div>
           {transactions.length === 0 ? (
-            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>No data</div>
+            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>{t(language, 'common.noData')}</div>
           ) : (
             transactions.map(t => (
               <div key={t.TransactionID || t.transactionID || t.id} className="row">

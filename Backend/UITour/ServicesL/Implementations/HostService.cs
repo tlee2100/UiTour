@@ -165,8 +165,21 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<IEnumerable<Booking>> GetBookingsAsync(int hostId)
         {
-            return await _unitOfWork.Bookings.Query()
+            var hostPropertyIds = await _unitOfWork.Properties.Query()
                 .Where(p => p.HostID == hostId)
+                .Select(p => p.PropertyID)
+                .ToListAsync();
+
+            var hostTourIds = await _unitOfWork.Tours.Query()
+                .Where(t => t.HostID == hostId)
+                .Select(t => t.TourID)
+                .ToListAsync();
+
+            return await _unitOfWork.Bookings.Query()
+                .Where(b =>
+                    b.HostID == hostId ||
+                    (b.PropertyID.HasValue && hostPropertyIds.Contains(b.PropertyID.Value)) ||
+                    (b.TourID.HasValue && hostTourIds.Contains(b.TourID.Value)))
                 .Include(b => b.Property)
                     .ThenInclude(p => p.Photos)
                 .Include(b => b.Property)

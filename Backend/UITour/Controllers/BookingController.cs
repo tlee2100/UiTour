@@ -46,12 +46,46 @@ namespace UITour.Controllers
                     ? request.Nights
                     : Math.Max(1, (request.CheckOut - request.CheckIn).Days);
 
+                // Resolve HostID server-side to ensure bookings are always tied to the correct owner
+                int resolvedHostId = 0;
+
+                if (request.PropertyID.HasValue)
+                {
+                    var property = await _unitOfWork.Properties.Query()
+                        .FirstOrDefaultAsync(p => p.PropertyID == request.PropertyID.Value);
+
+                    if (property == null)
+                        return NotFound(new { error = $"Property with ID {request.PropertyID.Value} not found" });
+
+                    resolvedHostId = property.HostID;
+                }
+                else if (request.TourID.HasValue)
+                {
+                    var tour = await _unitOfWork.Tours.Query()
+                        .FirstOrDefaultAsync(t => t.TourID == request.TourID.Value);
+
+                    if (tour == null)
+                        return NotFound(new { error = $"Tour with ID {request.TourID.Value} not found" });
+
+                    resolvedHostId = tour.HostID;
+                }
+
+                if (resolvedHostId == 0 && request.HostID.HasValue && request.HostID.Value > 0)
+                {
+                    resolvedHostId = request.HostID.Value;
+                }
+
+                if (resolvedHostId == 0)
+                {
+                    return BadRequest(new { error = "Unable to determine the host for this booking" });
+                }
+
                 var booking = new Booking
                 {
                     PropertyID = request.PropertyID,
                     TourID = request.TourID,
                     UserID = request.UserID,
-                    HostID = request.HostID,
+                    HostID = resolvedHostId,
                     CheckIn = request.CheckIn,
                     CheckOut = request.CheckOut,
                     GuestsCount = request.GuestsCount,

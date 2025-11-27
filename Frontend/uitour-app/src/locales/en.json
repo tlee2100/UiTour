@@ -198,6 +198,7 @@
     "error": "Error",
     "tryAgain": "Try again",
     "noBookingsYet": "You have no bookings yet.",
+    "notHostYet": "You need a host profile before you can view host bookings.",
     "bookingsWillAppear": "Bookings will appear here when guests book your property/tour.",
     "noCheckInsToday": "No check-ins today.",
     "guestsCheckingInToday": "Guests checking in today will appear here.",
@@ -225,6 +226,8 @@
     "approved": "Approved",
     "stay": "Stay",
     "tour": "Tour",
+    "propertyListingLabel": "Stay",
+    "tourListingLabel": "Tour",
     "confirmDeletion": "Confirm Deletion",
     "areYouSureDelete": "Are you sure you want to delete",
     "thisActionCannotBeUndone": "This action cannot be undone. All related data will be permanently deleted.",
@@ -244,6 +247,30 @@
     "openHostNavigationMenu": "Open host navigation menu",
     "hostNavigationMenu": "Host navigation menu",
     "deleteItem": "Delete"
+  },
+  "support": {
+    "kicker": "Host Support",
+    "title": "Still need help? We’re here for you",
+    "description": "Find articles, quick tips, and personal support that will help you manage bookings, payouts, and guest questions like a pro.",
+    "contactUs": "Contact support",
+    "browseTopics": "Browse help topics",
+    "heroIllustration": "Personalized help, always on call",
+    "heroAlt": "Illustration of host support",
+    "emailLabel": "Support email",
+    "hotlineLabel": "Hotline",
+    "chatbot": "Talk to our chatbot",
+    "section1": {
+      "title": "Booking & payouts",
+      "content": "Understand how payouts work, schedule cleanings, or review booking details anytime."
+    },
+    "section2": {
+      "title": "Guests & stays",
+      "content": "Get guidance on guest communication, check-ins, and staying ready for every reservation."
+    },
+    "section3": {
+      "title": "Host tools",
+      "content": "Learn about promotional tools, calendar syncing, and managing multiple listings."
+    }
   },
   "search": {
     "where": "Where",
@@ -335,6 +362,71 @@
     "loadingPaymentDetails": "Loading payment details...",
     "bookingIdNotFound": "Booking ID not found",
     "failedToConfirmTransfer": "Failed to confirm transfer. Please try again."
+  },
+  "adminDashboard": {
+    "totalUsers": "Total users",
+    "pendingPosts": "Pending posts",
+    "monthRevenue": "Revenue this month",
+    "unresolvedReports": "Unresolved reports",
+    "clickToView": "Click to view details →",
+    "revenueByMonth": "Revenue by month (mock)",
+    "userGrowth": "User growth (mock)",
+    "latestReports": "Latest reports",
+    "reporter": "Reporter",
+    "reason": "Reason",
+    "date": "Date",
+    "status": "Status",
+    "noReports": "No reports yet"
+  },
+  "adminNav": {
+    "dashboard": "Dashboard",
+    "posts": "Posts",
+    "users": "Users",
+    "reports": "Reports",
+    "transactions": "Transactions"
+  },
+  "adminUsers": {
+    "title": "Users list",
+    "fullName": "Full name",
+    "role": "Role",
+    "status": "Status",
+    "actions": "Actions",
+    "roleUser": "User",
+    "roleHost": "Host",
+    "roleAdmin": "Admin",
+    "loadError": "Unable to load users list"
+  },
+  "adminTransactions": {
+    "title": "Recent transactions",
+    "user": "User",
+    "amount": "Amount",
+    "date": "Date",
+    "status": "Status",
+    "loadError": "Unable to load transactions list"
+  },
+  "adminReports": {
+    "title": "Reports list",
+    "detailTitle": "Report details",
+    "reporter": "Reporter",
+    "target": "Target",
+    "reason": "Reason",
+    "date": "Date",
+    "status": "Status",
+    "selectPrompt": "Select a report to view details",
+    "resolve": "Resolve report",
+    "markProcessing": "Mark as in progress"
+  },
+  "adminSettings": {
+    "categoryTitle": "Category management",
+    "roomType": "Room type",
+    "tourType": "Tour type",
+    "location": "Location",
+    "feeTitle": "Service fee management (%)",
+    "serviceFee": "Service fee (%)",
+    "vat": "VAT tax (%)",
+    "saveChanges": "Save changes",
+    "bannerTitle": "Banner & events",
+    "addBanner": "+ Add new banner"
   },
   "hostExperience": {
     "choose": {
