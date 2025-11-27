@@ -734,6 +734,33 @@ async updateUserProfile(userId, form) {
     }
   }
 
+  async submitBookingReview(bookingId, { rating, comments, userId }) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${BOOKING_BASE_URL}/${bookingId}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          Rating: rating,
+          Comments: comments,
+          UserId: userId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to submit review');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw new Error(error.message || 'Failed to submit review');
+    }
+  }
+
   async sendProfileOtp(userId) {
     const token = localStorage.getItem('token');
     const res = await fetch(`${API_BASE_URL}/${userId}/profile/send-otp`, {
