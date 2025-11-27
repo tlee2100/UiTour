@@ -1,8 +1,8 @@
 import React from "react";
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import HostHeader from "../components/HostHeader";
-import HostFooter from "../components/HostFooter";
+import HostHeader from "../components/headers/HostHeader";
+import HostFooter from "../components/footers/HostFooter";
 import { useHost } from "../contexts/HostContext";
 import ErrorModal from "../components/modals/ErrorModal";
 import SuccessModal from "../components/modals/SuccessModal";

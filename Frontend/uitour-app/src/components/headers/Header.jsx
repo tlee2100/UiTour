@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
-import logo from '../assets/UiTour.png';
+import logo from '../../assets/UiTour.png';
 import './Header.css';
-import ProfileMenu from './ProfileMenu';
-import { useApp } from '../contexts/AppContext';
-import { useLanguage } from '../contexts/LanguageContext';
-import { useLanguageCurrencyModal } from '../contexts/LanguageCurrencyModalContext';
-import { t } from '../utils/translations';
-import LanguageCurrencySelector from './LanguageCurrencySelector';
+import ProfileMenu from '../ProfileMenu';
+import { useApp } from '../../contexts/AppContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguageCurrencyModal } from '../../contexts/LanguageCurrencyModalContext';
+import { t } from '../../utils/translations';
+import LanguageCurrencySelector from '../LanguageCurrencySelector';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);

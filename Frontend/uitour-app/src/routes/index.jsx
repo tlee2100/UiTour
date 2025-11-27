@@ -59,6 +59,8 @@ import BecomeHost from "../pages/BecomeHost";
 import HostToday from "../pages/HostPage/HostToday";
 import HostListings from "../pages/HostPage/HostListings";
 import HostMessages from "../pages/HostPage/HostMessages";
+import HostDashboard from "../pages/HostPage/HostDashboard";
+
 import ProfileEditPage from "../pages/ProfileEditPage";
 
 //import HostDemoPreview from "../pages/HostDemoPreview";
@@ -141,6 +143,7 @@ const AppRoutes = () => {
       <Route path="/host/today" element={<HostToday />} />
       <Route path="/host/listings" element={<HostListings />} />
       <Route path="/host/messages" element={<HostMessages />} />
+      <Route path="/host/dashboard" element={<HostDashboard />} />
 
       <Route
         path="/host/*"

@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
-import ProfileMenu from './ProfileMenu';
-import logo from '../assets/UiTour.png';
+import ProfileMenu from '../ProfileMenu';
+import logo from '../../assets/UiTour.png';
 import './HeaderInfo.css';
-import { useApp } from '../contexts/AppContext';
-import { useLanguage } from '../contexts/LanguageContext';
-import { useLanguageCurrencyModal } from '../contexts/LanguageCurrencyModalContext';
-import { t } from '../utils/translations';
-import LanguageCurrencySelector from './LanguageCurrencySelector';
+import { useApp } from '../../contexts/AppContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguageCurrencyModal } from '../../contexts/LanguageCurrencyModalContext';
+import { t } from '../../utils/translations';
+import LanguageCurrencySelector from '../LanguageCurrencySelector';
 
 export default function HeaderInfo() {
   const [searchQuery, setSearchQuery] = useState('');

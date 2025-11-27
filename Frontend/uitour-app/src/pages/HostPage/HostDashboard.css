@@ -1,0 +1,325 @@
+/* =========================================================
+   HOSTDASHBOARD (prefixed with hostd-)
+   ========================================================= */
+html,
+body {
+    background: #fff !important;
+}
+
+/* wrapper */
+.hostd-dashboard {
+    padding: 120px 80px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color: #111827;
+}
+
+/* ------- TOP GRID -------- */
+.hostd-charts-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+    margin-bottom: 40px;
+    align-items: start;
+}
+
+/* ------- CARD -------- */
+.hostd-chart-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    transition: 0.2s ease;
+}
+
+.hostd-chart-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.hostd-chart-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 14px;
+}
+
+/* =========================================================
+   TOGGLE BUTTONS
+   ========================================================= */
+.hostd-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.hostd-toggle button {
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 6px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: 0.18s ease;
+    font-weight: 600;
+}
+
+.hostd-toggle button:hover:not(.active):not(:disabled) {
+    background: var(--uitour-color);
+    color: #fff;
+    border-color: var(--uitour-color);
+}
+
+.hostd-toggle button.active {
+    background: var(--uitour-color);
+    border-color: #0092b0;
+    color: white;
+}
+
+.hostd-toggle button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* =========================================================
+   BAR CHART
+   ========================================================= */
+.hostd-bar-chart-container {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(44px, 1fr));
+    gap: 12px;
+    height: 380px;
+    padding-bottom: 12px;
+    overflow-x: auto;
+}
+
+.hostd-bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.hostd-bar {
+    width: 100%;
+    margin-top: 8px;
+    border-radius: 6px 6px 0 0;
+    background: linear-gradient(180deg, var(--uitour-color) 0%, var(--hover-uitour) 100%);
+    box-shadow: 0 6px 18px rgba(255, 56, 92, 0.14);
+    transition: 0.18s ease;
+    cursor: pointer;
+}
+
+.hostd-bar:hover {
+    transform: translateY(-6px);
+}
+
+.hostd-bar.selected {
+    outline: 3px solid #00b2cf;
+    background: linear-gradient(180deg, #00c0e8 0%, #009fbf 100%);
+}
+
+.hostd-bar-label {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+/* =========================================================
+   PIE CHART
+   ========================================================= */
+.hostd-pie-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 420px;
+    position: relative;
+    gap: 10px;
+}
+
+.hostd-pie-svg {
+    width: 240px;
+    height: 240px;
+    border-radius: 999px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+/* Center text */
+.hostd-pie-center-text {
+    position: absolute;
+    top: 115px;
+    left: 50%;
+    transform: translateX(-50%) ;
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 16px;
+}
+/* =========================================================
+   PIE CHART (Animated)
+   ========================================================= */
+.hostd-pie-wrapper {
+    position: relative;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hostd-pie-svg {
+    width: 240px;
+    height: 240px;
+    transform: rotate(-90deg);
+}
+
+.pie-anim {
+    transition: stroke-dasharray 0.55s ease, stroke-dashoffset 0.55s ease;
+}
+
+/* Legend */
+.hostd-pie-legend {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 105px;
+}
+
+.hostd-legend-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.hostd-legend-color {
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
+}
+
+.hostd-legend-color--stay {
+    background: #0087A0;
+}
+
+.hostd-legend-color--exp {
+    background: #7DEFFF;
+}
+
+.hostd-legend-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.hostd-legend-value {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.hostd-pie-month-label {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0087A0;
+}
+
+/* =========================================================
+   SUMMARY CARDS
+   ========================================================= */
+.hostd-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.hostd-stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+.hostd-stat-label {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.hostd-stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #0f172a;
+}
+
+.hostd-stat-change {
+    font-size: 13px;
+    color: #008489;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 1024px) {
+    .hostd-charts-section {
+        grid-template-columns: 1fr;
+    }
+
+    .hostd-pie-svg {
+        width: 200px;
+        height: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hostd-dashboard {
+        padding: 80px 16px 32px;
+    }
+
+    .hostd-pie-svg {
+        width: 170px;
+        height: 170px;
+    }
+
+    .hostd-bar-chart-container {
+        height: 280px;
+    }
+}
+
+/* =========================================================
+   BAR CHART TOOLTIP
+   ========================================================= */
+.hostd-tooltip {
+    position: fixed;
+    transform: translate(-50%, -100%);
+    background: #0f172a;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 9999;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: fadeIn 0.12s ease;
+}
+
+.hostd-tooltip-month {
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.hostd-tooltip-value {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -90%); }
+    to { opacity: 1; transform: translate(-50%, -100%); }
+}
+
