@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
-import logo from '../assets/UiTour.png';
-import ProfileMenu from './ProfileMenu';
-import LanguageCurrencySelector from './LanguageCurrencySelector';
-import { useLanguageCurrencyModal } from '../contexts/LanguageCurrencyModalContext';
-import { useLanguage } from '../contexts/LanguageContext';
-import { t } from '../utils/translations';
+import logo from '../../assets/UiTour.png';
+import ProfileMenu from '../ProfileMenu';
+import LanguageCurrencySelector from '../LanguageCurrencySelector';
+import { useLanguageCurrencyModal } from '../../contexts/LanguageCurrencyModalContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { t } from '../../utils/translations';
 import './AdminHeader.css';
 
 export default function AdminHeader() {
