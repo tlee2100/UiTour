@@ -182,9 +182,14 @@
 
 .trip-actions {
   margin-top: 8px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-.trip-btn-secondary {
+.trip-btn-secondary,
+.trip-btn-primary {
   background: #fff;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -193,8 +198,130 @@
   font-weight: 600;
 }
 
+.trip-btn-primary {
+  background: #111827;
+  color: #fff;
+  border-color: #111827;
+  transition: background 0.2s ease, border 0.2s ease;
+}
+
+.trip-btn-primary:hover:not(:disabled) {
+  background: #0f172a;
+  border-color: #0f172a;
+}
+
+.trip-btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-color: #d1d5db;
+  background: #f5f5f5;
+  color: #6b7280;
+}
+
+.trip-btn-primary.stretch {
+  width: 100%;
+  justify-content: center;
+}
+
 .trip-btn-secondary:hover {
   border-color: #9ca3af;
+}
+
+.review-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  z-index: 1000;
+}
+
+.review-modal {
+  background: #fff;
+  padding: 24px;
+  border-radius: 16px;
+  width: min(420px, 100%);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-modal h3 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.review-modal p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.review-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.review-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.review-field label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.review-rating-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.review-rating-input input {
+  flex: 1;
+}
+
+.review-field textarea {
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  padding: 12px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.review-field textarea:focus {
+  outline: none;
+  border-color: #111827;
+}
+
+.review-feedback {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.review-feedback.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.review-feedback.success {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #166534;
 }
 
 @media (max-width: 1024px) {
