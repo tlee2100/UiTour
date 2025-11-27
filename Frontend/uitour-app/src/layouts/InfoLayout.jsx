@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
-import HeaderInfo from "../components/HeaderInfo";
-import Footer from "../components/Footer";
+import HeaderInfo from "../components/headers/HeaderInfo";
+import Footer from "../components/footers/Footer";
 import "./InfoLayout.css";
 
 export default function MainLayout() {
