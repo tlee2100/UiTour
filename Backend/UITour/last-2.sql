@@ -638,8 +638,7 @@ INSERT INTO Transactions (BookingID, Amount, Currency, PaymentMethod, PaymentSta
 
 -- ============= Reviews =============
 INSERT INTO Reviews (PropertyID, BookingID, UserID, Rating, Comments) VALUES
-(1, 1, 2, 5, N'Great location, very clean, would stay again!'),
-(3, 1, 2, 4, N'Beautiful traditional house, amazing experience!');
+(3, 1, 2, 5, N'Beautiful traditional house, amazing experience! Only downside was the morning traffic noise.');
 
 
 -- ============= HostVerifications =============

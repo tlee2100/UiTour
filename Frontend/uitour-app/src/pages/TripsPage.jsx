@@ -10,6 +10,11 @@ export default function TripsPage() {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [reviewingTrip, setReviewingTrip] = useState(null);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comments: '' });
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState('');
+  const [reviewSuccess, setReviewSuccess] = useState('');
   const navigate = useNavigate();
   const { user } = useApp();
   const { convertToCurrent, format } = useCurrency();
@@ -73,6 +78,22 @@ export default function TripsPage() {
     return normalizeImageUrl(url);
   }, [normalizeImageUrl]);
 
+  const findUserReview = useCallback((item) => {
+    if (!item) return null;
+    const reviews = item.Reviews || item.reviews || [];
+    if (!Array.isArray(reviews)) return null;
+    return reviews.find((review) => {
+      const reviewerId =
+        review.userId ??
+        review.UserId ??
+        review.userID ??
+        review.UserID ??
+        review.user?.UserID ??
+        review.User?.UserID;
+      return reviewerId === user?.UserID;
+    });
+  }, [user?.UserID]);
+
   const formatDateRange = useCallback((checkIn, checkOut) => {
     if (!checkIn || !checkOut) return '';
     try {
@@ -128,6 +149,52 @@ export default function TripsPage() {
       setLoading(false);
     }
   }, [user]);
+
+  const openReviewModal = useCallback((trip) => {
+    setReviewingTrip(trip);
+    setReviewForm({ rating: 5, comments: '' });
+    setReviewError('');
+    setReviewSuccess('');
+  }, []);
+
+  const closeReviewModal = useCallback(() => {
+    setReviewingTrip(null);
+    setReviewForm({ rating: 5, comments: '' });
+    setReviewError('');
+    setReviewSuccess('');
+    setReviewSubmitting(false);
+  }, []);
+
+  const handleReviewSubmit = useCallback(async () => {
+    if (!reviewingTrip) return;
+    const bookingId = reviewingTrip.bookingID ?? reviewingTrip.BookingID;
+    if (!bookingId) {
+      setReviewError('Unable to determine booking details for this trip.');
+      return;
+    }
+
+    try {
+      setReviewSubmitting(true);
+      setReviewError('');
+      setReviewSuccess('');
+
+      await authAPI.submitBookingReview(bookingId, {
+        rating: reviewForm.rating,
+        comments: reviewForm.comments,
+        userId: user?.UserID,
+      });
+
+      setReviewSuccess('Thanks! Your review has been submitted.');
+      await loadTrips();
+      setTimeout(() => {
+        closeReviewModal();
+      }, 1000);
+    } catch (err) {
+      setReviewError(err.message || 'Unable to submit review right now.');
+    } finally {
+      setReviewSubmitting(false);
+    }
+  }, [reviewForm, reviewingTrip, user?.UserID, loadTrips, closeReviewModal]);
 
   useEffect(() => {
     loadTrips();
@@ -228,6 +295,15 @@ export default function TripsPage() {
             const guests = trip.guestsCount ?? trip.GuestsCount ?? 1;
             const totalPrice = trip.totalPrice ?? trip.TotalPrice ?? 0;
             const nights = trip.nights ?? trip.Nights ?? null;
+            const userReview = findUserReview(propertyInfo || tourInfo);
+            const canReview = status === 'confirmed' && !userReview;
+            const reviewTooltip = !canReview
+              ? userReview
+                ? 'You already shared a review for this trip.'
+                : status !== 'confirmed'
+                ? 'Reviews unlock once your booking is confirmed.'
+                : 'Review option unavailable.'
+              : '';
 
             return (
               <div key={trip.bookingID || trip.BookingID} className="trip-card">
@@ -263,6 +339,15 @@ export default function TripsPage() {
                   </div>
 
                   <div className="trip-actions">
+                    <button
+                      className="trip-btn-primary"
+                      disabled={!canReview}
+                      title={reviewTooltip}
+                      onClick={() => openReviewModal(trip)}
+                    >
+                      {userReview ? 'Review submitted' : 'Write a review'}
+                    </button>
+
                     {detailLink ? (
                       <button className="trip-btn-secondary" onClick={() => navigate(detailLink)}>
                         View details
@@ -277,6 +362,60 @@ export default function TripsPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {reviewingTrip && (
+        <div className="review-modal-overlay" role="dialog" aria-modal="true">
+          <div className="review-modal">
+            <button className="review-modal-close" onClick={closeReviewModal} aria-label="Close review form">
+              ×
+            </button>
+            <h3>Share your experience</h3>
+            <p>
+              {reviewingTrip.propertyInfo
+                ? `Tell future guests about your stay at ${reviewingTrip.propertyInfo?.listingTitle || reviewingTrip.propertyInfo?.ListingTitle || 'this stay'}.`
+                : `Tell future travelers about ${reviewingTrip.tourInfo?.tourName || reviewingTrip.tourInfo?.TourName || 'this experience'}.`}
+            </p>
+
+            <div className="review-field">
+              <label htmlFor="review-rating">Rating</label>
+              <div className="review-rating-input">
+                <input
+                  id="review-rating"
+                  type="range"
+                  min="1"
+                  max="5"
+                  value={reviewForm.rating}
+                  onChange={(e) => setReviewForm((prev) => ({ ...prev, rating: Number(e.target.value) }))}
+                />
+                <span>{reviewForm.rating} / 5</span>
+              </div>
+            </div>
+
+            <div className="review-field">
+              <label htmlFor="review-comments">Comments</label>
+              <textarea
+                id="review-comments"
+                rows="4"
+                maxLength="800"
+                placeholder="What stood out during your stay or tour? Share highlights or tips."
+                value={reviewForm.comments}
+                onChange={(e) => setReviewForm((prev) => ({ ...prev, comments: e.target.value }))}
+              />
+            </div>
+
+            {reviewError && <div className="review-feedback error">{reviewError}</div>}
+            {reviewSuccess && <div className="review-feedback success">{reviewSuccess}</div>}
+
+            <button
+              className="trip-btn-primary stretch"
+              onClick={handleReviewSubmit}
+              disabled={reviewSubmitting || !reviewForm.comments.trim()}
+            >
+              {reviewSubmitting ? 'Submitting...' : 'Submit review'}
+            </button>
+          </div>
         </div>
       )}
     </div>
