@@ -1,11 +1,10 @@
 /* =========================================================
-   HOSTDASHBOARD (prefixed with hostd- to avoid overrides)
+   HOSTDASHBOARD (prefixed with hostd-)
    ========================================================= */
 html,
 body {
     background: #fff !important;
 }
-
 
 /* wrapper */
 .hostd-dashboard {
@@ -18,28 +17,26 @@ body {
     color: #111827;
 }
 
-/* CHART GRID: bar (left) bigger than pie (right) */
+/* ------- TOP GRID -------- */
 .hostd-charts-section {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 32px;
     margin-bottom: 40px;
     align-items: start;
-    grid-auto-rows: auto;
 }
 
-/* CARD */
+/* ------- CARD -------- */
 .hostd-chart-card {
-    display: block !important;
     background: #fff;
     border-radius: 12px;
     padding: 32px;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    transition: 0.2s ease;
 }
 
 .hostd-chart-card:hover {
     transform: translateY(-4px);
-    transition: transform 0.18s ease;
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
 
@@ -47,47 +44,82 @@ body {
     font-size: 20px;
     font-weight: 700;
     color: #0f172a;
-    margin: 0 0 18px 0;
+    margin-bottom: 14px;
 }
 
-/* ========== BAR CHART (GRID with 12 columns) ========== */
+/* =========================================================
+   TOGGLE BUTTONS
+   ========================================================= */
+.hostd-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.hostd-toggle button {
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 6px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: 0.18s ease;
+    font-weight: 600;
+}
+
+.hostd-toggle button:hover:not(.active):not(:disabled) {
+    background: var(--uitour-color);
+    color: #fff;
+    border-color: var(--uitour-color);
+}
+
+.hostd-toggle button.active {
+    background: var(--uitour-color);
+    border-color: #0092b0;
+    color: white;
+}
+
+.hostd-toggle button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* =========================================================
+   BAR CHART
+   ========================================================= */
 .hostd-bar-chart-container {
-    display: grid !important;
-    grid-template-columns: repeat(12, minmax(44px, 1fr)) !important;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(44px, 1fr));
     gap: 12px;
-
     height: 380px;
-    /* adjust this value to make chart taller/shorter */
     padding-bottom: 12px;
-    box-sizing: border-box;
     overflow-x: auto;
-    /* allow horizontal scroll on narrow screens */
 }
 
-/* one column wrapper */
 .hostd-bar-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    min-width: 44px !important;
-    flex-shrink: 0 !important;
 }
 
-/* the actual bar (height controlled inline via style attr) */
 .hostd-bar {
     width: 100%;
+    margin-top: 8px;
     border-radius: 6px 6px 0 0;
     background: linear-gradient(180deg, var(--uitour-color) 0%, var(--hover-uitour) 100%);
     box-shadow: 0 6px 18px rgba(255, 56, 92, 0.14);
-    transition: transform 0.18s ease;
-    will-change: transform;
-    margin-top: 10px;
+    transition: 0.18s ease;
+    cursor: pointer;
 }
 
-/* small hover lift */
 .hostd-bar:hover {
     transform: translateY(-6px);
+}
+
+.hostd-bar.selected {
+    outline: 3px solid #00b2cf;
+    background: linear-gradient(180deg, #00c0e8 0%, #009fbf 100%);
 }
 
 .hostd-bar-label {
@@ -95,16 +127,16 @@ body {
     font-size: 12px;
     color: #6b7280;
     font-weight: 600;
-    white-space: nowrap;
 }
 
-/* ========== PIE CHART ========== */
+/* =========================================================
+   PIE CHART
+   ========================================================= */
 .hostd-pie-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 420px;
-    /* ensures card is tall enough to contain pie + center text + legend */
     position: relative;
     gap: 10px;
 }
@@ -112,35 +144,48 @@ body {
 .hostd-pie-svg {
     width: 240px;
     height: 240px;
-    display: block;
     border-radius: 999px;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
 }
 
-/* center text sits absolutely in the middle for consistent centering */
-.hostd-pie-wrapper {
-    position: relative;
-}
-
+/* Center text */
 .hostd-pie-center-text {
     position: absolute;
-    top: calc(70% + 8px);
-    /* pushes slightly down so visually centered */
+    top: 115px;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%) ;
     font-weight: 700;
     color: #0f172a;
     font-size: 16px;
-    pointer-events: none;
+}
+/* =========================================================
+   PIE CHART (Animated)
+   ========================================================= */
+.hostd-pie-wrapper {
+    position: relative;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* legend under the pie */
+.hostd-pie-svg {
+    width: 240px;
+    height: 240px;
+    transform: rotate(-90deg);
+}
+
+.pie-anim {
+    transition: stroke-dasharray 0.55s ease, stroke-dashoffset 0.55s ease;
+}
+
+/* Legend */
 .hostd-pie-legend {
     display: flex;
     gap: 28px;
     align-items: center;
     justify-content: center;
-    margin-top: 111px;
+    margin-top: 105px;
 }
 
 .hostd-legend-item {
@@ -153,7 +198,6 @@ body {
     width: 18px;
     height: 18px;
     border-radius: 6px;
-    flex: 0 0 18px;
 }
 
 .hostd-legend-color--stay {
@@ -175,7 +219,16 @@ body {
     color: #6b7280;
 }
 
-/* ========== STATS GRID (bottom) ========== */
+.hostd-pie-month-label {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0087A0;
+}
+
+/* =========================================================
+   SUMMARY CARDS
+   ========================================================= */
 .hostd-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -208,7 +261,9 @@ body {
     color: #008489;
 }
 
-/* ========== RESPONSIVE ========== */
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 @media (max-width: 1024px) {
     .hostd-charts-section {
         grid-template-columns: 1fr;
@@ -218,11 +273,6 @@ body {
         width: 200px;
         height: 200px;
     }
-
-    .hostd-bar-chart-container {
-        height: 320px;
-        grid-template-columns: repeat(12, minmax(36px, 1fr));
-    }
 }
 
 @media (max-width: 768px) {
@@ -231,16 +281,45 @@ body {
     }
 
     .hostd-pie-svg {
-        width: 180px;
-        height: 180px;
+        width: 170px;
+        height: 170px;
     }
 
     .hostd-bar-chart-container {
-        height: 260px;
-        grid-template-columns: repeat(12, minmax(30px, 1fr));
-    }
-
-    .hostd-chart-title {
-        text-align: left;
+        height: 280px;
     }
 }
+
+/* =========================================================
+   BAR CHART TOOLTIP
+   ========================================================= */
+.hostd-tooltip {
+    position: fixed;
+    transform: translate(-50%, -100%);
+    background: #0f172a;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 9999;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: fadeIn 0.12s ease;
+}
+
+.hostd-tooltip-month {
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.hostd-tooltip-value {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -90%); }
+    to { opacity: 1; transform: translate(-50%, -100%); }
+}
+
