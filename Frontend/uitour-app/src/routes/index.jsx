@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 
 
 import MainLayout from "../layouts/MainLayout";
@@ -19,6 +19,7 @@ import WishlistPage from "../pages/WishlistPage";
 import TripsPage from "../pages/TripsPage";
 import NotificationsPage from "../pages/NotificationsPage";
 import AccountSettingsPage from "../pages/AccountSettingsPage";
+import SupportPage from "../pages/SupportPage";
 import AdminLayout from "../layouts/AdminLayout";
 import RequireAdmin from "../components/RequireAdmin";
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -67,6 +68,18 @@ import { HostProvider } from "../contexts/HostContext";
 
 import ResetPasswordPage from "../pages/ResetPasswordPage";
 import PaymentPage from "../pages/PaymentPage";
+import { useApp } from "../contexts/AppContext";
+
+function RoleAwareHome() {
+  const { user } = useApp();
+  const role = (user?.Role || user?.role || "").toString().toUpperCase();
+
+  if (role === "ADMIN") {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  return <HomePage />;
+}
 
 const AppRoutes = () => {
   return (
@@ -74,7 +87,7 @@ const AppRoutes = () => {
 
       {/* Main layout pages */}
       <Route path="/" element={<MainLayout />}>
-        <Route index element={<HomePage />} />
+        <Route index element={<RoleAwareHome />} />
         <Route path="search" element={<SearchResultsPage />} />
         <Route path="experiences/search" element={<ExperienceSearchResultsPage />} />
         <Route path="tours" element={<ToursPage />} />
@@ -100,6 +113,7 @@ const AppRoutes = () => {
             </RequireAuth>
           )}
         />
+        <Route path="support" element={<SupportPage />} />
       </Route>
 
       {/* Admin area */}
@@ -110,6 +124,7 @@ const AppRoutes = () => {
         <Route path="reports" element={<AdminReports />} />
         <Route path="transactions" element={<AdminTransactions />} />
         <Route path="settings" element={<AdminSettings />} />
+        <Route path="account" element={<AccountSettingsPage />} />
       </Route>
 
       {/* Info layout pages */}

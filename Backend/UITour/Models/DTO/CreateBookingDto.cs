@@ -8,7 +8,8 @@ namespace UITour.Models.DTO
         public int? PropertyID { get; set; } // Nullable for tour bookings
         public int? TourID { get; set; } // Nullable for property bookings
         [Required] public int UserID { get; set; }
-        [Required] public int HostID { get; set; }
+        // HostID is resolved on the server (from Property/Tour) but we keep it nullable for backward compatibility
+        public int? HostID { get; set; }
         [Required] public DateTime CheckIn { get; set; }
         [Required] public DateTime CheckOut { get; set; }
         [Range(1, 365)] public int Nights { get; set; }
