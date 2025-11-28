@@ -69,7 +69,7 @@ body {
 
 .hostd-toggle button:hover:not(.active):not(:disabled) {
     background: var(--uitour-color);
-    color: #fff;
+    color: #002B36;
     border-color: var(--uitour-color);
 }
 
@@ -153,11 +153,12 @@ body {
     position: absolute;
     top: 115px;
     left: 50%;
-    transform: translateX(-50%) ;
+    transform: translateX(-50%);
     font-weight: 700;
     color: #0f172a;
     font-size: 16px;
 }
+
 /* =========================================================
    PIE CHART (Animated)
    ========================================================= */
@@ -304,7 +305,7 @@ body {
     white-space: nowrap;
     z-index: 9999;
     pointer-events: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     animation: fadeIn 0.12s ease;
 }
 
@@ -319,7 +320,13 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translate(-50%, -90%); }
-    to { opacity: 1; transform: translate(-50%, -100%); }
-}
+    from {
+        opacity: 0;
+        transform: translate(-50%, -90%);
+    }
 
+    to {
+        opacity: 1;
+        transform: translate(-50%, -100%);
+    }
+}
