@@ -180,6 +180,7 @@
   "host": {
     "today": "Hôm nay",
     "listings": "Danh sách",
+    "dashboard": "Doanh thu",
     "messages": "Tin nhắn",
     "menu": "Menu",
     "closeMenu": "Đóng menu",
@@ -494,7 +495,8 @@
       "maxGuests": "Số khách tối đa",
       "durationHours": "Thời lượng (giờ)",
       "durationHint": "Thời lượng phải từ 1–24",
-      "pricePerGuest": "Giá mỗi khách (USD)",
+      "pricePerGuestUSD": "Giá mỗi khách (USD)",
+      "pricePerGuestVND": "Giá mỗi khách (VND)",
       "enterPrice": "Nhập giá...",
       "enterDuration": "Nhập thời lượng..."
     },
@@ -828,5 +830,37 @@
     "experience": "Trải nghiệm",
     "homeAlt": "Nơi lưu trú",
     "experienceAlt": "Trải nghiệm hoạt động"
+  },
+  "hostDashboard": {
+    "yearlyRevenue": "Doanh thu theo năm",
+    "stayVsExp": "Lưu trú vs Trải nghiệm",
+    "all": "Tất cả",
+    "stay": "Lưu trú",
+    "experience": "Trải nghiệm",
+    "yearly": "Theo năm",
+    "monthly": "Theo tháng",
+    "month": "Tháng",
+    "months": {
+      "jan": "Th1",
+      "feb": "Th2",
+      "mar": "Th3",
+      "apr": "Th4",
+      "may": "Th5",
+      "jun": "Th6",
+      "jul": "Th7",
+      "aug": "Th8",
+      "sep": "Th9",
+      "oct": "Th10",
+      "nov": "Th11",
+      "dec": "Th12"
+    },
+    "totalIncome": "Tổng thu nhập (YTD)",
+    "changeFromLastYear": "so với năm trước",
+    "changeFromLastMonth": "so với tháng trước",
+    "incomeThisMonth": "Thu nhập tháng này",
+    "bookingsThisMonth": "Lượt đặt tháng này",
+    "moreThanLastMonthUnit": "so với tháng trước",
+    "upcomingBookings": "Lượt đặt sắp tới",
+    "next30days": "Trong 30 ngày tới"
   }
 }

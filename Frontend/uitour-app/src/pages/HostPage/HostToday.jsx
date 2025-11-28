@@ -218,9 +218,6 @@ export default function HostToday() {
   return (
     <div className="host-today">
 
-      {/* ⭐⭐⭐ REPLACED OLD HEADER WITH NEW HEADER ⭐⭐⭐ */}
-      <HostHHeader />
-
       {/* ================= CONTENT ================= */}
       <div className="booking-list">
         {loading ? (

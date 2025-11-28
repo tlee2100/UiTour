@@ -14,8 +14,8 @@ export default function HostExperienceCreateChoose() {
 
   // Khi vào trang này phải đảm bảo flow type là "experience"
   useEffect(() => {
-    if (type !== "experience") setFlowType("experience");
-  }, [type, setFlowType]);
+    setFlowType("experience");
+  }, []);
 
   // 🔥 Categories đã được chuyển sang dùng key dịch
   const categories = [
@@ -38,7 +38,7 @@ export default function HostExperienceCreateChoose() {
   return (
     <div className="he-page">
       <main className="he-main">
-        
+
         {/* 🔥 Tiêu đề cũng chuyển sang i18n */}
         <h1 className="he-title">
           {t(language, "hostExperience.choose.title")}
@@ -48,9 +48,8 @@ export default function HostExperienceCreateChoose() {
           {categories.map((c) => (
             <button
               key={c.id}
-              className={`he-card ${
-                experienceData.mainCategory === c.id ? "is-selected" : ""
-              }`}
+              className={`he-card ${experienceData.mainCategory === c.id ? "is-selected" : ""
+                }`}
               onClick={() => handleSelect(c.id)}
             >
               <div className="he-card-icon">

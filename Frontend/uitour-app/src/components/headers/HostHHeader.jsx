@@ -1,5 +1,5 @@
 // HostHHeader.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import "./HostHHeader.css";
@@ -12,25 +12,27 @@ import { useLanguageCurrencyModal } from "../../contexts/LanguageCurrencyModalCo
 import LanguageCurrencySelector from "../../components/LanguageCurrencySelector";
 
 export default function HostHHeader() {
+    console.log("HostHHeader mounted");
+
     const navigate = useNavigate();
     const location = useLocation();
     const { user, dispatch } = useApp();
     const { language } = useLanguage();
-    const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } = useLanguageCurrencyModal();
+    const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } =
+        useLanguageCurrencyModal();
 
     const globeButtonRef = useRef(null);
     const navRef = useRef(null);
-    const highlightRef = useRef(null);
+    const menuRef = useRef(null);
 
     const [menuOpen, setMenuOpen] = useState(false);
 
-    const navItems = useMemo(() => [
-        { id: "today", label: t(language, 'host.today'), path: "/host/today" },
-        { id: "listings", label: t(language, 'host.listings'), path: "/host/listings" },
-        { id: "dashboard", label: "Dashboard", path: "/host/dashboard" },
-        { id: "messages", label: t(language, 'host.messages'), path: "/host/messages" },
-
-    ], [language]);
+    const navItems = [
+        { id: "today", key: "host.today", path: "/host/today" },
+        { id: "listings", key: "host.listings", path: "/host/listings" },
+        { id: "dashboard", key: "host.dashboard", path: "/host/dashboard" },
+        { id: "messages", key: "host.messages", path: "/host/messages" },
+    ];
 
     const isActiveNav = (path) => {
         if (path === "/host/listings" && location.pathname.startsWith("/host/stay")) return true;
@@ -38,99 +40,113 @@ export default function HostHHeader() {
         return location.pathname.startsWith(path);
     };
 
+    // compute active id string similar to Header's "active"
+    const activeItem = navItems.find((it) => isActiveNav(it.path));
+    const activeId = activeItem ? activeItem.id : "";
+
+    // update highlight function (searches inside navRef)
     const updateHighlight = () => {
-        const navEl = navRef.current;
-        const highlightEl = highlightRef.current;
-        if (!navEl || !highlightEl) return;
-        const active = navEl.querySelector(".active");
-        if (!active) {
-            highlightEl.style.width = "0px";
+        const nav = navRef.current;
+        if (!nav) return;
+        const activeLink = nav.querySelector(`.nav_link.active`);
+        const highlight = nav.querySelector(".nav_highlight");
+        if (!highlight) return;
+        if (!activeLink) {
+            // If no active (shouldn't happen), hide highlight:
+            highlight.style.width = `0px`;
+            highlight.style.transform = `translateX(0px)`;
             return;
         }
-        const parentRect = navEl.getBoundingClientRect();
-        const linkRect = active.getBoundingClientRect();
-        highlightEl.style.width = `${linkRect.width}px`;
-        highlightEl.style.transform = `translateX(${linkRect.left - parentRect.left}px)`;
+        // compute offset relative to nav container
+        const navRect = nav.getBoundingClientRect();
+        const linkRect = activeLink.getBoundingClientRect();
+        const offsetLeft = linkRect.left - navRect.left + nav.scrollLeft;
+        const width = linkRect.width;
+
+        highlight.style.width = `${width}px`;
+        highlight.style.transform = `translateX(${offsetLeft}px)`;
     };
 
+    // run update when activeId changes (mimic Header)
     useEffect(() => {
         updateHighlight();
-    }, [location.pathname]);
+    }, [activeId, language]); // language included in case label widths change
 
+    // resize listener to update highlight
     useEffect(() => {
-        window.addEventListener('resize', updateHighlight);
-        return () => window.removeEventListener('resize', updateHighlight);
+        const onResize = () => updateHighlight();
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
     }, []);
 
+    // keyboard escape to close menu
     useEffect(() => {
-        const handleEsc = (event) => {
-            if (event.key === 'Escape') setMenuOpen(false);
+        const handleEsc = (e) => {
+            if (e.key === "Escape") setMenuOpen(false);
         };
-        if (menuOpen) window.addEventListener('keydown', handleEsc);
-        return () => window.removeEventListener('keydown', handleEsc);
+        if (menuOpen) window.addEventListener("keydown", handleEsc);
+        return () => window.removeEventListener("keydown", handleEsc);
     }, [menuOpen]);
 
     const handleLogout = () => {
-        dispatch({ type: 'LOGOUT' });
+        dispatch({ type: "LOGOUT" });
         setMenuOpen(false);
-        navigate('/');
+        navigate("/");
     };
 
     return (
         <header className="host-header">
-            <div className="header-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+            <div className="header-logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
                 <img src={logo} alt="UiTour logo" />
             </div>
 
             <nav className="nav-tabs" ref={navRef}>
-                {navItems.map(item => (
+                {navItems.map((item) => (
                     <Link
                         key={item.id}
                         to={item.path}
-                        className={isActiveNav(item.path) ? "active" : ""}
+                        data-id={item.id}
+                        className={`nav_link ${isActiveNav(item.path) ? "active" : ""}`}
                     >
-                        {item.label}
+                        {t(language, item.key)}
                     </Link>
                 ))}
-                <span className="nav-highlight" ref={highlightRef}></span>
+                <span className="nav_highlight" aria-hidden="true" />
             </nav>
 
             <div className="header-right">
-                <button className="switch-title" onClick={() => navigate('/')}>
-                    {t(language, 'common.switchToTraveling')}
+                <button className="switch-title" onClick={() => navigate("/")}>
+                    {t(language, "common.switchToTraveling")}
                 </button>
 
                 <button
                     ref={globeButtonRef}
                     className="globe-btn"
                     onClick={openLanguageCurrency}
-                    aria-label={t(language, 'search.languageAndCurrency')}
+                    aria-label={t(language, "search.languageAndCurrency")}
                 >
                     <Icon icon="mdi:earth" width="24" height="24" />
                 </button>
 
                 {languageCurrencyOpen && (
-                    <LanguageCurrencySelector
-                        isOpen={languageCurrencyOpen}
-                        onClose={closeLanguageCurrency}
-                        triggerRef={globeButtonRef}
-                    />
+                    <LanguageCurrencySelector isOpen={languageCurrencyOpen} onClose={closeLanguageCurrency} triggerRef={globeButtonRef} />
                 )}
 
                 <div className="header_profile">
                     <button
                         className="header_menu"
-                        onClick={() => setMenuOpen((prev) => !prev)}
-                        aria-label={t(language, 'host.openHostNavigationMenu')}
+                        onClick={() => setMenuOpen((p) => !p)}
+                        aria-label={t(language, "host.openHostNavigationMenu")}
                         aria-expanded={menuOpen}
+                        ref={menuRef}
                     >
                         <Icon icon="mdi:menu" width="22" height="22" />
                     </button>
 
                     <button
                         className="header_avatarButton"
-                        onClick={() => setMenuOpen((prev) => !prev)}
-                        aria-label={t(language, 'host.openHostNavigationMenu')}
+                        onClick={() => setMenuOpen((p) => !p)}
+                        aria-label={t(language, "host.openHostNavigationMenu")}
                         aria-expanded={menuOpen}
                     >
                         <Icon icon="mdi:account-circle" width="28" height="28" />
@@ -140,51 +156,75 @@ export default function HostHHeader() {
 
             {menuOpen && (
                 <>
-                    <div className="host-menu-backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+                    <div className="host-menu-backdrop" onClick={() => setMenuOpen(false)} />
 
-                    <aside className="host-menu-panel" role="dialog" aria-modal="true">
+                    <aside className="host-menu-panel">
                         <div className="host-menu-header">
-                            <h2>{t(language, 'host.menu')}</h2>
+                            <h2>{t(language, "host.menu")}</h2>
                             <button className="host-menu-close" onClick={() => setMenuOpen(false)}>
                                 <Icon icon="mdi:close" width="24" />
                             </button>
                         </div>
 
                         <div className="host-menu-card">
-                            <img src={sampleImg} className="host-menu-card-img" />
+                            <img src={sampleImg} className="host-menu-card-img" alt="" />
                             <div className="host-menu-card-content">
-                                <h3>{t(language, 'host.newToHosting')}</h3>
-                                <p>{t(language, 'host.discoverBestPractices')}</p>
-                                <button className="host-menu-card-action">{t(language, 'host.getStarted')}</button>
+                                <h3>{t(language, "host.newToHosting")}</h3>
+                                <p>{t(language, "host.discoverBestPractices")}</p>
+                                <button className="host-menu-card-action">{t(language, "host.getStarted")}</button>
                             </div>
                         </div>
 
                         <nav className="host-menu-links">
-                            <button className="host-menu-link" onClick={() => { setMenuOpen(false); navigate('/account'); }}>
+                            <button
+                                className="host-menu-link"
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    navigate("/account");
+                                }}
+                            >
                                 <Icon icon="mdi:cog-outline" width="20" />
-                                <span>{t(language, 'host.accountSettings')}</span>
+                                <span>{t(language, "host.accountSettings")}</span>
                             </button>
 
-                            <button className="host-menu-link" onClick={() => { setMenuOpen(false); openLanguageCurrency(); }}>
+                            <button
+                                className="host-menu-link"
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    openLanguageCurrency();
+                                }}
+                            >
                                 <Icon icon="mdi:earth" width="20" />
-                                <span>{t(language, 'host.languageCurrency')}</span>
+                                <span>{t(language, "host.languageCurrency")}</span>
                             </button>
 
-                            <button className="host-menu-link" onClick={() => { setMenuOpen(false); navigate('/support'); }}>
+                            <button
+                                className="host-menu-link"
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    navigate("/support");
+                                }}
+                            >
                                 <Icon icon="mdi:lifebuoy" width="20" />
-                                <span>{t(language, 'host.getSupport')}</span>
+                                <span>{t(language, "host.getSupport")}</span>
                             </button>
 
-                            <button className="host-menu-link" onClick={() => { setMenuOpen(false); navigate('/host/becomehost'); }}>
+                            <button
+                                className="host-menu-link"
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    navigate("/host/becomehost");
+                                }}
+                            >
                                 <Icon icon="mdi:plus-circle-outline" width="20" />
-                                <span>{t(language, 'host.createNewListing')}</span>
+                                <span>{t(language, "host.createNewListing")}</span>
                             </button>
 
                             <div className="host-menu-divider" />
 
                             <button className="host-menu-link host-menu-link-secondary" onClick={handleLogout}>
                                 <Icon icon="mdi:logout" width="20" />
-                                <span>{t(language, 'host.logOut')}</span>
+                                <span>{t(language, "host.logOut")}</span>
                             </button>
                         </nav>
                     </aside>
