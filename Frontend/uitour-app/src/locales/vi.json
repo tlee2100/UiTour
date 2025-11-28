@@ -495,7 +495,8 @@
       "maxGuests": "Số khách tối đa",
       "durationHours": "Thời lượng (giờ)",
       "durationHint": "Thời lượng phải từ 1–24",
-      "pricePerGuest": "Giá mỗi khách (USD)",
+      "pricePerGuestUSD": "Giá mỗi khách (USD)",
+      "pricePerGuestVND": "Giá mỗi khách (VND)",
       "enterPrice": "Nhập giá...",
       "enterDuration": "Nhập thời lượng..."
     },

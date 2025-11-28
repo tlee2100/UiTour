@@ -793,6 +793,16 @@ export function HostProvider({ children }) {
 
     } else {
       // EXPERIENCE FLOW
+      // ⭐ EXPERIENCE: CHOOSE MAIN CATEGORY
+      if (step === "choose") {
+        setExperienceData(prev => ({
+          ...prev,
+          mainCategory: values.mainCategory
+        }));
+
+        setCompletedStep(prev => ({ ...prev, choose: true }));
+        return;
+      }
       if (step === "location") {
         setExperienceData((prev) => ({
           ...prev,

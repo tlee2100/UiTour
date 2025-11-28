@@ -4,51 +4,53 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { t } from "../../utils/translations";
 import "./HostStay.css";
+import { useCurrency } from "../../contexts/CurrencyContext";
 
 export default function HostStayPreview() {
     const { stayData, sendHostData, stayPhotosRAM, validateAll } = useHost();
     const { language } = useLanguage();
     const navigate = useNavigate();
+    const { format, convertToCurrent } = useCurrency();
 
     const d = stayData;
     const photos = stayPhotosRAM || [];
 
     // =============================
-    // Amenities; Quick Rules; Safety (keys for i18n)
+    // Translation-safe dictionaries
     // =============================
-    const AMENITY_NAME = {
-        1: t(language, "hostStay.amenities.wifi"),
-        7: t(language, "hostStay.amenities.tv"),
-        6: t(language, "hostStay.amenities.ac"),
-        8: t(language, "hostStay.amenities.kitchen"),
-        2: t(language, "hostStay.amenities.washer"),
-        15: t(language, "hostStay.amenities.dryer"),
-        3: t(language, "hostStay.amenities.heating"),
-        4: t(language, "hostStay.amenities.iron"),
-        9: t(language, "hostStay.amenities.gym"),
-        11: t(language, "hostStay.amenities.freeParking"),
-        17: t(language, "hostStay.amenities.hotTub"),
-        14: t(language, "hostStay.amenities.pool"),
-        19: t(language, "hostStay.amenities.bbq"),
-        18: t(language, "hostStay.amenities.evCharger"),
-        13: t(language, "hostStay.amenities.smokeAlarm"),
-        12: t(language, "hostStay.amenities.breakfast"),
-        10: t(language, "hostStay.amenities.workspace"),
-        5: t(language, "hostStay.amenities.kingBed"),
-        16: t(language, "hostStay.amenities.hairDryer"),
+    const AMENITY_KEYS = {
+        1: "hostStay.amenities.wifi",
+        7: "hostStay.amenities.tv",
+        6: "hostStay.amenities.ac",
+        8: "hostStay.amenities.kitchen",
+        2: "hostStay.amenities.washer",
+        15: "hostStay.amenities.dryer",
+        3: "hostStay.amenities.heating",
+        4: "hostStay.amenities.iron",
+        9: "hostStay.amenities.gym",
+        11: "hostStay.amenities.freeParking",
+        17: "hostStay.amenities.hotTub",
+        14: "hostStay.amenities.pool",
+        19: "hostStay.amenities.bbq",
+        18: "hostStay.amenities.evCharger",
+        13: "hostStay.amenities.smokeAlarm",
+        12: "hostStay.amenities.breakfast",
+        10: "hostStay.amenities.workspace",
+        5: "hostStay.amenities.kingBed",
+        16: "hostStay.amenities.hairDryer",
     };
 
-    const QUICK_RULES = {
-        no_smoking: t(language, "hostStay.rules.quick.noSmoking"),
-        no_open_flames: t(language, "hostStay.rules.quick.noFlames"),
-        pets_allowed: t(language, "hostStay.rules.quick.petsAllowed"),
+    const QUICK_RULE_KEYS = {
+        no_smoking: "hostStay.rules.quick.noSmoking",
+        no_open_flames: "hostStay.rules.quick.noFlames",
+        pets_allowed: "hostStay.rules.quick.petsAllowed",
     };
 
-    const SAFETY = {
-        covidSafety: t(language, "hostStay.rules.safety.enhancedCleaning"),
-        surfacesSanitized: t(language, "hostStay.rules.safety.sanitized"),
-        carbonMonoxideAlarm: t(language, "hostStay.rules.safety.coAlarm"),
-        smokeAlarm: t(language, "hostStay.rules.safety.smokeAlarm"),
+    const SAFETY_KEYS = {
+        covidSafety: "hostStay.rules.safety.enhancedCleaning",
+        surfacesSanitized: "hostStay.rules.safety.sanitized",
+        carbonMonoxideAlarm: "hostStay.rules.safety.coAlarm",
+        smokeAlarm: "hostStay.rules.safety.smokeAlarm",
     };
 
     const PROPERTY_TYPE_KEY = {
@@ -63,13 +65,14 @@ export default function HostStayPreview() {
         "A room": "hostStay.typePlace.room",
     };
 
+    const safeT = (key, fallback = "") =>
+        key ? t(language, key) : fallback;
 
     // =============================
     // Publish
     // =============================
     const handlePublish = async () => {
         const result = validateAll();
-
         if (!result.ok) {
             alert(`❌ ${t(language, "hostStay.preview.cannotPublish")}: ${result.message}`);
             return;
@@ -114,91 +117,134 @@ export default function HostStayPreview() {
                 {/* BASIC INFO */}
                 <section className="hs-preview-section">
                     <h2 className="hs-preview-section-title">
-                        {t(language, "hostStay.preview.basicInfo")}
+                        {safeT("hostStay.preview.basicInfo")}
                     </h2>
 
                     <div className="hs-preview-card">
+
                         <div>
-                            <b>{t(language, "hostStay.preview.propertyType")}: </b>
-                            {t(language, PROPERTY_TYPE_KEY[d.propertyTypeLabel]) || d.propertyTypeLabel}
+                            <b>{safeT("hostStay.preview.propertyType")}:</b>{" "}
+                            {PROPERTY_TYPE_KEY[d.propertyTypeLabel]
+                                ? safeT(PROPERTY_TYPE_KEY[d.propertyTypeLabel])
+                                : d.propertyTypeLabel}
                         </div>
 
                         {d.roomTypeLabel && (
                             <div>
-                                <b>{t(language, "hostStay.preview.typeOfPlace")}: </b>
-                                {t(language, ROOM_TYPE_KEY[d.roomTypeLabel]) || d.roomTypeLabel}
+                                <b>{safeT("hostStay.preview.typeOfPlace")}:</b>{" "}
+                                {ROOM_TYPE_KEY[d.roomTypeLabel]
+                                    ? safeT(ROOM_TYPE_KEY[d.roomTypeLabel])
+                                    : d.roomTypeLabel}
                             </div>
                         )}
 
-                        <div><b>{t(language, "hostStay.preview.bedrooms")}:</b> {d.bedrooms}</div>
-                        <div><b>{t(language, "hostStay.preview.beds")}:</b> {d.beds}</div>
-                        <div><b>{t(language, "hostStay.preview.bathrooms")}:</b> {d.bathrooms}</div>
-                        <div><b>{t(language, "hostStay.preview.accommodates")}:</b> {d.accommodates}</div>
+                        <div><b>{safeT("hostStay.preview.bedrooms")}:</b> {d.bedrooms}</div>
+                        <div><b>{safeT("hostStay.preview.beds")}:</b> {d.beds}</div>
+                        <div><b>{safeT("hostStay.preview.bathrooms")}:</b> {d.bathrooms}</div>
+                        <div><b>{safeT("hostStay.preview.accommodates")}:</b> {d.accommodates}</div>
                     </div>
                 </section>
 
                 {/* LOCATION */}
                 <section className="hs-preview-section">
                     <h2 className="hs-preview-section-title">
-                        {t(language, "hostStay.preview.location")}
+                        {safeT("hostStay.preview.location")}
                     </h2>
 
                     <div className="hs-preview-card">
-                        <div><b>{t(language, "hostStay.preview.address")}:</b> {d.location.addressLine}</div>
-                        <div><b>{t(language, "hostStay.preview.city")}:</b> {d.location.city}</div>
-                        <div><b>{t(language, "hostStay.preview.country")}:</b> {d.location.country}</div>
+                        <div><b>{safeT("hostStay.preview.address")}:</b> {d.location.addressLine}</div>
+                        <div><b>{safeT("hostStay.preview.city")}:</b> {d.location.city}</div>
+                        <div><b>{safeT("hostStay.preview.country")}:</b> {d.location.country}</div>
                     </div>
                 </section>
 
                 {/* AMENITIES */}
                 <section className="hs-preview-section">
                     <h2 className="hs-preview-section-title">
-                        {t(language, "hostStay.preview.amenities")}
+                        {safeT("hostStay.preview.amenities")}
                     </h2>
 
                     <div className="hs-preview-card">
                         {d.amenities.length === 0 &&
-                            <div>{t(language, "hostStay.preview.noAmenities")}</div>
+                            <div>{safeT("hostStay.preview.noAmenities")}</div>
                         }
 
-                        {d.amenities.map((id, i) => (
-                            <div key={i}>• {AMENITY_NAME[id] || `Amenity ${id}`}</div>
-                        ))}
+                        {d.amenities.map((id, i) => {
+                            const key = AMENITY_KEYS[id];
+                            return (
+                                <div key={i}>• {key ? safeT(key) : `Amenity ${id}`}</div>
+                            );
+                        })}
                     </div>
                 </section>
 
                 {/* PRICING */}
                 <section className="hs-preview-section">
                     <h2 className="hs-preview-section-title">
-                        {t(language, "hostStay.preview.pricing")}
+                        {safeT("hostStay.preview.pricing")}
                     </h2>
 
                     <div className="hs-preview-card">
-                        <div><b>{t(language, "hostStay.preview.basePrice")}:</b> ${d.pricing.basePrice}</div>
-                        <div><b>{t(language, "hostStay.preview.weekendMultiplier")}:</b> {d.pricing.weekendMultiplier}x</div>
-                        <div><b>{t(language, "hostStay.preview.cleaningFee")}:</b> ${d.pricing.cleaningFee}</div>
-                        <div><b>{t(language, "hostStay.preview.extraFee")}:</b> ${d.pricing.extraPeopleFee}</div>
-                        <div><b>{t(language, "hostStay.preview.extraThreshold")}:</b> {d.pricing.extraPeopleThreshold}</div>
-                        <div><b>{t(language, "hostStay.preview.serviceFee")}:</b> {d.pricing.serviceFee.percent}%</div>
-                        <div><b>{t(language, "hostStay.preview.tax")}:</b> {d.pricing.taxFee.percent}%</div>
+
+                        <div>
+                            <b>{safeT("hostStay.preview.basePrice")}:</b>{" "}
+                            {format(convertToCurrent(d.pricing.basePrice))}
+                        </div>
+
+                        <div>
+                            <b>{safeT("hostStay.preview.weekendMultiplier")}:</b>{" "}
+                            {d.pricing.weekendMultiplier}x
+                        </div>
+
+                        <div>
+                            <b>{safeT("hostStay.preview.cleaningFee")}:</b>{" "}
+                            {format(convertToCurrent(d.pricing.cleaningFee))}
+                        </div>
+
+                        <div>
+                            <b>{safeT("hostStay.preview.extraFee")}:</b>{" "}
+                            {format(convertToCurrent(d.pricing.extraPeopleFee))}
+                        </div>
+
+                        <div>
+                            <b>{safeT("hostStay.preview.extraThreshold")}:</b>{" "}
+                            {d.pricing.extraPeopleThreshold}
+                        </div>
+
+                        <div>
+                            <b>{safeT("hostStay.preview.serviceFee")}:</b>{" "}
+                            {d.pricing.serviceFee.percent}%
+                        </div>
+
+                        <div>
+                            <b>{safeT("hostStay.preview.tax")}:</b>{" "}
+                            {d.pricing.taxFee.percent}%
+                        </div>
                     </div>
                 </section>
 
                 {/* DISCOUNTS */}
                 <section className="hs-preview-section">
                     <h2 className="hs-preview-section-title">
-                        {t(language, "hostStay.preview.discounts")}
+                        {safeT("hostStay.preview.discounts")}
                     </h2>
 
                     <div className="hs-preview-card">
-                        <div><b>{t(language, "hostStay.preview.weekly")}:</b> {d.pricing.discounts.weekly.percent}%</div>
-                        <div><b>{t(language, "hostStay.preview.monthly")}:</b> {d.pricing.discounts.monthly.percent}%</div>
+
+                        <div>
+                            <b>{safeT("hostStay.preview.weekly")}:</b>{" "}
+                            {d.pricing.discounts.weekly.percent}%
+                        </div>
+
+                        <div>
+                            <b>{safeT("hostStay.preview.monthly")}:</b>{" "}
+                            {d.pricing.discounts.monthly.percent}%
+                        </div>
 
                         {d.pricing.discounts.seasonalDiscounts.length > 0 && (
                             <>
-                                <h3 className="hs-preview-subtitle">
-                                    {t(language, "hostStay.preview.seasonal")}
-                                </h3>
+                                <h3 className="hs-preview-subtitle">{safeT("hostStay.preview.seasonal")}</h3>
+
                                 {d.pricing.discounts.seasonalDiscounts.map((s, i) => (
                                     <div key={i}>
                                         <b>{s.from} → {s.to}:</b> {s.percentage}%
@@ -209,72 +255,71 @@ export default function HostStayPreview() {
 
                         {d.pricing.discounts.earlyBird.length > 0 && (
                             <>
-                                <h3 className="hs-preview-subtitle">
-                                    {t(language, "hostStay.preview.earlyBird")}
-                                </h3>
+                                <h3 className="hs-preview-subtitle">{safeT("hostStay.preview.earlyBird")}</h3>
+
                                 {d.pricing.discounts.earlyBird.map((e, i) => (
                                     <div key={i}>
-                                        <b>{t(language, "hostStay.preview.bookBefore").replace("{{days}}", e.daysBefore)}</b>
+                                        <b>{safeT("hostStay.preview.bookBefore").replace("{{days}}", e.daysBefore)}</b>{" "}
                                         {e.percent}%
                                     </div>
                                 ))}
                             </>
                         )}
+
                     </div>
                 </section>
 
                 {/* RULES & SAFETY */}
                 <section className="hs-preview-section">
                     <h2 className="hs-preview-section-title">
-                        {t(language, "hostStay.preview.rulesSafety")}
+                        {safeT("hostStay.preview.rulesSafety")}
                     </h2>
 
                     <div className="hs-preview-card">
+
                         {d.houseRules.length > 0 && (
                             <>
-                                <h3 className="hs-preview-subtitle">
-                                    {t(language, "hostStay.preview.houseRules")}
-                                </h3>
+                                <h3 className="hs-preview-subtitle">{safeT("hostStay.preview.houseRules")}</h3>
+
                                 {d.houseRules.map((r, i) => (
                                     <div key={i}>✔ {r.label}</div>
                                 ))}
                             </>
                         )}
 
-                        {Object.keys(QUICK_RULES).some(k => d.rules[k]) && (
+                        {/* QUICK RULES */}
+                        {Object.keys(QUICK_RULE_KEYS).some(k => d.rules[k]) && (
                             <>
-                                <h3 className="hs-preview-subtitle">
-                                    {t(language, "hostStay.preview.quickRules")}
-                                </h3>
-                                {Object.keys(QUICK_RULES)
+                                <h3 className="hs-preview-subtitle">{safeT("hostStay.preview.quickRules")}</h3>
+
+                                {Object.keys(QUICK_RULE_KEYS)
                                     .filter(k => d.rules[k])
                                     .map((k, i) => (
-                                        <div key={i}>✔ {QUICK_RULES[k]}</div>
+                                        <div key={i}>✔ {safeT(QUICK_RULE_KEYS[k])}</div>
                                     ))}
                             </>
                         )}
 
-                        {Object.keys(SAFETY).some(k => d.rules[k]) && (
+                        {/* SAFETY */}
+                        {Object.keys(SAFETY_KEYS).some(k => d.rules[k]) && (
                             <>
-                                <h3 className="hs-preview-subtitle">
-                                    {t(language, "hostStay.preview.safety")}
-                                </h3>
-                                {Object.keys(SAFETY)
+                                <h3 className="hs-preview-subtitle">{safeT("hostStay.preview.safety")}</h3>
+
+                                {Object.keys(SAFETY_KEYS)
                                     .filter(k => d.rules[k])
                                     .map((k, i) => (
-                                        <div key={i}>✔ {SAFETY[k]}</div>
+                                        <div key={i}>✔ {safeT(SAFETY_KEYS[k])}</div>
                                     ))}
                             </>
                         )}
 
+                        {/* SELF CHECK-IN */}
                         {d.rules.selfCheckIn && (
                             <>
-                                <h3 className="hs-preview-subtitle">
-                                    {t(language, "hostStay.preview.selfCheckin")}
-                                </h3>
+                                <h3 className="hs-preview-subtitle">{safeT("hostStay.preview.selfCheckin")}</h3>
+
                                 <div>
-                                    {t(language, "hostStay.preview.method")}{" "}
-                                    <b>{d.rules.self_checkin_method}</b>
+                                    {safeT("hostStay.preview.method")} <b>{d.rules.self_checkin_method}</b>
                                 </div>
                             </>
                         )}
@@ -284,17 +329,12 @@ export default function HostStayPreview() {
                 {/* PHOTOS */}
                 <section className="hs-preview-section">
                     <h2 className="hs-preview-section-title">
-                        {t(language, "hostStay.preview.photos")}
+                        {safeT("hostStay.preview.photos")}
                     </h2>
 
                     <div className="hs-preview-photo-grid">
                         {photos.map((p, i) => (
-                            <img
-                                key={i}
-                                src={p.preview}
-                                alt=""
-                                className="hs-preview-photo-item"
-                            />
+                            <img key={i} src={p.preview} alt="" className="hs-preview-photo-item" />
                         ))}
                     </div>
                 </section>

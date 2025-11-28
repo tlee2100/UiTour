@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 import "./HostExperience.css";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { t } from "../../utils/translations";
+import { useCurrency } from "../../contexts/CurrencyContext";   // ⭐ ADD
 
 export default function HostExperiencePreview() {
   const { experienceData, experiencePhotosRAM, experienceItineraryRAM } = useHost();
   const { language } = useLanguage();
+  const { format, convertToCurrent, currency } = useCurrency(); // ⭐ ADD
 
   const d = experienceData;
   const navigate = useNavigate();
@@ -21,6 +23,10 @@ export default function HostExperiencePreview() {
 
   // i18n Category labels
   const categoryLabel = t(language, `hostExperience.choose.categories.${d.mainCategory}`);
+
+  // ⭐ Base price stored as USD → convert to current currency
+  const baseUSD = Number(d.pricing.basePrice || 0);
+  const displayBase = convertToCurrent(baseUSD);
 
   return (
     <div className="he-preview-page">
@@ -133,20 +139,29 @@ export default function HostExperiencePreview() {
           </h2>
 
           <div className="he-preview-card">
+
+            {/* BASE PRICE */}
             <div className="he-row-safe">
               <b>{t(language, "hostExperience.preview.basePrice")}:</b>
-              <span className="he-text-safe">${d.pricing.basePrice}</span>
+              <span className="he-text-safe">
+                {format(displayBase)}
+              </span>
             </div>
 
+            {/* CURRENCY (user-facing currency) */}
             <div className="he-row-safe">
               <b>{t(language, "hostExperience.preview.currency")}:</b>
-              <span className="he-text-safe">{d.pricing.currency}</span>
+              <span className="he-text-safe">{currency}</span>
             </div>
 
+            {/* PRICE UNIT (not related to currency) */}
             <div className="he-row-safe">
               <b>{t(language, "hostExperience.preview.pricePer")}:</b>
-              <span className="he-text-safe">{d.pricing.priceUnit}</span>
+              <span className="he-text-safe">
+                {d.pricing.priceUnit}
+              </span>
             </div>
+
           </div>
         </section>
 
