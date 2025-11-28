@@ -66,15 +66,19 @@
   font-weight: 600;
 }
 
-/* Animated underline */
+/* Animated underline (use left/width for stable coordinates) */
 .nav-highlight {
   position: absolute;
   bottom: -4px;
   height: 3px;
   background: var(--uitour-color, #1d4ed8);
   border-radius: 3px;
-  transition: transform 0.3s ease, width 0.3s ease;
+  left: 0;
+  width: 0;
+  transition: left 0.28s cubic-bezier(0.25, 0.1, 0.25, 1),
+    width 0.28s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
   pointer-events: none;
+  will-change: left, width;
 }
 
 /* ----------- RIGHT SIDE ----------- */
@@ -185,6 +189,7 @@
   from {
     transform: translateX(100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -194,6 +199,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }

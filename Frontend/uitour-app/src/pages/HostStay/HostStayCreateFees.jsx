@@ -4,10 +4,12 @@ import "./HostStay.css";
 import { useHost } from "../../contexts/HostContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { t } from "../../utils/translations";
+import { useCurrency } from "../../contexts/CurrencyContext";
 
 export default function HostStayCreateFees() {
   const { stayData, updateField } = useHost();
   const { language } = useLanguage();
+  const { format, convertToCurrent, convertToUSD, currency } = useCurrency();
 
   const fees = stayData.pricing || {};
 
@@ -15,52 +17,9 @@ export default function HostStayCreateFees() {
   const [draftValue, setDraftValue] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // ──────────────────────────────
-  // PRIMARY FEES
-  // ──────────────────────────────
-  const items_primary = [
-    {
-      id: "cleaningFee",
-      title: t(language, "hostStay.fees.cleaning.title"),
-      subtitle: t(language, "hostStay.fees.cleaning.subtitle"),
-      icon: "mdi:broom",
-      editable: true,
-    },
-    {
-      id: "serviceFee",
-      title: t(language, "hostStay.fees.service.title"),
-      subtitle: t(language, "hostStay.fees.service.subtitle"),
-      icon: "mdi:percent-outline",
-      editable: false,
-    },
-    {
-      id: "taxFee",
-      title: t(language, "hostStay.fees.tax.title"),
-      subtitle: t(language, "hostStay.fees.tax.subtitle"),
-      icon: "mdi:cash-plus",
-      editable: false,
-    },
-  ];
-
-  // ──────────────────────────────
-  // EXTRA PEOPLE FEES
-  // ──────────────────────────────
-  const items_extra = [
-    {
-      id: "extraPeopleThreshold",
-      title: t(language, "hostStay.fees.extraThreshold.title"),
-      subtitle: t(language, "hostStay.fees.extraThreshold.subtitle"),
-      icon: "mdi:account-multiple-outline",
-      editable: true,
-    },
-    {
-      id: "extraPeopleFee",
-      title: t(language, "hostStay.fees.extraFee.title"),
-      subtitle: t(language, "hostStay.fees.extraFee.subtitle"),
-      icon: "mdi:cash",
-      editable: true,
-    },
-  ];
+  // FIELD IS MONEY?
+  const isMoneyField = (id) =>
+    id === "cleaningFee" || id === "extraPeopleFee";
 
   // OPEN MODAL
   const openEditor = (id, editable) => {
@@ -69,7 +28,33 @@ export default function HostStayCreateFees() {
     setActiveId(id);
 
     const v = fees[id];
-    setDraftValue(v?.percent ?? v ?? "");
+
+    // percentage fields
+    if (id === "serviceFee" || id === "taxFee") {
+      setDraftValue(v?.percent ?? "");
+      return;
+    }
+
+    // threshold (guests)
+    if (id === "extraPeopleThreshold") {
+      setDraftValue(v ?? "");
+      return;
+    }
+
+    // money fields → convert USD → display currency
+    if (isMoneyField(id)) {
+      const usd = v ?? 0;
+      const displayVal = convertToCurrent(usd);
+
+      setDraftValue(
+        currency === "VND"
+          ? String(Math.round(displayVal))
+          : String(Number(displayVal).toFixed(2))
+      );
+      return;
+    }
+
+    setDraftValue(v ?? "");
   };
 
   const closeEditor = () => {
@@ -78,32 +63,36 @@ export default function HostStayCreateFees() {
     setErrorMsg("");
   };
 
-  // SAVE VALUE
+  // SAVE
   const saveFee = () => {
-    let value = Number(draftValue);
-    if (isNaN(value) || value < 0) value = 0;
-
+    let val = Number(draftValue);
+    if (isNaN(val) || val < 0) val = 0;
     if (errorMsg) return;
 
     const updated = { ...fees };
 
+    // MONEY → convert display currency -> USD
     if (activeId === "cleaningFee") {
-      updated.cleaningFee = value;
+      const usd = convertToUSD(val);
+      updated.cleaningFee = Number(usd.toFixed(2));
     }
 
-    if (activeId === "serviceFee") {
-      updated.serviceFee = { type: "percentage", percent: value };
-    }
-
-    if (activeId === "taxFee") {
-      updated.taxFee = { type: "percentage", percent: value };
-    }
-
-    if (activeId === "extraPeopleThreshold") {
-      updated.extraPeopleThreshold = value;
-    }
     if (activeId === "extraPeopleFee") {
-      updated.extraPeopleFee = value;
+      const usd = convertToUSD(val);
+      updated.extraPeopleFee = Number(usd.toFixed(2));
+    }
+
+    // percentage
+    if (activeId === "serviceFee") {
+      updated.serviceFee = { type: "percentage", percent: val };
+    }
+    if (activeId === "taxFee") {
+      updated.taxFee = { type: "percentage", percent: val };
+    }
+
+    // threshold guests
+    if (activeId === "extraPeopleThreshold") {
+      updated.extraPeopleThreshold = val;
     }
 
     updateField("pricing", updated);
@@ -123,11 +112,34 @@ export default function HostStayCreateFees() {
         </div>
 
         <div className="hs-fee-list">
-          {items_primary.map((item) => {
+          {[
+            {
+              id: "cleaningFee",
+              title: t(language, "hostStay.fees.cleaning.title"),
+              subtitle: t(language, "hostStay.fees.cleaning.subtitle"),
+              icon: "mdi:broom",
+              editable: true,
+            },
+            {
+              id: "serviceFee",
+              title: t(language, "hostStay.fees.service.title"),
+              subtitle: t(language, "hostStay.fees.service.subtitle"),
+              icon: "mdi:percent-outline",
+              editable: false,
+            },
+            {
+              id: "taxFee",
+              title: t(language, "hostStay.fees.tax.title"),
+              subtitle: t(language, "hostStay.fees.tax.subtitle"),
+              icon: "mdi:cash-plus",
+              editable: false,
+            },
+          ].map((item) => {
             const current = fees[item.id];
+
             const showValue =
               item.id === "cleaningFee"
-                ? `$${current || 0}`
+                ? format(convertToCurrent(current || 0))
                 : `${current?.percent || 0}%`;
 
             return (
@@ -159,12 +171,28 @@ export default function HostStayCreateFees() {
         </div>
 
         <div className="hs-fee-list">
-          {items_extra.map((item) => {
+          {[
+            {
+              id: "extraPeopleThreshold",
+              title: t(language, "hostStay.fees.extraThreshold.title"),
+              subtitle: t(language, "hostStay.fees.extraThreshold.subtitle"),
+              icon: "mdi:account-multiple-outline",
+              editable: true,
+            },
+            {
+              id: "extraPeopleFee",
+              title: t(language, "hostStay.fees.extraFee.title"),
+              subtitle: t(language, "hostStay.fees.extraFee.subtitle"),
+              icon: "mdi:cash",
+              editable: true,
+            },
+          ].map((item) => {
             const v = fees[item.id] ?? 0;
+
             const showValue =
               item.id === "extraPeopleThreshold"
                 ? `${v} ${t(language, "hostStay.fees.unit.guests")}`
-                : `$${v}`;
+                : format(convertToCurrent(v));
 
             return (
               <button
@@ -209,8 +237,9 @@ export default function HostStayCreateFees() {
                   type="number"
                   value={draftValue}
                   onChange={(e) => {
-                    const val = Number(e.target.value);
-                    setDraftValue(e.target.value);
+                    const valRaw = e.target.value;
+                    const val = Number(valRaw);
+                    setDraftValue(valRaw);
 
                     if (activeId === "extraPeopleThreshold") {
                       const maxGuests = stayData.accommodates ?? 1;
@@ -219,8 +248,10 @@ export default function HostStayCreateFees() {
                         setErrorMsg(t(language, "hostStay.fees.error.thresholdMin"));
                       } else if (val > maxGuests) {
                         setErrorMsg(
-                          t(language, "hostStay.fees.error.thresholdMax")
-                            .replace("{{max}}", maxGuests)
+                          t(language, "hostStay.fees.error.thresholdMax").replace(
+                            "{{max}}",
+                            maxGuests
+                          )
                         );
                       } else {
                         setErrorMsg("");
@@ -230,11 +261,7 @@ export default function HostStayCreateFees() {
                   className="hs-input"
                 />
 
-                {errorMsg && (
-                  <div className="hs-error-text">
-                    {errorMsg}
-                  </div>
-                )}
+                {errorMsg && <div className="hs-error-text">{errorMsg}</div>}
               </div>
 
               <div className="hs-modal-footer">

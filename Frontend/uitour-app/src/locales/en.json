@@ -180,6 +180,7 @@
   "host": {
     "today": "Today",
     "listings": "Listings",
+    "dashboard": "Dashboard",
     "messages": "Messages",
     "menu": "Menu",
     "closeMenu": "Close menu",
@@ -830,5 +831,37 @@
     "experience": "Experience",
     "homeAlt": "Place to stay",
     "experienceAlt": "Activity experience"
+  },
+  "hostDashboard": {
+    "yearlyRevenue": "Yearly Revenue",
+    "stayVsExp": "Stay vs Experience",
+    "all": "All",
+    "stay": "Stay",
+    "experience": "Experience",
+    "yearly": "Yearly",
+    "monthly": "Monthly",
+    "month": "Month",
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    },
+    "totalIncome": "Total Income (YTD)",
+    "changeFromLastYear": "from last year",
+    "changeFromLastMonth": "from last month",
+    "incomeThisMonth": "Income This Month",
+    "bookingsThisMonth": "Bookings This Month",
+    "moreThanLastMonthUnit": "from last month",
+    "upcomingBookings": "Upcoming Bookings",
+    "next30days": "Next 30 days"
   }
 }
