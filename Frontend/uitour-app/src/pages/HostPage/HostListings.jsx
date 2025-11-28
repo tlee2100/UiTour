@@ -208,7 +208,6 @@ export default function HostListings() {
         <div className="host-listings">
 
             {/* ⭐⭐⭐ USE NEW HEADER ⭐⭐⭐ */}
-            <HostHHeader />
 
             {/* ================= CONTENT ================= */}
             <div className="listing-content">
