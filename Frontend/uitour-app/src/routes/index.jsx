@@ -4,6 +4,7 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import InfoLayout from "../layouts/InfoLayout";
 import HostLayout from "../layouts/HostLayout";
+import HostPageLayout from "../layouts/HostPageLayout";
 
 import ProfilePage from "../pages/ProfilePage";
 import HomePage from "../pages/HomePage";
@@ -140,10 +141,13 @@ const AppRoutes = () => {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route path="/host/becomehost" element={<BecomeHost />} />
-      <Route path="/host/today" element={<HostToday />} />
-      <Route path="/host/listings" element={<HostListings />} />
-      <Route path="/host/messages" element={<HostMessages />} />
-      <Route path="/host/dashboard" element={<HostDashboard />} />
+
+      <Route path="/host" element={<HostPageLayout />}>
+        <Route path="today" element={<HostToday />} />
+        <Route path="listings" element={<HostListings />} />
+        <Route path="dashboard" element={<HostDashboard />} />
+        <Route path="messages" element={<HostMessages />} />
+      </Route>
 
       <Route
         path="/host/*"

@@ -99,8 +99,6 @@ export default function HostMessages() {
     return (
         <div className="host-messages">
             
-            {/* ⭐⭐⭐ REPLACED HEADER WITH NEW SHARED HEADER ⭐⭐⭐ */}
-            <HostHHeader />
 
             {/* ================= MESSAGE LAYOUT ================= */}
             <div className="messages-container">

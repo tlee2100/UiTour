@@ -1,5 +1,5 @@
 // HostHHeader.jsx
-import React, { useEffect, useRef, useState, useLayoutEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import "./HostHHeader.css";
@@ -12,6 +12,8 @@ import { useLanguageCurrencyModal } from "../../contexts/LanguageCurrencyModalCo
 import LanguageCurrencySelector from "../../components/LanguageCurrencySelector";
 
 export default function HostHHeader() {
+    console.log("HostHHeader mounted");
+
     const navigate = useNavigate();
     const location = useLocation();
     const { user, dispatch } = useApp();
@@ -21,12 +23,10 @@ export default function HostHHeader() {
 
     const globeButtonRef = useRef(null);
     const navRef = useRef(null);
-    const highlightRef = useRef(null);
-    const isInitialMount = useRef(true);
+    const menuRef = useRef(null);
 
     const [menuOpen, setMenuOpen] = useState(false);
 
-    // Giữ cố định navItems (không re-render)
     const navItems = [
         { id: "today", key: "host.today", path: "/host/today" },
         { id: "listings", key: "host.listings", path: "/host/listings" },
@@ -40,48 +40,46 @@ export default function HostHHeader() {
         return location.pathname.startsWith(path);
     };
 
+    // compute active id string similar to Header's "active"
+    const activeItem = navItems.find((it) => isActiveNav(it.path));
+    const activeId = activeItem ? activeItem.id : "";
+
+    // update highlight function (searches inside navRef)
     const updateHighlight = () => {
         const nav = navRef.current;
-        const hl = highlightRef.current;
-        if (!nav || !hl) return;
+        if (!nav) return;
+        const activeLink = nav.querySelector(`.nav_link.active`);
+        const highlight = nav.querySelector(".nav_highlight");
+        if (!highlight) return;
+        if (!activeLink) {
+            // If no active (shouldn't happen), hide highlight:
+            highlight.style.width = `0px`;
+            highlight.style.transform = `translateX(0px)`;
+            return;
+        }
+        // compute offset relative to nav container
+        const navRect = nav.getBoundingClientRect();
+        const linkRect = activeLink.getBoundingClientRect();
+        const offsetLeft = linkRect.left - navRect.left + nav.scrollLeft;
+        const width = linkRect.width;
 
-        const activeLink = nav.querySelector("a.active");
-        if (!activeLink) return;
-
-        const offsetLeft = activeLink.offsetLeft;
-        const width = activeLink.offsetWidth;
-
-        hl.style.width = `${width}px`;
-        hl.style.transform = `translateX(${offsetLeft}px)`;
+        highlight.style.width = `${width}px`;
+        highlight.style.transform = `translateX(${offsetLeft}px)`;
     };
 
+    // run update when activeId changes (mimic Header)
     useEffect(() => {
         updateHighlight();
+    }, [activeId, language]); // language included in case label widths change
+
+    // resize listener to update highlight
+    useEffect(() => {
+        const onResize = () => updateHighlight();
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
     }, []);
 
-
-    /* ------------------------------------------------------
-       2) ANIMATE KHI ĐỔI ROUTE
-       ------------------------------------------------------ */
-    // Gọi lại mỗi khi pathname hoặc language thay đổi
-    useEffect(() => {
-        const id = requestAnimationFrame(() => {
-            updateHighlight();
-        });
-
-        window.addEventListener("resize", updateHighlight);
-        return () => {
-            cancelAnimationFrame(id);
-            window.removeEventListener("resize", updateHighlight);
-        };
-    }, [location.pathname, language]);
-
-
-
-    /* ------------------------------------------------------
-       Các phần khác giữ nguyên 100%
-       ------------------------------------------------------ */
-
+    // keyboard escape to close menu
     useEffect(() => {
         const handleEsc = (e) => {
             if (e.key === "Escape") setMenuOpen(false);
@@ -98,7 +96,7 @@ export default function HostHHeader() {
 
     return (
         <header className="host-header">
-            <div className="header-logo" onClick={() => navigate('/')} style={{ cursor: "pointer" }}>
+            <div className="header-logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
                 <img src={logo} alt="UiTour logo" />
             </div>
 
@@ -107,12 +105,13 @@ export default function HostHHeader() {
                     <Link
                         key={item.id}
                         to={item.path}
-                        className={isActiveNav(item.path) ? "active" : ""}
+                        data-id={item.id}
+                        className={`nav_link ${isActiveNav(item.path) ? "active" : ""}`}
                     >
                         {t(language, item.key)}
                     </Link>
                 ))}
-                <span className="nav-highlight" ref={highlightRef}></span>
+                <span className="nav_highlight" aria-hidden="true" />
             </nav>
 
             <div className="header-right">
@@ -130,23 +129,22 @@ export default function HostHHeader() {
                 </button>
 
                 {languageCurrencyOpen && (
-                    <LanguageCurrencySelector
-                        isOpen={languageCurrencyOpen}
-                        onClose={closeLanguageCurrency}
-                        triggerRef={globeButtonRef}
-                    />
+                    <LanguageCurrencySelector isOpen={languageCurrencyOpen} onClose={closeLanguageCurrency} triggerRef={globeButtonRef} />
                 )}
 
                 <div className="header_profile">
-                    <button className="header_menu"
+                    <button
+                        className="header_menu"
                         onClick={() => setMenuOpen((p) => !p)}
                         aria-label={t(language, "host.openHostNavigationMenu")}
                         aria-expanded={menuOpen}
+                        ref={menuRef}
                     >
                         <Icon icon="mdi:menu" width="22" height="22" />
                     </button>
 
-                    <button className="header_avatarButton"
+                    <button
+                        className="header_avatarButton"
                         onClick={() => setMenuOpen((p) => !p)}
                         aria-label={t(language, "host.openHostNavigationMenu")}
                         aria-expanded={menuOpen}
@@ -169,33 +167,55 @@ export default function HostHHeader() {
                         </div>
 
                         <div className="host-menu-card">
-                            <img src={sampleImg} className="host-menu-card-img" />
+                            <img src={sampleImg} className="host-menu-card-img" alt="" />
                             <div className="host-menu-card-content">
                                 <h3>{t(language, "host.newToHosting")}</h3>
                                 <p>{t(language, "host.discoverBestPractices")}</p>
-                                <button className="host-menu-card-action">
-                                    {t(language, "host.getStarted")}
-                                </button>
+                                <button className="host-menu-card-action">{t(language, "host.getStarted")}</button>
                             </div>
                         </div>
 
                         <nav className="host-menu-links">
-                            <button className="host-menu-link" onClick={() => { setMenuOpen(false); navigate("/account"); }}>
+                            <button
+                                className="host-menu-link"
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    navigate("/account");
+                                }}
+                            >
                                 <Icon icon="mdi:cog-outline" width="20" />
                                 <span>{t(language, "host.accountSettings")}</span>
                             </button>
 
-                            <button className="host-menu-link" onClick={() => { setMenuOpen(false); openLanguageCurrency(); }}>
+                            <button
+                                className="host-menu-link"
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    openLanguageCurrency();
+                                }}
+                            >
                                 <Icon icon="mdi:earth" width="20" />
                                 <span>{t(language, "host.languageCurrency")}</span>
                             </button>
 
-                            <button className="host-menu-link" onClick={() => { setMenuOpen(false); navigate("/support"); }}>
+                            <button
+                                className="host-menu-link"
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    navigate("/support");
+                                }}
+                            >
                                 <Icon icon="mdi:lifebuoy" width="20" />
                                 <span>{t(language, "host.getSupport")}</span>
                             </button>
 
-                            <button className="host-menu-link" onClick={() => { setMenuOpen(false); navigate("/host/becomehost"); }}>
+                            <button
+                                className="host-menu-link"
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    navigate("/host/becomehost");
+                                }}
+                            >
                                 <Icon icon="mdi:plus-circle-outline" width="20" />
                                 <span>{t(language, "host.createNewListing")}</span>
                             </button>

@@ -109,8 +109,6 @@ export default function HostDashboard() {
   };
 
   return (
-    <>
-      <HostHHeader />
       <div className="hostd-dashboard">
         <div className="hostd-charts-section">
 
@@ -285,6 +283,5 @@ export default function HostDashboard() {
           </div>
         )}
       </div>
-    </>
   );
 }
