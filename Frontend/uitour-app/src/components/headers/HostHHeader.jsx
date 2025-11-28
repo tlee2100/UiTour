@@ -45,63 +45,35 @@ export default function HostHHeader() {
         const hl = highlightRef.current;
         if (!nav || !hl) return;
 
-        const active = nav.querySelector(".active");
-        if (!active) {
-            // hide underline
-            hl.style.width = `0px`;
-            hl.style.left = `0px`;
-            return;
-        }
+        const activeLink = nav.querySelector("a.active");
+        if (!activeLink) return;
 
-        const offsetLeft = active.offsetLeft;
-        const width = active.offsetWidth;
+        const offsetLeft = activeLink.offsetLeft;
+        const width = activeLink.offsetWidth;
 
-        // The exact transition we want (match your CSS)
-        const TRANS = "left 0.28s cubic-bezier(0.25, 0.1, 0.25, 1), width 0.28s cubic-bezier(0.25, 0.1, 0.25, 1)";
-
-        if (isInitialMount.current) {
-            // 1) tắt transition để đặt vị trí ban đầu (không animate)
-            hl.style.transition = "none";
-            hl.style.width = `${width}px`;
-            hl.style.left = `${offsetLeft}px`;
-
-            // 2) ép browser reflow để chắc chắn giá trị trên DOM đã apply
-            //    (đọc thuộc tính layout sẽ force reflow)
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            hl.offsetWidth; // forced reflow
-
-            // 3) bật lại transition một cách rõ ràng (inline), nhưng chỉ sau reflow
-            //    Sau này khi updateHighlight được gọi tiếp, setting left/width sẽ animate
-            hl.style.transition = TRANS;
-
-            // 4) đánh dấu đã mount ban đầu xong
-            isInitialMount.current = false;
-        } else {
-            // Normal updates — CSS/inline transition sẽ animate thay đổi này
-            hl.style.width = `${width}px`;
-            hl.style.left = `${offsetLeft}px`;
-        }
+        hl.style.width = `${width}px`;
+        hl.style.transform = `translateX(${offsetLeft}px)`;
     };
-    /* ------------------------------------------------------
-       1) ĐẶT VỊ TRÍ BAN ĐẦU — KHÔNG ANIMATION (Airbnb style)
-       ------------------------------------------------------ */
-    useLayoutEffect(() => {
+
+    useEffect(() => {
         updateHighlight();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // chạy 1 lần khi mount
+    }, []);
+
 
     /* ------------------------------------------------------
        2) ANIMATE KHI ĐỔI ROUTE
        ------------------------------------------------------ */
+    // Gọi lại mỗi khi pathname hoặc language thay đổi
     useEffect(() => {
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                updateHighlight();
-            });
+        const id = requestAnimationFrame(() => {
+            updateHighlight();
         });
 
         window.addEventListener("resize", updateHighlight);
-        return () => window.removeEventListener("resize", updateHighlight);
+        return () => {
+            cancelAnimationFrame(id);
+            window.removeEventListener("resize", updateHighlight);
+        };
     }, [location.pathname, language]);
 
 

@@ -13,45 +13,56 @@ export default function HostStayCreateWeekdayPrice() {
   const { format, convertToCurrent, convertToUSD, currency } = useCurrency();
 
   const pricing = stayData.pricing || {};
-
-  // base price stored in USD (from context/BE)
   const baseUSD = Number(pricing.basePrice || 0);
 
-  // Local input state (raw, no formatting)
-  const [draftValue, setDraftValue] = useState("");
+  // raw number (no commas)
+  const [rawValue, setRawValue] = useState("");
+  // formatted version for display
+  const [displayValue, setDisplayValue] = useState("");
 
-  // Setup initial input value ONLY on first mount or when currency changes
+  // Format function for input (NO decimals)
+  const formatNumberForInput = (str) => {
+    if (!str) return "";
+    return Number(str).toLocaleString(currency === "VND" ? "vi-VN" : "en-US");
+  };
+
+  // init when currency changes
   useEffect(() => {
     const display = convertToCurrent(baseUSD);
+    const raw = currency === "VND"
+      ? String(Math.round(display))
+      : String(Math.floor(display)); // USD no decimals in input
 
-    setDraftValue(
-      currency === "VND"
-        ? String(Math.round(display))
-        : display.toString() // no .00, no formatting
-    );
-  }, [currency]); // ❗ removed baseUSD to avoid loop
+    setRawValue(raw);
+    setDisplayValue(formatNumberForInput(raw));
+  }, [currency]);
 
-  // percent fees
+  // fees
   const servicePercent = pricing.serviceFee?.percent || 0;
   const taxPercent = pricing.taxFee?.percent || 0;
 
   const serviceRate = servicePercent / 100;
   const taxRate = taxPercent / 100;
 
-  // total for display (convert USD → currency)
-  const totalUSD = baseUSD * (1 + serviceRate + taxRate);
+  // compute total realtime from RAW
+  const draftNumber = Number(rawValue || 0);
+  const draftUSD = convertToUSD(draftNumber);
+  const totalUSD = draftUSD * (1 + serviceRate + taxRate);
   const totalDisplay = convertToCurrent(totalUSD);
 
-  // Handle input (NO updateField here!)
+  // ============================================
+  // INPUT ON CHANGE (FORMAT LIVE)
+  // ============================================
   const handleInputChange = (e) => {
-    const raw = e.target.value.replace(/\D/g, "");
-    setDraftValue(raw);
+    const digits = e.target.value.replace(/\D/g, ""); // only numbers
+
+    setRawValue(digits);
+    setDisplayValue(formatNumberForInput(digits));
   };
 
-  // When Next → convert and save into context
-  const handleNext = () => {
-    const num = Number(draftValue || 0);
-
+  // SAVE WHEN LEAVE INPUT
+  const handleBlur = () => {
+    const num = Number(rawValue || 0);
     const usd = convertToUSD(num);
 
     updateField("weekday-price", {
@@ -60,26 +71,26 @@ export default function HostStayCreateWeekdayPrice() {
         basePrice: Number(usd.toFixed(2)),
       },
     });
-
-    if (!validateStep("weekday-price")) return;
-    navigate("/host/stay/create/weekend-price");
   };
 
   return (
     <div className="hs-page">
       <main className="hs-price-main">
+
         <h1 className="hs-price-heading">
           {t(language, "hostStay.weekdayPrice.title")}
         </h1>
 
         <div className="hs-price-center">
+
           <div className="hs-price-box">
             <input
               type="text"
               className="hs-price-input"
               placeholder={t(language, "hostStay.weekdayPrice.placeholder")}
-              value={draftValue}
+              value={displayValue}
               onChange={handleInputChange}
+              onBlur={handleBlur}
             />
           </div>
 
@@ -93,15 +104,9 @@ export default function HostStayCreateWeekdayPrice() {
               .replace("{{service}}", servicePercent)
               .replace("{{tax}}", taxPercent)}
           </div>
+
         </div>
 
-        <button
-          onClick={handleNext}
-          className="hs-primary-btn"
-          style={{ marginTop: 40 }}
-        >
-          {t(language, "common.next")}
-        </button>
       </main>
     </div>
   );

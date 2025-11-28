@@ -3,41 +3,50 @@ import { useHost } from "../../contexts/HostContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { t } from "../../utils/translations";
 import "./HostStay.css";
+import { useCurrency } from "../../contexts/CurrencyContext";
 
 export default function HostStayCreateWeekendPrice() {
   const navigate = useNavigate();
   const { stayData, updateField, validateStep } = useHost();
   const { language } = useLanguage();
+  const { format, convertToCurrent } = useCurrency(); // ⭐ ADD
 
   const pricing = stayData.pricing || {};
 
-  // Base price
-  const basePrice = Number(pricing.basePrice) || 0;
+  // Base price stored in USD
+  const baseUSD = Number(pricing.basePrice) || 0;
 
-  // USE ONLY weekendMultiplier
+  // Weekend multiplier (unchanged logic)
   const weekendMultiplier = Number(pricing.weekendMultiplier) || 1.0;
 
-  // Weekend price = basePrice * multiplier
-  const weekendPrice = Math.round(basePrice * weekendMultiplier);
+  // Weekend price in USD
+  const weekendUSD = baseUSD * weekendMultiplier;
+
+  // Convert weekend price → display currency
+  const weekendDisplay = convertToCurrent(weekendUSD);
 
   // Fees
   const servicePercent = pricing.serviceFee?.percent || 0;
   const taxPercent = pricing.taxFee?.percent || 0;
+
   const feeRate = (servicePercent + taxPercent) / 100;
 
-  // Final guest price
-  const finalCustomerPrice = Math.round(weekendPrice * (1 + feeRate));
+  // Final price in USD
+  const finalUSD = weekendUSD * (1 + feeRate);
+
+  // Convert guest price → display currency
+  const finalDisplay = convertToCurrent(finalUSD);
 
   // Slider converts percent → multiplier
   const handleMultiplierChange = (percentValue) => {
     const p = Number(percentValue);
-    const multiplier = 1 + p / 100;
+    const multiplier = Number((1 + p / 100).toFixed(4));
 
     updateField("weekend-price", {
       pricing: {
         ...pricing,
-        weekendMultiplier: multiplier
-      }
+        weekendMultiplier: multiplier,
+      },
     });
   };
 
@@ -58,17 +67,14 @@ export default function HostStayCreateWeekendPrice() {
 
         <div className="hs-weekend-center">
           <div className="hs-weekend-box">
-            <span className="hs-weekend-symbol">$</span>
             <span className="hs-weekend-price">
-              {weekendPrice.toLocaleString("en-US")}
+              {format(weekendDisplay)}
             </span>
           </div>
 
           <div className="hs-weekend-subtext">
             {t(language, "hostStay.weekendPrice.guestPrice")}{" "}
-            <strong>
-              ${finalCustomerPrice.toLocaleString("en-US")}
-            </strong>
+            <strong>{format(finalDisplay)}</strong>
             <br />
             <small>
               {t(language, "hostStay.weekendPrice.fees")
