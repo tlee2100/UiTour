@@ -1,4 +1,4 @@
-/* HostHHeader.css – exact header CSS copied from HostToday */
+/* HostHHeader.css (updated to match Header's nav classes) */
 
 .host-header {
   display: flex;
@@ -35,7 +35,7 @@
   opacity: 0.85;
 }
 
-/* ----------- NAVBAR ----------- */
+/* ----------- NAVBAR (uses same classes as Header) ----------- */
 .nav-tabs {
   position: absolute;
   left: 50%;
@@ -45,7 +45,8 @@
   gap: 16px;
 }
 
-.nav-tabs a {
+/* use same link class as Header */
+.nav_link {
   text-decoration: none;
   color: #111;
   font-weight: 500;
@@ -56,25 +57,28 @@
   transition: color 0.25s ease, background 0.25s ease;
 }
 
-.nav-tabs a:hover {
+.nav_link:hover {
   background: #f3f4f6;
   color: var(--uitour-color, #1d4ed8);
 }
 
-.nav-tabs a.active {
+.nav_link.active {
   color: var(--uitour-color, #1d4ed8);
   font-weight: 600;
 }
 
-/* Animated underline */
-.nav-highlight {
+/* highlight uses same class as Header too */
+.nav_highlight {
   position: absolute;
   bottom: -4px;
   height: 3px;
   background: var(--uitour-color, #1d4ed8);
   border-radius: 3px;
+  width: 0;
+  transform: translateX(0px);
   transition: transform 0.3s ease, width 0.3s ease;
   pointer-events: none;
+  will-change: transform, width;
 }
 
 /* ----------- RIGHT SIDE ----------- */
@@ -185,6 +189,7 @@
   from {
     transform: translateX(100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -194,6 +199,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -359,7 +365,7 @@
 }
 
 @media (max-width: 480px) {
-  .nav-tabs a {
+  .nav_link {
     font-size: 13px;
     padding: 8px 12px;
   }

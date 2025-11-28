@@ -76,8 +76,53 @@ function HostLayoutContent() {
     "/host/stay/create/preview": {
       prev: "/host/stay/create/rules-safety",
       isLast: true,
-    }
+    },
+
+    // ============= EXPERIENCE FLOW =============
+    "/host/experience/create/choose": {
+      prev: "/host/today",
+      next: "/host/experience/create/years"
+    },
+    "/host/experience/create/years": {
+      prev: "/host/experience/create/choose",
+      next: "/host/experience/create/qualification"
+    },
+    "/host/experience/create/qualification": {
+      prev: "/host/experience/create/years",
+      next: "/host/experience/create/describe-title"
+    },
+    "/host/experience/create/describe-title": {
+      prev: "/host/experience/create/qualification",
+      next: "/host/experience/create/locate"
+    },
+    "/host/experience/create/locate": {
+      prev: "/host/experience/create/describe-title",
+      next: "/host/experience/create/photos"
+    },
+    "/host/experience/create/photos": {
+      prev: "/host/experience/create/locate",
+      next: "/host/experience/create/itinerary"
+    },
+    "/host/experience/create/itinerary": {
+      prev: "/host/experience/create/photos",
+      next: "/host/experience/create/max-guests"
+    },
+    "/host/experience/create/max-guests": {
+      prev: "/host/experience/create/itinerary",
+      next: "/host/experience/create/discount"
+    },
+    "/host/experience/create/discount": {
+      prev: "/host/experience/create/max-guests",
+      next: "/host/experience/create/preview"
+    },
+    "/host/experience/create/preview": {
+      prev: "/host/experience/create/discount",
+      isLast: true
+    },
+
   };
+
+
 
   const { prev, next, isLast } = ROUTE_FLOW[pathname] || {};
 
@@ -104,7 +149,7 @@ function HostLayoutContent() {
 
   return (
     <div className="host-layout">
-      
+
       <HostHeader />
 
       <main className="host-main">

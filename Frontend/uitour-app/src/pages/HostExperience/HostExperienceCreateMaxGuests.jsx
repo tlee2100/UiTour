@@ -3,15 +3,34 @@ import { useHost } from "../../contexts/HostContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { t } from "../../utils/translations";
 import "./HostExperience.css";
+import { useCurrency } from "../../contexts/CurrencyContext";   // ⭐ ADD
 
 export default function HostExperienceCreateMaxGuests() {
   const { updateField, experienceData, loadingDraft } = useHost();
   const { language } = useLanguage();
+  const { currency, convertToCurrent, convertToUSD, format } = useCurrency(); // ⭐ ADD
 
   // Load từ context
   const initialTime = experienceData.booking?.timeSlots?.[0]?.startTime || null;
   const initialMax = experienceData.capacity?.maxGuests || 1;
-  const initialPrice = Number(experienceData.pricing?.basePrice) || 1;
+
+  // base price stored in USD
+  const baseUSD = Number(experienceData.pricing?.basePrice || 1);
+
+  // local input hiển thị
+  const [priceInput, setPriceInput] = useState("");
+
+  // Sync initial price → giá theo currency
+  useEffect(() => {
+    const display = convertToCurrent(baseUSD);
+
+    setPriceInput(
+      currency === "VND"
+        ? String(Math.round(display))
+        : display.toString()
+    );
+  }, [currency, baseUSD]);
+
   const initialDuration = experienceData.durationHours || 1;
 
   // Parse time
@@ -27,23 +46,20 @@ export default function HostExperienceCreateMaxGuests() {
   const [ampm, setAmpm] = useState(parsed ? parsed[2] : now.getHours() >= 12 ? "PM" : "AM");
 
   const [maxGuests, setMaxGuests] = useState(initialMax);
-  const [pricePerGuest, setPricePerGuest] = useState(initialPrice);
   const [durationHours, setDurationHours] = useState(initialDuration);
 
   const hours = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
   const minutesArr = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
 
-  // Sync draft
+  // Sync draft from context
   useEffect(() => {
     if (loadingDraft) return;
 
     const savedTime = experienceData.booking?.timeSlots?.[0]?.startTime || null;
     const savedMax = experienceData.capacity?.maxGuests || 1;
-    const savedPrice = Number(experienceData.pricing?.basePrice) || 0;
     const savedDuration = experienceData.durationHours || 1;
 
     setMaxGuests(savedMax);
-    setPricePerGuest(savedPrice);
     setDurationHours(savedDuration);
 
     if (savedTime) {
@@ -65,21 +81,32 @@ export default function HostExperienceCreateMaxGuests() {
     updateField("capacity", { maxGuests });
   }, [maxGuests]);
 
-  // Auto save price
-  useEffect(() => {
-    if (pricePerGuest === "") return;
-
-    updateField("pricing", {
-      basePrice: Number(pricePerGuest),
-    });
-  }, [pricePerGuest]);
-
   // Auto save duration
   useEffect(() => {
     if (durationHours === "") return;
-
     updateField("durationHours", { durationHours });
   }, [durationHours]);
+
+  // HANDLE PRICE INPUT — SIMILAR TO WEEKDAY PRICE
+  const handlePriceChange = (e) => {
+    const raw = e.target.value.replace(/\D/g, "");
+    setPriceInput(raw);
+  };
+
+  const handlePriceBlur = () => {
+    const num = Number(priceInput || 0);
+
+    // convert current currency → USD
+    const usd = convertToUSD(num);
+
+    updateField("pricing", {
+      basePrice: Number(usd.toFixed(2)),
+    });
+
+    // format lại input hiển thị cho đẹp
+    const display = convertToCurrent(usd);
+    setPriceInput(currency === "VND" ? String(Math.round(display)) : display.toString());
+  };
 
   return (
     <div className="he-page">
@@ -172,25 +199,21 @@ export default function HostExperienceCreateMaxGuests() {
             {/* PRICE */}
             <div className="he-field">
               <label>
-                {t(language, "hostExperience.maxGuests.pricePerGuestUSD")}
+                {t(
+                  language,
+                  currency === "USD"
+                    ? "hostExperience.maxGuests.pricePerGuestUSD"
+                    : "hostExperience.maxGuests.pricePerGuestVND"
+                )}
               </label>
 
               <input
                 className="he-input"
-                type="number"
-                min={1}
-                value={pricePerGuest}
+                type="text"
+                value={priceInput}
                 placeholder={t(language, "hostExperience.maxGuests.enterPrice")}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  const num = Number(v);
-                  setPricePerGuest(num);
-                }}
-                onBlur={() => {
-                  let v = Number(pricePerGuest);
-                  if (!v || v < 1) v = 1;
-                  setPricePerGuest(v);
-                }}
+                onChange={handlePriceChange}
+                onBlur={handlePriceBlur}
               />
             </div>
 
