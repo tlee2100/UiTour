@@ -171,8 +171,8 @@ namespace UITour.ServicesL.Implementations
             if (booking == null)
                 throw new InvalidOperationException("Booking not found");
 
-            // Update booking status to "Pending Approval"
-            booking.Status = "Pending Approval";
+            // Update booking status to "Confirmed"
+            booking.Status = "Confirmed";
             _unitOfWork.Bookings.Update(booking);
 
             // Create a transaction with status "awaiting_approval"

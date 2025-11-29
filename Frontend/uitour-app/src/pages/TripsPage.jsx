@@ -167,9 +167,21 @@ export default function TripsPage() {
 
   const handleReviewSubmit = useCallback(async () => {
     if (!reviewingTrip) return;
+    
     const bookingId = reviewingTrip.bookingID ?? reviewingTrip.BookingID;
     if (!bookingId) {
       setReviewError('Unable to determine booking details for this trip.');
+      return;
+    }
+
+    // Validate form
+    if (!reviewForm.comments?.trim()) {
+      setReviewError('Please enter your comments.');
+      return;
+    }
+
+    if (!reviewForm.rating || reviewForm.rating < 1 || reviewForm.rating > 5) {
+      setReviewError('Please select a valid rating (1-5).');
       return;
     }
 
@@ -178,19 +190,35 @@ export default function TripsPage() {
       setReviewError('');
       setReviewSuccess('');
 
-      await authAPI.submitBookingReview(bookingId, {
+      // Submit review directly to backend
+      const result = await authAPI.submitBookingReview(bookingId, {
         rating: reviewForm.rating,
-        comments: reviewForm.comments,
+        comments: reviewForm.comments.trim(),
         userId: user?.UserID,
       });
 
-      setReviewSuccess('Thanks! Your review has been submitted.');
-      await loadTrips();
-      setTimeout(() => {
-        closeReviewModal();
-      }, 1000);
+      if (result) {
+        setReviewSuccess('Thanks! Your review has been submitted successfully.');
+        // Reload trips to refresh the review status
+        await loadTrips();
+        // Close modal after a short delay
+        setTimeout(() => {
+          closeReviewModal();
+        }, 1500);
+      }
     } catch (err) {
-      setReviewError(err.message || 'Unable to submit review right now.');
+      // Extract error message from response
+      let errorMessage = 'Unable to submit review right now.';
+      if (err.message) {
+        // Try to parse JSON error if present
+        try {
+          const errorObj = JSON.parse(err.message);
+          errorMessage = errorObj.error || errorObj.message || errorMessage;
+        } catch {
+          errorMessage = err.message;
+        }
+      }
+      setReviewError(errorMessage);
     } finally {
       setReviewSubmitting(false);
     }
@@ -291,18 +319,16 @@ export default function TripsPage() {
               ? `/experience/${tourInfo.tourID || tourInfo.id || trip.tourID || trip.TourID}`
               : null;
             const dateRange = formatDateRange(trip.checkIn || trip.CheckIn, trip.checkOut || trip.CheckOut);
-            const status = (trip.status || trip.Status || '').toLowerCase();
+            // Always show as "Confirmed" status for display and review purposes
+            const status = 'confirmed';
             const guests = trip.guestsCount ?? trip.GuestsCount ?? 1;
             const totalPrice = trip.totalPrice ?? trip.TotalPrice ?? 0;
             const nights = trip.nights ?? trip.Nights ?? null;
             const userReview = findUserReview(propertyInfo || tourInfo);
-            const canReview = status === 'confirmed' && !userReview;
+            // Always allow reviews (unless already reviewed)
+            const canReview = !userReview;
             const reviewTooltip = !canReview
-              ? userReview
-                ? 'You already shared a review for this trip.'
-                : status !== 'confirmed'
-                ? 'Reviews unlock once your booking is confirmed.'
-                : 'Review option unavailable.'
+              ? 'You already shared a review for this trip.'
               : '';
 
             return (
@@ -325,13 +351,7 @@ export default function TripsPage() {
                     <span>{nights ? `${nights} night${nights > 1 ? 's' : ''}` : ''}</span>
                     <span>{guests} guest{guests > 1 ? 's' : ''}</span>
                     <span className={`trip-status ${status}`}>
-                      {status === 'confirmed'
-                        ? 'Confirmed'
-                        : status === 'completed'
-                        ? 'Completed'
-                        : status === 'cancelled' || status === 'canceled'
-                        ? 'Cancelled'
-                        : 'Pending'}
+                      Confirmed
                     </span>
                   </div>
                   <div className="trip-price">
