@@ -737,6 +737,12 @@ async updateUserProfile(userId, form) {
   async submitBookingReview(bookingId, { rating, comments, userId }) {
     try {
       const token = localStorage.getItem('token');
+      
+      // Validate inputs
+      if (!bookingId || !rating || !comments?.trim()) {
+        throw new Error('Rating and comments are required');
+      }
+
       const response = await fetch(`${BOOKING_BASE_URL}/${bookingId}/reviews`, {
         method: 'POST',
         headers: {
@@ -745,19 +751,35 @@ async updateUserProfile(userId, form) {
         },
         body: JSON.stringify({
           Rating: rating,
-          Comments: comments,
+          Comments: comments.trim(),
           UserId: userId,
         }),
       });
 
+      const responseText = await response.text();
+      
       if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(errText || 'Failed to submit review');
+        // Try to parse error message from JSON
+        let errorMessage = 'Failed to submit review';
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          // If not JSON, use the text directly
+          errorMessage = responseText || response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
-      return await response.json();
+      // Parse successful response
+      try {
+        return JSON.parse(responseText);
+      } catch {
+        return { message: 'Review submitted successfully' };
+      }
     } catch (error) {
-      throw new Error(error.message || 'Failed to submit review');
+      console.error('Review submission error:', error);
+      throw error;
     }
   }
 
