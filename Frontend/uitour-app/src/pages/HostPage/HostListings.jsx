@@ -130,14 +130,14 @@ export default function HostListings() {
                 }
             }
 
-            const formattedTours = (tours || []).map((t) => {
-                const img = getFirstPhotoUrl(t);
+            const formattedTours = (tours || []).map((tour) => {
+                const img = getFirstPhotoUrl(tour);
 
                 const reviews =
-                    t.Reviews ||
-                    t.reviews ||
-                    t.TourReviews ||
-                    t.tourReviews ||
+                    tour.Reviews ||
+                    tour.reviews ||
+                    tour.TourReviews ||
+                    tour.tourReviews ||
                     [];
 
                 const rating =
@@ -145,16 +145,16 @@ export default function HostListings() {
                         ? reviews.reduce((s, r) => s + (r.Rating || r.rating || 0), 0) / reviews.length
                         : 0;
 
-                const isActive = t.Active ?? t.active ?? false;
+                const isActive = tour.Active ?? tour.active ?? false;
 
                 return {
-                    id: t.TourID || t.tourID || t.id,
+                    id: tour.TourID || tour.tourID || tour.id,
                     status: isActive ? t(language, "host.approved") : t(language, "host.pending"),
-                    title: t.TourName || t.tourName || t.title || "Untitled",
+                    title: tour.TourName || tour.tourName || tour.title || "Untitled",
                     rating,
                     image: img || sampleImg,
                     type: "tour",
-                    location: t.Location || t.location || "",
+                    location: tour.Location || tour.location || "",
                 };
             });
 
