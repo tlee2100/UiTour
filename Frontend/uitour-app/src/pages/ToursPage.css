@@ -24,22 +24,6 @@
   flex-wrap: wrap;
 }
 
-.filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 24px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--black);
-  cursor: pointer;
-  transition: all 0.2s;
-  margin: 0 auto;
-}
-
 .filter-btn:hover {
   border-color: var(--black);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
@@ -301,27 +285,27 @@
   .tours-title {
     font-size: 2.5rem;
   }
-  
+
   .tours-subtitle {
     font-size: 1.125rem;
   }
-  
+
   .filter-tabs {
     justify-content: flex-start;
     overflow-x: auto;
     padding-bottom: 8px;
   }
-  
+
   .tours-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .tour-footer {
     flex-direction: column;
     gap: 16px;
     align-items: stretch;
   }
-  
+
   .book-button {
     width: 100%;
   }
@@ -338,20 +322,61 @@
   .tours-hero {
     padding: 60px 0 40px;
   }
-  
+
   .tours-title {
     font-size: 2rem;
   }
-  
+
   .tours-filter {
     padding: 30px 0;
   }
-  
+
   .tours-grid-section {
     padding: 40px 0;
   }
-  
+
   .tours-cta {
     padding: 60px 0;
   }
 }
+
+.filter-btn-wrapper {
+  position: relative;
+}
+
+.filter-bar {
+  position: relative;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--black);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 0;      /* ✔ sửa lỗi */
+}
+
+.filter-dropdown {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 10;
+
+  width: max-content;   /* ✔ thêm để tránh co */
+  min-width: 180px;     /* ✔ đảm bảo rộng */
+  overflow: hidden;     /* ✔ bo góc gọn */
+}
+

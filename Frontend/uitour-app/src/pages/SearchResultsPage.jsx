@@ -7,13 +7,15 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import MapView from '../components/search/MapView';
 import PropertyCard from '../components/search/PropertyCard';
+import StayFilterModal from '../components/modals/StayFilterModal';
 
 export default function SearchResultsPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [showMap, setShowMap] = useState(true);
   const [searchAsMove, setSearchAsMove] = useState(true);
-  
+  const [showFilterModal, setShowFilterModal] = useState(false);
+
   const location = searchParams.get('location') || '';
   const checkIn = searchParams.get('checkIn') || '';
   const checkOut = searchParams.get('checkOut') || '';
@@ -37,8 +39,7 @@ export default function SearchResultsPage() {
   };
 
   const handleFilter = () => {
-    // TODO: Open filter modal
-    console.log('Open filters');
+    setShowFilterModal(true);
   };
 
   return (
@@ -51,22 +52,22 @@ export default function SearchResultsPage() {
               <label>Where</label>
               <div className="sf-value-compact">{location || 'Search destinations'}</div>
             </div>
-            
+
             <div className="search-field-compact" onClick={() => navigate('/')}>
               <label>Check in</label>
               <div className="sf-value-compact">{checkIn || 'Add dates'}</div>
             </div>
-            
+
             <div className="search-field-compact" onClick={() => navigate('/')}>
               <label>Check out</label>
               <div className="sf-value-compact">{checkOut || 'Add dates'}</div>
             </div>
-            
+
             <div className="search-field-compact" onClick={() => navigate('/')}>
               <label>Who</label>
               <div className="sf-value-compact">{guests ? `${guests} guests` : 'Add guests'}</div>
             </div>
-            
+
             <button className="search-button-compact" onClick={handleSearch}>
               <Icon icon="mdi:magnify" width="20" height="20" style={{ color: 'white' }} />
             </button>
@@ -77,8 +78,8 @@ export default function SearchResultsPage() {
               <Icon icon="mdi:tune" width="18" height="18" />
               Filters
             </button>
-            <button 
-              className="map-toggle-button" 
+            <button
+              className="map-toggle-button"
               onClick={() => setShowMap(!showMap)}
             >
               <Icon icon={showMap ? "mdi:view-list" : "mdi:map"} width="20" height="20" />
@@ -92,7 +93,7 @@ export default function SearchResultsPage() {
       <div className="search-results-content">
         {loading && <LoadingSpinner message="Đang tìm kiếm..." />}
         {error && <ErrorMessage message={error} />}
-        
+
         {!loading && !error && (
           <>
             {/* Left Panel - Property List */}
@@ -113,16 +114,16 @@ export default function SearchResultsPage() {
               <div className="map-panel">
                 <div className="map-controls">
                   <label className="map-checkbox">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={searchAsMove}
                       onChange={(e) => setSearchAsMove(e.target.checked)}
                     />
                     <span>Search as I move the map</span>
                   </label>
                 </div>
-                <MapView 
-                  properties={properties} 
+                <MapView
+                  properties={properties}
                   onMarkerClick={(property) => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     navigate(`/property/${property.id}`);
@@ -133,6 +134,12 @@ export default function SearchResultsPage() {
           </>
         )}
       </div>
+      {showFilterModal && (
+        <StayFilterModal
+          isOpen={showFilterModal}
+          onClose={() => setShowFilterModal(false)}
+        />
+      )}
     </div>
   );
 }
