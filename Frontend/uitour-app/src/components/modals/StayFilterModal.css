@@ -1,0 +1,278 @@
+/* OVERLAY */
+.filter-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+}
+
+/* MAIN WRAPPER */
+.filter-container {
+  width: 480px;
+  height: 80vh;
+  max-height: 90vh;
+  background: white;
+  border-radius: 48px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* HEADER */
+.filter-header {
+  height: 56px;
+  background: #fff;
+  box-shadow: 0px 2px 10px rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.filter-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.filter-close-btn {
+  position: absolute;
+  right: 15px;
+  top: 12px;
+  background: #f6f6f6;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* SCROLL */
+.filter-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+/* SECTION */
+.filter-section {
+  padding: 12px 20px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* TYPE OF PLACE */
+.place-type-group {
+  display: flex;
+  gap: 8px;
+}
+
+.radio-chip {
+  flex: 1;
+  padding: 12px 0;
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 16px;
+  font-weight: 600;
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+
+.radio-chip:hover {
+  background: #f2f2f2;
+  border-color: #b3b3b3;
+}
+
+.radio-chip.active {
+  background: #e6e6e6;
+  border-color: #000;
+}
+
+/* COUNTERS */
+.counter-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  height: 33px;
+}
+
+.counter-label {
+  font-size: 16px;
+}
+
+.counter-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.counter-btn {
+  width: 33px;
+  height: 33px;
+  border-radius: 50%;
+  border: 1px solid #dcdcdc;
+  background: #ffffff;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+
+.counter-btn:hover {
+  background: #f2f2f2;
+  border-color: #b3b3b3;
+}
+
+.counter-value {
+  width: 50px;
+  text-align: center;
+}
+
+/* AMENITIES */
+.amenities-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.amenity-chip-modern {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.amenity-chip-modern:hover {
+  background: #f2f2f2;
+  border-color: #b3b3b3;
+}
+
+.amenity-chip-modern.active {
+  background: #e6e6e6;
+  border-color: #000;
+}
+
+/* PROPERTY TYPE */
+.property-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.property-chip {
+  display: flex;
+  align-items: center;
+  padding: 3px 10px;
+  height: 30px;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 128px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.property-chip:hover {
+  background: #f2f2f2;
+  border-color: #b3b3b3;
+}
+
+.property-chip.active {
+  background: #e6e6e6;
+  border-color: #000;
+}
+
+/* PRICE LIST */
+.price-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.price-option {
+  width: 100%;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.price-option:hover {
+  background: #f2f2f2;
+  border-color: #b3b3b3;
+}
+
+.price-option.active {
+  background: #e6e6e6;
+  border-color: #000;
+}
+
+/* FOOTER BUTTONS */
+.filter-footer {
+  height: 87px;
+  background: white;
+  box-shadow: 0px -2px 10px rgba(0,0,0,0.25);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+}
+
+/* CLEAR BUTTON */
+.btn-clear {
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-clear:hover {
+  background: #f2f2f2;
+  border-color: #b3b3b3;
+}
+
+/* SHOW BUTTON */
+.btn-apply {
+  background: #00C0E8;
+  color: white;
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-apply:hover {
+  background: #009acb;
+}

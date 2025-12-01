@@ -10,10 +10,8 @@ import { useLanguageCurrencyModal } from '../../contexts/LanguageCurrencyModalCo
 import { t } from '../../utils/translations';
 import LanguageCurrencySelector from '../LanguageCurrencySelector';
 
-export default function HeaderInfo() {
-  const [searchQuery, setSearchQuery] = useState('');
+export default function HeaderInfo({ searchActive = false, searchType = "stay" }) {
   const [menuOpen, setMenuOpen] = useState(false);
-
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
   const globeButtonRef = useRef(null);
@@ -21,13 +19,11 @@ export default function HeaderInfo() {
   const location = useLocation();
   const { user, token } = useApp();
   const { language } = useLanguage();
-  const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } = useLanguageCurrencyModal();
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    console.log("Searching for:", searchQuery);
-  };
+  const {
+    isOpen: languageCurrencyOpen,
+    openModal: openLanguageCurrency,
+    closeModal: closeLanguageCurrency
+  } = useLanguageCurrencyModal();
 
   const handleLogoClick = () => navigate('/');
 
@@ -46,14 +42,24 @@ export default function HeaderInfo() {
         closeMenu();
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
 
+  /** 🔥 Nút Search: Bắn event đúng loại */
+  const handleSearchClick = () => {
+    if (searchType === "exp") {
+      window.dispatchEvent(new Event("open-experience-search"));
+    } else {
+      window.dispatchEvent(new Event("open-universal-search"));
+    }
+  };
+
+
   return (
     <header className="headerif">
-      
+
       {/* Logo */}
       <div className="headerif_logo">
         <button className="headerif_logoButton" onClick={handleLogoClick}>
@@ -61,18 +67,16 @@ export default function HeaderInfo() {
         </button>
       </div>
 
-      {/* Search */}
-      <form className="headerif_search" onSubmit={handleSearch}>
-        <input
-          className="headerif_searchInput"
-          placeholder={t(language, 'search.startYourSearch')}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <button type="submit" className="headerif_searchButton">
-          <Icon icon="mdi:magnify" width="20" height="20" color='#fff'/>
+      {/* SMALL SEARCH BUTTON */}
+      <div className="headerif_searchWrapper">
+        <button
+          className={`headerif_smallSearch ${searchActive ? "active" : ""}`}
+          onClick={handleSearchClick}
+        >
+          <Icon icon="mdi:magnify" width="18" height="18" />
+          <span>Search</span>
         </button>
-      </form>
+      </div>
 
       {/* Right side */}
       <div className="headerif_right">
@@ -91,18 +95,19 @@ export default function HeaderInfo() {
             }
           }}
         >
-          {((user && token && (user.role === 'ADMIN' || user.Role === 'ADMIN')) || location.pathname.startsWith('/admin'))
+          {((user && token && (user.role === 'ADMIN' || user.Role === 'ADMIN')) ||
+            location.pathname.startsWith('/admin'))
             ? t(language, 'common.switchToTraveling')
             : t(language, 'common.becomeAHost')}
         </button>
 
-        <button 
+        <button
           ref={globeButtonRef}
           className="headerif_globe"
           onClick={openLanguageCurrency}
           aria-label={t(language, 'search.languageAndCurrency')}
         >
-          <Icon className='globe-icon' icon="mdi:earth" width="26" height="26"/>
+          <Icon className='globe-icon' icon="mdi:earth" width="26" height="26" />
         </button>
 
         {languageCurrencyOpen && (
@@ -133,7 +138,6 @@ export default function HeaderInfo() {
           )}
         </div>
       </div>
-
     </header>
   );
 }

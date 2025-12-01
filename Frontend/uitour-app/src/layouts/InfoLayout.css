@@ -1,9 +1,39 @@
+/* Layout padding for fixed header */
 .app-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* đảm bảo footer luôn đẩy xuống cuối */
+  min-height: 100vh;
 }
 
 .main-content {
   flex: 1;
+}
+
+/* Overlay */
+.stay-search-overlay {
+  position: fixed;
+  top: 96px; /* header height */
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(2px);
+  z-index: 900;
+}
+
+/* Search Bar container */
+.stay-search-container {
+  position: sticky;
+  top: 96px;
+  z-index: 1000;
+  background: white;
+  padding: 16px 0;
+  border-bottom: 1px solid #eee;
+}
+
+/* Search bar wrapper z-index fix */
+.uni-searchbar-wrapper {
+  position: relative;
+  z-index: 1050;
 }
