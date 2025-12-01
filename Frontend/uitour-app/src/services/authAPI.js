@@ -8,6 +8,7 @@ const HOST_BASE_URL = 'http://localhost:5069/api/host';
 const WISHLIST_BASE_URL = 'http://localhost:5069/api/wishlist';
 const BOOKING_BASE_URL = 'http://localhost:5069/api/booking';
 const UPLOAD_BASE_URL = 'http://localhost:5069/api/upload';
+const PAYMENTS_BASE_URL = 'http://localhost:5069/api/payments';
 
 class AuthAPI {
    // Lấy thông tin user theo ID
@@ -711,6 +712,33 @@ async updateUserProfile(userId, form) {
     }
   }
 
+  async getBookingById(bookingId) {
+    try {
+      const token = localStorage.getItem('token');
+      const id = parseInt(bookingId, 10);
+
+      if (Number.isNaN(id) || id <= 0) {
+        throw new Error('Invalid booking ID');
+      }
+
+      const response = await fetch(`${BOOKING_BASE_URL}/${id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch booking');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async createBooking(bookingPayload) {
     try {
       const token = localStorage.getItem('token');
@@ -1118,6 +1146,36 @@ async updateUserProfile(userId, form) {
       return await response.json();
     } catch (err) {
       console.error('getHostByUserId error:', err);
+      throw err;
+    }
+  }
+
+  async createMomoPayment(payload) {
+    try {
+      const response = await fetch(`${PAYMENTS_BASE_URL}/momo/initiate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const responseText = await response.text();
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to initiate Momo payment';
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          errorMessage = responseText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      return JSON.parse(responseText);
+    } catch (err) {
+      console.error('createMomoPayment error:', err);
       throw err;
     }
   }
