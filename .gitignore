@@ -416,6 +416,4 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-Backend/UITour/appsettings.json
-
 /Backend/UITour/appsettings.json
