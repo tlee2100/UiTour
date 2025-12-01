@@ -364,6 +364,7 @@ namespace UITour.Controllers
         }
 
         // POST: api/booking/{bookingId}/reviews
+        // Note: Reviews can be submitted for any booking regardless of status
         [HttpPost("{bookingId:int}/reviews")]
         public async Task<IActionResult> CreateReviewForBooking(int bookingId, [FromBody] CreateReviewDto request)
         {
@@ -385,17 +386,13 @@ namespace UITour.Controllers
                 return NotFound(new { error = $"Booking with ID {bookingId} not found" });
             }
 
+            // Validate user owns the booking
             if (request.UserId.HasValue && booking.UserID != request.UserId)
             {
                 return StatusCode(403, new { error = "You can only review your own bookings" });
             }
 
-            var status = booking.Status?.Trim().ToLowerInvariant();
-            if (status != "confirmed")
-            {
-                return BadRequest(new { error = "Only confirmed bookings can be reviewed" });
-            }
-
+            // No status check - users can review any booking at any time
             var trimmedComment = request.Comments?.Trim() ?? string.Empty;
 
             if (booking.PropertyID.HasValue)
@@ -422,11 +419,16 @@ namespace UITour.Controllers
                 await _unitOfWork.Reviews.AddAsync(review);
                 await _unitOfWork.SaveChangesAsync();
 
+                // Reload review with User information for proper display
+                var savedReview = await _unitOfWork.Reviews.Query()
+                    .Include(r => r.User)
+                    .FirstOrDefaultAsync(r => r.ReviewID == review.ReviewID);
+
                 return Ok(new
                 {
                     message = "Review submitted successfully",
                     reviewType = "property",
-                    review
+                    review = savedReview ?? review
                 });
             }
 
@@ -452,11 +454,16 @@ namespace UITour.Controllers
                 await _unitOfWork.TourReviews.AddAsync(review);
                 await _unitOfWork.SaveChangesAsync();
 
+                // Reload review with User information for proper display
+                var savedReview = await _unitOfWork.TourReviews.Query()
+                    .Include(r => r.User)
+                    .FirstOrDefaultAsync(r => r.ReviewID == review.ReviewID);
+
                 return Ok(new
                 {
                     message = "Review submitted successfully",
                     reviewType = "tour",
-                    review
+                    review = savedReview ?? review
                 });
             }
 
@@ -564,10 +571,10 @@ namespace UITour.Controllers
 
                 var transaction = await _bookingService.ConfirmTransferAsync(id);
                 return Ok(new { 
-                    message = "Transfer confirmed. Booking is now pending approval.",
+                    message = "Transfer confirmed. Booking is now confirmed.",
                     transactionId = transaction.TransactionID,
                     bookingId = id,
-                    status = "Pending Approval"
+                    status = "Confirmed"
                 });
             }
             catch (InvalidOperationException ex)
