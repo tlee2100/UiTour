@@ -22,6 +22,10 @@
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  flex-wrap: nowrap;
+  /* giữ thành 1 hàng */
+  justify-content: space-between;
+  /* trải đều theo chiều ngang */
 }
 
 .filter-btn:hover {
@@ -361,7 +365,8 @@
   color: var(--black);
   cursor: pointer;
   transition: all 0.2s;
-  margin: 0;      /* ✔ sửa lỗi */
+  margin: 0;
+  /* ✔ sửa lỗi */
 }
 
 .filter-dropdown {
@@ -372,11 +377,13 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 10;
 
-  width: max-content;   /* ✔ thêm để tránh co */
-  min-width: 180px;     /* ✔ đảm bảo rộng */
-  overflow: hidden;     /* ✔ bo góc gọn */
+  width: max-content;
+  /* ✔ thêm để tránh co */
+  min-width: 180px;
+  /* ✔ đảm bảo rộng */
+  overflow: hidden;
+  /* ✔ bo góc gọn */
 }
-

@@ -9,3 +9,117 @@
   padding: 16px;
   z-index: 4000;
 }
+
+.tour-dropdown-panel {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  width: 260px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0px 4px 15px rgba(0,0,0,0.15);
+  padding: 16px;
+  z-index: 4000;
+  animation: dropdownFade 0.15s ease-out;
+}
+
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tour-price-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.tour-price-chip {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tour-price-chip:hover {
+  border-color: #000;
+  background: #fff;
+}
+
+.tour-price-chip.active {
+  background: #e9faff;
+  border-color: #00C0E8;
+  font-weight: 600;
+}
+
+
+.tour-time-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.tour-time-chip {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tour-time-chip:hover {
+  border-color: #000;
+  background: #fff;
+}
+
+.tour-time-chip.active {
+  background: #e9faff;
+  border-color: #00C0E8;
+  font-weight: 600;
+}
+
+.tour-type-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.tour-type-chip {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tour-type-chip:hover {
+  border-color: #000;
+  background: #fff;
+}
+
+.tour-type-chip.active {
+  background: #e9faff;
+  border-color: #00C0E8;
+  font-weight: 600;
+}

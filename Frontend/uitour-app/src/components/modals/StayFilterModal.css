@@ -12,8 +12,8 @@
 /* MAIN WRAPPER */
 .filter-container {
   width: 480px;
-  height: 80vh;   /* <-- CHỈ CẦN ĐỔI DÒNG NÀY */
-  max-height: 90vh; /* optional cho an toàn */
+  height: 80vh;
+  max-height: 90vh;
   background: white;
   border-radius: 48px;
   display: flex;
@@ -49,9 +49,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
-/* SCROLL AREA */
+/* SCROLL */
 .filter-scroll {
   flex: 1;
   overflow-y: auto;
@@ -78,41 +79,22 @@
 .radio-chip {
   flex: 1;
   padding: 12px 0;
-  background: #f6f6f6;
-  border: 1px solid #ccc;
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
   border-radius: 16px;
   font-weight: 600;
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+
+.radio-chip:hover {
+  background: #f2f2f2;
+  border-color: #b3b3b3;
 }
 
 .radio-chip.active {
+  background: #e6e6e6;
   border-color: #000;
-  background: #fff;
-}
-
-/* PRICE */
-.price-boxes {
-  display: flex;
-  gap: 16px;
-}
-
-.price-col {
-  flex: 1;
-}
-
-.price-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #666;
-}
-
-.price-input {
-  width: 100%;
-  height: 56px;
-  margin-top: 6px;
-  border-radius: 64px;
-  border: 1px solid #000;
-  font-size: 16px;
-  padding-left: 20px;
 }
 
 /* COUNTERS */
@@ -137,12 +119,19 @@
   width: 33px;
   height: 33px;
   border-radius: 50%;
-  border: 1px solid #000;
-  background: none;
+  border: 1px solid #dcdcdc;
+  background: #ffffff;
   font-size: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+
+.counter-btn:hover {
+  background: #f2f2f2;
+  border-color: #b3b3b3;
 }
 
 .counter-value {
@@ -150,27 +139,35 @@
   text-align: center;
 }
 
-/* AMENITY GRID */
+/* AMENITIES */
 .amenities-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
-.amenity-chip {
+.amenity-chip-modern {
   display: flex;
   align-items: center;
-  padding: 3px 10px;
-  gap: 4px;
-  height: 30px;
-  border-radius: 128px;
-  border: 1px solid #d9d9d9;
-  font-size: 12px;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.18s ease;
 }
 
-.amenity-chip.active {
+.amenity-chip-modern:hover {
+  background: #f2f2f2;
+  border-color: #b3b3b3;
+}
+
+.amenity-chip-modern.active {
+  background: #e6e6e6;
   border-color: #000;
-  background: #e9faff;
 }
 
 /* PROPERTY TYPE */
@@ -186,17 +183,55 @@
   padding: 3px 10px;
   height: 30px;
   gap: 6px;
-  border: 1px solid #d9d9d9;
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
   border-radius: 128px;
   font-size: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.property-chip:hover {
+  background: #f2f2f2;
+  border-color: #b3b3b3;
 }
 
 .property-chip.active {
+  background: #e6e6e6;
   border-color: #000;
-  background: #e9faff;
 }
 
-/* FOOTER */
+/* PRICE LIST */
+.price-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.price-option {
+  width: 100%;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.price-option:hover {
+  background: #f2f2f2;
+  border-color: #b3b3b3;
+}
+
+.price-option.active {
+  background: #e6e6e6;
+  border-color: #000;
+}
+
+/* FOOTER BUTTONS */
 .filter-footer {
   height: 87px;
   background: white;
@@ -207,13 +242,25 @@
   padding: 0 24px;
 }
 
+/* CLEAR BUTTON */
 .btn-clear {
-  background: white;
-  border: none;
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  padding: 10px 24px;
   font-size: 14px;
   font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.18s ease;
 }
 
+.btn-clear:hover {
+  background: #f2f2f2;
+  border-color: #b3b3b3;
+}
+
+/* SHOW BUTTON */
 .btn-apply {
   background: #00C0E8;
   color: white;
@@ -222,4 +269,10 @@
   font-weight: 600;
   font-size: 14px;
   border: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-apply:hover {
+  background: #009acb;
 }
