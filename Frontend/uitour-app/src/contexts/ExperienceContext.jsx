@@ -82,6 +82,7 @@ const normalizeExperienceListItem = (e) => ({
   duration: e.duration || null,
   location: e.location || "",
   isGuestFavourite: e.isGuestFavourite || false,
+  mainCategory: e.mainCategory || "",
 });
 
 
@@ -429,6 +430,7 @@ export const ExperienceProvider = ({ children }) => {
       const averageRating = reviewsCount > 0
         ? reviews.reduce((sum, r) => sum + (r.rating || r.Rating || 0), 0) / reviewsCount
         : 0;
+      
 
       return normalizeExperienceListItem({
         id: t.tourID || t.TourID,
@@ -443,6 +445,7 @@ export const ExperienceProvider = ({ children }) => {
           : null,
         location: t.location || t.Location || "",
         isGuestFavourite: false,
+        mainCategory: t.mainCategory || t.MainCategory || "",
       });
     });
 
