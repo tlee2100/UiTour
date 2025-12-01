@@ -46,9 +46,12 @@ namespace UITour.Models
 
         public bool Active { get; set; } = true;
 
+        public string? mainCategory { get; set; }
+
         [ForeignKey("CancellationPolicy")]
         public int? CancellationID { get; set; }
         public CancellationPolicy CancellationPolicy { get; set; }
+        
 
         // Navigation properties
 
