@@ -863,5 +863,72 @@
     "moreThanLastMonthUnit": "from last month",
     "upcomingBookings": "Upcoming Bookings",
     "next30days": "Next 30 days"
+  },
+  "filters": {
+    "type": {
+      "title": "Type"
+    },
+    "time": {
+      "title": "Time of day",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening",
+      "fullday": "Full day"
+    },
+    "price": {
+      "title": "Price per guest",
+      "under": "Under"
+    }
+  },
+  "stayFilter": {
+    "title": "Filters",
+    "clear": "Clear",
+    "show": "Show",
+    "any": "Any",
+    "placeType": {
+      "title": "Type of place",
+      "any": "Any type",
+      "room": "Room",
+      "entire": "Entire home"
+    },
+    "price": {
+      "title": "Price Range",
+      "under": "Under"
+    },
+    "rooms": {
+      "title": "Rooms & Beds",
+      "beds": "Beds",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms"
+    },
+    "amenities": {
+      "title": "Amenities",
+      "wifi": "Wifi",
+      "tv": "TV",
+      "ac": "Air Conditioning",
+      "kitchen": "Kitchen",
+      "washer": "Washer",
+      "dryer": "Dryer",
+      "heating": "Heating",
+      "iron": "Iron",
+      "gym": "Gym",
+      "parking": "Free Parking",
+      "hottub": "Hot Tub",
+      "pool": "Pool",
+      "bbq": "BBQ",
+      "ev": "EV Charger",
+      "smoke": "Smoke Alarm",
+      "breakfast": "Breakfast",
+      "workspace": "Workspace",
+      "kingbed": "King Bed",
+      "hairdryer": "Hair Dryer"
+    },
+    "property": {
+      "title": "Property Type",
+      "house": "House",
+      "apartment": "Apartment",
+      "guesthouse": "Guest House",
+      "hotel": "Hotel"
+    }
   }
 }

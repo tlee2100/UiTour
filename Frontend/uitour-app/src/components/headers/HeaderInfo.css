@@ -1,5 +1,5 @@
 /* ==========================
-✅ HEADER INFO WRAPPER
+   HEADER BASE
 ========================== */
 .headerif {
   display: flex;
@@ -18,7 +18,7 @@
 
 
 /* ==========================
-✅ Logo
+   Logo
 ========================== */
 .headerif_logo {
   display: flex;
@@ -40,65 +40,73 @@
   align-items: center;
 }
 
-.headerif_logoButton:hover {
-  background: transparent;
-}
-
 
 /* ==========================
-✅ Search Box (center)
+   NEW SMALL SEARCH BUTTON
 ========================== */
-.headerif_search {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-
-  display: flex;
-  align-items: center;
-
-  width: 360px;
-  height: 48px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 1000px;
-  padding: 0;
-}
-
-.headerif_searchInput {
+.headerif_searchWrapper {
   flex: 1;
-  border: none;
-  outline: none;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 0 56px 0 20px;
-  height: 100%;
-  background: transparent;
+  display: flex;
+  justify-content: center;
 }
 
-.headerif_searchButton {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 34px;
-  height: 34px;
-  background: var(--uitour-color);
-  border: none;
-  border-radius: 50%;
+/* ==========================
+   Center Search Button (New)
+========================== */
+.headerif_smallSearch {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
+
+  padding: 12px 28px !important; /* TĂNG CHIỀU DÀI */
+  min-width: 260px !important;   /* GẤP ĐÔI KÍCH THƯỚC CŨ */
+  height: 48px;
+  margin: 0 auto !important;
+  margin-right: 150px !important;
+
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 32px;
+
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 192, 232, 0.25);
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+  transition: 
+    background 0.22s ease,
+    box-shadow 0.22s ease,
+    transform 0.15s ease;
 }
 
-.headerif_searchButton:hover {
-  background: var(--hover-uitour);
+.headerif_smallSearch:hover {
+  background:#f7f7f7; /* same hover feel as uitour buttons */
+  color: var(--uitour-color);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-1px); /* nhẹ như UITour */
+}
+
+.headerif_smallSearch.active {
+  background: var(--uitour-color);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transform: translateY(1px); /* hiệu ứng bị ấn xuống */
+  border-color: var(--hover-uitour);
 }
 
 
 /* ==========================
-✅ Right section
+   Old search bar (not used now)
+   Keeping for safe compatibility
+========================== */
+.headerif_search {
+  display: none !important;
+}
+
+
+/* ==========================
+   Right controls
 ========================== */
 .headerif_right {
   display: flex;
@@ -109,7 +117,6 @@
 .headerif_title {
   font-size: 14px;
   font-weight: 600;
-  font-family: 'Inter', sans-serif;
   background: transparent;
   padding: 10px 12px;
   border: none;
@@ -137,11 +144,12 @@
 
 .headerif_globe:hover {
   background: #F3F4F6;
-  color: var(--uitour-color);
+  color:var(--uitour-color) ;
 }
 
+
 /* ==========================
-✅ Profile dropdown
+   Profile Dropdown
 ========================== */
 .headerif_profile {
   display: flex;
@@ -160,32 +168,28 @@
   border: none;
   cursor: pointer;
   border-radius: 50%;
-  background: #f3f4f6;
+  background: #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.headerif_menu {
-  background: #e5e7eb;
-}
-.headerif_avatarButton {
-  background: #e5e7eb;
-}
-
-.headerif_menu:hover {
-  background: #d1d5db;
-  color: var(--uitour-color);
-}
+.headerif_menu:hover,
 .headerif_avatarButton:hover {
   background: #d1d5db;
-  color: var(--uitour-color);
+  color:var(--uitour-color) ;
 }
 
 
 /* ==========================
-✅ Responsive
+   Responsive
 ========================== */
+@media (max-width: 1200px) {
+  .headerif {
+    padding: 24px 80px;
+  }
+}
+
 @media (max-width: 1024px) {
   .headerif {
     padding: 24px 40px;
@@ -200,23 +204,42 @@
     gap: 12px;
   }
 
-  .headerif_search {
-    position: static;
-    transform: none;
-    margin: 0 auto;
-    max-width: 420px;
+  .headerif_searchWrapper {
+    order: 3;
     width: 100%;
+    justify-content: center;
   }
 
   .headerif_right {
+    order: 2;
     width: 100%;
     justify-content: center;
+  }
+
+  .headerif_logo {
+    order: 1;
   }
 }
 
 @media (max-width: 480px) {
+  .headerif_smallSearch {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
   .headerif_title {
     font-size: 13px;
-    padding: 8px 10px;
+  }
+
+  .headerif {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerif_smallSearch {
+    min-width: 180px;
+    padding: 10px 20px;
+    font-size: 14px;
   }
 }

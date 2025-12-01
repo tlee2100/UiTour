@@ -4,9 +4,7 @@ import './HomePage.css';
 import { Icon } from '@iconify/react';
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
-import SearchWhere from '../components/search/SearchWhere';
-import SearchDates from '../components/search/SearchDates';
-import SearchGuests from '../components/search/SearchGuests';
+import UniversalSearchBar from '../components/search/UniversalSearchBar';
 import authAPI from '../services/authAPI';
 import { useApp } from '../contexts/AppContext';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -14,14 +12,10 @@ import { useCurrency } from '../contexts/CurrencyContext';
 export default function HomePage() {
   const navigate = useNavigate();
   const { user } = useApp();
-  const [searchLocation, setSearchLocation] = useState('');
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
-  const [guests, setGuests] = useState('');
-  const [openWhere, setOpenWhere] = useState(false);
-  const [openDates, setOpenDates] = useState(false);
-  const [openGuests, setOpenGuests] = useState(false);
-  const [activeField, setActiveField] = useState(null);
+
+  const handleSearchNavigate = (queryString) => {
+    navigate(`/search?${queryString}`);
+  }; // 🔥 ADD THIS
 
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -47,12 +41,11 @@ export default function HomePage() {
       setSavedPropertyIds(new Set());
       return;
     }
-    
+
     try {
       const wishlist = await authAPI.getUserWishlist(user.UserID);
       deriveIdsFromWishlist(wishlist, 'property');
     } catch (err) {
-      // Silently fail - user might not have wishlist yet
       console.error('Error loading saved properties:', err);
       setSavedPropertyIds(new Set());
     }
@@ -66,57 +59,39 @@ export default function HomePage() {
     setError(null);
     try {
       const list = await authAPI.getProperties();
-      // Normalize dữ liệu từ backend
       const normalized = list.map(p => {
-    const reviews = Array.isArray(p.reviews) ? p.reviews : [];
-    const avgRating = reviews.length > 0 
-      ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviews.length 
-      : 0;
+        const reviews = Array.isArray(p.reviews) ? p.reviews : [];
+        const avgRating = reviews.length > 0
+          ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviews.length
+          : 0;
 
-    // Helper function to normalize image URL
-    const normalizeImageUrl = (url) => {
-      if (!url || url.trim().length === 0) return "/fallback.svg";
-      // If already a full URL (http/https), use as is
-      if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url;
-      }
-      // If relative path starting with /, prepend backend base URL
-      if (url.startsWith('/')) {
-        return `http://localhost:5069${url}`;
-      }
-      // Otherwise, assume it's a relative path and prepend backend base URL
-      return `http://localhost:5069/${url}`;
-    };
+        const normalizeImageUrl = (url) => {
+          if (!url || url.trim().length === 0) return "/fallback.svg";
+          if (url.startsWith('http://') || url.startsWith('https://')) return url;
+          if (url.startsWith('/')) return `http://localhost:5069${url}`;
+          return `http://localhost:5069/${url}`;
+        };
 
-    // Get first photo - check multiple possible field names
-    const photos = p.photos || p.Photos || [];
-    const firstPhoto = Array.isArray(photos) && photos.length > 0 
-      ? photos[0] 
-      : null;
-    
-    // Try multiple possible URL field names (camelCase, PascalCase, etc.)
-    const imageUrl = firstPhoto 
-      ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || firstPhoto.ServerUrl || "/fallback.svg")
-      : "/fallback.svg";
-    
-    // Debug logging for missing photos
-    if (!firstPhoto && photos.length === 0) {
-      console.warn(`Property ${p.propertyID || p.PropertyID} has no photos`);
-    }
+        const photos = p.photos || p.Photos || [];
+        const firstPhoto = Array.isArray(photos) && photos.length > 0 ? photos[0] : null;
 
-    return {
-      id: p.propertyID,
-      title: p.listingTitle || 'Untitled',
-      location: p.location || '',
-      price: p.price ?? 0,
-      currency: p.currency ?? "USD",
-      rating: avgRating,
-      reviewsCount: reviews.length,
-      mainImage: normalizeImageUrl(imageUrl),
-      isGuestFavourite: false,
-      dates: null
-    };
-    });
+        const imageUrl = firstPhoto
+          ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || firstPhoto.ServerUrl || "/fallback.svg")
+          : "/fallback.svg";
+
+        return {
+          id: p.propertyID,
+          title: p.listingTitle || 'Untitled',
+          location: p.location || '',
+          price: p.price ?? 0,
+          currency: p.currency ?? "USD",
+          rating: avgRating,
+          reviewsCount: reviews.length,
+          mainImage: normalizeImageUrl(imageUrl),
+          isGuestFavourite: false,
+          dates: null
+        };
+      });
       setProperties(normalized);
     } catch (err) {
       console.error('Error fetching properties:', err);
@@ -128,88 +103,8 @@ export default function HomePage() {
 
   useEffect(() => {
     loadProperties();
-      loadSavedProperties();
+    loadSavedProperties();
   }, [loadProperties, loadSavedProperties]);
-
-  // -----------------------
-  // Search handler
-  // -----------------------
-  const handleSearch = () => {
-    // Close all popovers
-    setOpenWhere(false);
-    setOpenDates(false);
-    setOpenGuests(false);
-    setActiveField(null);
-
-    // Validation
-    if (checkIn && checkOut) {
-      const checkInDate = new Date(checkIn);
-      const checkOutDate = new Date(checkOut);
-      if (checkOutDate <= checkInDate) {
-        alert('Check-out date must be after check-in date');
-        setOpenDates(true);
-        setActiveField('checkin');
-        return;
-      }
-    }
-
-    if (checkIn && !checkOut) {
-      alert('Please select both check-in and check-out dates');
-      setOpenDates(true);
-      setActiveField('checkin');
-      return;
-    }
-
-    if (checkOut && !checkIn) {
-      alert('Please select check-in date first');
-      setOpenDates(true);
-      setActiveField('checkin');
-      return;
-    }
-
-    const params = new URLSearchParams();
-    if (searchLocation) params.set('location', searchLocation);
-    if (checkIn) params.set('checkIn', checkIn);
-    if (checkOut) params.set('checkOut', checkOut);
-    if (guests) params.set('guests', guests);
-
-    navigate(`/search?${params.toString()}`);
-  };
-
-  const handleClearLocation = (e) => {
-    e.stopPropagation();
-    setSearchLocation('');
-  };
-
-  const handleClearDates = (e) => {
-    e.stopPropagation();
-    setCheckIn('');
-    setCheckOut('');
-  };
-
-  const handleClearGuests = (e) => {
-    e.stopPropagation();
-    setGuests('');
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${months[date.getMonth()]} ${date.getDate()}`;
-  };
-
-  const categories = [
-    { name: "Amazing views", icon: "mdi:mountain" },
-    { name: "Farms", icon: "mdi:barn" },
-    { name: "Earth Homes", icon: "mdi:home-variant" },
-    { name: "Top of the world", icon: "mdi:peak" },
-    { name: "Design", icon: "mdi:architecture" },
-    { name: "Bread & breakfasts", icon: "mdi:coffee" },
-    { name: "Iconic cities", icon: "mdi:city" },
-    { name: "Treehouses", icon: "mdi:tree" },
-    { name: "Courtyards", icon: "mdi:flower" }
-  ];
 
   // 🔄 Loading state
   if (loading) {
@@ -223,128 +118,10 @@ export default function HomePage() {
 
   return (
     <div className="homepage">
-      {/* Search Bar */}
+
+      {/* ⭐ NEW UNIVERSAL SEARCH BAR ⭐ */}
       <section className="search-section">
-        <div className="search-container">
-          <div className="search-bar">
-            <button 
-              className={`search-field search-field-btn ${activeField === 'where' ? 'active' : ''} ${searchLocation ? 'has-value' : ''}`}
-              onClick={() => { 
-                setOpenWhere(!openWhere); 
-                setOpenDates(false); 
-                setOpenGuests(false);
-                setActiveField(openWhere ? null : 'where');
-              }}
-            >
-              <label>Where</label>
-              <div className="sf-value-wrapper">
-                <div className="sf-value">{searchLocation || 'Search destinations'}</div>
-                {searchLocation && (
-                  <button className="sf-clear" onClick={handleClearLocation}>
-                    <Icon icon="mdi:close-circle" width="16" height="16" />
-                  </button>
-                )}
-              </div>
-            </button>
-
-            <button 
-              className={`search-field search-field-btn ${activeField === 'checkin' ? 'active' : ''} ${checkIn ? 'has-value' : ''}`}
-              onClick={() => { 
-                setOpenDates(!openDates); 
-                setOpenWhere(false); 
-                setOpenGuests(false);
-                setActiveField(openDates ? null : 'checkin');
-              }}
-            >
-              <label>Check in</label>
-              <div className="sf-value-wrapper">
-                <div className="sf-value">{checkIn ? formatDate(checkIn) : 'Add dates'}</div>
-                {checkIn && (
-                  <button className="sf-clear" onClick={handleClearDates}>
-                    <Icon icon="mdi:close-circle" width="16" height="16" />
-                  </button>
-                )}
-              </div>
-            </button>
-
-            <button 
-              className={`search-field search-field-btn ${activeField === 'checkout' ? 'active' : ''} ${checkOut ? 'has-value' : ''}`}
-              onClick={() => { 
-                setOpenDates(!openDates); 
-                setOpenWhere(false); 
-                setOpenGuests(false);
-                setActiveField(openDates ? null : 'checkout');
-              }}
-            >
-              <label>Check out</label>
-              <div className="sf-value-wrapper">
-                <div className="sf-value">{checkOut ? formatDate(checkOut) : 'Add dates'}</div>
-                {checkOut && (
-                  <button className="sf-clear" onClick={handleClearDates}>
-                    <Icon icon="mdi:close-circle" width="16" height="16" />
-                  </button>
-                )}
-              </div>
-            </button>
-
-            <button 
-              className={`search-field search-field-btn ${activeField === 'guests' ? 'active' : ''} ${guests ? 'has-value' : ''}`}
-              onClick={() => { 
-                setOpenGuests(!openGuests); 
-                setOpenWhere(false); 
-                setOpenDates(false);
-                setActiveField(openGuests ? null : 'guests');
-              }}
-            >
-              <label>Who</label>
-              <div className="sf-value-wrapper">
-                <div className="sf-value">{guests ? `${guests} guests` : 'Add guests'}</div>
-                {guests && (
-                  <button className="sf-clear" onClick={handleClearGuests}>
-                    <Icon icon="mdi:close-circle" width="16" height="16" />
-                  </button>
-                )}
-              </div>
-            </button>
-
-            <button className="search-button" onClick={handleSearch}>
-              <Icon icon="mdi:magnify" width="20" height="20" style={{ color: 'white' }} />
-            </button>
-          </div>
-
-          <SearchWhere
-            open={openWhere}
-            onClose={() => { setOpenWhere(false); setActiveField(null); }}
-            onSelectRegion={(r) => {
-              setSearchLocation(r.title);
-              setOpenWhere(false);
-              setActiveField(null);
-            }}
-          />
-
-          <SearchDates
-            open={openDates}
-            onClose={() => { setOpenDates(false); setActiveField(null); }}
-            value={{ checkIn, checkOut }}
-            onChange={(v) => { 
-              setCheckIn(v.checkIn || ''); 
-              setCheckOut(v.checkOut || '');
-              if (v.checkIn && v.checkOut) {
-                setOpenDates(false);
-                setActiveField(null);
-              }
-            }}
-          />
-
-          <SearchGuests
-            open={openGuests}
-            onClose={() => { setOpenGuests(false); setActiveField(null); }}
-            guests={{ adults: Number(guests) || 1, children: 0, infants: 0, pets: 0 }}
-            onChange={(g) => {
-              setGuests(String(g.adults + g.children));
-            }}
-          />
-        </div>
+        <UniversalSearchBar onSearch={handleSearchNavigate}/>
       </section>
 
       {/* Properties Grid */}
@@ -360,28 +137,30 @@ export default function HomePage() {
               }}
             >
               <div className="property-image">
-                <img 
-                  src={property.mainImage} 
+                <img
+                  src={property.mainImage}
                   alt={property.title}
                   onError={(e) => {
                     e.target.src = '/fallback.svg';
                   }}
                 />
+
                 {property.isGuestFavourite && (
                   <div className="guest-favourite-badge">Guest favourite</div>
                 )}
+
                 <button
                   className="favorite-button"
                   onClick={async (e) => {
                     e.stopPropagation();
-                    
+
                     if (!user || !user.UserID) {
                       alert("Please log in to save properties to your wishlist");
                       return;
                     }
 
                     const isSaved = savedPropertyIds.has(property.id);
-                    
+
                     try {
                       let updatedWishlist;
                       if (isSaved) {
@@ -396,25 +175,28 @@ export default function HomePage() {
                     }
                   }}
                 >
-                  <Icon 
-                    icon={savedPropertyIds.has(property.id) ? "mdi:heart" : "mdi:heart-outline"} 
-                    width="20" 
+                  <Icon
+                    icon={savedPropertyIds.has(property.id) ? "mdi:heart" : "mdi:heart-outline"}
+                    width="20"
                     height="20"
-                    style={{ 
-                      color: savedPropertyIds.has(property.id) ? '#ff385c' : 'currentColor' 
+                    style={{
+                      color: savedPropertyIds.has(property.id) ? '#ff385c' : 'currentColor'
                     }}
                   />
                 </button>
-
               </div>
+
               <div className="property-info">
                 <div className="property-title">{property.title}</div>
+
                 <div className="property-rating">
                   <Icon icon="mdi:star" width="14" height="14" />
                   <span>{(property.rating ?? 0).toFixed(1)}</span>
                   <span className="rating-count">({property.reviewsCount || 0})</span>
                 </div>
+
                 <div className="property-dates">{property.dates || "Available ✅"}</div>
+
                 <div className="property-price">
                   <span className="price">{format(convertToCurrent(property.price ?? 0))}</span>
                   <span className="price-unit"> / night</span>

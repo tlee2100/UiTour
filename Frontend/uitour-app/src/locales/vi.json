@@ -862,5 +862,72 @@
     "moreThanLastMonthUnit": "so với tháng trước",
     "upcomingBookings": "Lượt đặt sắp tới",
     "next30days": "Trong 30 ngày tới"
+  },
+  "filters": {
+    "type": {
+      "title": "Loại hình"
+    },
+    "time": {
+      "title": "Thời gian trong ngày",
+      "morning": "Buổi sáng",
+      "afternoon": "Buổi chiều",
+      "evening": "Buổi tối",
+      "fullday": "Cả ngày"
+    },
+    "price": {
+      "title": "Giá mỗi khách",
+      "under": "Dưới"
+    }
+  },
+  "stayFilter": {
+    "title": "Bộ lọc",
+    "clear": "Xóa",
+    "show": "Hiển thị",
+    "any": "Bất kỳ",
+    "placeType": {
+      "title": "Loại chỗ ở",
+      "any": "Bất kỳ",
+      "room": "Phòng",
+      "entire": "Nguyên căn"
+    },
+    "price": {
+      "title": "Khoảng giá",
+      "under": "Dưới"
+    },
+    "rooms": {
+      "title": "Phòng & giường",
+      "beds": "Giường",
+      "bedrooms": "Phòng ngủ",
+      "bathrooms": "Phòng tắm"
+    },
+    "amenities": {
+      "title": "Tiện nghi",
+      "wifi": "Wifi",
+      "tv": "TV",
+      "ac": "Máy lạnh",
+      "kitchen": "Nhà bếp",
+      "washer": "Máy giặt",
+      "dryer": "Máy sấy",
+      "heating": "Sưởi",
+      "iron": "Bàn ủi",
+      "gym": "Phòng gym",
+      "parking": "Đậu xe miễn phí",
+      "hottub": "Bồn tắm nóng",
+      "pool": "Hồ bơi",
+      "bbq": "BBQ",
+      "ev": "Sạc xe điện",
+      "smoke": "Báo khói",
+      "breakfast": "Bữa sáng",
+      "workspace": "Không gian làm việc",
+      "kingbed": "Giường King",
+      "hairdryer": "Máy sấy tóc"
+    },
+    "property": {
+      "title": "Loại nhà",
+      "house": "Nhà",
+      "apartment": "Căn hộ",
+      "guesthouse": "Nhà khách",
+      "hotel": "Khách sạn"
+    }
   }
 }

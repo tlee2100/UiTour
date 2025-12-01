@@ -1,164 +1,220 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Icon } from '@iconify/react';
-import ExperienceSearchDates from './ExperienceSearchDates';
-import SearchGuests from './SearchGuests';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { t } from '../../utils/translations';
-import './ExperienceSearchBar.css';
+import { useState, useEffect } from "react";
+import { Icon } from "@iconify/react";
+import SearchWhere from "./SearchWhere";
+import ExperienceSearchDates from "./ExperienceSearchDates";
+import SearchGuests from "./SearchGuests";
+import "./ExperienceSearchBar.css";
 
-export default function ExperienceSearchBar({ 
-  initialLocation = '', 
-  initialDates = '', 
-  initialGuests = '1',
+export default function ExperienceSearchBar({
+  initialLocation = "",
+  initialDates = "",     // format: "YYYY-MM-DD_to_YYYY-MM-DD"
+  initialGuests = "1",
   onSearch,
-  searchPath = '/experiences/search'
+  searchPath = "/tours"
 }) {
-  const navigate = useNavigate();
-  const { language } = useLanguage();
   const [location, setLocation] = useState(initialLocation);
-  const [dates, setDates] = useState(initialDates);
+  const [dateRange, setDateRange] = useState(initialDates);
   const [guests, setGuests] = useState(initialGuests);
+
+  const [openWhere, setOpenWhere] = useState(false);
   const [openDates, setOpenDates] = useState(false);
   const [openGuests, setOpenGuests] = useState(false);
-  const [guestsData, setGuestsData] = useState({ adults: 1, children: 0, infants: 0, pets: 0 });
 
-  // Sync state when props change (e.g., when URL params change)
-  useEffect(() => {
-    setLocation(initialLocation);
-  }, [initialLocation]);
+  const [activeField, setActiveField] = useState(null);
 
+  /** -----------------------------
+   * Sync lại state khi URL đổi
+   -------------------------------- */
+  useEffect(() => setLocation(initialLocation), [initialLocation]);
+  useEffect(() => setDateRange(initialDates), [initialDates]);
+  useEffect(() => setGuests(initialGuests), [initialGuests]);
   useEffect(() => {
-    setDates(initialDates);
-  }, [initialDates]);
-
-  useEffect(() => {
-    setGuests(initialGuests);
-    // Update guestsData based on initialGuests
-    if (initialGuests && initialGuests !== '1') {
-      const count = Number(initialGuests);
-      if (!isNaN(count) && count > 0) {
-        setGuestsData({ adults: Math.max(1, count), children: 0, infants: 0, pets: 0 });
-      }
-    } else {
-      setGuestsData({ adults: 1, children: 0, infants: 0, pets: 0 });
-    }
+    const num = Number(initialGuests);
+    if (!isNaN(num)) setGuests(String(num));
   }, [initialGuests]);
 
-  const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (location) params.set('location', location);
-    if (dates) params.set('dates', dates);
-    if (guests) params.set('guests', guests);
-    
-    // If custom onSearch callback is provided, use it
-    if (onSearch) {
-      onSearch({ location, dates, guests, params });
-    } else {
-      // Otherwise, use default navigation
-      navigate(`${searchPath}?${params.toString()}`);
-    }
-  };
 
-  const handleClearDates = (e) => {
-    e.stopPropagation();
-    setDates('');
-  };
-
-  const handleClearGuests = (e) => {
-    e.stopPropagation();
-    setGuests('1');
-    setGuestsData({ adults: 1, children: 0, infants: 0, pets: 0 });
-  };
-
-  const handleDateSelect = (dateRange) => {
-    setDates(dateRange);
+  /** -----------------------------
+   * Close all overlays
+   -------------------------------- */
+  const closeAll = () => {
+    setOpenWhere(false);
     setOpenDates(false);
+    setOpenGuests(false);
+    setActiveField(null);
   };
 
-  const handleGuestsChange = (newGuests) => {
-    setGuestsData(newGuests);
-    const total = newGuests.adults + newGuests.children;
-    setGuests(String(total));
+  /** -----------------------------
+   * Format hiển thị ngày
+   -------------------------------- */
+  const formatRange = (rangeStr) => {
+    if (!rangeStr) return "Add dates";
+    const [d1, d2] = rangeStr.split("_to_");
+    return `${new Date(d1).toDateString().slice(4)} → ${new Date(d2).toDateString().slice(4)}`;
+  };
+
+  /** -----------------------------
+   * SEARCH
+   -------------------------------- */
+  const handleSearchClick = () => {
+    const params = new URLSearchParams();
+
+    if (location) params.set("location", location);
+    if (dateRange) params.set("dates", dateRange);
+    if (guests) params.set("guests", guests);
+
+    if (onSearch) {
+      onSearch({ location, dates: dateRange, guests, params });
+    }
+
+    closeAll();
   };
 
   return (
-    <div className="experience-search-bar-container">
-      <div className="experience-search-bar">
-        {/* Where */}
-        <div className="esb-field">
-          <label>{t(language, 'search.where')}</label>
-          <input
-            type="text"
-            placeholder={t(language, 'search.searchDestinations')}
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            onClick={() => { setOpenDates(false); setOpenGuests(false); }}
-          />
-        </div>
+    <div className="expsearch-wrapper">
+      <div className="expsearch-bar">
 
-        {/* When */}
-        <div 
-          className="esb-field esb-field-clickable"
-          onClick={() => { setOpenDates(!openDates); setOpenGuests(false); }}
+        {/* WHERE */}
+        <button
+          className={`exp-sf exp-btn ${activeField === "where" ? "active" : ""} ${location ? "has-value" : ""
+            }`}
+          onClick={() => {
+            const show = !openWhere;
+            closeAll();
+            setOpenWhere(show);
+            setActiveField(show ? "where" : null);
+          }}
         >
-          <label>{t(language, 'search.when')}</label>
-          <div className="esb-field-value">
-            {dates ? (
-              <>
-                <button className="esb-clear-btn" onClick={handleClearDates}>
-                  <Icon icon="mdi:close" width="16" height="16" />
-                </button>
-                <span>{dates}</span>
-              </>
-            ) : (
-              <span className="esb-placeholder">{t(language, 'search.addDates')}</span>
+          <label>Where</label>
+          <div className="exp-value-row">
+            <div className="exp-value">
+              {location || "Search destinations"}
+            </div>
+
+            {location && (
+              <button
+                className="exp-clear"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLocation("");
+                }}
+              >
+                <Icon icon="mdi:close-circle" width="16" />
+              </button>
             )}
           </div>
-        </div>
+        </button>
 
-        {/* Who */}
-        <div 
-          className="esb-field esb-field-clickable"
-          onClick={() => { setOpenGuests(!openGuests); setOpenDates(false); }}
+        {/* DATE RANGE */}
+        <button
+          className={`exp-sf exp-btn ${activeField === "dates" ? "active" : ""} ${dateRange ? "has-value" : ""
+            }`}
+          onClick={() => {
+            const show = !openDates;
+            closeAll();
+            setOpenDates(show);
+            setActiveField(show ? "dates" : null);
+          }}
         >
-          <label>{t(language, 'search.who')}</label>
-          <div className="esb-field-value">
-            {guests !== '1' || guestsData.children > 0 || guestsData.infants > 0 ? (
-              <>
-                <button className="esb-clear-btn" onClick={handleClearGuests}>
-                  <Icon icon="mdi:close" width="16" height="16" />
-                </button>
-                <span>{guests} {guests === '1' ? t(language, 'search.guest') : t(language, 'search.guests')}</span>
-              </>
-            ) : (
-              <span className="esb-placeholder">{t(language, 'search.addGuests')}</span>
+          <label>Dates</label>
+          <div className="exp-value-row">
+            <div className="exp-value">{formatRange(dateRange)}</div>
+
+            {dateRange && (
+              <button
+                className="exp-clear"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDateRange("");
+                }}
+              >
+                <Icon icon="mdi:close-circle" width="16" />
+              </button>
             )}
           </div>
-        </div>
+        </button>
 
-        {/* Search Button */}
-        <button className="esb-search-button" onClick={handleSearch}>
-          <Icon icon="mdi:magnify" width="20" height="20" />
+        {/* GUESTS */}
+        <button
+          className={`exp-sf exp-btn ${activeField === "guests" ? "active" : ""} ${guests !== "1" ? "has-value" : ""
+            }`}
+          onClick={() => {
+            const show = !openGuests;
+            closeAll();
+            setOpenGuests(show);
+            setActiveField(show ? "guests" : null);
+          }}
+        >
+          <label>Guests</label>
+          <div className="exp-value-row">
+            <div className="exp-value">
+              {guests !== "1" ? `${guests} guests` : "Add guests"}
+            </div>
+
+            {guests !== "1" && (
+              <button
+                className="exp-clear"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setGuests("1");
+                }}
+              >
+                <Icon icon="mdi:close-circle" width="16" />
+              </button>
+            )}
+          </div>
+        </button>
+
+        {/* SEARCH BUTTON */}
+        <button className="exp-search-btn" onClick={handleSearchClick}>
+          <Icon icon="mdi:magnify" width="20" />
         </button>
       </div>
 
-      {/* Date Picker Overlay */}
-      <ExperienceSearchDates
-        open={openDates}
-        onClose={() => setOpenDates(false)}
-        onSelect={handleDateSelect}
-        value={dates}
+      {/* POPUPS */}
+      <SearchWhere
+        open={openWhere}
+        onClose={() => {
+          setOpenWhere(false);
+          setActiveField(null);
+        }}
+        onSelectRegion={(r) => {
+          setLocation(r.title);
+          setOpenWhere(false);
+          setActiveField(null);
+        }}
       />
 
-      {/* Guests Picker Overlay */}
+      <ExperienceSearchDates
+        open={openDates}
+        onClose={() => {
+          setOpenDates(false);
+          setActiveField(null);
+        }}
+        value={dateRange}
+        onSelect={(range) => {
+          setDateRange(range);
+          setOpenDates(false);
+          setActiveField(null);
+        }}
+      />
+
       <SearchGuests
         open={openGuests}
-        onClose={() => setOpenGuests(false)}
-        guests={guestsData}
-        onChange={handleGuestsChange}
+        onClose={() => {
+          setOpenGuests(false);
+          setActiveField(null);
+        }}
+        guests={{
+          adults: Number(guests) || 1,
+          children: 0,
+          infants: 0,
+          pets: 0,
+        }}
+        onChange={(g) => {
+          setGuests(String(g.adults + g.children));
+        }}
       />
     </div>
   );
 }
-
