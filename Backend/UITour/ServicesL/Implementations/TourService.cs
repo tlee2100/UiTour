@@ -128,6 +128,7 @@ namespace UITour.ServicesL.Implementations
                 Active = false, // Set to false (pending) - admin must approve
                 CancellationID = dto.CancellationID,
                 CreatedAt = DateTime.Now,
+                mainCategory = dto.MainCategory?.Trim(),
                 Photos = dto.Photos?
                     .Where(p => !string.IsNullOrWhiteSpace(p.Url)) // Only include photos with valid URLs
                     .Select((p, index) => new TourPhoto
