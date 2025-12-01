@@ -1,33 +1,56 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import "./PaymentPage.css";
 import { useLanguage } from "../contexts/LanguageContext";
 import { t } from "../utils/translations";
 import authAPI from "../services/authAPI";
 import LoadingSpinner from "../components/LoadingSpinner";
-import qrCodeImage from "../assets/qr-code.png";
+import momoLogo from "../assets/momo-logo.svg";
 
 function PaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { language } = useLanguage();
-  
-  // Format USD currency (always display USD on payment page)
-  const formatUSD = (value) => {
-    return "$" + Number(value).toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
-  
-  // Get booking data from navigation state
-  const bookingData = location.state?.bookingData;
-  const propertyData = location.state?.propertyData;
-  const tourData = location.state?.tourData;
-  
+
+  const initialBookingData = location.state?.bookingData || null;
+  const initialPropertyData = location.state?.propertyData || null;
+  const initialTourData = location.state?.tourData || null;
+
+  const [bookingData, setBookingData] = useState(initialBookingData);
+  const [propertyData, setPropertyData] = useState(initialPropertyData);
+  const [tourData, setTourData] = useState(initialTourData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState("momo");
+  const [initiatingPayment, setInitiatingPayment] = useState(false);
+  const [loadingBooking, setLoadingBooking] = useState(false);
+  const [autoConfirmStatus, setAutoConfirmStatus] = useState("idle");
+  const [hasProcessedMomoReturn, setHasProcessedMomoReturn] = useState(false);
+
+  const resultCodeFromQuery = searchParams.get("resultCode");
+  const orderIdFromQuery = searchParams.get("orderId");
+  const momoMessageFromQuery = searchParams.get("message");
+  const queryBookingId = useMemo(() => {
+    const id = searchParams.get("bookingId");
+    return id ? Number(id) : null;
+  }, [searchParams]);
+
+  const bookingIdFromOrderId = useMemo(() => {
+    if (!orderIdFromQuery) return null;
+    const match = orderIdFromQuery.match(/booking-(\d+)/i);
+    return match ? Number(match[1]) : null;
+  }, [orderIdFromQuery]);
+
+  const resolvedBookingId = useMemo(() => {
+    if (bookingData) {
+      return Number(bookingData.BookingID || bookingData.bookingID || bookingData.id) || null;
+    }
+    return queryBookingId || bookingIdFromOrderId || null;
+  }, [bookingData, queryBookingId, bookingIdFromOrderId]);
+
+  const isReturningFromMomo = Boolean(resultCodeFromQuery);
 
   // Generate random invoice number
   const generateInvoiceNumber = () => {
@@ -37,21 +60,182 @@ function PaymentPage() {
   };
 
   // Generate invoice number once on component mount
-  const [invoiceNumber] = useState(() => generateInvoiceNumber());
+  const [invoiceNumber] = useState(() => orderIdFromQuery || generateInvoiceNumber());
 
-  // Redirect if no booking data
-  useEffect(() => {
-    if (!bookingData) {
-      navigate("/");
+  // Format USD currency (always display USD on payment page)
+  const formatUSD = (value) => {
+    return "$" + Number(value).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  const safeDecode = (value) => {
+    if (!value) return "";
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
     }
-  }, [bookingData, navigate]);
+  };
+
+  const loadBookingDetails = useCallback(async (bookingIdValue) => {
+    setLoadingBooking(true);
+    setError(null);
+    try {
+      const booking = await authAPI.getBookingById(bookingIdValue);
+      setBookingData(booking);
+
+      if (booking.PropertyID) {
+        const property = await authAPI.getPropertyById(booking.PropertyID);
+        setPropertyData(property);
+        setTourData(null);
+      } else if (booking.TourID) {
+        const tour = await authAPI.getTourById(booking.TourID);
+        setTourData(tour);
+        setPropertyData(null);
+      }
+    } catch (err) {
+      setError(err.message || t(language, "payment.loadingPaymentDetails"));
+    } finally {
+      setLoadingBooking(false);
+    }
+  }, [language]);
+
+  const confirmPayment = useCallback(async (bookingIdToConfirm, isAuto = false) => {
+    if (!bookingIdToConfirm) {
+      setError(t(language, "payment.bookingIdNotFound"));
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    if (isAuto) {
+      setAutoConfirmStatus("processing");
+    }
+
+    try {
+      await authAPI.confirmTransfer(bookingIdToConfirm);
+      setSuccess(true);
+      setAutoConfirmStatus(isAuto ? "success" : "manual-success");
+
+      setTimeout(() => {
+        navigate("/trips");
+      }, 2000);
+    } catch (err) {
+      setAutoConfirmStatus("error");
+      setError(err.message || t(language, "payment.failedToConfirmTransfer"));
+    } finally {
+      setLoading(false);
+    }
+  }, [language, navigate]);
+
+  const handleConfirmTransfer = useCallback(() => {
+    confirmPayment(resolvedBookingId, false);
+  }, [confirmPayment, resolvedBookingId]);
+
+  useEffect(() => {
+    if (!bookingData && resolvedBookingId && !loadingBooking) {
+      loadBookingDetails(resolvedBookingId);
+    }
+  }, [bookingData, resolvedBookingId, loadingBooking, loadBookingDetails]);
+
+  useEffect(() => {
+    if (!initialBookingData && !resolvedBookingId && !loadingBooking) {
+      navigate("/", { replace: true });
+    }
+  }, [initialBookingData, resolvedBookingId, navigate, loadingBooking]);
+
+  useEffect(() => {
+    if (!isReturningFromMomo || hasProcessedMomoReturn) {
+      return;
+    }
+
+    if (!resolvedBookingId) {
+      setError(t(language, "payment.bookingIdNotFound"));
+      setAutoConfirmStatus("error");
+      setHasProcessedMomoReturn(true);
+      return;
+    }
+
+    setHasProcessedMomoReturn(true);
+
+    if (resultCodeFromQuery === "0") {
+      confirmPayment(resolvedBookingId, true);
+    } else {
+      const message = safeDecode(momoMessageFromQuery) || t(language, "payment.autoConfirmFailed");
+      setError(`${t(language, "payment.momoReturnedError")} (${resultCodeFromQuery}) - ${message}`);
+      setAutoConfirmStatus("error");
+    }
+  }, [
+    confirmPayment,
+    hasProcessedMomoReturn,
+    isReturningFromMomo,
+    language,
+    momoMessageFromQuery,
+    resolvedBookingId,
+    resultCodeFromQuery
+  ]);
+
+  useEffect(() => {
+    if (!hasProcessedMomoReturn) return;
+
+    const keysToStrip = [
+      "orderId",
+      "requestId",
+      "amount",
+      "orderInfo",
+      "orderType",
+      "transId",
+      "resultCode",
+      "message",
+      "payType",
+      "extraData",
+      "signature",
+      "partnerCode",
+      "responseTime"
+    ];
+
+    const params = new URLSearchParams(searchParams.toString());
+    let mutated = false;
+
+    keysToStrip.forEach((key) => {
+      if (params.has(key)) {
+        params.delete(key);
+        mutated = true;
+      }
+    });
+
+    if (mutated) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [hasProcessedMomoReturn, searchParams, setSearchParams]);
 
   if (!bookingData) {
-    return <LoadingSpinner message={t(language, "payment.loadingPaymentDetails")} />;
+    if (loadingBooking) {
+      return <LoadingSpinner message={t(language, "payment.loadingPaymentDetails")} />;
+    }
+
+    return (
+      <div className="payment-page">
+        <div className="payment-container">
+          <div className="payment-content">
+            <div className="payment-error">
+              {error || t(language, "payment.loadingPaymentDetails")}
+            </div>
+            <div className="payment-actions">
+              <button className="btn-secondary" onClick={() => navigate("/")}>
+                {t(language, "payment.back")}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const isProperty = !!bookingData.PropertyID;
-  const itemData = isProperty ? propertyData : tourData;
   const itemTitle = isProperty 
     ? (propertyData?.listingTitle || propertyData?.title || "Property")
     : (tourData?.tourName || tourData?.title || "Tour");
@@ -67,36 +251,6 @@ function PaymentPage() {
   // For property: basePrice * nights, for tour: basePrice (already per person)
   const subtotal = isProperty ? basePrice * nights : basePrice;
   const discount = 0; // Can be calculated from discountPercentage if needed
-  
-  const handleConfirmTransfer = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Get booking ID from the booking data (handle both camelCase and PascalCase)
-      const bookingId = bookingData.BookingID || bookingData.bookingID || bookingData.id;
-      
-      if (!bookingId) {
-        throw new Error(t(language, "payment.bookingIdNotFound"));
-      }
-      
-      // Call backend to confirm transfer
-      const result = await authAPI.confirmTransfer(bookingId);
-      
-      if (result) {
-        setSuccess(true);
-        // Redirect to trips page after 2 seconds
-        setTimeout(() => {
-          navigate("/trips");
-        }, 2000);
-      }
-    } catch (err) {
-      console.error("Error confirming transfer:", err);
-      setError(err.message || t(language, "payment.failedToConfirmTransfer"));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -114,6 +268,70 @@ function PaymentPage() {
     return invoiceNumber;
   };
 
+  const handleMethodSelect = (method) => {
+    if (method === "momo") {
+      setSelectedMethod("momo");
+    }
+  };
+
+  const convertUsdToVnd = (usdAmount) => {
+    if (!usdAmount || Number.isNaN(usdAmount)) return 0;
+    return Math.max(1000, Math.round(Number(usdAmount) * 24000));
+  };
+
+  const formatVND = (value) => {
+    return Number(value || 0).toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      maximumFractionDigits: 0
+    });
+  };
+
+  const amountUsdForPayment = totalPrice || subtotal;
+  const amountVndForPayment = convertUsdToVnd(amountUsdForPayment);
+
+  const handleInitiateMomoPayment = async () => {
+    if (selectedMethod !== "momo") {
+      return;
+    }
+
+    setInitiatingPayment(true);
+    setError(null);
+
+    try {
+      const bookingId = resolvedBookingId;
+
+      if (!bookingId) {
+        throw new Error(t(language, "payment.bookingIdNotFound"));
+      }
+
+      const returnUrl = `${window.location.origin}/payment?bookingId=${bookingId}`;
+
+      const payload = {
+        amountUsd: amountUsdForPayment,
+        amountVnd: amountVndForPayment,
+        bookingId,
+        orderId: invoiceNumber,
+        description: `${itemTitle} - ${invoiceNumber}`,
+        returnUrl
+      };
+
+      const response = await authAPI.createMomoPayment(payload);
+
+      const redirectUrl = response?.payUrl || response?.deeplink;
+      if (!redirectUrl) {
+        throw new Error(t(language, "payment.payUrlMissing"));
+      }
+
+      window.location.assign(redirectUrl);
+    } catch (err) {
+      console.error("Error initiating Momo payment:", err);
+      setError(err.message || t(language, "payment.failedToConfirmTransfer"));
+    } finally {
+      setInitiatingPayment(false);
+    }
+  };
+
   return (
     <div className="payment-page">
       <div className="payment-container">
@@ -123,6 +341,12 @@ function PaymentPage() {
         </div>
 
         <div className="payment-content">
+          {isReturningFromMomo && autoConfirmStatus === "processing" && (
+            <div className="payment-status info">
+              {t(language, "payment.autoConfirmInProgress")}
+            </div>
+          )}
+
           {/* Booking Summary */}
           <div className="payment-section">
             <h2 className="section-title">{t(language, "payment.bookingSummary")}</h2>
@@ -168,32 +392,69 @@ function PaymentPage() {
             </div>
           </div>
 
-          {/* QR Code Section */}
+          {/* Payment Method Section */}
           <div className="payment-section">
-            <h2 className="section-title">{t(language, "payment.paymentQrCode")}</h2>
+            <h2 className="section-title">{t(language, "payment.paymentMethod")}</h2>
             <div className="payment-notification">
               <span className="notification-icon">ℹ️</span>
               <span className="notification-text">
                 {t(language, "payment.paymentNotification")}
               </span>
             </div>
-            <div className="qr-code-container">
-              <img 
-                src={qrCodeImage} 
-                alt="QR Code for Payment" 
-                className="qr-code-image"
-                onError={(e) => {
-                  // Fallback to placeholder if image not found
-                  e.target.style.display = 'none';
-                  e.target.nextElementSibling.style.display = 'flex';
-                }}
-              />
-              <div className="qr-code-placeholder" style={{ display: 'none' }}>
-                <div className="qr-code-icon">📱</div>
-                <p className="qr-code-text">{t(language, "payment.qrCodeWillBeDisplayed")}</p>
-                <p className="qr-code-note">{t(language, "payment.scanQrCode")}</p>
+            <p className="payment-method-subtitle">
+              {t(language, "payment.selectPaymentMethod")}
+            </p>
+            <div className="payment-methods">
+              <button
+                type="button"
+                className={`payment-method-card ${selectedMethod === "momo" ? "active" : ""}`}
+                onClick={() => handleMethodSelect("momo")}
+              >
+                <div className="method-header">
+                  <div className="method-title">
+                    <span className="method-pill available">{t(language, "payment.availableNow")}</span>
+                    <span>Momo</span>
+                  </div>
+                  <img
+                    src={momoLogo}
+                    alt="Momo logo"
+                    className="method-logo"
+                  />
+                </div>
+                <p className="method-description">
+                  {t(language, "payment.momoDescription")}
+                </p>
+              </button>
+              <div className="payment-method-card disabled" aria-disabled="true">
+                <div className="method-header">
+                  <div className="method-title">
+                    <span className="method-pill unavailable">{t(language, "payment.comingSoon")}</span>
+                    <span>{t(language, "payment.bankTransferLabel")}</span>
+                  </div>
+                </div>
+                <p className="method-description">
+                  {t(language, "payment.bankTransferUnavailable")}
+                </p>
+                <div className="method-overlay">
+                  {t(language, "payment.methodUnavailableNote")}
+                </div>
               </div>
             </div>
+            <div className="method-cta-row">
+              <div className="converted-amount">
+                <span className="converted-label">{t(language, "payment.totalChargeLabel")}</span>
+                <strong>{formatUSD(amountUsdForPayment)} ≈ {formatVND(amountVndForPayment)}</strong>
+              </div>
+              <button
+                type="button"
+                className="method-action-button"
+                onClick={handleInitiateMomoPayment}
+                disabled={initiatingPayment || selectedMethod !== "momo"}
+              >
+                {initiatingPayment ? t(language, "booking.processing") : t(language, "payment.initiateMomoPayment")}
+              </button>
+            </div>
+            <p className="momo-note">{t(language, "payment.momoOnlyNote")}</p>
           </div>
 
           {/* Price Breakdown */}
@@ -255,20 +516,13 @@ function PaymentPage() {
           )}
 
           {/* Action Buttons */}
-          <div className="payment-actions">
+          <div className="payment-actions single">
             <button
               className="btn-secondary"
               onClick={() => navigate(-1)}
               disabled={loading || success}
             >
               {t(language, "payment.back")}
-            </button>
-            <button
-              className="btn-primary"
-              onClick={handleConfirmTransfer}
-              disabled={loading || success}
-            >
-              {loading ? t(language, "booking.processing") : success ? t(language, "payment.confirmed") : t(language, "payment.confirmTransfer")}
             </button>
           </div>
         </div>

@@ -17,6 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 var connectionString = builder.Configuration.GetConnectionString("MyDB");
 
+builder.Services.Configure<MomoSettings>(builder.Configuration.GetSection("MomoSettings"));
+
 // Đăng ký DbContext với DI
 builder.Services.AddDbContext<UITourContext>(options =>
     options.UseSqlServer(connectionString));
@@ -90,6 +92,7 @@ builder.Services.AddScoped<INeighbourhoodService, NeighbourhoodService>();
 builder.Services.AddScoped<ITourService, TourService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddHttpClient<IMomoPaymentService, MomoPaymentService>();
 
 // CORS for React dev servers
 const string CorsPolicy = "CorsPolicy";
