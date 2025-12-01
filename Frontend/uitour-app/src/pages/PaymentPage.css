@@ -113,6 +113,156 @@
   flex: 1;
 }
 
+.payment-method-subtitle {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.payment-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.payment-method-card {
+  flex: 1;
+  min-width: 240px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  background-color: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  position: relative;
+  border: none;
+  font: inherit;
+}
+
+.payment-method-card.active {
+  border-color: #00c0e8;
+  box-shadow: 0 6px 24px rgba(0, 192, 232, 0.2);
+  transform: translateY(-2px);
+}
+
+.payment-method-card.disabled {
+  filter: grayscale(1);
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.payment-method-card.disabled .method-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.75);
+  border-radius: 12px;
+  font-weight: 600;
+  color: #1f2937;
+  text-align: center;
+  padding: 16px;
+  z-index: 1;
+}
+
+.payment-method-card.disabled * {
+  pointer-events: none;
+}
+
+.payment-method-card .method-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.method-title {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.method-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.method-description {
+  margin: 0;
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.method-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.method-pill.available {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+
+.method-pill.unavailable {
+  background-color: rgba(248, 113, 113, 0.18);
+  color: #b91c1c;
+}
+
+.method-cta-row {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.converted-amount {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.converted-label {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.method-action-button {
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #72005f, #b1008f);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.method-action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.method-action-button:not(:disabled):hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
 .qr-code-container {
   display: inline-block;
   padding: 8px;
@@ -225,6 +375,32 @@
   font-weight: 500;
 }
 
+.payment-status {
+  padding: 14px 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  border: 1px solid transparent;
+}
+
+.payment-status.info {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+}
+
+.payment-status.success {
+  background-color: #d1fae5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.payment-status.error {
+  background-color: #fee2e2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
 .payment-actions {
   display: flex;
   gap: 16px;
@@ -234,7 +410,10 @@
   border-top: 1px solid #e5e7eb;
 }
 
-.btn-primary,
+.payment-actions.single {
+  justify-content: flex-start;
+}
+
 .btn-secondary {
   padding: 12px 32px;
   font-size: 16px;
@@ -243,22 +422,6 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.btn-primary {
-  background-color: #00C0E8;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #0099cc;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 192, 232, 0.3);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .btn-secondary {
@@ -298,9 +461,18 @@
     flex-direction: column-reverse;
   }
 
-  .btn-primary,
   .btn-secondary {
     width: 100%;
+  }
+
+  .method-cta-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .method-action-button {
+    width: 100%;
+    text-align: center;
   }
 }
 

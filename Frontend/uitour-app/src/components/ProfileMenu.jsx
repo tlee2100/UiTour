@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useApp } from '../contexts/AppContext';
@@ -42,10 +42,21 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
   }, [isLoggedIn, user?.UserID]);
 
 
+  const handleNavigate = useCallback(
+    (path) => {
+      if (typeof onClose === 'function') {
+        onClose();
+      }
+      if (path) {
+        navigate(path);
+      }
+    },
+    [navigate, onClose]
+  );
+
   const handleLogout = () => {
     dispatch({ type: 'LOGOUT' });
-    onClose();
-    navigate('/');
+    handleNavigate('/');
   };
 
   // Menu khi đã đăng nhập
@@ -58,17 +69,21 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
         <div ref={ref} className="profile-menu" role="menu" aria-label="Admin menu">
           <div className="profile-menu_section">
             <button
+              type="button"
               className="profile-menu_item"
-              onClick={() => { onClose(); navigate('/admin/account'); }}
+              onClick={() => handleNavigate('/admin/account')}
               role="menuitem"
             >
               <Icon icon="mdi:cog-outline" width="20" height="20" />
               <span>{t(language, 'profile.account')}</span>
             </button>
             <button 
+              type="button"
               className="profile-menu_item" 
               onClick={() => { 
-                onClose(); 
+                if (typeof onClose === 'function') {
+                  onClose();
+                }
                 openLanguageCurrency(); 
               }} 
               role="menuitem"
@@ -80,6 +95,7 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
           <div className="profile-menu_divider" />
           <div className="profile-menu_section">
             <button 
+              type="button"
               className="profile-menu_item profile-menu_item-logout" 
               onClick={handleLogout} 
               role="menuitem"
@@ -95,11 +111,21 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
     return (
       <div ref={ref} className="profile-menu" role="menu" aria-label="User menu">
         <div className="profile-menu_section">
-          <button className="profile-menu_item" onClick={() => { onClose(); navigate('/wishlist'); }} role="menuitem">
+          <button
+            type="button"
+            className="profile-menu_item"
+            onClick={() => handleNavigate('/wishlist')}
+            role="menuitem"
+          >
             <Icon icon="mdi:heart-outline" width="20" height="20" />
             <span>{t(language, 'profile.wishlist')}</span>
           </button>
-          <button className="profile-menu_item" onClick={() => { onClose(); navigate('/trips'); }} role="menuitem">
+          <button
+            type="button"
+            className="profile-menu_item"
+            onClick={() => handleNavigate('/trips')}
+            role="menuitem"
+          >
             <Icon icon="mdi:airplane" width="20" height="20" />
             <span className="profile-menu_item-label">
               {t(language, 'profile.trips')}
@@ -113,27 +139,41 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
             </span>
           </button>
           <button
+            type="button"
             className="profile-menu_item"
-            onClick={() => { onClose(); navigate('/profile'); }}
+            onClick={() => handleNavigate('/profile')}
             role="menuitem"
           >
             <Icon icon="mdi:account-outline" width="20" height="20" />
             <span>{t(language, 'profile.profile')}</span>
           </button>
-          <button className="profile-menu_item" onClick={() => { onClose(); navigate('/notifications'); }} role="menuitem">
+          <button
+            type="button"
+            className="profile-menu_item"
+            onClick={() => handleNavigate('/notifications')}
+            role="menuitem"
+          >
             <Icon icon="mdi:bell-outline" width="20" height="20" />
             <span>{t(language, 'profile.notifications')}</span>
           </button>
-          <button className="profile-menu_item" onClick={() => { onClose(); navigate('/account'); }} role="menuitem">
+          <button
+            type="button"
+            className="profile-menu_item"
+            onClick={() => handleNavigate('/account')}
+            role="menuitem"
+          >
             <Icon icon="mdi:cog-outline" width="20" height="20" />
             <span>{t(language, 'profile.account')}</span>
           </button>
-          <button 
-            className="profile-menu_item" 
-            onClick={() => { 
-              onClose(); 
-              openLanguageCurrency(); 
-            }} 
+          <button
+            type="button"
+            className="profile-menu_item"
+            onClick={() => {
+              if (typeof onClose === 'function') {
+                onClose();
+              }
+              openLanguageCurrency();
+            }}
             role="menuitem"
           >
             <Icon icon="mdi:earth" width="20" height="20" />
@@ -158,7 +198,7 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
   return (
     <div ref={ref} className="profile-menu" role="menu" aria-label="User menu">
       <div className="profile-menu_section">
-        <button className="profile-menu_item" onClick={onClose} role="menuitem">
+        <button type="button" className="profile-menu_item" onClick={onClose} role="menuitem">
           <Icon icon="mdi:help-circle-outline" width="20" height="20" />
           <span>{t(language, 'profile.helpCenter')}</span>
         </button>
@@ -174,10 +214,10 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
         </div>
       </div>
       <div className="profile-menu_section">
-        <button className="profile-menu_item" onClick={onClose} role="menuitem">
+        <button type="button" className="profile-menu_item" onClick={onClose} role="menuitem">
           <span>{t(language, 'profile.aboutTheHost')}</span>
         </button>
-        <button className="profile-menu_item" onClick={onClose} role="menuitem">
+        <button type="button" className="profile-menu_item" onClick={onClose} role="menuitem">
           <span>{t(language, 'profile.findSupportHost')}</span>
         </button>
       </div>
