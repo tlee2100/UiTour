@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import './SearchResultsPage.css';
 import { Icon } from '@iconify/react';
 import { useProperty } from '../contexts/PropertyContext';
+import { useCurrency } from "../contexts/CurrencyContext";
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import MapView from '../components/search/MapView';
@@ -12,29 +13,124 @@ import StayFilterModal from '../components/modals/StayFilterModal';
 export default function SearchResultsPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
   const [showMap, setShowMap] = useState(true);
   const [searchAsMove, setSearchAsMove] = useState(true);
   const [showFilterModal, setShowFilterModal] = useState(false);
 
+  const { convertToUSD } = useCurrency();   // ⭐ dùng để convert filter sang USD
+
+  // ===== Base Search =====
   const location = searchParams.get('location') || '';
   const checkIn = searchParams.get('checkIn') || '';
   const checkOut = searchParams.get('checkOut') || '';
   const guests = searchParams.get('guests') || '2';
 
+  // ===== Stay Filters =====
+  const placeType = searchParams.get('placeType') || 'any';
+  const priceRange = searchParams.get('priceRange') || '';
+  const beds = Number(searchParams.get('beds') || 0);
+  const bedrooms = Number(searchParams.get('bedrooms') || 0);
+  const bathrooms = Number(searchParams.get('bathrooms') || 0);
+  const amenities = (searchParams.get('amenities') || '').split(',').filter(x => x);
+  const propertyType = searchParams.get('propertyType') || '';
+
   const { properties, loading, error, fetchProperties } = useProperty();
 
+  // ============================
+  //  🔥 FETCH RAW PROPERTIES
+  // ============================
   useEffect(() => {
-    // Fetch properties based on search params
     fetchProperties({
-      location: location,
+      location,
       checkIn: checkIn || null,
       checkOut: checkOut || null,
       guests: guests ? Number(guests) : null
     });
   }, [location, checkIn, checkOut, guests, fetchProperties]);
 
+  // =============================
+  //  ⭐ PRICE FILTER BASE VND
+  // =============================
+  const PRICE_FILTERS = {
+    under500: { min: 0, max: 500000 },
+    "500to2m": { min: 500000, max: 2000000 },
+    "2to5": { min: 2000000, max: 5000000 },
+    "5to10": { min: 5000000, max: 10000000 },
+    over10: { min: 10000000, max: Infinity }
+  };
+
+  // Convert VND range → USD range
+  const convertFilterRangeToUSD = (range) => {
+    const minUSD = convertToUSD(range.min);
+    const maxUSD = range.max === Infinity ? Infinity : convertToUSD(range.max);
+    return { minUSD, maxUSD };
+  };
+
+  // ===============================================
+  //  🔥 FILTER PROPERTIES CLIENT-SIDE
+  // ===============================================
+  const filteredProperties = useMemo(() => {
+    let list = [...properties];
+
+    // --- PLACE TYPE
+    if (placeType === "room") {
+      list = list.filter(p => 
+        p.propertyType?.toLowerCase() === "room" ||
+        p.roomType?.toLowerCase() === "private room"
+      );
+    }
+    if (placeType === "entire") {
+      list = list.filter(p =>
+        p.propertyType?.toLowerCase().includes("entire") ||
+        p.roomType?.toLowerCase().includes("entire")
+      );
+    }
+
+    // --- PRICE RANGE (convert option VND → USD → filter)
+    if (PRICE_FILTERS[priceRange]) {
+      const { minUSD, maxUSD } = convertFilterRangeToUSD(PRICE_FILTERS[priceRange]);
+
+      list = list.filter(p => {
+        const priceUSD = p.price || 0;
+        return priceUSD >= minUSD && priceUSD <= maxUSD;
+      });
+    }
+
+    // --- BEDS
+    if (beds > 0) list = list.filter(p => p.beds >= beds);
+    if (bedrooms > 0) list = list.filter(p => p.bedrooms >= bedrooms);
+    if (bathrooms > 0) list = list.filter(p => p.bathrooms >= bathrooms);
+
+    // --- PROPERTY TYPE
+    if (propertyType) {
+      list = list.filter(
+        p => p.propertyType?.toLowerCase() === propertyType.toLowerCase()
+      );
+    }
+
+    // --- AMENITIES (BE chưa có)
+    if (amenities.length > 0) {
+      // list = list.filter(p => amenities.every(a => p.amenities?.includes(a)));
+    }
+
+    return list;
+
+  }, [
+    properties,
+    placeType,
+    priceRange,
+    beds,
+    bedrooms,
+    bathrooms,
+    amenities,
+    propertyType
+  ]);
+
+  // =====================
+  //  HANDLERS
+  // =====================
   const handleSearch = () => {
-    // Navigate back to home with search params
     navigate(`/?location=${location}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`);
   };
 
@@ -44,7 +140,7 @@ export default function SearchResultsPage() {
 
   return (
     <div className="search-results-page">
-      {/* Header Search Bar */}
+      {/* Header */}
       <div className="search-header">
         <div className="search-header-content">
           <div className="search-bar-compact">
@@ -89,27 +185,25 @@ export default function SearchResultsPage() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Content */}
       <div className="search-results-content">
         {loading && <LoadingSpinner message="Đang tìm kiếm..." />}
         {error && <ErrorMessage message={error} />}
 
         {!loading && !error && (
           <>
-            {/* Left Panel - Property List */}
             <div className={`results-panel ${showMap ? 'with-map' : 'full-width'}`}>
               <div className="results-header">
-                <h2>{properties.length}+ stays in {location || 'your search'}</h2>
+                <h2>{filteredProperties.length}+ stays in {location || 'your search'}</h2>
               </div>
 
               <div className="property-list">
-                {properties.map(property => (
+                {filteredProperties.map(property => (
                   <PropertyCard key={property.id} property={property} />
                 ))}
               </div>
             </div>
 
-            {/* Right Panel - Map */}
             {showMap && (
               <div className="map-panel">
                 <div className="map-controls">
@@ -123,7 +217,7 @@ export default function SearchResultsPage() {
                   </label>
                 </div>
                 <MapView
-                  properties={properties}
+                  properties={filteredProperties}
                   onMarkerClick={(property) => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     navigate(`/property/${property.id}`);
@@ -134,6 +228,8 @@ export default function SearchResultsPage() {
           </>
         )}
       </div>
+
+      {/* Filter Modal */}
       {showFilterModal && (
         <StayFilterModal
           isOpen={showFilterModal}
@@ -143,4 +239,3 @@ export default function SearchResultsPage() {
     </div>
   );
 }
-

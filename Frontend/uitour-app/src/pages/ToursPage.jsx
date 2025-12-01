@@ -22,32 +22,49 @@ export default function ToursPage() {
   const { convertToCurrent, format } = useCurrency();
   const [openFilter, setOpenFilter] = useState(null);
 
-  const deriveIdsFromWishlist = useCallback((wishlistPayload, targetType = 'property') => {
-    if (!wishlistPayload) return new Set();
-    const items = wishlistPayload.items || wishlistPayload.Items || [];
-    return new Set(
-      items
-        .filter((item) => (item.type || item.Type || 'property') === targetType)
-        .map((item) =>
-          Number(item.id ?? item.Id ?? item.propertyId ?? item.PropertyID)
-        )
-        .filter((id) => !Number.isNaN(id))
-    );
-  }, []);
+  // Price brackets in VND (same as Stay Filters)
+  const PRICE_BRACKETS = {
+    under500: [0, 500000],
+    "500to2m": [500000, 2000000],
+    "2to5": [2000000, 5000000],
+    "5to10": [5000000, 10000000],
+    over10: [10000000, Infinity],
+  };
+
+
+  const deriveIdsFromWishlist = useCallback(
+    (wishlistPayload, targetType = "property") => {
+      if (!wishlistPayload) return new Set();
+      const items = wishlistPayload.items || wishlistPayload.Items || [];
+      return new Set(
+        items
+          .filter(
+            (item) => (item.type || item.Type || "property") === targetType
+          )
+          .map((item) =>
+            Number(item.id ?? item.Id ?? item.propertyId ?? item.PropertyID)
+          )
+          .filter((id) => !Number.isNaN(id))
+      );
+    },
+    []
+  );
 
   const location = searchParams.get("location") || "";
   const dates = searchParams.get("dates") || "";
   const guests = searchParams.get("guests") || "1";
   const type = searchParams.get("type");
   const time = searchParams.get("time");
-  const minPrice = Number(searchParams.get("minPrice"));
-  const maxPrice = Number(searchParams.get("maxPrice"));
+
+  /** 🔥 FIX: price param (option-based) */
+  const price = searchParams.get("price") || "";
 
   // Filter experiences
   const filteredExperiences =
     experiences?.filter((tour) => {
       if (!tour) return false;
 
+      // Location
       if (location) {
         const tourLocation = tour.location || tour.locationObj?.city || "";
         if (!tourLocation.toLowerCase().includes(location.toLowerCase())) {
@@ -55,6 +72,7 @@ export default function ToursPage() {
         }
       }
 
+      // Guests
       if (guests && guests !== "1") {
         const guestCount = Number(guests);
         if (!isNaN(guestCount) && tour.maxGuests) {
@@ -64,17 +82,60 @@ export default function ToursPage() {
         }
       }
 
-      if (type && tour.type?.toLowerCase() !== type.toLowerCase()) return false;
-      if (time && tour.time?.toLowerCase() !== time.toLowerCase()) return false;
+      // Type
+      if (type && tour.mainCategory?.toLowerCase() !== type.toLowerCase())
+        return false;
 
-      if (searchParams.has("minPrice") && tour.price < minPrice) return false;
-      if (searchParams.has("maxPrice") && tour.price > maxPrice) return false;
+      // Time — startDate or StartDate
+      if (time) {
+        const dateString = tour.startDate || tour.StartDate || null;
+
+        if (!dateString) {
+          // Nếu là tour full-day thì luôn pass khi chọn "full-day"
+          if (time === "fullday") return true;
+          return false;
+        }
+
+        const hour = new Date(dateString).getHours();
+
+        if (time === "morning" && !(hour >= 5 && hour < 12)) return false;
+        if (time === "afternoon" && !(hour >= 12 && hour < 18)) return false;
+        if (time === "evening" && !(hour >= 18 && hour < 22)) return false;
+        if (time === "night" && !(hour >= 22 || hour < 5)) return false;
+
+        // fullday → luôn pass (trừ khi bạn muốn logic khác)
+      }
+
+      // PRICE OPTION FILTER
+      // PRICE FILTER — ALWAYS USE ORIGINAL VND PRICE
+      if (price) {
+        const tourPriceVND = Number(tour.price || 0);
+        const [min, max] = PRICE_BRACKETS[price] || [0, Infinity];
+
+        if (!(tourPriceVND >= min && tourPriceVND < max)) return false;
+      }
+
 
       return true;
     }) || [];
 
   const handleSearch = ({ location, dates, guests, params }) => {
     navigate(`/tours?${params.toString()}`);
+  };
+
+  const handleClearFilters = () => {
+    const params = new URLSearchParams();
+    // giữ nguyên location hoặc xoá luôn, bạn chọn 1 trong 2:
+
+    // ❗ Nếu bạn *muốn giữ location/dates/guests*:
+    // if (location) params.set("location", location);
+    // if (dates) params.set("dates", dates);
+    // if (guests) params.set("guests", guests);
+
+    // ❗ Nếu bạn muốn *reset sạch 100%*:
+    navigate("/tours");
+
+    setOpenFilter(null);
   };
 
   const loadSavedProperties = useCallback(async () => {
@@ -115,6 +176,7 @@ export default function ToursPage() {
 
   return (
     <div className="tours-page">
+      {/* Search Bar */}
       <section className="tours-search-section">
         <div className="container">
           <ExperienceSearchBar
@@ -200,19 +262,25 @@ export default function ToursPage() {
 
               {openFilter === "price" && (
                 <TourPriceFilter
-                  min={minPrice}
-                  max={maxPrice}
-                  current={{ min: minPrice, max: maxPrice }}
-                  onSelect={({ min, max }) => {
+                  current={price}
+                  onSelect={(value) => {
                     const params = new URLSearchParams(searchParams);
-                    params.set("minPrice", min);
-                    params.set("maxPrice", max);
+                    params.set("price", value);
                     navigate(`/tours?${params.toString()}`);
                     setOpenFilter(null);
                   }}
                 />
               )}
             </div>
+
+            <button
+              className="filter-btn clear-filter-btn"
+              onClick={handleClearFilters}
+            >
+              <Icon icon="mdi:close-circle-outline" width="16" height="16" />
+              <span>Clear</span>
+            </button>
+
           </div>
         </div>
       </section>
