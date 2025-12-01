@@ -124,7 +124,7 @@ const SignUpPage = () => {
       dispatch({ type: 'SET_USER', payload: response });
       
       // Chuyển hướng về trang chủ sau khi đăng ký thành công
-      navigate("/");
+      navigate("/login");
     } catch (err) {
       setOtpError(err.message || "Invalid OTP code. Please try again.");
       // Clear OTP on error
