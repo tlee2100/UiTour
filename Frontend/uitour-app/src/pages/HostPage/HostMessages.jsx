@@ -16,11 +16,76 @@ const mockConversations = [
     // ... giữ nguyên như cũ ...
 ];
 
+// ======= Time ago utilities =======
+const ONE_MINUTE = 60 * 1000;
+const ONE_HOUR = 60 * ONE_MINUTE;
+const ONE_DAY = 24 * ONE_HOUR;
+const ONE_WEEK = 7 * ONE_DAY;
+
+function formatTimeAgo(timestamp, language, tFn) {
+    if (!timestamp) return "";
+
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+
+    // Defensive logging for debugging abnormal deltas
+    if (diffMs < 0 || diffMs > 365 * ONE_DAY) {
+        console.warn("TimeAgo delta out of expected range", {
+            timestamp,
+            parsed: date.toISOString(),
+            now: now.toISOString(),
+            diffMs,
+        });
+    }
+
+    if (diffMs < ONE_MINUTE) return tFn(language, "host.justNow");
+
+    const mins = Math.floor(diffMs / ONE_MINUTE);
+    const hours = Math.floor(diffMs / ONE_HOUR);
+    const days = Math.floor(diffMs / ONE_DAY);
+
+    if (mins < 60) return `${mins} min ago`;
+    if (hours < 24) return `${hours} hours ago`;
+    if (days < 7) return `${days} days ago`;
+
+    // Older than a week → show fixed date
+    return date.toLocaleDateString();
+}
+
+function useTimeAgo(timestamp, language, tFn) {
+    const [now, setNow] = useState(Date.now());
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setNow(Date.now());
+        }, ONE_MINUTE);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    return useMemo(
+        () => formatTimeAgo(timestamp, language, tFn),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [timestamp, language, tFn, now]
+    );
+}
+
+function TimeAgo({ timestamp }) {
+    const { language } = useLanguage();
+    const text = useTimeAgo(timestamp, language, t);
+    return <>{text}</>;
+}
+
 export default function HostMessages() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [newChatEmail, setNewChatEmail] = useState("");
+    const [isCreatingChat, setIsCreatingChat] = useState(false);
+    const [newChatError, setNewChatError] = useState("");
+    const [showNewChatBox, setShowNewChatBox] = useState(false);
     const [messageInput, setMessageInput] = useState("");
     const [loading, setLoading] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
@@ -43,19 +108,22 @@ export default function HostMessages() {
         navigate("/");
     };
 
+    const currentUserId = user?.UserID || user?.id;
+
     useEffect(() => {
-        if (!user) return;
+        if (!currentUserId) return;
         setLoading(true);
-        authAPI.getConversations(user.UserID)
+        authAPI.getConversations(currentUserId)
             .then((data) => {
-                setConversations(data);
+                // Keep raw timestamps from backend; TimeAgo will handle display & timezone
+                setConversations(data || []);
             })
             .catch((err) => console.error(err))
             .finally(() => setLoading(false));
-    }, [user]);
+    }, [currentUserId]);
 
     // ======= Hàm load conversation giữa host và partner =======
-    const loadConversation = async (userId1, userId2) => {
+    const loadConversation = async (userId1, userId2, partnerName) => {
         if (!userId1 || !userId2) {
             console.warn("Cannot load conversation: missing userId1 or userId2");
             return;
@@ -63,7 +131,19 @@ export default function HostMessages() {
 
         try {
             const data = await authAPI.getConversationBetweenUsers(userId1, userId2);
-            setSelectedConversation(data);
+            const messages = (data || []).map((m) => ({
+                id: m.messageID ?? m.MessageID ?? m.id,
+                fromUserId: m.fromUserID ?? m.FromUserID,
+                toUserId: m.toUserID ?? m.ToUserID,
+                text: m.content ?? m.Content,
+                timestamp: m.sentAt ?? m.SentAt,
+            }));
+
+            setSelectedConversation({
+                partnerId: userId2,
+                partnerName: partnerName || data?.[0]?.partnerName || "",
+                messages,
+            });
         } catch (err) {
             console.error("Failed to load conversation:", err);
         }
@@ -72,10 +152,10 @@ export default function HostMessages() {
     // ======= Gửi tin nhắn =======
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!messageInput.trim() || !selectedConversation) return;
+        if (!messageInput.trim() || !selectedConversation || !currentUserId) return;
 
         const data = {
-            fromUserID: user.id,
+            fromUserID: currentUserId,
             toUserID: selectedConversation.partnerId,
             bookingID: selectedConversation.bookingId,
             content: messageInput.trim(),
@@ -83,17 +163,45 @@ export default function HostMessages() {
 
         try {
             const sentMessage = await authAPI.sendMessage(data);
+            const rawTimestamp = sentMessage.sentAt ?? sentMessage.SentAt ?? new Date().toISOString();
+
+            const mappedMessage = {
+                id: sentMessage.messageID ?? sentMessage.MessageID ?? Date.now(),
+                fromUserId: sentMessage.fromUserID ?? sentMessage.FromUserID ?? data.fromUserID,
+                toUserId: sentMessage.toUserID ?? sentMessage.ToUserID ?? data.toUserID,
+                text: sentMessage.content ?? sentMessage.Content ?? data.content,
+                timestamp: rawTimestamp,
+            };
+
             const updated = {
                 ...selectedConversation,
-                messages: [...selectedConversation.messages, sentMessage],
-                lastMessage: messageInput,
-                timestamp: "Just now",
+                messages: [...(selectedConversation.messages || []), mappedMessage],
+                lastMessage: mappedMessage.text,
             };
             setSelectedConversation(updated);
 
             // Cập nhật conversations list
             setConversations((prev) =>
-                prev.map((c) => (c.id === selectedConversation.id ? updated : c))
+                prev.some((c) => c.conversationId === selectedConversation.partnerId)
+                    ? prev.map((c) =>
+                          c.conversationId === selectedConversation.partnerId
+                              ? {
+                                    ...c,
+                                    lastMessage: mappedMessage.text,
+                                    lastMessageAt: mappedMessage.timestamp,
+                                }
+                              : c
+                      )
+                    : [
+                          {
+                              conversationId: selectedConversation.partnerId,
+                              partnerName: selectedConversation.partnerName,
+                              lastMessage: mappedMessage.text,
+                              lastMessageAt: mappedMessage.timestamp,
+                              unreadCount: 0,
+                          },
+                          ...prev,
+                      ]
             );
 
             setMessageInput("");
@@ -102,7 +210,7 @@ export default function HostMessages() {
         }
     };
 
-    // KEEP all message logic unchanged
+    // Lọc theo tên (và sau này có thể mở rộng theo email)
     const filteredConversations = conversations.filter((conv) =>
         conv.partnerName?.toLowerCase().includes(searchQuery.toLowerCase())
         //conv.propertyTitle.toLowerCase().includes(searchQuery.toLowerCase())
@@ -114,7 +222,52 @@ export default function HostMessages() {
             name: conversation.partnerName,
         };
         setSelectedUser(partner);
-        loadConversation(user.UserID, partner.id);
+        loadConversation(currentUserId, partner.id, partner.name);
+    };
+
+    // Tạo cuộc trò chuyện mới bằng email
+    const handleCreateNewChat = async (e) => {
+        e.preventDefault();
+        if (!newChatEmail.trim() || !currentUserId) return;
+        setIsCreatingChat(true);
+        setNewChatError("");
+        try {
+            const foundUser = await authAPI.getUserByEmail(newChatEmail.trim());
+            if (!foundUser?.userID && !foundUser?.UserID) {
+                setNewChatError("User not found");
+                return;
+            }
+            const partnerId = foundUser.userID ?? foundUser.UserID;
+            const partnerName = foundUser.fullName ?? foundUser.FullName ?? foundUser.email ?? foundUser.Email;
+
+            setSelectedConversation({
+                partnerId,
+                partnerName,
+                messages: [],
+            });
+
+            // Nếu chưa có trong danh sách hội thoại, thêm vào
+            setConversations((prev) => {
+                if (prev.some((c) => c.conversationId === partnerId)) return prev;
+                return [
+                    {
+                        conversationId: partnerId,
+                        partnerName,
+                        lastMessage: "",
+                        lastMessageAt: null,
+                        timestamp: "",
+                        unreadCount: 0,
+                    },
+                    ...prev,
+                ];
+            });
+
+            setNewChatEmail("");
+        } catch (err) {
+            setNewChatError(err.message || "Failed to start chat");
+        } finally {
+            setIsCreatingChat(false);
+        }
     };
     /*const handleSendMessage = (e) => {
         e.preventDefault();
@@ -138,20 +291,6 @@ export default function HostMessages() {
         }
     };*/
 
-    const formatMessageTime = (timestamp) => {
-        const date = new Date(timestamp);
-        const now = new Date();
-        const diffMs = now - date;
-        const mins = Math.floor(diffMs / 60000);
-        const hours = Math.floor(diffMs / 3600000);
-        const days = Math.floor(diffMs / 86400000);
-        if (mins < 1) return t(language, "host.justNow");
-        if (mins < 60) return `${mins}m ago`;
-        if (hours < 24) return `${hours}h ago`;
-        if (days < 7) return `${days}d ago`;
-        return date.toLocaleDateString();
-    };
-
     const formatMessageDate = (timestamp) => {
         const date = new Date(timestamp);
         const today = new Date();
@@ -167,7 +306,47 @@ export default function HostMessages() {
             <div className="messages-container">
                 <div className="messages-sidebar">
                     <div className="messages-sidebar-header">
-                        <h2>{t(language, "host.messages")}</h2>
+                        <div className="messages-sidebar-title-row">
+                            <h2 className="messages-title">{t(language, "host.messages")}</h2>
+                            <div className="new-chat-button-wrapper">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowNewChatBox((prev) => !prev);
+                                        setNewChatError("");
+                                    }}
+                                    className="new-chat-button"
+                                >
+                                    <Icon icon="mdi:pencil-box-outline" width="16" height="16" />
+                                </button>
+
+                                {showNewChatBox && (
+                                    <div className="new-chat-popover">
+                                        <form className="new-chat-form" onSubmit={handleCreateNewChat}>
+                                            <div className="new-chat-title">Start a new chat</div>
+                                            <input
+                                                type="email"
+                                                placeholder="Enter guest email"
+                                                value={newChatEmail}
+                                                onChange={(e) => setNewChatEmail(e.target.value)}
+                                                className="new-chat-input"
+                                            />
+                                            <button
+                                                type="submit"
+                                                disabled={isCreatingChat || !newChatEmail.trim()}
+                                                className="new-chat-submit"
+                                            >
+                                                {isCreatingChat ? "Creating..." : "Start chat"}
+                                            </button>
+                                            {newChatError && (
+                                                <div className="new-chat-error">{newChatError}</div>
+                                            )}
+                                        </form>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
                         <div className="messages-search">
                             <Icon icon="mdi:magnify" width="20" height="20" />
                             <input
@@ -189,31 +368,38 @@ export default function HostMessages() {
                                 {t(language, "host.noMessagesYet")}
                             </div>
                         ) : (
-                            filteredConversations.map((conv) => (
-                                <div
-                                    key={conv.conversationId} // sửa từ conv.id -> conv.conversationId
-                                    className={`conversation-item ${selectedConversation?.id === conv.id ? "active" : ""}`}
-                                    onClick={() => handleSelectConversation(conv)}
-                                >
-                                    <div className="conversation-avatar">
-                                        {conv.partnerAvatar ? (
-                                            <img src={conv.partnerAvatar} alt={conv.partnerName} />
-                                        ) : (
-                                            <div className="avatar-placeholder">
-                                                {conv.partnerName ? conv.partnerName.charAt(0) : "?"}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="conversation-content">
-                                        <div className="conversation-header">
-                                            <h3>{conv.partnerName}</h3>
-                                            <span className="conversation-time">{conv.timestamp}</span>
+                            filteredConversations.map((conv) => {
+                                const isActive =
+                                    selectedConversation &&
+                                    selectedConversation.partnerId === conv.conversationId;
+                                return (
+                                    <div
+                                        key={conv.conversationId} // sửa từ conv.id -> conv.conversationId
+                                        className={`conversation-item chat-item ${isActive ? "active" : ""}`}
+                                        onClick={() => handleSelectConversation(conv)}
+                                    >
+                                        <div className="conversation-avatar">
+                                            {conv.partnerAvatar ? (
+                                                <img src={conv.partnerAvatar} alt={conv.partnerName} />
+                                            ) : (
+                                                <div className="avatar-placeholder">
+                                                    {conv.partnerName ? conv.partnerName.charAt(0) : "?"}
+                                                </div>
+                                            )}
                                         </div>
-                                        <p className="conversation-preview">{conv.lastMessage}</p>
-                                        {/* <p className="conversation-property">{conv.propertyTitle}</p> */}
+                                        <div className="conversation-content">
+                                            <div className="conversation-header">
+                                                <h3>{conv.partnerName}</h3>
+                                                <span className="conversation-time">
+                                                    <TimeAgo timestamp={conv.lastMessageAt || conv.timestamp} />
+                                                </span>
+                                            </div>
+                                            <p className="conversation-preview">{conv.lastMessage}</p>
+                                            {/* <p className="conversation-property">{conv.propertyTitle}</p> */}
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                            );
+                            })
                         )}
                     </div>
                 </div>
@@ -245,15 +431,17 @@ export default function HostMessages() {
                                             formatMessageDate(msg.timestamp) !==
                                                 formatMessageDate(selectedConversation.messages[index - 1]?.timestamp);
                                         return (
-                                            <React.Fragment key={msg.id}>
+                                            <React.Fragment key={msg.id || index}>
                                                 {showDate && (
                                                     <div className="message-date-divider">
                                                         {formatMessageDate(msg.timestamp)}
                                                     </div>
                                                 )}
-                                                <div className={`message-bubble ${msg.sender === "host" ? "sent" : "received"}`}>
+                                                <div className={`message-bubble ${msg.fromUserId === currentUserId ? "sent" : "received"}`}>
                                                     <div className="message-text">{msg.text}</div>
-                                                    <div className="message-time">{formatMessageTime(msg.timestamp)}</div>
+                                                    <div className="message-time">
+                                                        <TimeAgo timestamp={msg.timestamp} />
+                                                    </div>
                                                 </div>
                                             </React.Fragment>
                                         );

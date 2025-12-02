@@ -25,13 +25,14 @@ namespace UITour.ServicesL.Implementations
             if (toUser == null)
                 throw new ArgumentException("Recipient does not exist");
 
+            // Use local server time consistently for SentAt so frontend "time ago" is stable
             var message = new Message
             {
                 FromUserID = fromUserId,
                 ToUserID = toUserId,
                 BookingID = bookingId,
                 Content = content.Trim(),
-                SentAt = DateTime.UtcNow,
+                SentAt = DateTime.Now,
                 IsRead = false
             };
 
