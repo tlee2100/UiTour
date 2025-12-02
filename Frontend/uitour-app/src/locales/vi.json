@@ -941,5 +941,231 @@
       "guesthouse": "Nhà khách",
       "hotel": "Khách sạn"
     }
+  },
+  "footer": {
+    "support": {
+      "title": "Hỗ trợ",
+      "help": "Trung tâm trợ giúp",
+      "safety": "Thông tin an toàn",
+      "cancel": "Tùy chọn hủy đặt phòng",
+      "covid": "Ứng phó COVID-19",
+      "disabilities": "Hỗ trợ người khuyết tật",
+      "neighborhood": "Báo cáo vấn đề khu vực"
+    },
+    "community": {
+      "title": "Cộng đồng",
+      "accessibility": "Khả năng tiếp cận",
+      "discrimination": "Chống phân biệt đối xử",
+      "invite": "Mời bạn bè",
+      "giftcards": "Thẻ quà tặng",
+      "org": "UiTour.org"
+    },
+    "hosting": {
+      "title": "Lưu trú",
+      "try": "Thử làm chủ nhà",
+      "aircover": "AirCover dành cho Chủ nhà",
+      "resources": "Khám phá tài nguyên lưu trú",
+      "forum": "Tham gia diễn đàn cộng đồng",
+      "responsible": "Cách lưu trú có trách nhiệm"
+    },
+    "about": {
+      "title": "Giới thiệu",
+      "news": "Phòng tin tức",
+      "features": "Tìm hiểu tính năng mới",
+      "founders": "Thư từ nhà sáng lập",
+      "careers": "Tuyển dụng",
+      "investors": "Nhà đầu tư"
+    },
+    "legal": {
+      "privacy": "Chính sách riêng tư",
+      "terms": "Điều khoản",
+      "sitemap": "Sơ đồ trang"
+    },
+    "language": "Tiếng Việt (VN)",
+    "currency": {
+      "usd": "USD"
+    }
+  },
+  "uniSearch": {
+    "where": {
+      "label": "Địa điểm",
+      "placeholder": "Tìm điểm đến"
+    },
+    "checkin": {
+      "label": "Nhận phòng",
+      "placeholder": "Chọn ngày"
+    },
+    "checkout": {
+      "label": "Trả phòng",
+      "placeholder": "Chọn ngày"
+    },
+    "guests": {
+      "label": "Số khách",
+      "placeholder": "Thêm khách",
+      "unit": "khách"
+    }
+  },
+  "months": {
+    "short": [
+      "Th1",
+      "Th2",
+      "Th3",
+      "Th4",
+      "Th5",
+      "Th6",
+      "Th7",
+      "Th8",
+      "Th9",
+      "Th10",
+      "Th11",
+      "Th12"
+    ]
+  },
+  "home": {
+    "loading": "Đang tải chỗ ở...",
+    "error": "Không thể tải dữ liệu.",
+    "property": {
+      "untitled": "Chưa đặt tên",
+      "guestFavourite": "Được khách yêu thích",
+      "available": "Còn trống ✅",
+      "perNight": "/ đêm"
+    },
+    "wishlist": {
+      "loginRequired": "Vui lòng đăng nhập để lưu vào danh sách yêu thích.",
+      "updateFailed": "Không thể cập nhật danh sách. Vui lòng thử lại."
+    },
+    "continue": {
+      "title": "Khám phá thêm những nơi tuyệt đẹp",
+      "showMore": "Xem thêm"
+    }
+  },
+  "homeContent": {
+    "hostedBy": "được quản lý bởi",
+    "roomType": {
+      "default": "Nhà"
+    },
+    "meta": {
+      "guests": "khách",
+      "bedroom": "{count} phòng ngủ",
+      "bed": "{count} giường",
+      "bath": "{count} phòng tắm"
+    },
+    "highlights": {
+      "selfCheckin": "Tự nhận phòng bằng khóa thông minh",
+      "enhancedClean": "Chỗ ở tuân thủ quy trình vệ sinh nâng cao",
+      "entirePlace": "Bạn sẽ có toàn bộ {type} cho riêng mình"
+    },
+    "noHighlights": "Không có thông tin nổi bật",
+    "description": {
+      "default": "Chỗ ở đẹp, tiện nghi đầy đủ và vị trí tuyệt vời."
+    },
+    "showMore": "Xem thêm",
+    "sleep": {
+      "title": "Nơi bạn sẽ ngủ",
+      "noBedroomPhoto": "Không có hình phòng ngủ",
+      "bedroom": "Phòng ngủ"
+    },
+    "amenities": {
+      "title": "Tiện nghi tại chỗ ở",
+      "empty": "Chỗ ở này chưa cung cấp danh sách tiện nghi."
+    },
+    "calendar": {
+      "select": "Chọn ngày nhận phòng",
+      "clear": "Xóa ngày"
+    }
+  },
+  "homeThings": {
+    "title": "Những điều cần biết",
+    "rules": {
+      "title": "Nội quy nhà",
+      "none": "Không có nội quy cụ thể"
+    },
+    "health": {
+      "title": "Sức khỏe & an toàn",
+      "covid": "Áp dụng các biện pháp an toàn COVID-19",
+      "sanitized": "Bề mặt được vệ sinh giữa các lượt ở",
+      "carbonOn": "Có lắp đặt máy báo khí CO",
+      "carbonOff": "Không có máy báo khí CO",
+      "smokeOn": "Có lắp đặt máy báo khói",
+      "smokeOff": "Không có máy báo khói",
+      "deposit": "Tiền cọc an ninh: ${amount}"
+    },
+    "showMore": "Xem thêm",
+    "cancel": {
+      "title": "Chính sách hủy phòng",
+      "none": "Không có chính sách hủy cụ thể.",
+      "showDetails": "Xem chi tiết"
+    }
+  },
+  "homeWishlist": {
+    "title": "Danh sách yêu thích",
+    "loadingMessage": "Đang tải danh sách yêu thích...",
+    "loginRequiredTitle": "Hãy đăng nhập để xem danh sách yêu thích",
+    "loginRequiredSubtitle": "Đăng nhập để xem các chỗ ở đã lưu và tạo danh sách yêu thích",
+    "emptyTitle": "Chưa có danh sách yêu thích",
+    "emptySubtitle": "Bắt đầu lưu các chỗ ở để tạo danh sách đầu tiên của bạn",
+    "emptyItemsTitle": "Danh sách yêu thích của bạn đang trống",
+    "emptyItemsSubtitle": "Khám phá và lưu các chỗ ở mà bạn thích",
+    "exploreButton": "Khám phá chỗ ở",
+    "backToLists": "Quay lại danh sách",
+    "folder": {
+      "savedPlaceSingular": "chỗ đã lưu",
+      "savedPlacePlural": "chỗ đã lưu"
+    },
+    "items": {
+      "savedItemSingular": "mục đã lưu",
+      "savedItemPlural": "mục đã lưu"
+    },
+    "type": {
+      "property": "Chỗ ở",
+      "tour": "Tour"
+    },
+    "unit": {
+      "night": "/ đêm",
+      "person": "/ người"
+    }
+  },
+  "homeTrips": {
+    "title": "Chuyến đi",
+    "loginRequiredTitle": "Đăng nhập để theo dõi chuyến đi của bạn",
+    "loginRequiredSubtitle": "Đăng nhập để xem các đặt phòng và tiếp tục khám phá những trải nghiệm mới.",
+    "loginButton": "Đăng nhập",
+    "loading": "Đang tải...",
+    "retry": "Thử lại",
+    "emptyTitle": "Lên kế hoạch cho chuyến đi hoàn hảo",
+    "emptySubtitle": "Khám phá chỗ ở, trải nghiệm và dịch vụ. Sau khi đặt phòng, thông tin sẽ xuất hiện tại đây.",
+    "emptyButton": "Bắt đầu khám phá",
+    "locationNotUpdated": "Chưa cập nhật vị trí",
+    "noSchedule": "Chưa có lịch trình",
+    "nights": "{count} đêm",
+    "guests": "{count} khách",
+    "statusConfirmed": "Đã xác nhận",
+    "type": {
+      "stay": "Chỗ ở",
+      "experience": "Trải nghiệm"
+    },
+    "review": {
+      "write": "Viết đánh giá",
+      "submitted": "Đã gửi đánh giá",
+      "modalTitle": "Chia sẻ trải nghiệm của bạn",
+      "modalTextStay": "Hãy chia sẻ với khách sau về kỳ nghỉ tại {name}.",
+      "modalTextTour": "Hãy chia sẻ với những người đi sau về trải nghiệm {name}.",
+      "ratingLabel": "Đánh giá",
+      "commentLabel": "Nhận xét",
+      "commentPlaceholder": "Điều gì khiến bạn ấn tượng? Chia sẻ mẹo hoặc điểm nổi bật.",
+      "submit": "Gửi đánh giá",
+      "submitting": "Đang gửi...",
+      "errorMissingBooking": "Không thể xác định thông tin đặt phòng.",
+      "errorMissingComments": "Vui lòng nhập nhận xét.",
+      "errorInvalidRating": "Vui lòng chọn số điểm hợp lệ (1-5).",
+      "submitSuccess": "Cảm ơn! Đánh giá của bạn đã được gửi thành công.",
+      "alreadyReviewed": "Bạn đã gửi đánh giá cho chuyến đi này."
+    },
+    "viewDetails": "Xem chi tiết",
+    "bookAnother": "Đặt chuyến khác"
+  },
+  "homeNotifications": {
+    "title": "Thông báo",
+    "empty": "Bạn chưa có thông báo nào."
   }
 }

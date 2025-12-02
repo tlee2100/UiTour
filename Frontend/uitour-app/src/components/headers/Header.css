@@ -216,3 +216,6 @@
     padding: 8px 10px;
   }
 }
+.header {
+  z-index: 9999 !important;
+}
