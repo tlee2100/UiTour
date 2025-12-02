@@ -1235,8 +1235,8 @@ async updateUserProfile(userId, form) {
   // Gửi tin nhắn
   async sendMessage({ fromUserID, toUserID, bookingID, content }) {
     try {
-      if (!fromUserID || !toUserID || !bookingID || !content?.trim()) {
-        throw new Error('fromUserID, toUserID, bookingID và content đều bắt buộc');
+      if (!fromUserID || !toUserID || !content?.trim()) {
+        throw new Error('fromUserID, toUserID và content đều bắt buộc');
       }
 
       const token = localStorage.getItem('token');
@@ -1250,7 +1250,7 @@ async updateUserProfile(userId, form) {
         body: JSON.stringify({
           fromUserID,
           toUserID,
-          bookingID,
+          bookingID: bookingID ?? null,
           content: content.trim(),
         }),
       });
@@ -1276,6 +1276,32 @@ async updateUserProfile(userId, form) {
 
     } catch (err) {
       console.error('sendMessage error:', err);
+      throw err;
+    }
+  }
+
+  // Tìm user theo email (dùng để tạo cuộc trò chuyện mới)
+  async getUserByEmail(email) {
+    try {
+      if (!email) throw new Error('Email is required');
+
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/email/${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to find user by email');
+      }
+
+      return await response.json();
+    } catch (err) {
+      console.error('getUserByEmail error:', err);
       throw err;
     }
   }
