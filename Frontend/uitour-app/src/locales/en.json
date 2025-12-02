@@ -942,5 +942,231 @@
       "guesthouse": "Guest House",
       "hotel": "Hotel"
     }
+  },
+  "footer": {
+    "support": {
+      "title": "Support",
+      "help": "Help Center",
+      "safety": "Safety information",
+      "cancel": "Cancellation options",
+      "covid": "Our COVID-19 Response",
+      "disabilities": "Supporting people with disabilities",
+      "neighborhood": "Report a neighborhood concern"
+    },
+    "community": {
+      "title": "Community",
+      "accessibility": "Accessibility",
+      "discrimination": "Combating discrimination",
+      "invite": "Invite friends",
+      "giftcards": "Gift cards",
+      "org": "UiTour.org"
+    },
+    "hosting": {
+      "title": "Hosting",
+      "try": "Try hosting",
+      "aircover": "AirCover for Hosts",
+      "resources": "Explore hosting resources",
+      "forum": "Visit community forum",
+      "responsible": "How to host responsibly"
+    },
+    "about": {
+      "title": "About",
+      "news": "Newsroom",
+      "features": "Learn about new features",
+      "founders": "Letter from founders",
+      "careers": "Careers",
+      "investors": "Investors"
+    },
+    "legal": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "sitemap": "Sitemap"
+    },
+    "language": "English (US)",
+    "currency": {
+      "usd": "USD"
+    }
+  },
+  "uniSearch": {
+    "where": {
+      "label": "Where",
+      "placeholder": "Search destinations"
+    },
+    "checkin": {
+      "label": "Check in",
+      "placeholder": "Add dates"
+    },
+    "checkout": {
+      "label": "Check out",
+      "placeholder": "Add dates"
+    },
+    "guests": {
+      "label": "Who",
+      "placeholder": "Add guests",
+      "unit": "guests"
+    }
+  },
+  "months": {
+    "short": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ]
+  },
+  "home": {
+    "loading": "Loading accommodations...",
+    "error": "Failed to load data.",
+    "property": {
+      "untitled": "Untitled",
+      "guestFavourite": "Guest favourite",
+      "available": "Available ✅",
+      "perNight": "/ night"
+    },
+    "wishlist": {
+      "loginRequired": "Please log in to save properties to your wishlist.",
+      "updateFailed": "Failed to update wishlist. Please try again."
+    },
+    "continue": {
+      "title": "Continue exploring amazing views",
+      "showMore": "Show more"
+    }
+  },
+  "homeContent": {
+    "hostedBy": "hosted by",
+    "roomType": {
+      "default": "Home"
+    },
+    "meta": {
+      "guests": "guests",
+      "bedroom": "{count} bedroom |||| {count} bedrooms",
+      "bed": "{count} bed |||| {count} beds",
+      "bath": "{count} bath |||| {count} baths"
+    },
+    "highlights": {
+      "selfCheckin": "Check yourself in with smart lock",
+      "enhancedClean": "This place follows enhanced cleaning",
+      "entirePlace": "You'll have the {type} to yourself"
+    },
+    "noHighlights": "No highlights available",
+    "description": {
+      "default": "Beautiful property with great amenities and location."
+    },
+    "showMore": "Show more",
+    "sleep": {
+      "title": "Where you'll sleep",
+      "noBedroomPhoto": "No bedroom photo provided",
+      "bedroom": "Bedroom"
+    },
+    "amenities": {
+      "title": "What this place offers",
+      "empty": "No amenities listed for this property."
+    },
+    "calendar": {
+      "select": "Select check-in day",
+      "clear": "Clear days"
+    }
+  },
+  "homeThings": {
+    "title": "Things to know",
+    "rules": {
+      "title": "House rules",
+      "none": "No specific rules"
+    },
+    "health": {
+      "title": "Health & safety",
+      "covid": "COVID-19 safety practices apply",
+      "sanitized": "Surfaces sanitized between stays",
+      "carbonOn": "Carbon monoxide alarm installed",
+      "carbonOff": "No carbon monoxide alarm",
+      "smokeOn": "Smoke alarm installed",
+      "smokeOff": "No smoke alarm",
+      "deposit": "Security deposit: ${amount}"
+    },
+    "showMore": "Show more",
+    "cancel": {
+      "title": "Cancellation policy",
+      "none": "No specific cancellation policy provided.",
+      "showDetails": "Show details"
+    }
+  },
+  "homeWishlist": {
+    "title": "Wishlists",
+    "loadingMessage": "Loading your wishlists...",
+    "loginRequiredTitle": "Please log in to view your wishlists",
+    "loginRequiredSubtitle": "Sign in to see your saved properties and create wishlists",
+    "emptyTitle": "No wishlists yet",
+    "emptySubtitle": "Start saving properties to create your first wishlist",
+    "emptyItemsTitle": "Your wishlist is empty",
+    "emptyItemsSubtitle": "Start exploring and save properties you love",
+    "exploreButton": "Explore Properties",
+    "backToLists": "Back to lists",
+    "folder": {
+      "savedPlaceSingular": "saved place",
+      "savedPlacePlural": "saved places"
+    },
+    "items": {
+      "savedItemSingular": "saved item",
+      "savedItemPlural": "saved items"
+    },
+    "type": {
+      "property": "Property",
+      "tour": "Tour"
+    },
+    "unit": {
+      "night": "/ night",
+      "person": "/ person"
+    }
+  },
+  "homeTrips": {
+    "title": "Trips",
+    "loginRequiredTitle": "Log in to track your trips",
+    "loginRequiredSubtitle": "Log in to view your bookings and continue exploring new experiences.",
+    "loginButton": "Log in",
+    "loading": "Loading...",
+    "retry": "Try again",
+    "emptyTitle": "Plan the perfect trip",
+    "emptySubtitle": "Explore stays, experiences and services. After you book, your bookings will appear here.",
+    "emptyButton": "Get started",
+    "locationNotUpdated": "Location not updated",
+    "noSchedule": "No schedule",
+    "nights": "{count} night |||| {count} nights",
+    "guests": "{count} guest |||| {count} guests",
+    "statusConfirmed": "Confirmed",
+    "type": {
+      "stay": "Stay",
+      "experience": "Experience"
+    },
+    "review": {
+      "write": "Write a review",
+      "submitted": "Review submitted",
+      "modalTitle": "Share your experience",
+      "modalTextStay": "Tell future guests about your stay at {name}.",
+      "modalTextTour": "Tell future travelers about {name}.",
+      "ratingLabel": "Rating",
+      "commentLabel": "Comments",
+      "commentPlaceholder": "What stood out during your stay or tour? Share highlights or tips.",
+      "submit": "Submit review",
+      "submitting": "Submitting...",
+      "errorMissingBooking": "Unable to determine booking details for this trip.",
+      "errorMissingComments": "Please enter your comments.",
+      "errorInvalidRating": "Please select a valid rating (1-5).",
+      "submitSuccess": "Thanks! Your review has been submitted successfully.",
+      "alreadyReviewed": "You already shared a review for this trip."
+    },
+    "viewDetails": "View details",
+    "bookAnother": "Book another trip"
+  },
+  "homeNotifications": {
+    "title": "Notifications",
+    "empty": "You have no notifications yet."
   }
 }

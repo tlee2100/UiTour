@@ -4,25 +4,26 @@ import SearchWhere from "./SearchWhere";
 import SearchDates from "./SearchDates";
 import SearchGuests from "./SearchGuests";
 import "./UniversalSearchBar.css";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
 
 export default function UniversalSearchBar({
   initial = { location: "", checkIn: "", checkOut: "", guests: "" },
   onSearch,
   onClose = () => {},
 }) {
-  // main search values
+  const { language } = useLanguage();
+
   const [searchLocation, setSearchLocation] = useState(initial.location);
   const [checkIn, setCheckIn] = useState(initial.checkIn);
   const [checkOut, setCheckOut] = useState(initial.checkOut);
   const [guests, setGuests] = useState(initial.guests);
 
-  // popover states
   const [openWhere, setOpenWhere] = useState(false);
   const [openDates, setOpenDates] = useState(false);
   const [openGuests, setOpenGuests] = useState(false);
   const [activeField, setActiveField] = useState(null);
 
-  // close popups
   const closeAllPopups = () => {
     setOpenWhere(false);
     setOpenDates(false);
@@ -33,22 +34,19 @@ export default function UniversalSearchBar({
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
-      "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const months = t(language, "months.short");
     return `${months[d.getMonth()]} ${d.getDate()}`;
   };
 
   const handleSearchClick = () => {
     closeAllPopups();
-
     const params = new URLSearchParams();
     if (searchLocation) params.set("location", searchLocation);
     if (checkIn) params.set("checkIn", checkIn);
     if (checkOut) params.set("checkOut", checkOut);
     if (guests) params.set("guests", guests);
-
     onSearch(params.toString());
-    onClose(); // close inline search (handled by MainLayout)
+    onClose();
   };
 
   return (
@@ -67,9 +65,12 @@ export default function UniversalSearchBar({
             setActiveField(next ? "where" : null);
           }}
         >
-          <label>Where</label>
+          <label>{t(language, "uniSearch.where.label")}</label>
           <div className="uni-sf-value-row">
-            <div className="uni-sf-value">{searchLocation || "Search destinations"}</div>
+            <div className="uni-sf-value">
+              {searchLocation || t(language, "uniSearch.where.placeholder")}
+            </div>
+
             {searchLocation && (
               <button
                 className="uni-sf-clear"
@@ -96,11 +97,12 @@ export default function UniversalSearchBar({
             setActiveField(next ? "checkin" : null);
           }}
         >
-          <label>Check in</label>
+          <label>{t(language, "uniSearch.checkin.label")}</label>
           <div className="uni-sf-value-row">
             <div className="uni-sf-value">
-              {checkIn ? formatDate(checkIn) : "Add dates"}
+              {checkIn ? formatDate(checkIn) : t(language, "uniSearch.checkin.placeholder")}
             </div>
+
             {checkIn && (
               <button
                 className="uni-sf-clear"
@@ -128,11 +130,12 @@ export default function UniversalSearchBar({
             setActiveField(next ? "checkout" : null);
           }}
         >
-          <label>Check out</label>
+          <label>{t(language, "uniSearch.checkout.label")}</label>
           <div className="uni-sf-value-row">
             <div className="uni-sf-value">
-              {checkOut ? formatDate(checkOut) : "Add dates"}
+              {checkOut ? formatDate(checkOut) : t(language, "uniSearch.checkout.placeholder")}
             </div>
+
             {checkOut && (
               <button
                 className="uni-sf-clear"
@@ -160,11 +163,15 @@ export default function UniversalSearchBar({
             setActiveField(next ? "guests" : null);
           }}
         >
-          <label>Who</label>
+          <label>{t(language, "uniSearch.guests.label")}</label>
+
           <div className="uni-sf-value-row">
             <div className="uni-sf-value">
-              {guests ? `${guests} guests` : "Add guests"}
+              {guests
+                ? `${guests} ${t(language, "uniSearch.guests.unit")}`
+                : t(language, "uniSearch.guests.placeholder")}
             </div>
+
             {guests && (
               <button
                 className="uni-sf-clear"
@@ -179,7 +186,7 @@ export default function UniversalSearchBar({
           </div>
         </button>
 
-        {/* SEARCH BTN */}
+        {/* SEARCH BUTTON */}
         <button className="uni-search-button" onClick={handleSearchClick}>
           <Icon icon="mdi:magnify" width="20" height="20" />
         </button>
