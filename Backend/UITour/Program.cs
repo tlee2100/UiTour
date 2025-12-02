@@ -108,13 +108,15 @@ builder.Services.AddCors(options =>
                 "https://localhost:3000"
             )
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
 // Swagger / OpenAPI for API testing
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSignalR();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -147,7 +149,7 @@ app.UseCors(CorsPolicy);
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.MapHub<MessageHub>("/messageHub");
 
 // Map attribute-routed API controllers
 app.MapControllers();
