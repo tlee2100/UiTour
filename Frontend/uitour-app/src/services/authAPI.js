@@ -9,6 +9,7 @@ const WISHLIST_BASE_URL = 'http://localhost:5069/api/wishlist';
 const BOOKING_BASE_URL = 'http://localhost:5069/api/booking';
 const UPLOAD_BASE_URL = 'http://localhost:5069/api/upload';
 const PAYMENTS_BASE_URL = 'http://localhost:5069/api/payments';
+const MESSAGES_BASE_URL = 'http://localhost:5069/api/messages';
 
 class AuthAPI {
    // Lấy thông tin user theo ID
@@ -1230,6 +1231,131 @@ async updateUserProfile(userId, form) {
     }
   }
 
+  //MESSAGE
+  // Gửi tin nhắn
+  async sendMessage({ fromUserID, toUserID, bookingID, content }) {
+    try {
+      if (!fromUserID || !toUserID || !bookingID || !content?.trim()) {
+        throw new Error('fromUserID, toUserID, bookingID và content đều bắt buộc');
+      }
+
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`${MESSAGES_BASE_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          fromUserID,
+          toUserID,
+          bookingID,
+          content: content.trim(),
+        }),
+      });
+
+      const responseText = await response.text();
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to send message';
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          errorMessage = responseText || response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      try {
+        return JSON.parse(responseText);
+      } catch {
+        return { message: 'Message sent successfully' };
+      }
+
+    } catch (err) {
+      console.error('sendMessage error:', err);
+      throw err;
+    }
+  }
+  // Lấy danh sách conversation của 1 user
+  async getConversations(userId) {
+    try {
+      if (!userId) throw new Error('userId là bắt buộc');
+
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`${MESSAGES_BASE_URL}/conversations/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+      });
+
+      const responseText = await response.text();
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to fetch conversations';
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          errorMessage = responseText || response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      try {
+        return JSON.parse(responseText);
+      } catch {
+        return [];
+      }
+
+    } catch (err) {
+      console.error('getConversations error:', err);
+      throw err;
+    }
+  }
+  // Lấy toàn bộ tin nhắn giữa 2 user
+  async getConversationBetweenUsers(user1, user2) {
+    try {
+      if (!user1 || !user2) throw new Error('user1 và user2 đều là bắt buộc');
+
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`${MESSAGES_BASE_URL}/conversation/${user1}/${user2}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+      });
+
+      const responseText = await response.text();
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to fetch conversation';
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          errorMessage = responseText || response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      try {
+        return JSON.parse(responseText); // Trả về array các message
+      } catch {
+        return [];
+      }
+    } catch (err) {
+      console.error('getConversationBetweenUsers error:', err);
+      throw err;
+    }
+  }
 }
 
 // Create singleton instance
