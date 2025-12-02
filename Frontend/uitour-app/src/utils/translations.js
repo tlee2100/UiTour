@@ -9,24 +9,38 @@ const translations = {
 export function getTranslation(language, key) {
   const keys = key.split('.');
   let value = translations[language] || translations.en;
-  
+
   for (const k of keys) {
     value = value?.[k];
     if (value === undefined) {
-      // Fallback to English if translation not found
+      // Fallback to English
       value = translations.en;
-      for (const fallbackKey of keys) {
-        value = value?.[fallbackKey];
+      for (const fb of keys) {
+        value = value?.[fb];
         if (value === undefined) return key;
       }
       return value || key;
     }
   }
-  
+
   return value || key;
 }
 
-export function t(language, key) {
-  return getTranslation(language, key);
-}
+export function t(language, key, params = {}) {
+  let text = getTranslation(language, key);
 
+  if (typeof text !== "string") return key;
+
+  // --- PLURALIZATION: "one |||| many"
+  if (params.count != null && text.includes("||||")) {
+    const [one, many] = text.split("||||").map(s => s.trim());
+    text = params.count > 1 ? many : one;
+  }
+
+  // --- Replace variables like {count}, {type}
+  Object.entries(params).forEach(([k, v]) => {
+    text = text.replace(`{${k}}`, v);
+  });
+
+  return text;
+}

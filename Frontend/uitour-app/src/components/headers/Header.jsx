@@ -23,26 +23,36 @@ export default function Header() {
 
   const handleLogoClick = () => navigate('/');
 
-  // ✅ Xác định tab active
+  // Determine active tab
   const active = location.pathname.startsWith("/tours") ? "tours" : "stays";
 
-  // ✅ Cập nhật vị trí highlight
+  // FIXED — tabs only show on EXACT defined pages
+  const shouldShowTabs =
+    location.pathname === "/" ||
+    location.pathname.startsWith("/tours") ||
+    location.pathname.startsWith("/search") ||
+    location.pathname.startsWith("/experiences/search");
+
+  // Highlight animation
   const updateHighlight = () => {
     const activeLink = document.querySelector(".nav_link.active");
     const highlight = document.querySelector(".nav_highlight");
+
     if (!activeLink || !highlight) return;
+
     highlight.style.width = `${activeLink.offsetWidth}px`;
     highlight.style.transform = `translateX(${activeLink.offsetLeft}px)`;
   };
 
   useEffect(() => {
-    updateHighlight();
-  }, [active]);
+    if (shouldShowTabs) updateHighlight();
+  }, [active, shouldShowTabs]);
 
   useEffect(() => {
+    if (!shouldShowTabs) return;
     window.addEventListener("resize", updateHighlight);
     return () => window.removeEventListener("resize", updateHighlight);
-  }, []);
+  }, [shouldShowTabs]);
 
   const toggleMenu = () => setMenuOpen(prev => !prev);
   const closeMenu = () => setMenuOpen(false);
@@ -56,27 +66,34 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Navigation */}
-      <nav className="header_nav">
-        <Link to="/" className={`nav_link ${active === "stays" ? "active" : ""}`}>
-          {t(language, 'header.stays')}
-        </Link>
-        <Link to="/tours" className={`nav_link ${active === "tours" ? "active" : ""}`}>
-          {t(language, 'header.experiences')}
-        </Link>
-        <span className="nav_highlight"></span>
-      </nav>
+      {/* Navigation Tabs (conditionally visible) */}
+      {shouldShowTabs && (
+        <nav className="header_nav">
+          <Link to="/" className={`nav_link ${active === "stays" ? "active" : ""}`}>
+            {t(language, 'header.stays')}
+          </Link>
 
-      {/* Right side */}
+          <Link to="/tours" className={`nav_link ${active === "tours" ? "active" : ""}`}>
+            {t(language, 'header.experiences')}
+          </Link>
+
+          <span className="nav_highlight"></span>
+        </nav>
+      )}
+
+      {/* Right Side */}
       <div className="header_right">
         <button
           className="header_title"
           onClick={() => {
-            const isAdmin = !!user && !!token && (user.role === 'ADMIN' || user.Role === 'ADMIN');
+            const isAdmin =
+              !!user && !!token && (user.role === 'ADMIN' || user.Role === 'ADMIN');
+
             if (isAdmin || location.pathname.startsWith('/admin')) {
               navigate('/');
               return;
             }
+
             if (!user || !token) {
               navigate('/login');
             } else {
@@ -84,12 +101,13 @@ export default function Header() {
             }
           }}
         >
-          {((user && token && (user.role === 'ADMIN' || user.Role === 'ADMIN')) || location.pathname.startsWith('/admin'))
+          {((user && token && (user.role === 'ADMIN' || user.Role === 'ADMIN')) ||
+            location.pathname.startsWith('/admin'))
             ? t(language, 'common.switchToTraveling')
             : t(language, 'common.becomeAHost')}
         </button>
 
-        <button 
+        <button
           ref={globeButtonRef}
           className="header_globe"
           onClick={openLanguageCurrency}
@@ -118,7 +136,10 @@ export default function Header() {
           </button>
 
           <div className="header_avatar">
-            <button className="header_avatarButton" onClick={() => navigate('/profile')}>
+            <button
+              className="header_avatarButton"
+              onClick={() => navigate('/profile')}
+            >
               <Icon icon="mdi:account" width="28" height="28" />
             </button>
           </div>

@@ -1,115 +1,139 @@
 import "./InfoThingsToKnow.css";
+import { t } from "../../utils/translations";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function InfoThingsToKnow({ property }) {
+  const { language } = useLanguage();
+
   if (!property) return null;
+
   const formatRuleText = (rule) => {
     if (rule.label) return rule.label;
 
     if (rule.value === true) {
-      const text = rule.id.replace(/_/g, " "); // "no smoking"
-      return text.charAt(0).toUpperCase() + text.slice(1); // "No smoking"
+      const text = rule.id.replace(/_/g, " ");
+      return text.charAt(0).toUpperCase() + text.slice(1);
     }
 
     return rule.value;
   };
+
   const rules = property.houseRules ?? [];
   const safety = property.healthAndSafety ?? {};
   const cancellation = property.cancellationPolicy ?? null;
 
   return (
     <div className="itk-wrapper">
-      <div className="itk-title">Things to know</div>
+      <div className="itk-title">
+        {t(language, "homeThings.title")}
+      </div>
 
       <div className="itk-columns">
 
-        {/* ✅ House Rules */}
+        {/* House Rules */}
         <div className="itk-column">
-          <div className="itk-heading">House rules</div>
+          <div className="itk-heading">
+            {t(language, "homeThings.rules.title")}
+          </div>
+
           <div className="itk-list">
             {rules.length > 0 ? (
               rules.map((rule) => (
                 <div key={rule.id} className="itk-item">
-                  <div className="itk-text">
-                    {formatRuleText(rule)}
-                  </div>
+                  <div className="itk-text">{formatRuleText(rule)}</div>
                 </div>
               ))
             ) : (
               <div className="itk-item">
-                <div className="itk-text">No specific rules</div>
+                <div className="itk-text">
+                  {t(language, "homeThings.rules.none")}
+                </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* ✅ Health & Safety */}
+        {/* Health & Safety */}
         <div className="itk-column">
-          <div className="itk-heading">Health & safety</div>
+          <div className="itk-heading">
+            {t(language, "homeThings.health.title")}
+          </div>
+
           <div className="itk-list">
             {safety.covidSafety && (
               <div className="itk-item">
-                <div className="itk-text">COVID-19 safety practices apply</div>
+                <div className="itk-text">
+                  {t(language, "homeThings.health.covid")}
+                </div>
               </div>
             )}
+
             {safety.surfacesSanitized && (
               <div className="itk-item">
-                <div className="itk-text">Surfaces sanitized between stays</div>
+                <div className="itk-text">
+                  {t(language, "homeThings.health.sanitized")}
+                </div>
               </div>
             )}
 
             <div className="itk-item">
               <div className="itk-text">
                 {safety.carbonMonoxideAlarm
-                  ? "Carbon monoxide alarm installed"
-                  : "No carbon monoxide alarm"}
+                  ? t(language, "homeThings.health.carbonOn")
+                  : t(language, "homeThings.health.carbonOff")}
               </div>
             </div>
 
             <div className="itk-item">
               <div className="itk-text">
                 {safety.smokeAlarm
-                  ? "Smoke alarm installed"
-                  : "No smoke alarm"}
+                  ? t(language, "homeThings.health.smokeOn")
+                  : t(language, "homeThings.health.smokeOff")}
               </div>
             </div>
 
             {safety.securityDepositRequired && (
               <div className="itk-item">
                 <div className="itk-text">
-                  Security deposit: ${safety.securityDepositAmount}
+                  {t(language, "homeThings.health.deposit", {
+                    amount: safety.securityDepositAmount,
+                  })}
                 </div>
               </div>
             )}
           </div>
 
           <div className="itk-link">
-            <span className="itk-link-text">Show more</span>
+            <span className="itk-link-text">
+              {t(language, "homeThings.showMore")}
+            </span>
           </div>
         </div>
 
-        {/* ✅ Cancellation Policy */}
+        {/* Cancellation Policy */}
         <div className="itk-column">
-          <div className="itk-heading">Cancellation policy</div>
-          
+          <div className="itk-heading">
+            {t(language, "homeThings.cancel.title")}
+          </div>
+
           {cancellation && cancellation.name ? (
             <>
-              {/* Hiển thị Tên Chính sách */}
-              <div className="itk-subtext" style={{ fontWeight: 'bold' }}>
+              <div className="itk-subtext" style={{ fontWeight: "bold" }}>
                 {cancellation.name}
               </div>
-              {/* Hiển thị Mô tả Chính sách */}
-              <div className="itk-subtext">
-                {cancellation.description}
-              </div>
+
+              <div className="itk-subtext">{cancellation.description}</div>
             </>
           ) : (
             <div className="itk-subtext">
-              No specific cancellation policy provided.
+              {t(language, "homeThings.cancel.none")}
             </div>
           )}
 
           <div className="itk-link">
-            <span className="itk-link-text">Show details</span>
+            <span className="itk-link-text">
+              {t(language, "homeThings.cancel.showDetails")}
+            </span>
           </div>
         </div>
 

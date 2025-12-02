@@ -8,34 +8,36 @@ import UniversalSearchBar from '../components/search/UniversalSearchBar';
 import authAPI from '../services/authAPI';
 import { useApp } from '../contexts/AppContext';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { t } from "../utils/translations";
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { user } = useApp();
+  const { language } = useLanguage();
+  const { convertToCurrent, format } = useCurrency();
 
   const handleSearchNavigate = (queryString) => {
     navigate(`/search?${queryString}`);
-  }; // 🔥 ADD THIS
+  };
 
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [savedPropertyIds, setSavedPropertyIds] = useState(new Set());
-  const { convertToCurrent, format } = useCurrency();
 
   const deriveIdsFromWishlist = useCallback((wishlistPayload, targetType = 'property') => {
     if (!wishlistPayload) return;
     const items = wishlistPayload.items || wishlistPayload.Items || [];
+
     const ids = items
       .filter((item) => (item.type || item.Type || 'property') === targetType)
       .map((item) => Number(item.id ?? item.Id ?? item.propertyId ?? item.PropertyID))
       .filter((id) => !Number.isNaN(id));
+
     setSavedPropertyIds(new Set(ids));
   }, []);
 
-  // -----------------------
-  // Load saved property IDs from wishlist
-  // -----------------------
   const loadSavedProperties = useCallback(async () => {
     if (!user || !user.UserID) {
       setSavedPropertyIds(new Set());
@@ -51,24 +53,23 @@ export default function HomePage() {
     }
   }, [deriveIdsFromWishlist, user]);
 
-  // -----------------------
-  // Load properties from API
-  // -----------------------
   const loadProperties = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const list = await authAPI.getProperties();
+
       const normalized = list.map(p => {
         const reviews = Array.isArray(p.reviews) ? p.reviews : [];
-        const avgRating = reviews.length > 0
-          ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviews.length
-          : 0;
+        const avgRating =
+          reviews.length > 0
+            ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviews.length
+            : 0;
 
         const normalizeImageUrl = (url) => {
-          if (!url || url.trim().length === 0) return "/fallback.svg";
-          if (url.startsWith('http://') || url.startsWith('https://')) return url;
-          if (url.startsWith('/')) return `http://localhost:5069${url}`;
+          if (!url || !url.trim()) return "/fallback.svg";
+          if (url.startsWith("http://") || url.startsWith("https://")) return url;
+          if (url.startsWith("/")) return `http://localhost:5069${url}`;
           return `http://localhost:5069/${url}`;
         };
 
@@ -76,13 +77,13 @@ export default function HomePage() {
         const firstPhoto = Array.isArray(photos) && photos.length > 0 ? photos[0] : null;
 
         const imageUrl = firstPhoto
-          ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || firstPhoto.ServerUrl || "/fallback.svg")
+          ? (firstPhoto.url || firstPhoto.Url || firstPhoto.serverUrl || firstPhoto.ServerUrl)
           : "/fallback.svg";
 
         return {
           id: p.propertyID,
-          title: p.listingTitle || 'Untitled',
-          location: p.location || '',
+          title: p.listingTitle || t(language, "home.property.untitled"),
+          location: p.location || "",
           price: p.price ?? 0,
           currency: p.currency ?? "USD",
           rating: avgRating,
@@ -92,39 +93,38 @@ export default function HomePage() {
           dates: null
         };
       });
+
       setProperties(normalized);
     } catch (err) {
-      console.error('Error fetching properties:', err);
+      console.error("Error fetching properties:", err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     loadProperties();
     loadSavedProperties();
   }, [loadProperties, loadSavedProperties]);
 
-  // 🔄 Loading state
   if (loading) {
-    return <LoadingSpinner message="Loading accommodations..." />;
+    return <LoadingSpinner message={t(language, "home.loading")} />;
   }
 
-  // ⚠️ Error state
   if (error) {
-    return <ErrorMessage message={error} />;
+    return <ErrorMessage message={t(language, "home.error")} />;
   }
 
   return (
     <div className="homepage">
 
-      {/* ⭐ NEW UNIVERSAL SEARCH BAR ⭐ */}
+      {/* ⭐ SEARCH BAR ⭐ */}
       <section className="search-section">
-        <UniversalSearchBar onSearch={handleSearchNavigate}/>
+        <UniversalSearchBar onSearch={handleSearchNavigate} />
       </section>
 
-      {/* Properties Grid */}
+      {/* ⭐ PROPERTIES ⭐ */}
       <section className="properties-section">
         <div className="properties-grid">
           {properties.map(property => (
@@ -141,12 +141,14 @@ export default function HomePage() {
                   src={property.mainImage}
                   alt={property.title}
                   onError={(e) => {
-                    e.target.src = '/fallback.svg';
+                    e.target.src = "/fallback.svg";
                   }}
                 />
 
                 {property.isGuestFavourite && (
-                  <div className="guest-favourite-badge">Guest favourite</div>
+                  <div className="guest-favourite-badge">
+                    {t(language, "home.property.guestFavourite")}
+                  </div>
                 )}
 
                 <button
@@ -155,7 +157,7 @@ export default function HomePage() {
                     e.stopPropagation();
 
                     if (!user || !user.UserID) {
-                      alert("Please log in to save properties to your wishlist");
+                      alert(t(language, "home.wishlist.loginRequired"));
                       return;
                     }
 
@@ -164,23 +166,29 @@ export default function HomePage() {
                     try {
                       let updatedWishlist;
                       if (isSaved) {
-                        updatedWishlist = await authAPI.removeFromWishlist(user.UserID, property.id, 'property');
+                        updatedWishlist = await authAPI.removeFromWishlist(user.UserID, property.id, "property");
                       } else {
-                        updatedWishlist = await authAPI.addToWishlist(user.UserID, property.id, 'property');
+                        updatedWishlist = await authAPI.addToWishlist(user.UserID, property.id, "property");
                       }
-                      deriveIdsFromWishlist(updatedWishlist, 'property');
+                      deriveIdsFromWishlist(updatedWishlist, "property");
                     } catch (error) {
-                      console.error('Error updating wishlist:', error);
-                      alert("Failed to update wishlist. Please try again.");
+                      console.error("Error updating wishlist:", error);
+                      alert(t(language, "home.wishlist.updateFailed"));
                     }
                   }}
                 >
                   <Icon
-                    icon={savedPropertyIds.has(property.id) ? "mdi:heart" : "mdi:heart-outline"}
+                    icon={
+                      savedPropertyIds.has(property.id)
+                        ? "mdi:heart"
+                        : "mdi:heart-outline"
+                    }
                     width="20"
                     height="20"
                     style={{
-                      color: savedPropertyIds.has(property.id) ? '#ff385c' : 'currentColor'
+                      color: savedPropertyIds.has(property.id)
+                        ? "#ff385c"
+                        : "currentColor"
                     }}
                   />
                 </button>
@@ -192,14 +200,23 @@ export default function HomePage() {
                 <div className="property-rating">
                   <Icon icon="mdi:star" width="14" height="14" />
                   <span>{(property.rating ?? 0).toFixed(1)}</span>
-                  <span className="rating-count">({property.reviewsCount || 0})</span>
+                  <span className="rating-count">
+                    ({property.reviewsCount || 0})
+                  </span>
                 </div>
 
-                <div className="property-dates">{property.dates || "Available ✅"}</div>
+                <div className="property-dates">
+                  {property.dates || t(language, "home.property.available")}
+                </div>
 
                 <div className="property-price">
-                  <span className="price">{format(convertToCurrent(property.price ?? 0))}</span>
-                  <span className="price-unit"> / night</span>
+                  <span className="price">
+                    {format(convertToCurrent(property.price ?? 0))}
+                  </span>
+                  <span className="price-unit">
+                    {" "}
+                    {t(language, "home.property.perNight")}
+                  </span>
                 </div>
               </div>
             </div>
@@ -207,11 +224,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Continue Exploring */}
+      {/* ⭐ CONTINUE EXPLORING ⭐ */}
       <section className="continue-section">
         <div className="continue-content">
-          <h2>Continue exploring amazing views</h2>
-          <button className="show-more-button">Show more</button>
+          <h2>{t(language, "home.continue.title")}</h2>
+          <button className="show-more-button">
+            {t(language, "home.continue.showMore")}
+          </button>
         </div>
       </section>
     </div>

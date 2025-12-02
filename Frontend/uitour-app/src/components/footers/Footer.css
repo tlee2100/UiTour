@@ -190,3 +190,35 @@
     font-size: 13px;
   }
 }
+
+/* Make footer language & currency look like normal text links */
+.lang-button,
+.currency-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+
+  font: inherit;
+  font-size: 14px;
+  color: var(--subtitle-color);
+  cursor: pointer;
+  text-decoration: none;
+
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lang-button:hover,
+.currency-button:hover {
+  text-decoration: underline;
+}
+
+.currency-button .currency-symbol {
+  margin-right: 2px;
+}
+.footer-col a,
+.sub-left a {
+  cursor: pointer;
+}
