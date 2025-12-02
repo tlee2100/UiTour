@@ -93,6 +93,7 @@ builder.Services.AddScoped<ITourService, TourService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHttpClient<IMomoPaymentService, MomoPaymentService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 
 // CORS for React dev servers
 const string CorsPolicy = "CorsPolicy";
@@ -146,6 +147,7 @@ app.UseCors(CorsPolicy);
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 // Map attribute-routed API controllers
 app.MapControllers();

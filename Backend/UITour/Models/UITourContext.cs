@@ -186,6 +186,19 @@ namespace UITour.Models
             modelBuilder.Entity<FavoriteList>()
                 .HasKey(fl => fl.ListID);
 
+            modelBuilder.Entity<Message>()
+                .HasIndex(m => new { m.FromUserID, m.ToUserID, m.SentAt });
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.FromUser)
+                .WithMany(u => u.SentMessages)
+                .HasForeignKey(m => m.FromUserID)
+                .OnDelete(DeleteBehavior.Restrict); // tránh xóa cascade
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.ToUser)
+                .WithMany(u => u.ReceivedMessages)
+                .HasForeignKey(m => m.ToUserID)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
