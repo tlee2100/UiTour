@@ -4,6 +4,9 @@ import { Icon } from '@iconify/react';
 import { useApp } from '../contexts/AppContext';
 import authAPI from '../services/authAPI';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { t } from '../utils/translations';
+
 import './TripsPage.css';
 
 export default function TripsPage() {
@@ -18,30 +21,31 @@ export default function TripsPage() {
   const navigate = useNavigate();
   const { user } = useApp();
   const { convertToCurrent, format } = useCurrency();
+  const { language } = useLanguage();
 
   // Helper function to normalize image URL
   const normalizeImageUrl = useCallback((url) => {
     if (!url || typeof url !== 'string' || url.trim().length === 0) {
       return null;
     }
-    
+
     const trimmedUrl = url.trim();
-    
+
     // If it's base64 or invalid, skip
     if (trimmedUrl.startsWith('data:image') || trimmedUrl.length < 10) {
       return null;
     }
-    
+
     // If it's already a full URL (http/https), use directly
     if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
       return trimmedUrl;
     }
-    
+
     // If it's a relative path (starts with /), add base URL
     if (trimmedUrl.startsWith('/')) {
       return `http://localhost:5069${trimmedUrl}`;
     }
-    
+
     // If it doesn't start with /, add / and base URL
     return `http://localhost:5069/${trimmedUrl}`;
   }, []);
@@ -49,32 +53,32 @@ export default function TripsPage() {
   // Helper function to get first photo URL from property/tour
   const getFirstPhotoUrl = useCallback((item) => {
     if (!item) return null;
-    
+
     // Try multiple ways to get photos: Photos (PascalCase) or photos (camelCase)
     const photos = item.Photos || item.photos || item.media?.photos || item.media?.Photos || [];
-    
+
     if (!Array.isArray(photos) || photos.length === 0) {
       return null;
     }
-    
+
     // Sort by SortIndex if available, otherwise use first photo
     const sortedPhotos = [...photos].sort((a, b) => {
       const aIndex = a.sortIndex ?? a.SortIndex ?? 0;
       const bIndex = b.sortIndex ?? b.SortIndex ?? 0;
       return aIndex - bIndex;
     });
-    
+
     const firstPhoto = sortedPhotos[0];
-    
+
     // Try multiple ways to get URL
-    const url = firstPhoto?.url || 
-                firstPhoto?.Url || 
-                firstPhoto?.serverUrl || 
-                firstPhoto?.ServerUrl ||
-                firstPhoto?.imageUrl ||
-                firstPhoto?.ImageUrl ||
-                null;
-    
+    const url = firstPhoto?.url ||
+      firstPhoto?.Url ||
+      firstPhoto?.serverUrl ||
+      firstPhoto?.ServerUrl ||
+      firstPhoto?.imageUrl ||
+      firstPhoto?.ImageUrl ||
+      null;
+
     return normalizeImageUrl(url);
   }, [normalizeImageUrl]);
 
@@ -167,7 +171,7 @@ export default function TripsPage() {
 
   const handleReviewSubmit = useCallback(async () => {
     if (!reviewingTrip) return;
-    
+
     const bookingId = reviewingTrip.bookingID ?? reviewingTrip.BookingID;
     if (!bookingId) {
       setReviewError('Unable to determine booking details for this trip.');
@@ -233,14 +237,14 @@ export default function TripsPage() {
   if (!user?.UserID) {
     return (
       <div className="trips-page">
-        <div className="trips-title">Trips</div>
+        <div className="trips-title">{t(language, "homeTrips.title")}</div>
         <div className="trips-empty">
           <div className="trips-empty-illustration" />
           <div className="trips-empty-textBlock">
-            <h2>Log in to track your trips</h2>
-            <p>Log in to view your bookings and continue exploring new experiences.</p>
+            <h2>{t(language, "homeTrips.loginRequiredTitle")}</h2>
+            <p>{t(language, "homeTrips.loginRequiredSubtitle")}</p>
             <button className="trips-btn" onClick={() => navigate('/login')}>
-              Log in
+              {t(language, "homeTrips.loginButton")}
             </button>
           </div>
         </div>
@@ -251,21 +255,21 @@ export default function TripsPage() {
   if (loading) {
     return (
       <div className="trips-page">
-        <div className="trips-title">Trips</div>
-        <div style={{ padding: 24 }}>Loading...</div>
+        <div className="trips-title">{t(language, "homeTrips.title")}</div>
+        <div style={{ padding: 24 }}>{t(language, "homeTrips.loading")}</div>
       </div>
     );
   }
 
   return (
     <div className="trips-page">
-      <h1 className="trips-title">Trips</h1>
+      <h1 className="trips-title">{t(language, "homeTrips.title")}</h1>
 
       {!!error && (
         <div className="trips-feedback error">
           {error}
           <button className="trips-btn small" onClick={loadTrips}>
-            Try again
+            {t(language, "homeTrips.retry")}
           </button>
         </div>
       )}
@@ -274,13 +278,10 @@ export default function TripsPage() {
         <div className="trips-empty">
           <div className="trips-empty-illustration" />
           <div className="trips-empty-textBlock">
-            <h2>Plan the perfect trip</h2>
-            <p>
-              Explore stays, experiences and services. After you book, your bookings will appear
-              here.
-            </p>
+            <h2>{t(language, "homeTrips.emptyTitle")}</h2>
+            <p>{t(language, "homeTrips.emptySubtitle")}</p>
             <button className="trips-btn" onClick={() => navigate('/')}>
-              Get started
+              {t(language, "homeTrips.emptyButton")}
             </button>
           </div>
         </div>
@@ -292,22 +293,22 @@ export default function TripsPage() {
             const propertyInfo = trip.propertyInfo;
             const tourInfo = trip.tourInfo;
             const isTour = !!tourInfo && !propertyInfo;
-            
+
             // Get cover image using helper function
-            const coverImage = propertyInfo 
+            const coverImage = propertyInfo
               ? (getFirstPhotoUrl(propertyInfo) || '/fallback.svg')
               : tourInfo
-              ? (getFirstPhotoUrl(tourInfo) || 
-                 tourInfo?.media?.cover?.url || 
-                 tourInfo?.image?.url ||
-                 '/fallback.svg')
-              : '/fallback.svg';
+                ? (getFirstPhotoUrl(tourInfo) ||
+                  tourInfo?.media?.cover?.url ||
+                  tourInfo?.image?.url ||
+                  '/fallback.svg')
+                : '/fallback.svg';
             const title =
               propertyInfo?.listingTitle ||
               propertyInfo?.title ||
               tourInfo?.tourName ||
               tourInfo?.title ||
-                    `Booking #${trip.bookingID || trip.BookingID}`;
+              `Booking #${trip.bookingID || trip.BookingID}`;
             const location =
               propertyInfo?.location ||
               propertyInfo?.Location ||
@@ -316,8 +317,8 @@ export default function TripsPage() {
             const detailLink = propertyInfo
               ? `/property/${propertyInfo.PropertyID || propertyInfo.id || trip.propertyID || trip.PropertyID}`
               : tourInfo
-              ? `/experience/${tourInfo.tourID || tourInfo.id || trip.tourID || trip.TourID}`
-              : null;
+                ? `/experience/${tourInfo.tourID || tourInfo.id || trip.tourID || trip.TourID}`
+                : null;
             const dateRange = formatDateRange(trip.checkIn || trip.CheckIn, trip.checkOut || trip.CheckOut);
             // Always show as "Confirmed" status for display and review purposes
             const status = 'confirmed';
@@ -335,23 +336,30 @@ export default function TripsPage() {
               <div key={trip.bookingID || trip.BookingID} className="trip-card">
                 <div className="trip-cover">
                   <img src={coverImage} alt={title} />
-                  <span className="trip-type-badge">{isTour ? 'Experience' : 'Stay'}</span>
+                  <span className="trip-type-badge">
+                    {isTour ? t(language, "homeTrips.type.experience") : t(language, "homeTrips.type.stay")}
+                  </span>
                 </div>
                 <div className="trip-info">
                   <div className="trip-title">{title}</div>
                   <div className="trip-location">
                     <Icon icon="mdi:map-marker" width="16" height="16" />
-                    <span>{location || 'Location not updated'}</span>
+                    <span>{location || t(language, "homeTrips.locationNotUpdated")}</span>
                   </div>
                   <div className="trip-dates">
                     <Icon icon="mdi:calendar" width="16" height="16" />
-                    <span>{dateRange || 'No schedule'}</span>
+                    <span>{dateRange || t(language, "homeTrips.noSchedule")}</span>
                   </div>
                   <div className="trip-meta">
-                    <span>{nights ? `${nights} night${nights > 1 ? 's' : ''}` : ''}</span>
-                    <span>{guests} guest{guests > 1 ? 's' : ''}</span>
+                    <span>
+                      {nights ? t(language, "homeTrips.nights", { count: nights }) : ""}
+                    </span>
+
+                    <span>
+                      {t(language, "homeTrips.guests", { count: guests })}
+                    </span>
                     <span className={`trip-status ${status}`}>
-                      Confirmed
+                      {t(language, "homeTrips.statusConfirmed")}
                     </span>
                   </div>
                   <div className="trip-price">
@@ -362,19 +370,21 @@ export default function TripsPage() {
                     <button
                       className="trip-btn-primary"
                       disabled={!canReview}
-                      title={reviewTooltip}
+                      title={!canReview ? t(language, "homeTrips.review.alreadyReviewed") : ""}
                       onClick={() => openReviewModal(trip)}
                     >
-                      {userReview ? 'Review submitted' : 'Write a review'}
+                      {userReview
+                        ? t(language, "homeTrips.review.submitted")
+                        : t(language, "homeTrips.review.write")}
                     </button>
 
                     {detailLink ? (
                       <button className="trip-btn-secondary" onClick={() => navigate(detailLink)}>
-                        View details
+                        {t(language, "homeTrips.viewDetails")}
                       </button>
                     ) : (
                       <button className="trip-btn-secondary" onClick={() => navigate('/')}>
-                        Book another trip
+                        {t(language, "homeTrips.bookAnother")}
                       </button>
                     )}
                   </div>
@@ -391,7 +401,7 @@ export default function TripsPage() {
             <button className="review-modal-close" onClick={closeReviewModal} aria-label="Close review form">
               ×
             </button>
-            <h3>Share your experience</h3>
+            <h3>{t(language, "homeTrips.review.modalTitle")}</h3>
             <p>
               {reviewingTrip.propertyInfo
                 ? `Tell future guests about your stay at ${reviewingTrip.propertyInfo?.listingTitle || reviewingTrip.propertyInfo?.ListingTitle || 'this stay'}.`
@@ -399,7 +409,7 @@ export default function TripsPage() {
             </p>
 
             <div className="review-field">
-              <label htmlFor="review-rating">Rating</label>
+              <label>{t(language, "homeTrips.review.ratingLabel")}</label>
               <div className="review-rating-input">
                 <input
                   id="review-rating"
@@ -414,26 +424,28 @@ export default function TripsPage() {
             </div>
 
             <div className="review-field">
-              <label htmlFor="review-comments">Comments</label>
+              <label>{t(language, "homeTrips.review.commentLabel")}</label>
               <textarea
                 id="review-comments"
                 rows="4"
                 maxLength="800"
-                placeholder="What stood out during your stay or tour? Share highlights or tips."
+                placeholder={t(language, "homeTrips.review.commentPlaceholder")}
                 value={reviewForm.comments}
                 onChange={(e) => setReviewForm((prev) => ({ ...prev, comments: e.target.value }))}
               />
             </div>
 
             {reviewError && <div className="review-feedback error">{reviewError}</div>}
-            {reviewSuccess && <div className="review-feedback success">{reviewSuccess}</div>}
+            {reviewSuccess && (
+              <div className="review-feedback success">
+                {t(language, "homeTrips.review.submitSuccess")}
+              </div>
+            )}
 
-            <button
-              className="trip-btn-primary stretch"
-              onClick={handleReviewSubmit}
-              disabled={reviewSubmitting || !reviewForm.comments.trim()}
-            >
-              {reviewSubmitting ? 'Submitting...' : 'Submit review'}
+            <button className="trip-btn-primary stretch" onClick={handleReviewSubmit}>
+              {reviewSubmitting
+                ? t(language, "homeTrips.review.submitting")
+                : t(language, "homeTrips.review.submit")}
             </button>
           </div>
         </div>
