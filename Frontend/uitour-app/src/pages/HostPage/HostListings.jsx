@@ -252,6 +252,19 @@ export default function HostListings() {
                                 </div>
 
                                 <button
+                                    className="listing-edit-btn"
+                                    onClick={() =>
+                                        navigate(
+                                            item.type === "tour"
+                                                ? `/host/experience/edit/${item.id}`
+                                                : `/host/stay/edit/${item.id}`
+                                        )
+                                    }
+                                >
+                                    <Icon icon="mdi:pencil-outline" width="18" height="18" />
+                                </button>
+
+                                <button
                                     className="listing-delete-btn"
                                     onClick={() => handleDeleteClick(item)}
                                     disabled={deletingId === item.id}

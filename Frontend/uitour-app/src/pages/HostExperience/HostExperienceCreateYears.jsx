@@ -10,18 +10,13 @@ export default function HostExperienceCreateYears() {
   const { experienceData, updateField, validateStep } = useHost();
   const { language } = useLanguage();
 
-  const years = experienceData.yearsOfExperience ?? 10;
+  const days = experienceData.durationDays ?? 1;
 
   const decrement = () =>
-    updateField("years", { yearsOfExperience: Math.max(0, years - 1) });
+    updateField("duration", { durationDays: Math.max(1, days - 1) });
 
   const increment = () =>
-    updateField("years", { yearsOfExperience: Math.min(60, years + 1) });
-
-  const handleNext = () => {
-    if (!validateStep("years")) return;
-    navigate("/host/experience/create/qualification");
-  };
+    updateField("duration", { durationDays: Math.min(60, days + 1) });
 
   return (
     <div className="he-page">
@@ -40,7 +35,7 @@ export default function HostExperienceCreateYears() {
             <Icon icon="mdi:minus" width="18" height="18" />
           </button>
 
-          <div className="he-counter-value">{years}</div>
+          <div className="he-counter-value">{days}</div>
 
           <button
             className="he-circle-btn"
