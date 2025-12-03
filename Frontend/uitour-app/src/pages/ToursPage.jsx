@@ -22,7 +22,7 @@ export default function ToursPage() {
   const [searchParams] = useSearchParams();
   const { experiences, loading, error, fetchExperiences } = useExperience();
   const [savedTourIds, setSavedTourIds] = useState(new Set());
-  const { convertToCurrent, format } = useCurrency();
+  const { convertToCurrent, format, currency } = useCurrency();
   const [openFilter, setOpenFilter] = useState(null);
   const { language } = useLanguage();
 
@@ -202,6 +202,45 @@ export default function ToursPage() {
     return <ErrorMessage message={t(language, "tourPage.error")} />;
   }
 
+  const formatAmount = (vndValue) => {
+    if (currency === "VND") {
+      return vndValue.toLocaleString("vi-VN") + "đ";
+    }
+    const usd = vndValue / 25000;
+    return "$" + usd.toFixed(2);
+  };
+
+  const TYPE_LABELS = {
+    art: t(language, "hostExperience.choose.categories.art"),
+    fitness: t(language, "hostExperience.choose.categories.fitness"),
+    food: t(language, "hostExperience.choose.categories.food"),
+    history: t(language, "hostExperience.choose.categories.history"),
+    nature: t(language, "hostExperience.choose.categories.nature"),
+  };
+
+  const TIME_LABELS = {
+    morning: t(language, "filters.time.morning"),
+    afternoon: t(language, "filters.time.afternoon"),
+    evening: t(language, "filters.time.evening"),
+    fullday: t(language, "filters.time.fullday"),
+  };
+
+  const priceLabels = {
+    under500: `${t(language, "filters.price.under")} ${formatAmount(500000)}`,
+    "500to2m": `${formatAmount(500000)} – ${formatAmount(2000000)}`,
+    "2to5": `${formatAmount(2000000)} – ${formatAmount(5000000)}`,
+    "5to10": `${formatAmount(5000000)} – ${formatAmount(10000000)}`,
+    over10: `${formatAmount(10000000)}+`,
+  };
+
+  const PRICE_OPTIONS = [
+    { key: "under500" },
+    { key: "500to2m" },
+    { key: "2to5" },
+    { key: "5to10" },
+    { key: "over10" },
+  ];
+
   return (
     <div className="tours-page">
       {/* Search Bar */}
@@ -235,7 +274,9 @@ export default function ToursPage() {
                   setOpenFilter(openFilter === "type" ? null : "type")
                 }
               >
-                <span>{t(language, "tourPage.filters.type")}</span>
+                <span>
+                  {type ? TYPE_LABELS[type] : t(language, "tourPage.filters.type")}
+                </span>
                 <Icon icon="mdi:chevron-down" width="16" height="16" />
               </button>
 
@@ -260,7 +301,9 @@ export default function ToursPage() {
                   setOpenFilter(openFilter === "time" ? null : "time")
                 }
               >
-                <span>{t(language, "tourPage.filters.time")}</span>
+                <span>
+                  {time ? TIME_LABELS[time] : t(language, "tourPage.filters.time")}
+                </span>
                 <Icon icon="mdi:chevron-down" width="16" height="16" />
               </button>
 
@@ -285,7 +328,10 @@ export default function ToursPage() {
                   setOpenFilter(openFilter === "price" ? null : "price")
                 }
               >
-                <span>{t(language, "tourPage.filters.price")}</span>
+                <span>
+                  {price ? priceLabels[price] : t(language, "tourPage.filters.price")}
+                </span>
+
                 <Icon icon="mdi:chevron-down" width="16" height="16" />
               </button>
 
