@@ -526,9 +526,9 @@
       "cancel": "Cancel"
     },
     "years": {
-      "title": "How many years have you worked in?",
-      "increase": "Increase",
-      "decrease": "Decrease"
+      "title": "How many days does your tour last?",
+      "increase": "Increase days",
+      "decrease": "Decrease days"
     },
     "describe": {
       "title": "Describe your experience",
@@ -540,8 +540,8 @@
     "preview": {
       "basicInfo": "Basic information",
       "category": "Category",
-      "yearsOfExperience": "Years of experience",
-      "years": "years",
+      "yearsOfExperience": "Duration of your tour",
+      "years": "days",
       "description": "Description",
       "qualifications": "Qualifications",
       "location": "Location",

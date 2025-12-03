@@ -120,13 +120,20 @@ export default function HostStayCreatePhotos() {
 
   // SET COVER
   const setAsCover = (photo) => {
-    const newList = photos.map((p) => ({
+
+    // 1. Loại bỏ ảnh được chọn khỏi list
+    const others = photos.filter((p) => p !== photo);
+
+    // 2. Đưa ảnh được chọn lên đầu
+    const ordered = [photo, ...others].map((p, index) => ({
       ...p,
-      isCover: p === photo,
+      isCover: index === 0,     // ảnh đầu là cover
+      sortIndex: index + 1,     // sortIndex đúng thứ tự mới
     }));
 
-    setStayPhotosRAM(newList);
-    syncToContext(newList);
+    // 3. Lưu vào RAM và sync cho HostContext
+    setStayPhotosRAM(ordered);
+    syncToContext(ordered);
   };
 
   // REMOVE PHOTO + COVER RULE
