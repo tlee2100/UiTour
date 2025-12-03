@@ -457,7 +457,7 @@ const initialExperienceData = {
   // PRICING
   // ======================================================================================
   pricing: {
-    basePrice: 0,
+    basePrice: 1,
     currency: "USD",
     priceUnit: "perPerson", // perPerson | perGroup
   },
@@ -637,6 +637,8 @@ export function HostProvider({ children }) {
         // Nếu incoming chứa preview/file => đó là RAM-like array -> sync to RAM
         if (hasPreview) {
           setStayPhotosRAM(incoming);
+          // Nếu user chọn cover trong UI → values.coverPhotoId tồn tại
+
         } else {
           // nếu incoming là metadata không có preview thì KHÔNG ghi đè stayPhotosRAM
           // (giữ ảnh RAM đang có trong UI)
@@ -879,8 +881,19 @@ export function HostProvider({ children }) {
             ...values, // <-- CHỈ MERGE những gì được update
           },
         }));
+      } else if (step === "duration") {
+        setExperienceData(prev => {
+          const patch = { durationDays: values.durationDays };
+
+          return {
+            ...prev,
+            ...patch,
+          };
+        });
+        setCompletedStep(prev => ({ ...prev, duration: true }));
         return;
-      } else if (step === "photos") {
+      }
+      else if (step === "photos") {
         const incoming = values.photos || [];
         const hasPreview = incoming.some(p => p.preview || p.file);
 
@@ -918,6 +931,7 @@ export function HostProvider({ children }) {
   // 4️⃣ LẤY DATA TỔNG HỢP
   // ============================================================
   function getFinalData() {
+    // ⭐ Auto-calc EndDate = StartDate + DurationDays
     if (type === "stay") {
       // Merge stayPhotosRAM into stayData.photos before returning
       const mergedData = { ...stayData };
@@ -1037,8 +1051,8 @@ export function HostProvider({ children }) {
       // EXPERIENCE VALIDATION
       if (step === "choose") return !!experienceData.mainCategory;
 
-      if (step === "years")
-        return Number(experienceData.yearsOfExperience) >= 0;
+      if (step === "duration")
+        return Number(experienceData.durationDays) >= 1;
 
       if (step === "qualification") return true;
 
@@ -1119,6 +1133,7 @@ export function HostProvider({ children }) {
   function validateAllExperience() {
     const steps = [
       "describe-title",
+      "duration",
       "locate",
       "capacity",
       "photos",
@@ -1151,6 +1166,23 @@ export function HostProvider({ children }) {
   // ⭐ MASTER VALIDATE – dùng ở Preview
   function validateAll() {
     return type === "stay" ? validateAllStay() : validateAllExperience();
+  }
+
+  function reorderPhotosRAM(setRAM, photoId) {
+    setRAM(prev => {
+      const idx = prev.findIndex(p => p.id === photoId);
+      if (idx === -1) return prev;
+
+      const selected = prev[idx];
+      const others = prev.filter((p, i) => i !== idx);
+
+      const ordered = [selected, ...others].map((p, i) => ({
+        ...p,
+        sortIndex: i + 1,
+      }));
+
+      return ordered;
+    });
   }
 
 
@@ -1310,8 +1342,13 @@ export function HostProvider({ children }) {
                 return ramPhoto;
               });
 
-              console.log(`📸 Updated stayPhotosRAM: ${updatedRAM.length} photos, ${updatedRAM.filter(p => p.serverUrl).length} with serverUrl`);
-              return updatedRAM;
+              // ⭐ FIX: đảm bảo thứ tự ảnh đúng theo RAM
+              const ordered = updatedRAM.map((p, i) => ({
+                ...p,
+                sortIndex: i + 1,   // ép lại thứ tự
+              }));
+
+              return ordered; // ⭐ return 'ordered', không phải updatedRAM
             });
           } catch (uploadError) {
             console.error("Upload error details:", uploadError);
@@ -1400,6 +1437,17 @@ export function HostProvider({ children }) {
               serverUrl: p.serverUrl || p.url || "",
               url: p.url || p.serverUrl || ""
             }));
+            // FIX: Update cover URL to the correct photo
+            if (data.media.cover) {
+              const coverPhoto = photos.find(
+                p => p.isCover === true
+              );
+
+              if (coverPhoto && coverPhoto.serverUrl) {
+                data.media.cover = coverPhoto.serverUrl;
+              }
+            }
+
 
             // CRITICAL: Update experiencePhotosRAM với serverUrls để photos được lưu vào database
             // Match photos by index since they should be in the same order
@@ -1871,21 +1919,29 @@ function formatStayDataForAPI(d) {
   // ---------------------------------------------------------
   // COVER PHOTO
   // ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // COVER PHOTO — ưu tiên ảnh có isCover === true
+  // ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // COVER PHOTO — ưu tiên ảnh có isCover === true
+  // ---------------------------------------------------------
   let coverPhoto = null;
 
-  if (d.coverPhoto) {
-    const coverUrl =
-      d.coverPhoto.serverUrl ||
-      d.coverPhoto.url ||
-      (typeof d.coverPhoto === "string" ? d.coverPhoto : null);
-
-    if (coverUrl && !coverUrl.startsWith("data:image")) {
-      coverPhoto = coverUrl;
-    }
+  // 1) Host chọn cover
+  const coverFromMarked = (d.photos || []).find(
+    p => p.isCover && (p.serverUrl || p.url)
+  );
+  if (coverFromMarked) {
+    coverPhoto = coverFromMarked.serverUrl || coverFromMarked.url;
   }
 
-  if (!coverPhoto && photos.length > 0) {
-    coverPhoto = photos[0].url;
+  // 2) Nếu không có isCover → fallback (optional)
+  // Giúp tránh lỗi BE khi missing cover
+  if (!coverPhoto) {
+    const first = (d.photos?.[0]);
+    if (first && (first.serverUrl || first.url)) {
+      coverPhoto = first.serverUrl || first.url;
+    }
   }
 
   // ---------------------------------------------------------
@@ -2082,6 +2138,9 @@ function formatExperienceDataForAPI(d) {
       return detail;
     })
     .filter(item => item !== null);
+  let start = d.startDate ? new Date(d.startDate) : new Date();
+  let end = new Date(start);
+  end.setDate(end.getDate() + (d.durationDays || 1));
 
   console.log("📸 Tour photos in payload:", photos.length);
   console.log("📝 Qualifications:", qualificationsString.substring(0, 100) + "...");
@@ -2101,8 +2160,12 @@ function formatExperienceDataForAPI(d) {
     MaxGuests: num(d.capacity?.maxGuests || 10),
     Price: num(d.pricing?.basePrice || 0),
     Currency: safe(d.pricing?.currency || "USD"),
-    StartDate: d.startDate ? new Date(d.startDate).toISOString() : new Date().toISOString(),
-    EndDate: d.endDate ? new Date(d.endDate).toISOString() : null,
+    // Vì UI không có startDate → luôn để ngày hiện tại
+
+
+    StartDate: start.toISOString(),
+    EndDate: end.toISOString(),
+
     Active: false, // Always false for new tours (pending approval)
     CancellationID: d.cancellationID || null,
     lat: d.location?.lat ? String(d.location.lat) : null,

@@ -61,6 +61,8 @@ import HostToday from "../pages/HostPage/HostToday";
 import HostListings from "../pages/HostPage/HostListings";
 import HostMessages from "../pages/HostPage/HostMessages";
 import HostDashboard from "../pages/HostPage/HostDashboard";
+import HostStayEdit from "../pages/HostPage/HostStayEdit";
+import HostExperienceEdit from "../pages/HostPage/HostExperienceEdit";
 
 import ProfileEditPage from "../pages/ProfileEditPage";
 
@@ -147,6 +149,8 @@ const AppRoutes = () => {
         <Route path="listings" element={<HostListings />} />
         <Route path="dashboard" element={<HostDashboard />} />
         <Route path="messages" element={<HostMessages />} />
+        <Route path="stay/edit/:id" element={<HostStayEdit />} />
+        <Route path="experience/edit/:id" element={<HostExperienceEdit />} />
       </Route>
 
       <Route

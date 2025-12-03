@@ -525,9 +525,9 @@
       "cancel": "Hủy"
     },
     "years": {
-      "title": "Bạn đã làm trong lĩnh vực này bao nhiêu năm?",
-      "increase": "Tăng",
-      "decrease": "Giảm"
+      "title": "Tour của bạn kéo dài bao nhiêu ngày?",
+      "increase": "Tăng số ngày",
+      "decrease": "Giảm số ngày"
     },
     "describe": {
       "title": "Mô tả trải nghiệm của bạn",
@@ -539,8 +539,8 @@
     "preview": {
       "basicInfo": "Thông tin cơ bản",
       "category": "Danh mục",
-      "yearsOfExperience": "Số năm kinh nghiệm",
-      "years": "năm",
+      "yearsOfExperience": "Thời lượng tour",
+      "years": "ngày",
       "description": "Mô tả",
       "qualifications": "Trình độ",
       "location": "Vị trí",

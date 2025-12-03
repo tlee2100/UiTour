@@ -16,6 +16,13 @@ export default function HostExperienceCreateMaxGuests() {
 
   // base price stored in USD
   const baseUSD = Number(experienceData.pricing?.basePrice || 1);
+  useEffect(() => {
+    // Nếu chưa từng set basePrice → set mặc định
+    if (!experienceData.pricing?.basePrice) {
+      updateField("pricing", { basePrice: 1 });
+    }
+  }, []);
+
 
   // local input hiển thị
   const [priceInput, setPriceInput] = useState("");
