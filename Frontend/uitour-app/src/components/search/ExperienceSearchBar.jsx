@@ -5,13 +5,18 @@ import ExperienceSearchDates from "./ExperienceSearchDates";
 import SearchGuests from "./SearchGuests";
 import "./ExperienceSearchBar.css";
 
+import { useLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../utils/translations";
+
 export default function ExperienceSearchBar({
   initialLocation = "",
-  initialDates = "",     // format: "YYYY-MM-DD_to_YYYY-MM-DD"
+  initialDates = "",
   initialGuests = "1",
   onSearch,
   searchPath = "/tours"
 }) {
+  const { language } = useLanguage();
+
   const [location, setLocation] = useState(initialLocation);
   const [dateRange, setDateRange] = useState(initialDates);
   const [guests, setGuests] = useState(initialGuests);
@@ -22,9 +27,6 @@ export default function ExperienceSearchBar({
 
   const [activeField, setActiveField] = useState(null);
 
-  /** -----------------------------
-   * Sync lại state khi URL đổi
-   -------------------------------- */
   useEffect(() => setLocation(initialLocation), [initialLocation]);
   useEffect(() => setDateRange(initialDates), [initialDates]);
   useEffect(() => setGuests(initialGuests), [initialGuests]);
@@ -33,10 +35,6 @@ export default function ExperienceSearchBar({
     if (!isNaN(num)) setGuests(String(num));
   }, [initialGuests]);
 
-
-  /** -----------------------------
-   * Close all overlays
-   -------------------------------- */
   const closeAll = () => {
     setOpenWhere(false);
     setOpenDates(false);
@@ -44,18 +42,12 @@ export default function ExperienceSearchBar({
     setActiveField(null);
   };
 
-  /** -----------------------------
-   * Format hiển thị ngày
-   -------------------------------- */
   const formatRange = (rangeStr) => {
-    if (!rangeStr) return "Add dates";
+    if (!rangeStr) return t(language, "tourSearch.addDates");
     const [d1, d2] = rangeStr.split("_to_");
     return `${new Date(d1).toDateString().slice(4)} → ${new Date(d2).toDateString().slice(4)}`;
   };
 
-  /** -----------------------------
-   * SEARCH
-   -------------------------------- */
   const handleSearchClick = () => {
     const params = new URLSearchParams();
 
@@ -76,8 +68,7 @@ export default function ExperienceSearchBar({
 
         {/* WHERE */}
         <button
-          className={`exp-sf exp-btn ${activeField === "where" ? "active" : ""} ${location ? "has-value" : ""
-            }`}
+          className={`exp-sf exp-btn ${activeField === "where" ? "active" : ""} ${location ? "has-value" : ""}`}
           onClick={() => {
             const show = !openWhere;
             closeAll();
@@ -85,10 +76,11 @@ export default function ExperienceSearchBar({
             setActiveField(show ? "where" : null);
           }}
         >
-          <label>Where</label>
+          <label>{t(language, "tourSearch.where")}</label>
+
           <div className="exp-value-row">
             <div className="exp-value">
-              {location || "Search destinations"}
+              {location || t(language, "tourSearch.searchDestinations")}
             </div>
 
             {location && (
@@ -105,10 +97,9 @@ export default function ExperienceSearchBar({
           </div>
         </button>
 
-        {/* DATE RANGE */}
+        {/* DATES */}
         <button
-          className={`exp-sf exp-btn ${activeField === "dates" ? "active" : ""} ${dateRange ? "has-value" : ""
-            }`}
+          className={`exp-sf exp-btn ${activeField === "dates" ? "active" : ""} ${dateRange ? "has-value" : ""}`}
           onClick={() => {
             const show = !openDates;
             closeAll();
@@ -116,7 +107,8 @@ export default function ExperienceSearchBar({
             setActiveField(show ? "dates" : null);
           }}
         >
-          <label>Dates</label>
+          <label>{t(language, "tourSearch.dates")}</label>
+
           <div className="exp-value-row">
             <div className="exp-value">{formatRange(dateRange)}</div>
 
@@ -136,8 +128,7 @@ export default function ExperienceSearchBar({
 
         {/* GUESTS */}
         <button
-          className={`exp-sf exp-btn ${activeField === "guests" ? "active" : ""} ${guests !== "1" ? "has-value" : ""
-            }`}
+          className={`exp-sf exp-btn ${activeField === "guests" ? "active" : ""} ${guests !== "1" ? "has-value" : ""}`}
           onClick={() => {
             const show = !openGuests;
             closeAll();
@@ -145,10 +136,13 @@ export default function ExperienceSearchBar({
             setActiveField(show ? "guests" : null);
           }}
         >
-          <label>Guests</label>
+          <label>{t(language, "tourSearch.guests")}</label>
+
           <div className="exp-value-row">
             <div className="exp-value">
-              {guests !== "1" ? `${guests} guests` : "Add guests"}
+              {guests !== "1"
+                ? t(language, "tourSearch.guestsCount", { count: guests })
+                : t(language, "tourSearch.addGuests")}
             </div>
 
             {guests !== "1" && (

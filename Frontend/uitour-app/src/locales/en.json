@@ -1168,5 +1168,37 @@
   "homeNotifications": {
     "title": "Notifications",
     "empty": "You have no notifications yet."
+  },
+  "tourSearch": {
+    "where": "Where",
+    "searchDestinations": "Search destinations",
+    "dates": "Dates",
+    "addDates": "Add dates",
+    "guests": "Guests",
+    "addGuests": "Add guests",
+    "guestsCount": "{count} guests",
+    "searchButton": "Search"
+  },
+  "tourPage": {
+    "loading": "Loading tours...",
+    "error": "Failed to load tours.",
+    "filters": {
+      "original": "Original",
+      "type": "Type",
+      "time": "Time",
+      "price": "Price",
+      "clear": "Clear"
+    },
+    "noResults": "No tours found matching your search criteria.",
+    "ratingReviews": "{count} reviews",
+    "cta": {
+      "book": "Book Now",
+      "perPerson": "/ person"
+    },
+    "wishlist": {
+      "loginRequired": "Please log in to save tours to your wishlist",
+      "updateFailed": "Failed to update wishlist. Please try again."
+    },
+    "tourImageAlt": "Tour image"
   }
 }
