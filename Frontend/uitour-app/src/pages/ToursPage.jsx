@@ -12,6 +12,9 @@ import TourPriceFilter from "../components/toursFilters/TourPriceFilter";
 import { useApp } from "../contexts/AppContext";
 import authAPI from "../services/authAPI";
 import { useCurrency } from "../contexts/CurrencyContext";
+import { useLanguage } from "../contexts/LanguageContext";
+import { t } from "../utils/translations";
+
 
 export default function ToursPage() {
   const navigate = useNavigate();
@@ -21,6 +24,7 @@ export default function ToursPage() {
   const [savedTourIds, setSavedTourIds] = useState(new Set());
   const { convertToCurrent, format } = useCurrency();
   const [openFilter, setOpenFilter] = useState(null);
+  const { language } = useLanguage();
 
   // Price brackets in VND (same as Stay Filters)
   const PRICE_BRACKETS = {
@@ -59,6 +63,26 @@ export default function ToursPage() {
   /** 🔥 FIX: price param (option-based) */
   const price = searchParams.get("price") || "";
 
+  const parsePriceVND = (price) => {
+    if (!price) return 0;
+
+    // Nếu price là số
+    if (typeof price === "number") return price;
+
+    // Nếu price là string dạng "1,000,000"
+    if (typeof price === "string") {
+      return Number(price.replace(/[^0-9]/g, ""));
+    }
+
+    // Nếu price là object dạng { amount: 1000000 }
+    if (typeof price === "object" && price.amount) {
+      return Number(price.amount);
+    }
+
+    return 0;
+  };
+
+
   // Filter experiences
   const filteredExperiences =
     experiences?.filter((tour) => {
@@ -92,28 +116,32 @@ export default function ToursPage() {
 
         if (!dateString) {
           // Nếu là tour full-day thì luôn pass khi chọn "full-day"
-          if (time === "fullday") return true;
+          if (time === "fullday") {
+            return true;
+          }
           return false;
         }
 
-        const hour = new Date(dateString).getHours();
+        const hour = Number(dateString.substring(11, 13));
 
-        if (time === "morning" && !(hour >= 5 && hour < 12)) return false;
+        if (time === "morning" && !(hour >= 0 && hour < 12)) return false;
         if (time === "afternoon" && !(hour >= 12 && hour < 18)) return false;
         if (time === "evening" && !(hour >= 18 && hour < 22)) return false;
         if (time === "night" && !(hour >= 22 || hour < 5)) return false;
 
         // fullday → luôn pass (trừ khi bạn muốn logic khác)
+
       }
 
       // PRICE OPTION FILTER
       // PRICE FILTER — ALWAYS USE ORIGINAL VND PRICE
       if (price) {
-        const tourPriceVND = Number(tour.price || 0);
-        const [min, max] = PRICE_BRACKETS[price] || [0, Infinity];
+        const tourPriceVND = convertToCurrent(tour.price ?? 0);
+        const [min, max] = PRICE_BRACKETS[price];
 
         if (!(tourPriceVND >= min && tourPriceVND < max)) return false;
       }
+
 
 
       return true;
@@ -167,11 +195,11 @@ export default function ToursPage() {
   }, [loadExperiences, loadSavedProperties]);
 
   if (loading) {
-    return <LoadingSpinner message="Loading tours..." />;
+    return <LoadingSpinner message={t(language, "tourPage.loading")} />;
   }
 
   if (error) {
-    return <ErrorMessage message={error} />;
+    return <ErrorMessage message={t(language, "tourPage.error")} />;
   }
 
   return (
@@ -195,8 +223,9 @@ export default function ToursPage() {
           <div className="filter-bar">
             <button className="filter-btn">
               <Icon icon="mdi:leaf" width="16" height="16" />
-              <span>Original</span>
+              <span>{t(language, "tourPage.filters.original")}</span>
             </button>
+
 
             {/* TYPE FILTER */}
             <div className="filter-btn-wrapper">
@@ -206,7 +235,7 @@ export default function ToursPage() {
                   setOpenFilter(openFilter === "type" ? null : "type")
                 }
               >
-                <span>Type</span>
+                <span>{t(language, "tourPage.filters.type")}</span>
                 <Icon icon="mdi:chevron-down" width="16" height="16" />
               </button>
 
@@ -231,7 +260,7 @@ export default function ToursPage() {
                   setOpenFilter(openFilter === "time" ? null : "time")
                 }
               >
-                <span>Time</span>
+                <span>{t(language, "tourPage.filters.time")}</span>
                 <Icon icon="mdi:chevron-down" width="16" height="16" />
               </button>
 
@@ -256,7 +285,7 @@ export default function ToursPage() {
                   setOpenFilter(openFilter === "price" ? null : "price")
                 }
               >
-                <span>Price</span>
+                <span>{t(language, "tourPage.filters.price")}</span>
                 <Icon icon="mdi:chevron-down" width="16" height="16" />
               </button>
 
@@ -278,7 +307,7 @@ export default function ToursPage() {
               onClick={handleClearFilters}
             >
               <Icon icon="mdi:close-circle-outline" width="16" height="16" />
-              <span>Clear</span>
+              <span>{t(language, "tourPage.filters.clear")}</span>
             </button>
 
           </div>
@@ -313,7 +342,7 @@ export default function ToursPage() {
                     >
                       <img
                         src={normalizedImageUrl}
-                        alt={tour.title || "Tour image"}
+                        alt={tour.title || t(language, "tourPage.tourImageAlt")}
                       />
                       <button
                         className="favorite-button"
@@ -321,7 +350,7 @@ export default function ToursPage() {
                           e.stopPropagation();
 
                           if (!user || !user.UserID) {
-                            alert("Please log in to save tours to your wishlist");
+                            alert(t(language, "tourPage.wishlist.loginRequired"));
                             return;
                           }
 
@@ -349,7 +378,7 @@ export default function ToursPage() {
                             );
                           } catch (error) {
                             console.error("Error updating wishlist:", error);
-                            alert("Failed to update wishlist. Please try again.");
+                            alert(t(language, "tourPage.wishlist.updateFailed"));
                           }
                         }}
                       >
@@ -389,7 +418,7 @@ export default function ToursPage() {
                         <Icon icon="mdi:star" width="16" height="16" />
                         <span>{tour.rating?.toFixed?.(1) || "0.0"}</span>
                         <span className="rating-count">
-                          ({tour.reviews ?? 0} reviews)
+                          ({t(language, "tourPage.ratingReviews", { count: tour.reviews ?? 0 })})
                         </span>
                       </div>
 
@@ -398,14 +427,16 @@ export default function ToursPage() {
                           <span className="price">
                             {format(convertToCurrent(tour.price ?? 0))}
                           </span>
-                          <span className="price-unit">/ person</span>
+                          <span className="price-unit">
+                            {t(language, "tourPage.cta.perPerson")}
+                          </span>
                         </div>
 
                         <button
                           className="book-button"
                           onClick={() => navigate(`/experience/${tour.id}`)}
                         >
-                          Book Now
+                          {t(language, "tourPage.cta.book")}
                         </button>
                       </div>
                     </div>
@@ -414,7 +445,7 @@ export default function ToursPage() {
               })
             ) : (
               <div className="no-results">
-                <p>No tours found matching your search criteria.</p>
+                <p>{t(language, "tourPage.noResults")}</p>
               </div>
             )}
           </div>
