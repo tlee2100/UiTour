@@ -56,83 +56,88 @@ export default function HostExperienceCreatePhotos() {
       }))
     );
 
-  // Sync RAM + Context metadata
-  const syncPhotos = (list, newCoverName) => {
+  // Sync RAM + Context metadata, including sortIndex
+  const syncPhotos = (list) => {
     setExperiencePhotosRAM(list);
 
     const meta = list.map((p, i) => ({
       name: p.name,
       caption: p.caption || "",
       serverUrl: p.serverUrl || "",
-      sortIndex: i + 1,
-      isCover: p.name === newCoverName,
+      sortIndex: i + 1,          // ⭐ sortIndex CHUẨN NHẤT
+      isCover: i === 0,          // ⭐ Ảnh đầu là cover
     }));
 
     updateField("photos", {
       photos: meta,
-      cover: newCoverName,
+      cover: meta[0]?.name || null, // ⭐ cover name chỉ để UI/BE biết
     });
   };
+
 
   // Add Photos
   const handleSelect = async (e) => {
     const selected = await prepareFiles(Array.from(e.target.files));
-    const combined = [...photos, ...selected];
 
-    const newCoverName = coverName || combined[0]?.name || null;
+    let combined = [...photos, ...selected];
 
-    const updated = combined.map((p) => ({
-      ...p,
-      isCover: p.name === newCoverName,
-    }));
+    // ⭐ Luôn reorder ảnh cover về đầu
+    const cover = combined[0];
+    combined = [cover, ...combined.filter(p => p !== cover)]
+      .map((p, i) => ({ ...p, isCover: i === 0 }));
 
-    syncPhotos(updated, newCoverName);
+    syncPhotos(combined);
   };
+
 
   // Drop Photos
   const handleDrop = async (e) => {
     e.preventDefault();
     const dropped = await prepareFiles(Array.from(e.dataTransfer.files));
-    const combined = [...photos, ...dropped];
 
-    const newCoverName = coverName || combined[0]?.name || null;
+    let combined = [...photos, ...dropped];
 
-    const updated = combined.map((p) => ({
-      ...p,
-      isCover: p.name === newCoverName,
-    }));
+    const cover = combined[0];
+    combined = [cover, ...combined.filter(p => p !== cover)]
+      .map((p, i) => ({ ...p, isCover: i === 0 }));
 
-    syncPhotos(updated, newCoverName);
+    syncPhotos(combined);
   };
+
 
   // Remove Photo
   const removePhoto = (index) => {
-    const removed = photos[index];
-    const newPhotos = photos.filter((_, i) => i !== index);
+    let newPhotos = photos.filter((_, i) => i !== index);
 
-    let newCoverName = experienceData.media.cover;
-
-    if (removed.name === newCoverName) {
-      newCoverName = newPhotos[0]?.name || null;
+    if (newPhotos.length === 0) {
+      syncPhotos([]);
+      return;
     }
 
-    const updated = newPhotos.map((p) => ({
-      ...p,
-      isCover: p.name === newCoverName,
-    }));
+    // ⭐ luôn đặt ảnh đầu tiên làm cover
+    const cover = newPhotos[0];
+    newPhotos = [cover, ...newPhotos.filter(p => p !== cover)]
+      .map((p, i) => ({ ...p, isCover: i === 0 }));
 
-    syncPhotos(updated, newCoverName);
+    syncPhotos(newPhotos);
   };
+
 
   // Set Cover
   const setAsCover = (photo) => {
-    const updated = photos.map((p) => ({
+    // 1. Tách ảnh được chọn ra
+    const others = photos.filter(p => p !== photo);
+
+    // 2. Đưa ảnh được chọn lên đầu
+    const ordered = [photo, ...others].map((p, i) => ({
       ...p,
-      isCover: p.name === photo.name,
+      isCover: i === 0,    // ⭐ Ảnh đầu tiên là cover
     }));
 
-    syncPhotos(updated, photo.name);
+    // 3. Đồng bộ lên RAM + Context với sortIndex mới
+    syncPhotos(ordered);
   };
+
 
   const handleNext = () => {
     if (!validateStep("photos")) return;

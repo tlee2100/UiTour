@@ -71,7 +71,7 @@ export default function HostExperiencePreview() {
             <div className="he-row-safe">
               <b>{t(language, "hostExperience.preview.yearsOfExperience")}:</b>
               <span className="he-text-safe">
-                {d.yearsOfExperience} {t(language, "hostExperience.preview.years")}
+                {d.durationDays} {t(language, "hostExperience.preview.years")}
               </span>
             </div>
 
