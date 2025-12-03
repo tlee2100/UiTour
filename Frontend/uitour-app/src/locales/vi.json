@@ -1167,5 +1167,37 @@
   "homeNotifications": {
     "title": "Thông báo",
     "empty": "Bạn chưa có thông báo nào."
+  },
+  "tourSearch": {
+    "where": "Địa điểm",
+    "searchDestinations": "Tìm điểm đến",
+    "dates": "Ngày",
+    "addDates": "Thêm ngày",
+    "guests": "Khách",
+    "addGuests": "Thêm khách",
+    "guestsCount": "{count} khách",
+    "searchButton": "Tìm kiếm"
+  },
+  "tourPage": {
+    "loading": "Đang tải các tour...",
+    "error": "Không thể tải danh sách tour.",
+    "filters": {
+      "original": "Gốc",
+      "type": "Loại tour",
+      "time": "Thời gian",
+      "price": "Giá",
+      "clear": "Xóa"
+    },
+    "noResults": "Không tìm thấy tour phù hợp với tiêu chí tìm kiếm.",
+    "ratingReviews": "{count} đánh giá",
+    "cta": {
+      "book": "Đặt ngay",
+      "perPerson": "/ người"
+    },
+    "wishlist": {
+      "loginRequired": "Vui lòng đăng nhập để lưu tour vào danh sách yêu thích",
+      "updateFailed": "Không thể cập nhật danh sách yêu thích. Vui lòng thử lại."
+    },
+    "tourImageAlt": "Hình ảnh tour"
   }
 }
