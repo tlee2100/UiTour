@@ -355,3 +355,48 @@
         justify-content: center;
     }
 }
+
+/* =====================================
+   EDIT BUTTON (matches delete style)
+===================================== */
+.listing-edit-btn {
+    position: absolute;
+    top: 12px;
+    right: 52px; /* nằm cạnh delete btn */
+    background: rgba(37, 99, 235, 0.9); /* xanh dương giống tailwind blue-600 */
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+    z-index: 1;
+}
+
+.listing-edit-btn:hover {
+    background: rgba(29, 78, 216, 1); /* blue-700 */
+    transform: scale(1.1);
+}
+
+.listing-edit-btn svg {
+    color: #fff;
+}
+
+/* Giảm opacity khi không hover – đồng bộ delete */
+.listing-card:not(:hover) .listing-edit-btn {
+    opacity: 0.85;
+}
+
+/* Khi hover card → hiển thị rõ */
+.listing-card:hover .listing-edit-btn {
+    opacity: 1;
+}

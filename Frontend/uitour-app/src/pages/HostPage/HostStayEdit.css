@@ -1,0 +1,197 @@
+/* ============================================================
+   HOST STAY – EDIT PAGE (Matches Stay Preview style)
+   Clean, minimal, editable version of preview UI
+   Prefix: hs-edit-
+============================================================ */
+
+.hs-edit-page {
+  padding: 40px 0;
+  display: flex;
+  justify-content: center;
+  background: #fff;
+  font-family: "Inter", sans-serif;
+}
+
+.hs-edit-container {
+  width: 100%;
+  max-width: 880px;
+  padding: 0 20px 120px;
+}
+
+/* ============================
+   HERO (image + inputs)
+============================ */
+
+.hs-edit-hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.hs-edit-cover {
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin-bottom: 20px;
+}
+
+/* TITLE INPUT */
+.hs-edit-title-input {
+  width: 100%;
+  font-size: 28px;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  background: transparent;
+  outline: none;
+  margin-bottom: 12px;
+}
+
+.hs-edit-title-input::placeholder {
+  color: #aaa;
+}
+
+/* SUMMARY INPUT */
+.hs-edit-summary-input {
+  width: 100%;
+  min-height: 80px;
+  resize: vertical;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 16px;
+  line-height: 1.5;
+  text-align: center;
+  margin-bottom: 14px;
+  color: #333;
+}
+
+/* LOCATION INPUT */
+.hs-edit-location-input {
+  width: 100%;
+  text-align: center;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #555;
+  font-size: 16px;
+  margin-top: 4px;
+}
+
+/* ============================
+   SECTIONS
+============================ */
+
+.hs-edit-section {
+  margin-bottom: 36px;
+}
+
+.hs-edit-section-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+/* CARD */
+.hs-edit-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 20px;
+  font-size: 16px;
+}
+
+/* ROWS */
+.hs-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.hs-edit-row b {
+  min-width: 140px;
+  font-weight: 600;
+}
+
+/* INPUTS */
+.hs-edit-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  background: #fafafa;
+  transition: 0.15s ease;
+}
+
+.hs-edit-input:focus {
+  border-color: #000;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
+}
+
+/* ============================
+   PHOTOS
+============================ */
+
+.hs-edit-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.hs-edit-photo-wrapper {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.hs-edit-photo-item {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+/* ============================
+   SAVE BUTTON
+============================ */
+
+.hs-edit-save-btn {
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: none;
+  background: #111;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+  margin-top: 40px;
+}
+
+.hs-edit-save-btn:hover {
+  background: #000;
+  transform: translateY(-1px);
+}
+
+.hs-edit-save-btn:active {
+  transform: translateY(1px);
+}
+
+/* ============================
+   RESPONSIVE
+============================ */
+
+@media (max-width: 720px) {
+  .hs-edit-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hs-edit-row b {
+    margin-bottom: 4px;
+  }
+}
