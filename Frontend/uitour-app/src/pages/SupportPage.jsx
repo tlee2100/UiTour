@@ -51,7 +51,10 @@ export default function SupportPage() {
               <a href="tel:+1800123456">+1 800 123 456</a>
             </div>
           </div>
-          <button className="support-chatbot-btn">
+          <button
+            className="support-chatbot-btn"
+            onClick={() => window.dispatchEvent(new Event("uitour-open-chat"))}
+          >
             <Icon icon="mdi:robot-happy-outline" width="20" height="20" />
             <span>{t(language, "support.chatbot")}</span>
           </button>

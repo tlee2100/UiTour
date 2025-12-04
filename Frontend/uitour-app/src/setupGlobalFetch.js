@@ -7,8 +7,8 @@ let activeRequests = 0;
 let showTimer = null;
 let hideTimer = null;
 
-const MIN_SHOW_DELAY = 120;   // chỉ show overlay nếu request kéo dài hơn 120ms
-const MIN_VISIBLE = 200;      // overlay phải hiển thị ít nhất 200ms để tránh flicker
+const MIN_SHOW_DELAY = 120;   
+const MIN_VISIBLE = 200;      
 
 function safeSetLoading(value) {
   try {
