@@ -94,6 +94,7 @@ builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHttpClient<IMomoPaymentService, MomoPaymentService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddHttpClient<IChatbotService, ChatbotService>();
 
 // CORS for React dev servers
 const string CorsPolicy = "CorsPolicy";
