@@ -9,6 +9,7 @@ import { LanguageCurrencyModalProvider } from './contexts/LanguageCurrencyModalC
 import { GlobalLoadingProvider } from "./contexts/GlobalLoadingContext";
 import GlobalLoadingOverlay from "./components/GlobalLoadingOverlay";
 import AppRoutes from './routes/index';
+import AiChatWidget from "./components/AiChatWidget";
 import './App.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
                     <Router>
                       <GlobalLoadingOverlay />
                       <AppRoutes /> {/* Chỉnh trang hiện trên web ở file index.jsx của folder routes */}
+                      <AiChatWidget />
                     </Router>
                   </ExperienceProvider>
                 </PropertyProvider>
