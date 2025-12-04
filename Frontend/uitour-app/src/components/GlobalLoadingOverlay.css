@@ -1,0 +1,35 @@
+.global-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  /* Nền kiểu Airbnb */
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(4px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 99999; /* luôn nổi trên tất cả */
+  pointer-events: all; /* CHẶN click vào header/footer */
+}
+
+/* Spinner Airbnb */
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #e0e0e0;
+  border-top: 5px solid var(--uitour-color); /* màu chủ đạo Airbnb */
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+}
+
+/* animation xoay */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
