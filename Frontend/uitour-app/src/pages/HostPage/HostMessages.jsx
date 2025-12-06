@@ -94,6 +94,8 @@ export default function HostMessages() {
     const location = useLocation();
     const { user, dispatch } = useApp();
     const { language } = useLanguage();
+    const params = new URLSearchParams(location.search);
+    const hostEmail = params.get("email");
 
     const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } =
         useLanguageCurrencyModal();
@@ -109,6 +111,52 @@ export default function HostMessages() {
     };
 
     const currentUserId = user?.UserID || user?.id;
+
+    useEffect(() => {
+        if (!hostEmail) return; // không có hostEmail thì bỏ qua effect này
+
+        setNewChatEmail(hostEmail);
+        setShowNewChatBox(true);       
+        async function initChat() {
+            try {
+                const found = await authAPI.getUserByEmail(hostEmail);
+
+                if (found?.userID) {
+                    const partnerId = found.userID;
+                    const partnerName = found.fullName ?? found.email;
+                    
+                    // Bước 2: Thiết lập cuộc trò chuyện tạm thời
+                    // Việc thiết lập này sẽ làm cho box chat hiển thị (vì render dựa trên selectedConversation)
+                    setSelectedConversation({
+                        partnerId: partnerId,
+                        partnerName: partnerName,
+                        messages: [], // Bắt đầu với mảng trống
+                    });
+
+                    // Bước 3: Tải tin nhắn cũ (hàm này sẽ tự cập nhật setSelectedConversation)
+                    // Hàm này cũng sẽ xử lý việc thêm user này vào danh sách nếu chưa có
+                    loadConversation(
+                        currentUserId,
+                        partnerId,
+                        partnerName
+                    );
+
+
+                } else {
+                    // Xử lý trường hợp không tìm thấy người dùng nếu cần
+                    console.log(`User with email ${hostEmail} not found.`);
+                    setSelectedConversation(null); // Đảm bảo không có chat mở
+                }
+            } catch (err) {
+                console.error("Failed to find user:", err);
+            }
+        }
+
+        initChat();
+        const cleanUrl = location.pathname;
+        navigate(cleanUrl, { replace: true });
+    }, [hostEmail, currentUserId, navigate, location.pathname]);
+
 
     useEffect(() => {
         if (!currentUserId) return;
@@ -232,6 +280,7 @@ export default function HostMessages() {
         setIsCreatingChat(true);
         setNewChatError("");
         try {
+            
             const foundUser = await authAPI.getUserByEmail(newChatEmail.trim());
             if (!foundUser?.userID && !foundUser?.UserID) {
                 setNewChatError("User not found");

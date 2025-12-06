@@ -98,6 +98,16 @@ export default function TripsPage() {
     });
   }, [user?.UserID]);
 
+  const getHostEmail = async (hostId) => {
+    try {
+      const data = await authAPI.getHostById(hostId);
+      return data.user.email;
+    } catch (err) {
+      console.error("Cannot fetch host email", err);
+      return null;
+    }
+  };
+
   const formatDateRange = useCallback((checkIn, checkOut) => {
     if (!checkIn || !checkOut) return '';
     try {
@@ -331,7 +341,12 @@ export default function TripsPage() {
             const reviewTooltip = !canReview
               ? 'You already shared a review for this trip.'
               : '';
-
+            const hostEmail =
+            propertyInfo?.host?.email ||
+            propertyInfo?.hostEmail ||
+            tourInfo?.host?.email ||
+            tourInfo?.guide?.email ||
+            null;
             return (
               <div key={trip.bookingID || trip.BookingID} className="trip-card">
                 <div className="trip-cover">
@@ -387,6 +402,21 @@ export default function TripsPage() {
                         {t(language, "homeTrips.bookAnother")}
                       </button>
                     )}
+                    
+                   <button
+                      className="trip-btn-secondary"
+                      onClick={async () => {
+                        const hostEmail = await getHostEmail(trip.hostID);
+
+                        if (hostEmail) {
+                          navigate(`/host/messages?email=${encodeURIComponent(hostEmail)}`);
+                        } else {
+                          alert("Cannot find host information.");
+                        }
+                      }}
+                    >
+                      Chat with Host
+                    </button>
                   </div>
                 </div>
               </div>
