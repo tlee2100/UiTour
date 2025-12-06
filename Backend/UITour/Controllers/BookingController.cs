@@ -149,18 +149,25 @@ namespace UITour.Controllers
             {
                 var bookings = await _bookingService.GetByHostIdAsync(hostId);
                 System.Diagnostics.Debug.WriteLine($"Loaded {bookings.Count()} bookings for host {hostId}");
-                
+
                 // Load all transactions for these bookings at once
                 var bookingIds = bookings.Select(b => b.BookingID).ToList();
+
                 var transactions = await _unitOfWork.Transactions.Query()
                     .Where(t => bookingIds.Contains(t.BookingID))
                     .ToListAsync();
-                var transactionDict = transactions.ToDictionary(t => t.BookingID);
-                
+
+                var transactionDict = transactions
+                .GroupBy(t => t.BookingID)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.OrderByDescending(x => x.ProcessedAt).First()
+                );
+
                 // Load all Properties and Tours that are referenced
                 var allPropertyIds = bookings.Where(b => b.PropertyID.HasValue)
                     .Select(b => b.PropertyID.Value).Distinct().ToList();
-                var allProperties = allPropertyIds.Any() 
+                var allProperties = allPropertyIds.Any()
                     ? await _unitOfWork.Properties.Query()
                         .Include(p => p.Photos)
                         .Include(p => p.Reviews)
@@ -169,7 +176,7 @@ namespace UITour.Controllers
                     : new List<Property>();
                 System.Diagnostics.Debug.WriteLine($"Loaded {allProperties.Count} properties for IDs: {string.Join(", ", allPropertyIds)}");
                 var propertyDict = allProperties.ToDictionary(p => p.PropertyID);
-                
+
                 var allTourIds = bookings.Where(b => b.TourID.HasValue)
                     .Select(b => b.TourID.Value).Distinct().ToList();
                 var allTours = allTourIds.Any()
@@ -181,7 +188,7 @@ namespace UITour.Controllers
                     : new List<Tour>();
                 System.Diagnostics.Debug.WriteLine($"Loaded {allTours.Count} tours for IDs: {string.Join(", ", allTourIds)}");
                 var tourDict = allTours.ToDictionary(t => t.TourID);
-                
+
                 // Load all Users that are referenced
                 var allUserIds = bookings.Where(b => b.UserID > 0)
                     .Select(b => b.UserID).Distinct().ToList();
@@ -192,17 +199,17 @@ namespace UITour.Controllers
                     : new List<User>();
                 System.Diagnostics.Debug.WriteLine($"Loaded {allUsers.Count} users for IDs: {string.Join(", ", allUserIds)}");
                 var userDict = allUsers.ToDictionary(u => u.UserID);
-                
+
                 // Build response with properly serialized navigation properties
                 var bookingsWithTransactions = new List<object>();
-                
+
                 foreach (var b in bookings)
                 {
                     System.Diagnostics.Debug.WriteLine($"Processing booking {b.BookingID}: PropertyID={b.PropertyID}, TourID={b.TourID}, UserID={b.UserID}");
-                    
+
                     // Get transaction for this booking
                     transactionDict.TryGetValue(b.BookingID, out var transaction);
-                    
+
                     // Get Property
                     Property property = null;
                     if (b.PropertyID.HasValue)
@@ -216,7 +223,7 @@ namespace UITour.Controllers
                             System.Diagnostics.Debug.WriteLine($"✗ Property {b.PropertyID.Value} NOT FOUND in database for booking {b.BookingID}");
                         }
                     }
-                    
+
                     // Build property object if exists
                     object propertyObj = null;
                     if (property != null)
@@ -228,14 +235,14 @@ namespace UITour.Controllers
                             p.Caption,
                             p.SortIndex
                         }).Cast<object>().ToList() : new List<object>();
-                        
+
                         var reviews = property.Reviews != null ? property.Reviews.Select(r => new
                         {
                             r.ReviewID,
                             r.Rating,
                             r.Comments
                         }).Cast<object>().ToList() : new List<object>();
-                        
+
                         propertyObj = new
                         {
                             property.PropertyID,
@@ -246,7 +253,7 @@ namespace UITour.Controllers
                             Reviews = reviews
                         };
                     }
-                    
+
                     // Get Tour
                     Tour tour = null;
                     if (b.TourID.HasValue)
@@ -260,7 +267,7 @@ namespace UITour.Controllers
                             System.Diagnostics.Debug.WriteLine($"✗ Tour {b.TourID.Value} NOT FOUND in database for booking {b.BookingID}");
                         }
                     }
-                    
+
                     // Build tour object if exists
                     object tourObj = null;
                     if (tour != null)
@@ -272,14 +279,14 @@ namespace UITour.Controllers
                             p.Caption,
                             p.SortIndex
                         }).Cast<object>().ToList() : new List<object>();
-                        
+
                         var reviews = tour.Reviews != null ? tour.Reviews.Select(r => new
                         {
                             r.ReviewID,
                             r.Rating,
                             r.Comment
                         }).Cast<object>().ToList() : new List<object>();
-                        
+
                         tourObj = new
                         {
                             tour.TourID,
@@ -290,7 +297,7 @@ namespace UITour.Controllers
                             Reviews = reviews
                         };
                     }
-                    
+
                     // Get User
                     User user = null;
                     if (b.UserID > 0)
@@ -305,7 +312,7 @@ namespace UITour.Controllers
                             System.Diagnostics.Debug.WriteLine($"Available user IDs in dict: {string.Join(", ", userDict.Keys)}");
                         }
                     }
-                    
+
                     // Build user object if exists
                     object userObj = null;
                     if (user != null)
@@ -318,7 +325,7 @@ namespace UITour.Controllers
                             user.Phone
                         };
                     }
-                    
+
                     var bookingObj = new
                     {
                         b.BookingID,
@@ -351,10 +358,10 @@ namespace UITour.Controllers
                             transaction.ProcessedAt
                         } : null
                     };
-                    
+
                     bookingsWithTransactions.Add(bookingObj);
                 }
-                
+
                 return Ok(bookingsWithTransactions);
             }
             catch (Exception ex)
@@ -364,7 +371,6 @@ namespace UITour.Controllers
         }
 
         // POST: api/booking/{bookingId}/reviews
-        // Note: Reviews can be submitted for any booking regardless of status
         [HttpPost("{bookingId:int}/reviews")]
         public async Task<IActionResult> CreateReviewForBooking(int bookingId, [FromBody] CreateReviewDto request)
         {
@@ -492,11 +498,12 @@ namespace UITour.Controllers
             try
             {
                 var isAvailable = await _bookingService.IsPropertyAvailableAsync(propertyId, checkIn, checkOut);
-                return Ok(new { 
-                    propertyId, 
-                    checkIn, 
-                    checkOut, 
-                    isAvailable 
+                return Ok(new
+                {
+                    propertyId,
+                    checkIn,
+                    checkOut,
+                    isAvailable
                 });
             }
             catch (Exception ex)
@@ -512,11 +519,12 @@ namespace UITour.Controllers
             try
             {
                 var totalPrice = await _bookingService.CalculateTotalPriceAsync(propertyId, checkIn, checkOut);
-                return Ok(new { 
-                    propertyId, 
-                    checkIn, 
-                    checkOut, 
-                    totalPrice 
+                return Ok(new
+                {
+                    propertyId,
+                    checkIn,
+                    checkOut,
+                    totalPrice
                 });
             }
             catch (InvalidOperationException ex)
@@ -547,9 +555,10 @@ namespace UITour.Controllers
             try
             {
                 var blockedDates = await _bookingService.GetBlockedDatesAsync(propertyId);
-                return Ok(new { 
-                    propertyId, 
-                    blockedDates 
+                return Ok(new
+                {
+                    propertyId,
+                    blockedDates
                 });
             }
             catch (Exception ex)
@@ -570,7 +579,8 @@ namespace UITour.Controllers
                 }
 
                 var transaction = await _bookingService.ConfirmTransferAsync(id);
-                return Ok(new { 
+                return Ok(new
+                {
                     message = "Transfer confirmed. Booking is now confirmed.",
                     transactionId = transaction.TransactionID,
                     bookingId = id,
@@ -587,7 +597,4 @@ namespace UITour.Controllers
             }
         }
     }
-
- 
-   
 }
