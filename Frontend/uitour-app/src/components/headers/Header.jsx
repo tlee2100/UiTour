@@ -4,6 +4,7 @@ import { Icon } from '@iconify/react';
 import logo from '../../assets/UiTour.png';
 import './Header.css';
 import ProfileMenu from '../ProfileMenu';
+import MembershipModal from '../MembershipModal';
 import { useApp } from '../../contexts/AppContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useLanguageCurrencyModal } from '../../contexts/LanguageCurrencyModalContext';
@@ -12,14 +13,26 @@ import LanguageCurrencySelector from '../LanguageCurrencySelector';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [membershipModalOpen, setMembershipModalOpen] = useState(false);
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
   const globeButtonRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, token } = useApp();
+  const { user, token, tripCount } = useApp();
   const { language } = useLanguage();
   const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } = useLanguageCurrencyModal();
+
+  // Determine badge type based on trip count
+  // 1-5 trips: BRONZE, 6-10 trips: SILVER, 11+ trips: GOLD
+  const getBadgeType = () => {
+    if (tripCount >= 1 && tripCount <= 5) return 'bronze';
+    if (tripCount >= 6 && tripCount <= 10) return 'silver';
+    if (tripCount > 10) return 'gold';
+    return null; // No badge if no trips
+  };
+
+  const badgeType = getBadgeType();
 
   const handleLogoClick = () => navigate('/');
 
@@ -146,7 +159,26 @@ export default function Header() {
 
           {menuOpen && <ProfileMenu ref={menuRef} onClose={closeMenu} />}
         </div>
+
+        {badgeType && user && token && (
+          <button 
+            className={`header_badge header_badge_${badgeType}`}
+            onClick={() => setMembershipModalOpen(true)}
+          >
+            <div className={`badge_icon badge_icon_${badgeType}`}>
+              <Icon icon="mdi:medal" width="20" height="20" />
+            </div>
+            <span className={`badge_text badge_text_${badgeType}`}>
+              {badgeType.toUpperCase()}
+            </span>
+          </button>
+        )}
       </div>
+
+      <MembershipModal 
+        isOpen={membershipModalOpen} 
+        onClose={() => setMembershipModalOpen(false)} 
+      />
     </header>
   );
 }

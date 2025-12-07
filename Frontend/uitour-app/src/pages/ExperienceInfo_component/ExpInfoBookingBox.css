@@ -185,3 +185,56 @@
   background: #E5E7EB;
   margin-top: 6px;
 }
+
+/* Price Breakdown */
+.expib-price-breakdown {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.expib-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.expib-price-label {
+  color: #374151;
+}
+
+.expib-price-value {
+  color: #111827;
+  font-weight: 500;
+}
+
+.expib-price-value.expib-discount {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.expib-price-divider {
+  width: 100%;
+  height: 1px;
+  background: #E5E7EB;
+  margin: 4px 0;
+}
+
+.expib-price-row.expib-total {
+  padding-top: 8px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.expib-price-row.expib-total .expib-price-label {
+  font-weight: 600;
+  font-size: 16px;
+  color: #111827;
+}
+
+.expib-price-row.expib-total .expib-price-value {
+  font-weight: 700;
+  font-size: 18px;
+  color: #000;
+}

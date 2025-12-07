@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./ExpInfoBookingBox.css";
 import { useCurrency } from "../../contexts/CurrencyContext";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useApp } from "../../contexts/AppContext";
 import { t } from "../../utils/translations";
 
 function ExpInfoBookingBox({ 
@@ -15,6 +16,7 @@ function ExpInfoBookingBox({
 }) {
   const { convertToCurrent, format } = useCurrency();
   const { language } = useLanguage();
+  const { tripCount, user, token } = useApp();
   
   // ✅ Chuẩn hóa booking object
   const safeBooking = booking && typeof booking === "object" ? booking : {};
@@ -47,7 +49,22 @@ function ExpInfoBookingBox({
     setSelectedDate(e.target.value);
   };
 
-  const totalPrice = basePrice * guests;
+  // ✅ Calculate membership discount percentage based on trip count
+  const getMembershipDiscountPercent = () => {
+    if (!user || !token || tripCount < 1) return 0;
+    if (tripCount >= 1 && tripCount <= 5) return 5; // Bronze
+    if (tripCount >= 6 && tripCount <= 10) return 10; // Silver
+    if (tripCount > 10) return 15; // Gold
+    return 0;
+  };
+
+  // ✅ Calculate total price with membership discount
+  const baseTotal = basePrice * guests;
+  const membershipDiscountPercent = getMembershipDiscountPercent();
+  const membershipDiscount = membershipDiscountPercent > 0
+    ? baseTotal * (membershipDiscountPercent / 100)
+    : 0;
+  const totalPrice = baseTotal - membershipDiscount;
 
   return (
     <div className="expib-box">
@@ -88,13 +105,33 @@ function ExpInfoBookingBox({
         <span className="expib-hint">{t(language, "booking.max")} {maxGuests} {t(language, "booking.guests")}</span>
       </div>
 
-      {/* ✅ Total Price */}
-      {guests > 1 && (
-        <div className="expib-total">
-          <span className="expib-total-label">{t(language, "booking.total")}:</span>
-          <span className="expib-total-price">
-            {format(totalPrice)}
-          </span>
+      {/* ✅ Price Breakdown */}
+      {guests > 0 && (
+        <div className="expib-price-breakdown">
+          <div className="expib-price-row">
+            <span className="expib-price-label">
+              {format(basePrice)} x {guests} {guests > 1 ? t(language, "payment.guests") : t(language, "payment.guest")}
+            </span>
+            <span className="expib-price-value">{format(baseTotal)}</span>
+          </div>
+          
+          {membershipDiscount > 0 && (
+            <div className="expib-price-row">
+              <span className="expib-price-label">{t(language, "booking.discount")}</span>
+              <span className="expib-price-value expib-discount">
+                -{format(membershipDiscount)}
+              </span>
+            </div>
+          )}
+          
+          <div className="expib-price-divider"></div>
+          
+          <div className="expib-price-row expib-total">
+            <span className="expib-price-label">{t(language, "booking.total")}:</span>
+            <span className="expib-price-value">
+              {format(totalPrice)}
+            </span>
+          </div>
         </div>
       )}
 
