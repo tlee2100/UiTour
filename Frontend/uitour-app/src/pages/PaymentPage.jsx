@@ -137,6 +137,11 @@ function PaymentPage() {
     confirmPayment(resolvedBookingId, false);
   }, [confirmPayment, resolvedBookingId]);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     if (!bookingData && resolvedBookingId && !loadingBooking) {
       loadBookingDetails(resolvedBookingId);
@@ -242,49 +247,21 @@ function PaymentPage() {
     ? (propertyData?.listingTitle || propertyData?.title || "Property")
     : (tourData?.tourName || tourData?.title || "Tour");
 
-  // Calculate price breakdown (handle both camelCase and PascalCase)
-  // Always use USD values (no conversion) for payment page
+  // Read price breakdown directly from bookingData (all values calculated in HIBookingBox)
+  // Handle both camelCase and PascalCase, and also check for breakdown fields
   const basePrice = Number(bookingData.BasePrice || bookingData.basePrice || 0);
-  const nights = Number(bookingData.Nights || bookingData.nights || 1);
+  const nights = Number(bookingData.nights || bookingData.Nights || 1);
+  const guests = Number(bookingData.guests || bookingData.GuestsCount || 1);
+  
+  // Read breakdown values from bookingData (passed from HIBookingBox via HomeInfoPage)
+  const subtotal = Number(bookingData.subtotal || (isProperty ? basePrice * nights : basePrice));
+  const discount = Number(bookingData.discount || 0);
   const cleaningFee = Number(bookingData.CleaningFee || bookingData.cleaningFee || 0);
   const serviceFee = Number(bookingData.ServiceFee || bookingData.serviceFee || 0);
-  const totalPrice = Number(bookingData.TotalPrice || bookingData.totalPrice || 0);
+  const taxFee = Number(bookingData.taxFee || 0); // TaxFee is passed via breakdown, not in Booking model
   
-  // For property: basePrice * nights, for tour: basePrice (already per person)
-  const subtotal = isProperty ? basePrice * nights : basePrice;
-  
-  // Calculate taxFee from property data (same logic as HIBookingBox)
-  // TaxFee is not stored in Booking, so we need to calculate it from property
-  const property = isProperty ? propertyData : null;
-  const baseTotal = subtotal;
-  
-  // Get taxFee from property - check multiple possible locations
-  const taxFeePercent = property?.taxFee ?? 
-                        property?.TaxFee ?? 
-                        property?.pricing?.taxFee ?? 
-                        property?.pricing?.TaxFee ?? 
-                        0;
-  
-  // If taxFee is a percentage (between 1 and 100), calculate based on baseTotal
-  // Otherwise, use it as a fixed amount (same logic as HIBookingBox)
-  const taxFee = (taxFeePercent > 1 && taxFeePercent <= 100)
-    ? baseTotal * (taxFeePercent / 100) // Percentage
-    : Number(taxFeePercent || 0); // Fixed amount
-  
-  // Calculate membership discount percentage based on trip count
-  const getMembershipDiscountPercent = () => {
-    if (!user || !token || tripCount < 1) return 0;
-    if (tripCount >= 1 && tripCount <= 5) return 5; // Bronze
-    if (tripCount >= 6 && tripCount <= 10) return 10; // Silver
-    if (tripCount > 10) return 15; // Gold
-    return 0;
-  };
-  
-  // Calculate membership discount
-  const membershipDiscountPercent = getMembershipDiscountPercent();
-  const discount = membershipDiscountPercent > 0
-    ? subtotal * (membershipDiscountPercent / 100)
-    : 0;
+  // Calculate total price using the correct formula: subtotal - discount + cleaningFee + serviceFee + taxFee
+  const totalPrice = subtotal - discount + cleaningFee + serviceFee + taxFee;
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -321,7 +298,7 @@ function PaymentPage() {
     });
   };
 
-  const amountUsdForPayment = totalPrice || subtotal;
+  const amountUsdForPayment = totalPrice;
   const amountVndForPayment = convertUsdToVnd(amountUsdForPayment);
 
   const handleInitiateMomoPayment = async () => {
@@ -512,19 +489,15 @@ function PaymentPage() {
                 </div>
               )}
               
-              {cleaningFee > 0 && (
-                <div className="price-row">
-                  <span className="price-label">{t(language, "booking.cleaningFee")}</span>
-                  <span className="price-value">{formatUSD(cleaningFee)}</span>
-                </div>
-              )}
+              <div className="price-row">
+                <span className="price-label">{t(language, "booking.cleaningFee")}</span>
+                <span className="price-value">{formatUSD(cleaningFee)}</span>
+              </div>
               
-              {serviceFee > 0 && (
-                <div className="price-row">
-                  <span className="price-label">{t(language, "booking.serviceFee")}</span>
-                  <span className="price-value">{formatUSD(serviceFee)}</span>
-                </div>
-              )}
+              <div className="price-row">
+                <span className="price-label">{t(language, "booking.serviceFee")}</span>
+                <span className="price-value">{formatUSD(serviceFee)}</span>
+              </div>
               
               <div className="price-row">
                 <span className="price-label">{t(language, "booking.taxesAndFees")}</span>
