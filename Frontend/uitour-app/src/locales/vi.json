@@ -1199,5 +1199,36 @@
       "updateFailed": "Không thể cập nhật danh sách yêu thích. Vui lòng thử lại."
     },
     "tourImageAlt": "Hình ảnh tour"
+  },
+  "membership": {
+    "tier": {
+      "bronze": "THÀNH VIÊN ĐỒNG",
+      "silver": "THÀNH VIÊN BẠC",
+      "gold": "THÀNH VIÊN VÀNG"
+    },
+    "statusLabel": "Trạng thái thành viên",
+    "tripsBooked": "Trips Đã Đặt",
+    "trips": "trips",
+    "progress": "Tiến độ",
+    "nextTierMessage": "Còn {trips} trips nữa để đạt {tier}!",
+    "maxTierMessage": "Chúc mừng! Bạn đã đạt tier cao nhất!",
+    "benefitsTitle": "Quyền lợi của bạn:",
+    "benefits": {
+      "bronze": {
+        "discount": "Ưu đãi 5% cho mỗi booking",
+        "support": "Hỗ trợ khách hàng ưu tiên"
+      },
+      "silver": {
+        "discount": "Ưu đãi 10% cho mỗi booking",
+        "support": "Hỗ trợ 24/7",
+        "cancellation": "Miễn phí hủy booking"
+      },
+      "gold": {
+        "discount": "Ưu đãi 15% cho mỗi booking",
+        "support": "Hỗ trợ VIP 24/7",
+        "cancellation": "Miễn phí hủy booking",
+        "upgrade": "Nâng hạng miễn phí khi có sẵn"
+      }
+    }
   }
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import "./PaymentPage.css";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useApp } from "../contexts/AppContext";
 import { t } from "../utils/translations";
 import authAPI from "../services/authAPI";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -12,6 +13,7 @@ function PaymentPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { language } = useLanguage();
+  const { tripCount, user, token } = useApp();
 
   const initialBookingData = location.state?.bookingData || null;
   const initialPropertyData = location.state?.propertyData || null;
@@ -250,7 +252,39 @@ function PaymentPage() {
   
   // For property: basePrice * nights, for tour: basePrice (already per person)
   const subtotal = isProperty ? basePrice * nights : basePrice;
-  const discount = 0; // Can be calculated from discountPercentage if needed
+  
+  // Calculate taxFee from property data (same logic as HIBookingBox)
+  // TaxFee is not stored in Booking, so we need to calculate it from property
+  const property = isProperty ? propertyData : null;
+  const baseTotal = subtotal;
+  
+  // Get taxFee from property - check multiple possible locations
+  const taxFeePercent = property?.taxFee ?? 
+                        property?.TaxFee ?? 
+                        property?.pricing?.taxFee ?? 
+                        property?.pricing?.TaxFee ?? 
+                        0;
+  
+  // If taxFee is a percentage (between 1 and 100), calculate based on baseTotal
+  // Otherwise, use it as a fixed amount (same logic as HIBookingBox)
+  const taxFee = (taxFeePercent > 1 && taxFeePercent <= 100)
+    ? baseTotal * (taxFeePercent / 100) // Percentage
+    : Number(taxFeePercent || 0); // Fixed amount
+  
+  // Calculate membership discount percentage based on trip count
+  const getMembershipDiscountPercent = () => {
+    if (!user || !token || tripCount < 1) return 0;
+    if (tripCount >= 1 && tripCount <= 5) return 5; // Bronze
+    if (tripCount >= 6 && tripCount <= 10) return 10; // Silver
+    if (tripCount > 10) return 15; // Gold
+    return 0;
+  };
+  
+  // Calculate membership discount
+  const membershipDiscountPercent = getMembershipDiscountPercent();
+  const discount = membershipDiscountPercent > 0
+    ? subtotal * (membershipDiscountPercent / 100)
+    : 0;
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -491,6 +525,11 @@ function PaymentPage() {
                   <span className="price-value">{formatUSD(serviceFee)}</span>
                 </div>
               )}
+              
+              <div className="price-row">
+                <span className="price-label">{t(language, "booking.taxesAndFees")}</span>
+                <span className="price-value">{formatUSD(taxFee)}</span>
+              </div>
               
               <div className="price-divider"></div>
               

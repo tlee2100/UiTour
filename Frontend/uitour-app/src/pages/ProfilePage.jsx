@@ -141,10 +141,13 @@ export default function ProfilePage() {
         const normalized = await enrichTrips(bookings ?? []);
         if (!isMounted) return;
         setTrips(normalized);
+        // Update trip count in AppContext
+        dispatch({ type: 'SET_TRIP_COUNT', payload: normalized.length });
       } catch (err) {
         if (isMounted) {
           setTripsError(err.message || t(language, 'profile.unableToLoadTrips'));
           setTrips([]);
+          dispatch({ type: 'SET_TRIP_COUNT', payload: 0 });
         }
       } finally {
         if (isMounted) setTripsLoading(false);
@@ -154,7 +157,7 @@ export default function ProfilePage() {
     return () => {
       isMounted = false;
     };
-  }, [user, enrichTrips, language]);
+  }, [user, enrichTrips, language, dispatch]);
 
   // ==== Lấy dữ liệu linh hoạt theo key hoa/thường (không normalize state) ====
   const displayName = userData?.fullName ?? userData?.FullName ?? t(language, 'profile.user');
