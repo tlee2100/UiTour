@@ -622,7 +622,7 @@ export default function HomeInfoPage() {
     }));
   };
 
-  const handleBookProperty = async () => {
+  const handleBookProperty = async (breakdown) => {
     if (!currentProperty?.id) return;
     if (!user?.UserID) {
       navigate("/login", { state: { from: `/property/${id}` } });
@@ -647,23 +647,15 @@ export default function HomeInfoPage() {
       return;
     }
 
-    const nights = Math.max(
-      1,
-      Math.round(
-        (checkOutDate.getTime() - checkInDate.getTime()) /
-          (1000 * 60 * 60 * 24)
-      )
-    );
+    // Use breakdown data from HIBookingBox if provided
+    if (!breakdown) {
+      setBookingFeedback({
+        type: "error",
+        message: "Không thể tính toán giá. Vui lòng thử lại.",
+      });
+      return;
+    }
 
-    const pricePerNight =
-      currentProperty.pricing?.basePrice ?? currentProperty.price ?? 0;
-    const cleaningFee = Number(currentProperty.cleaningFee ?? 0);
-    const serviceFee = Number(
-      currentProperty.serviceFee ?? Math.round(pricePerNight * nights * 0.1)
-    );
-    const discount = Number(currentProperty.discount ?? 0);
-    const totalPrice =
-      pricePerNight * nights - discount + cleaningFee + serviceFee;
     const hostId = currentProperty.hostId || currentProperty.host?.id;
 
     if (!hostId) {
@@ -674,22 +666,19 @@ export default function HomeInfoPage() {
       return;
     }
 
+    // Use breakdown values (all in USD) from HIBookingBox
     const payload = {
       PropertyID: Number(currentProperty.id),
       UserID: user.UserID,
       HostID: hostId,
       CheckIn: checkInDate.toISOString(),
       CheckOut: checkOutDate.toISOString(),
-      Nights: nights,
-      GuestsCount:
-        Math.min(
-          Math.max(Number(bookingState.guests) || 1, 1),
-          currentProperty.maxGuests || Number(bookingState.guests) || 1
-        ),
-      BasePrice: pricePerNight,
-      CleaningFee: cleaningFee,
-      ServiceFee: serviceFee,
-      TotalPrice: totalPrice,
+      Nights: breakdown.nights,
+      GuestsCount: breakdown.guests,
+      BasePrice: breakdown.basePrice,
+      CleaningFee: breakdown.cleaningFee,
+      ServiceFee: breakdown.serviceFee,
+      TotalPrice: breakdown.totalPrice,
       Currency: currentProperty.currency || "USD",
     };
 
@@ -697,10 +686,22 @@ export default function HomeInfoPage() {
     setBookingLoading(true);
     try {
       const createdBooking = await authAPI.createBooking(payload);
-      // Navigate to payment page with booking data
+      
+      // Add breakdown data to bookingData for PaymentPage
+      const bookingWithBreakdown = {
+        ...createdBooking,
+        // Add breakdown fields that aren't in the booking model
+        subtotal: breakdown.subtotal,
+        discount: breakdown.discount,
+        taxFee: breakdown.taxFee,
+        nights: breakdown.nights,
+        guests: breakdown.guests
+      };
+      
+      // Navigate to payment page with booking data including breakdown
       navigate("/payment", {
         state: {
-          bookingData: createdBooking,
+          bookingData: bookingWithBreakdown,
           propertyData: currentProperty,
           bookingType: "property"
         }

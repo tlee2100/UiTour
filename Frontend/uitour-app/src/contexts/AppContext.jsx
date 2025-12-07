@@ -1,4 +1,5 @@
-import { createContext, useContext, useReducer } from 'react';
+import { createContext, useContext, useReducer, useEffect } from 'react';
+import authAPI from '../services/authAPI';
 
 const AppContext = createContext();
 
@@ -94,6 +95,41 @@ function appReducer(state, action) {
 
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
+
+  // Load user bookings on mount and when user/token changes to set tripCount
+  useEffect(() => {
+    const loadTripCount = async () => {
+      // Only load if user is authenticated
+      if (!state.user || !state.token) {
+        dispatch({ type: 'SET_TRIP_COUNT', payload: 0 });
+        return;
+      }
+
+      try {
+        // Get user ID from user object (handle both camelCase and PascalCase)
+        const userId = state.user.UserID || state.user.userID || state.user.id || state.user.Id;
+        
+        if (!userId) {
+          console.warn('AppContext: User ID not found, cannot load trip count');
+          dispatch({ type: 'SET_TRIP_COUNT', payload: 0 });
+          return;
+        }
+
+        // Fetch user bookings
+        const bookings = await authAPI.getUserBookings(userId);
+        
+        // Set trip count based on bookings array length
+        const count = Array.isArray(bookings) ? bookings.length : 0;
+        dispatch({ type: 'SET_TRIP_COUNT', payload: count });
+      } catch (err) {
+        console.error('AppContext: Failed to load trip count:', err);
+        // On error, set to 0 (don't show badge if we can't verify)
+        dispatch({ type: 'SET_TRIP_COUNT', payload: 0 });
+      }
+    };
+
+    loadTripCount();
+  }, [state.user, state.token]);
 
   const value = {
     ...state,

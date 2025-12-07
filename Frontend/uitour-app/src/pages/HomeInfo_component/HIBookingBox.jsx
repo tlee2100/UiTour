@@ -24,10 +24,10 @@ function HIBookingBox({
   const { tripCount, user, token } = useApp();
 
   // ✅ Mapping dữ liệu từ Experience format → Booking UI
-  // Giả sử giá trong database là USD, convert sang currency hiện tại
+  // Base price in USD (for calculations and API)
   const basePriceUSD = property.pricing?.basePrice ?? property.price ?? 0;
+  // Display price (converted to current currency for UI)
   const pricePerNight = convertToCurrent(basePriceUSD);
-
 
   const nights =
     checkInDate && checkOutDate
@@ -43,37 +43,15 @@ function HIBookingBox({
   const reviewsCount = property.reviewsCount ?? 0;
   const maxGuests = property.maxGuests ?? property.booking?.maxGuests ?? 2;
 
-  // Debug: Log property fees
-  console.log("🔍 HIBookingBox - Property fees:", {
-    cleaningFee: property.cleaningFee,
-    serviceFee: property.serviceFee,
-    taxFee: property.taxFee,
-    extraGuestFee: property.extraGuestFee,
-    property: property
-  });
-
-  // ✅ Fees - Giả sử các phí trong database là USD, convert sang currency hiện tại
-  const cleaningFee = convertToCurrent(property.cleaningFee ?? 0);
-  // ServiceFee and TaxFee: if stored as percentage, calculate based on total price
-  // Otherwise, use the fixed amount
-  const baseTotal = pricePerNight * nights;
-  const serviceFeePercent = property.serviceFee ?? 0;
-  const taxFeePercent = property.taxFee ?? 0;
+  // ✅ Calculate all fees in USD (for API and breakdown)
+  // Base total in USD (subtotal before discount)
+  // Multiply nightly rate by number of nights and number of guests
+  const baseTotalUSD = basePriceUSD * nights * (guests || 1);
+  const subtotalUSD = baseTotalUSD;
   
-  console.log("🔍 HIBookingBox - Calculated fees:", {
-    cleaningFee,
-    serviceFeePercent,
-    taxFeePercent,
-    baseTotal,
-    nights
-  });
-  const serviceFee = serviceFeePercent > 1 && serviceFeePercent <= 100 
-    ? convertToCurrent(baseTotal * (serviceFeePercent / 100)) // Percentage
-    : convertToCurrent(serviceFeePercent); // Fixed amount
-  const taxFee = taxFeePercent > 1 && taxFeePercent <= 100
-    ? convertToCurrent(baseTotal * (taxFeePercent / 100)) // Percentage
-    : convertToCurrent(taxFeePercent); // Fixed amount
-
+  // ✅ Calculate discount in USD (property discount + membership discount)
+  const propertyDiscountPercentage = property.discountPercentage ?? 0;
+  
   // ✅ Calculate membership discount percentage based on trip count
   const getMembershipDiscountPercent = () => {
     if (!user || !token || tripCount < 1) return 0;
@@ -82,47 +60,47 @@ function HIBookingBox({
     if (tripCount > 10) return 15; // Gold
     return 0;
   };
+  
+  const membershipDiscountPercent = getMembershipDiscountPercent();
+  
+  const propertyDiscountUSD = propertyDiscountPercentage > 0
+    ? baseTotalUSD * (propertyDiscountPercentage / 100)
+    : 0;
+  
+  const membershipDiscountUSD = membershipDiscountPercent > 0
+    ? baseTotalUSD * (membershipDiscountPercent / 100)
+    : 0;
+  
+  const discountUSD = propertyDiscountUSD + membershipDiscountUSD;
+  
+  // Cleaning fee in USD (fixed amount, not percentage-based)
+  const cleaningFeeUSD = Number(property.cleaningFee ?? 0);
+  
+  // Service fee calculation in USD
+  // If percentage: calculate on ORIGINAL subtotal (before discount), otherwise use fixed amount
+  const serviceFeePercent = property.serviceFee ?? 0;
+  const serviceFeeUSD = (serviceFeePercent > 1 && serviceFeePercent <= 100)
+    ? baseTotalUSD * (serviceFeePercent / 100) // Percentage on original subtotal
+    : Number(serviceFeePercent || 0); // Fixed amount
+  
+  // Tax fee calculation in USD
+  // If percentage: calculate on ORIGINAL subtotal (before discount), otherwise use fixed amount
+  const taxFeePercent = property.taxFee ?? 0;
+  const taxFeeUSD = (taxFeePercent > 1 && taxFeePercent <= 100)
+    ? baseTotalUSD * (taxFeePercent / 100) // Percentage on original subtotal
+    : Number(taxFeePercent || 0); // Fixed amount
 
-  // ✅ Calculate discount based on DiscountPercentage from database + Membership discount
-  const calculateDiscount = () => {
-    const propertyDiscountPercentage = property.discountPercentage ?? 0;
-    const membershipDiscountPercent = getMembershipDiscountPercent();
-    
-    const baseTotal = pricePerNight * nights;
-    
-    // Calculate property discount (if any)
-    const propertyDiscount = propertyDiscountPercentage > 0
-      ? baseTotal * (propertyDiscountPercentage / 100)
-      : 0;
-    
-    // Calculate membership discount
-    const membershipDiscount = membershipDiscountPercent > 0
-      ? baseTotal * (membershipDiscountPercent / 100)
-      : 0;
-    
-    // Total discount is the sum of both
-    const totalDiscount = propertyDiscount + membershipDiscount;
-    
-    // Debug: Log discount calculation
-    console.log("🔍 HIBookingBox - Discount calculation:", {
-      propertyDiscountPercentage,
-      membershipDiscountPercent,
-      tripCount,
-      baseTotal,
-      propertyDiscount,
-      membershipDiscount,
-      totalDiscount
-    });
-    
-    return convertToCurrent(totalDiscount);
-  };
+  // ✅ Calculate total in USD
+  // Formula: Subtotal - Discount + All Fees
+  const totalPriceUSD = subtotalUSD - discountUSD + cleaningFeeUSD + serviceFeeUSD + taxFeeUSD;
 
-  const discount = calculateDiscount();
-
-  // ✅ Tính tổng
-  const totalPrice = pricePerNight * nights;
-  const discountedTotal =
-    totalPrice - discount + cleaningFee + serviceFee + taxFee;
+  // ✅ Converted values for display (UI only)
+  const cleaningFee = convertToCurrent(cleaningFeeUSD);
+  const serviceFee = convertToCurrent(serviceFeeUSD);
+  const taxFee = convertToCurrent(taxFeeUSD);
+  const discount = convertToCurrent(discountUSD);
+  const discountedTotal = convertToCurrent(totalPriceUSD);
+  const totalPrice = convertToCurrent(subtotalUSD);
 
   // ✅ Check-in/out fallback
   const checkIn = checkInDate || property.checkIn || "";
@@ -135,6 +113,24 @@ function HIBookingBox({
   const handleGuestsChange = (value) => {
     const parsed = Number(value) || 1;
     onGuestsChange?.(Math.min(Math.max(parsed, 1), maxGuests));
+  };
+
+  // ✅ Handle Book button click - pass full breakdown data
+  const handleBook = () => {
+    const breakdown = {
+      subtotal: subtotalUSD,
+      discount: discountUSD,
+      cleaningFee: cleaningFeeUSD,
+      serviceFee: serviceFeeUSD,
+      taxFee: taxFeeUSD,
+      totalPrice: totalPriceUSD,
+      nights: nights,
+      guests: guests || 1,
+      basePrice: basePriceUSD
+    };
+    
+    // Call onBook with breakdown data
+    onBook?.(breakdown);
   };
 
   return (
@@ -200,7 +196,7 @@ function HIBookingBox({
       {/* Button */}
       <button
         className="hib-book-button"
-        onClick={onBook}
+        onClick={handleBook}
         disabled={bookingLoading}
       >
         <span className="hib-book-text">
