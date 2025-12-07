@@ -2,6 +2,7 @@ import React from "react";
 import "./HIBookingBox.css";
 import { useCurrency } from "../../contexts/CurrencyContext";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useApp } from "../../contexts/AppContext";
 import { t } from "../../utils/translations";
 
 function HIBookingBox({
@@ -20,6 +21,7 @@ function HIBookingBox({
 
   const { convertToCurrent, format } = useCurrency();
   const { language } = useLanguage();
+  const { tripCount, user, token } = useApp();
 
   // ✅ Mapping dữ liệu từ Experience format → Booking UI
   // Giả sử giá trong database là USD, convert sang currency hiện tại
@@ -72,25 +74,47 @@ function HIBookingBox({
     ? convertToCurrent(baseTotal * (taxFeePercent / 100)) // Percentage
     : convertToCurrent(taxFeePercent); // Fixed amount
 
-  // ✅ Calculate discount based on DiscountPercentage from database
+  // ✅ Calculate membership discount percentage based on trip count
+  const getMembershipDiscountPercent = () => {
+    if (!user || !token || tripCount < 1) return 0;
+    if (tripCount >= 1 && tripCount <= 5) return 5; // Bronze
+    if (tripCount >= 6 && tripCount <= 10) return 10; // Silver
+    if (tripCount > 10) return 15; // Gold
+    return 0;
+  };
+
+  // ✅ Calculate discount based on DiscountPercentage from database + Membership discount
   const calculateDiscount = () => {
-    const discountPercentage = property.discountPercentage ?? 0;
+    const propertyDiscountPercentage = property.discountPercentage ?? 0;
+    const membershipDiscountPercent = getMembershipDiscountPercent();
+    
+    const baseTotal = pricePerNight * nights;
+    
+    // Calculate property discount (if any)
+    const propertyDiscount = propertyDiscountPercentage > 0
+      ? baseTotal * (propertyDiscountPercentage / 100)
+      : 0;
+    
+    // Calculate membership discount
+    const membershipDiscount = membershipDiscountPercent > 0
+      ? baseTotal * (membershipDiscountPercent / 100)
+      : 0;
+    
+    // Total discount is the sum of both
+    const totalDiscount = propertyDiscount + membershipDiscount;
     
     // Debug: Log discount calculation
     console.log("🔍 HIBookingBox - Discount calculation:", {
-      discountPercentage: discountPercentage,
-      pricePerNight: pricePerNight,
-      nights: nights,
-      baseTotal: pricePerNight * nights,
-      property: property
+      propertyDiscountPercentage,
+      membershipDiscountPercent,
+      tripCount,
+      baseTotal,
+      propertyDiscount,
+      membershipDiscount,
+      totalDiscount
     });
     
-    if (discountPercentage <= 0) return 0;
-    
-    const baseTotal = pricePerNight * nights;
-    const discountAmount = baseTotal * (discountPercentage / 100);
-    
-    return convertToCurrent(discountAmount);
+    return convertToCurrent(totalDiscount);
   };
 
   const discount = calculateDiscount();
@@ -201,12 +225,14 @@ function HIBookingBox({
           <span className="hib-row-value">{format(totalPrice)}</span>
         </div>
 
-        <div className="hib-row">
-          <span className="hib-row-label">{t(language, "booking.discount")}</span>
-          <span className="hib-row-value hib-discount">
-            -{format(discount)}
-          </span>
-        </div>
+        {discount > 0 && (
+          <div className="hib-row">
+            <span className="hib-row-label">{t(language, "booking.discount")}</span>
+            <span className="hib-row-value hib-discount">
+              -{format(discount)}
+            </span>
+          </div>
+        )}
 
         <div className="hib-row">
           <span className="hib-row-label">{t(language, "booking.cleaningFee")}</span>

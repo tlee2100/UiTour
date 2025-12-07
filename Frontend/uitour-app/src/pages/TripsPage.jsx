@@ -19,7 +19,7 @@ export default function TripsPage() {
   const [reviewError, setReviewError] = useState('');
   const [reviewSuccess, setReviewSuccess] = useState('');
   const navigate = useNavigate();
-  const { user } = useApp();
+  const { user, dispatch } = useApp();
   const { convertToCurrent, format } = useCurrency();
   const { language } = useLanguage();
 
@@ -156,13 +156,16 @@ export default function TripsPage() {
         })
       );
       setTrips(enriched);
+      // Update trip count in AppContext
+      dispatch({ type: 'SET_TRIP_COUNT', payload: enriched.length });
     } catch (err) {
       setError(err.message || 'Unable to load trips list');
       setTrips([]);
+      dispatch({ type: 'SET_TRIP_COUNT', payload: 0 });
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, dispatch]);
 
   const openReviewModal = useCallback((trip) => {
     setReviewingTrip(trip);
