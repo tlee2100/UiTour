@@ -15,7 +15,8 @@ const getInitialState = () => {
     favorites: [],
     searchHistory: [],
     isLoading: false,
-    error: null
+    error: null,
+    tripCount: 0
   };
 };
 
@@ -54,7 +55,10 @@ function appReducer(state, action) {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       localStorage.removeItem('uitour_profile');
-      return { ...state, user: null, token: null, profile: null };
+      return { ...state, user: null, token: null, profile: null, tripCount: 0 };
+    
+    case 'SET_TRIP_COUNT':
+      return { ...state, tripCount: action.payload };
     
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };

@@ -1200,5 +1200,36 @@
       "updateFailed": "Failed to update wishlist. Please try again."
     },
     "tourImageAlt": "Tour image"
+  },
+  "membership": {
+    "tier": {
+      "bronze": "BRONZE MEMBER",
+      "silver": "SILVER MEMBER",
+      "gold": "GOLD MEMBER"
+    },
+    "statusLabel": "Membership Status",
+    "tripsBooked": "Trips Booked",
+    "trips": "trips",
+    "progress": "Progress",
+    "nextTierMessage": "{trips} more trips to reach {tier}!",
+    "maxTierMessage": "Congratulations! You have reached the highest tier!",
+    "benefitsTitle": "Your benefits:",
+    "benefits": {
+      "bronze": {
+        "discount": "5% discount for each booking",
+        "support": "Priority customer support"
+      },
+      "silver": {
+        "discount": "10% discount for each booking",
+        "support": "24/7 support",
+        "cancellation": "Free booking cancellation"
+      },
+      "gold": {
+        "discount": "15% discount for each booking",
+        "support": "VIP 24/7 support",
+        "cancellation": "Free booking cancellation",
+        "upgrade": "Free upgrade when available"
+      }
+    }
   }
 }
