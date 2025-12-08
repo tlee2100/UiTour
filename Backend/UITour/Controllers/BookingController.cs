@@ -567,6 +567,78 @@ namespace UITour.Controllers
             }
         }
 
+        // GET: api/booking/host/5/dashboard
+        [HttpGet("host/{hostId:int}/dashboard")]
+        public async Task<IActionResult> GetHostDashboard(int hostId, int? year = null)
+        {
+            try
+            {
+                var now = DateTime.UtcNow;
+                var targetYear = year ?? now.Year;
+
+                var bookingsQuery = _unitOfWork.Bookings.Query()
+                    .Where(b => b.HostID == hostId && b.Status == "Confirmed");
+
+                // Lọc theo năm
+                bookingsQuery = bookingsQuery.Where(b => b.CheckIn.Year == targetYear);
+
+                var bookings = await bookingsQuery.ToListAsync();
+
+                var dto = new HostDashboardDto();
+
+                foreach (var b in bookings)
+                {
+                    var monthIndex = b.CheckIn.Month - 1; // 0..11
+                    var amount = b.TotalPrice;
+
+                    if (b.PropertyID.HasValue)
+                    {
+                        dto.YearlyStay[monthIndex] += amount;
+                    }
+                    else if (b.TourID.HasValue)
+                    {
+                        dto.YearlyExp[monthIndex] += amount;
+                    }
+                }
+
+                dto.TotalIncomeYTD = dto.YearlyStay.Sum() + dto.YearlyExp.Sum();
+
+                var thisMonthIndex = now.Month - 1;
+                dto.IncomeThisMonth = dto.YearlyStay[thisMonthIndex] + dto.YearlyExp[thisMonthIndex];
+
+                dto.BookingsThisMonth = bookings.Count(b => b.CheckIn.Month == now.Month);
+
+                dto.UpcomingBookings = bookings.Count(b => b.CheckIn >= now);
+
+                // Tạm thời chưa tính % thay đổi → set 0
+                dto.TotalIncomeYTDChange = 0;
+                dto.IncomeThisMonthChange = 0;
+                dto.BookingsThisMonthChange = 0;
+
+                return Ok(new
+                {
+                    summary = new
+                    {
+                        totalIncomeYTD = dto.TotalIncomeYTD,
+                        totalIncomeYTDChange = dto.TotalIncomeYTDChange,
+                        incomeThisMonth = dto.IncomeThisMonth,
+                        incomeThisMonthChange = dto.IncomeThisMonthChange,
+                        bookingsThisMonth = dto.BookingsThisMonth,
+                        bookingsThisMonthChange = dto.BookingsThisMonthChange,
+                        upcomingBookings = dto.UpcomingBookings
+                    },
+                    yearlyStay = dto.YearlyStay,
+                    yearlyExp = dto.YearlyExp
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
         // POST: api/booking/5/confirm-transfer
         [HttpPost("{id:int}/confirm-transfer")]
         public async Task<IActionResult> ConfirmTransfer([FromRoute] int id)
