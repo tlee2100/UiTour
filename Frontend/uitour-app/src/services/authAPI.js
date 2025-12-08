@@ -1345,6 +1345,30 @@ async getBookingsByHost(hostId) {
       throw err;
     }
   }
+
+    async getHostDashboard(hostId) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${BOOKING_BASE_URL}/host/${hostId}/dashboard`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(errText || 'Failed to fetch host dashboard');
+        }
+
+        return await response.json(); // { summary, yearlyStay, yearlyExp }
+      } catch (err) {
+        console.error('getHostDashboard error:', err);
+        throw err;
+      }
+    }
+
+
   // Lấy toàn bộ tin nhắn giữa 2 user
   async getConversationBetweenUsers(user1, user2) {
     try {
