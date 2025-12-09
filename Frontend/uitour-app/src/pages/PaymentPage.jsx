@@ -13,7 +13,7 @@ function PaymentPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { language } = useLanguage();
-  const { tripCount, user, token } = useApp();
+  const { user, token, dispatch } = useApp();
 
   const initialBookingData = location.state?.bookingData || null;
   const initialPropertyData = location.state?.propertyData || null;
@@ -121,6 +121,19 @@ function PaymentPage() {
       await authAPI.confirmTransfer(bookingIdToConfirm);
       setSuccess(true);
       setAutoConfirmStatus(isAuto ? "success" : "manual-success");
+
+      // Refresh trip count with confirmed bookings only
+      if (user?.UserID) {
+        try {
+          const bookings = await authAPI.getUserBookings(user.UserID);
+          const confirmed = (bookings || []).filter(
+            (b) => (b.Status || b.status || "").toLowerCase() === "confirmed"
+          );
+          dispatch?.({ type: "SET_TRIP_COUNT", payload: confirmed.length });
+        } catch (countErr) {
+          console.error("Failed to refresh trip count after payment", countErr);
+        }
+      }
 
       setTimeout(() => {
         navigate("/trips");
@@ -334,6 +347,22 @@ function PaymentPage() {
         throw new Error(t(language, "payment.payUrlMissing"));
       }
 
+      // Mark booking as confirmed and refresh trips count before redirecting
+      try {
+        await authAPI.confirmTransfer(bookingId);
+
+        if (user?.UserID) {
+          const bookings = await authAPI.getUserBookings(user.UserID);
+          const confirmed = (bookings || []).filter(
+            (b) => (b.Status || b.status || "").toLowerCase() == "confirmed"
+          );
+          dispatch?.({ type: "SET_TRIP_COUNT", payload: confirmed.length });
+        }
+      } catch (confirmErr) {
+        console.error("Failed to confirm booking before redirect", confirmErr);
+      }
+
+      // Continue to Momo payment page
       window.location.assign(redirectUrl);
     } catch (err) {
       console.error("Error initiating Momo payment:", err);
