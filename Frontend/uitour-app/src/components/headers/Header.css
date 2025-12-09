@@ -190,6 +190,10 @@
   overflow: hidden;
 }
 
+.header_badge_starter {
+  background: linear-gradient(135deg, #4f7df3 0%, #6a11cb 100%);
+}
+
 .header_badge::before {
   content: '';
   position: absolute;
@@ -214,6 +218,17 @@
 /* BRONZE Badge */
 .header_badge_bronze {
   background: linear-gradient(135deg, #ff8c42 0%, #d2691e 50%, #b8860b 100%);
+}
+
+.badge_icon_starter {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7bd6ff 0%, #5b8ef3 50%, #6a11cb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .badge_icon_bronze {
@@ -291,6 +306,15 @@
 .badge_icon_gold svg {
   color: #ffffff;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.badge_text_starter {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+  font-family: 'Inter', sans-serif;
 }
 
 .badge_text_gold {

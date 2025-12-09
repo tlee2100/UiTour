@@ -127,8 +127,12 @@ export default function TripsPage() {
     setError('');
     try {
       const bookings = await authAPI.getUserBookings(user.UserID);
+      const confirmedBookings = (bookings || []).filter(
+        (b) => (b.Status || b.status || '').toLowerCase() === 'confirmed'
+      );
+
       const enriched = await Promise.all(
-        (bookings || []).map(async (booking) => {
+        confirmedBookings.map(async (booking) => {
           let propertyInfo = null;
           let tourInfo = null;
 
@@ -156,7 +160,7 @@ export default function TripsPage() {
         })
       );
       setTrips(enriched);
-      // Update trip count in AppContext
+      // Update trip count in AppContext with confirmed bookings only
       dispatch({ type: 'SET_TRIP_COUNT', payload: enriched.length });
     } catch (err) {
       setError(err.message || 'Unable to load trips list');

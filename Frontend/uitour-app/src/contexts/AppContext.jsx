@@ -117,10 +117,15 @@ export function AppProvider({ children }) {
 
         // Fetch user bookings
         const bookings = await authAPI.getUserBookings(userId);
-        
-        // Set trip count based on bookings array length
-        const count = Array.isArray(bookings) ? bookings.length : 0;
-        dispatch({ type: 'SET_TRIP_COUNT', payload: count });
+
+        // Count only confirmed bookings so trips update after successful payment
+        const confirmed = Array.isArray(bookings)
+          ? bookings.filter(
+              (b) => (b.Status || b.status || '').toLowerCase() === 'confirmed'
+            )
+          : [];
+
+        dispatch({ type: 'SET_TRIP_COUNT', payload: confirmed.length });
       } catch (err) {
         console.error('AppContext: Failed to load trip count:', err);
         // On error, set to 0 (don't show badge if we can't verify)
