@@ -26,6 +26,7 @@ export default function Header() {
   // Determine badge type based on trip count
   // 1-5 trips: BRONZE, 6-10 trips: SILVER, 11+ trips: GOLD
   const getBadgeType = () => {
+    if (tripCount === 0) return 'starter';
     if (tripCount >= 1 && tripCount <= 5) return 'bronze';
     if (tripCount >= 6 && tripCount <= 10) return 'silver';
     if (tripCount > 10) return 'gold';
@@ -69,6 +70,13 @@ export default function Header() {
 
   const toggleMenu = () => setMenuOpen(prev => !prev);
   const closeMenu = () => setMenuOpen(false);
+
+  // Emit a custom event when the profile menu opens so listeners can refresh data
+  useEffect(() => {
+    if (menuOpen) {
+      document.dispatchEvent(new Event('profile-menu-open'));
+    }
+  }, [menuOpen]);
 
   return (
     <header className="header">
