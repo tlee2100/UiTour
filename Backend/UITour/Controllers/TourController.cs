@@ -78,16 +78,24 @@ namespace UITour.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTour(int id, [FromBody] Tour tour)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateTourDto dto)
         {
-            if (id != tour.TourID)
-                return BadRequest("Tour ID mismatch.");
+            try
+            {
+                if (dto == null)
+                    return BadRequest("Invalid data");
 
-            var updated = await _tourService.UpdateAsync(tour);
-            if (!updated)
-                return NotFound($"Tour with ID {id} not found.");
-
-            return NoContent();
+                var updated = await _tourService.UpdateTourAsync(id, dto);
+                return Ok(updated); // 🔥 React sẽ nhận JSON đúng format
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { message = "Tour not found" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         // DELETE: api/tour/{id} (Admin or Owner only)

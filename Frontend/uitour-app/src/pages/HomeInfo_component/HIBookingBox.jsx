@@ -46,7 +46,7 @@ function HIBookingBox({
   // ✅ Calculate all fees in USD (for API and breakdown)
   // Base total in USD (subtotal before discount)
   // Multiply nightly rate by number of nights and number of guests
-  const baseTotalUSD = basePriceUSD * nights * (guests || 1);
+  const baseTotalUSD = basePriceUSD * nights;
   const subtotalUSD = baseTotalUSD;
   
   // ✅ Calculate discount in USD (property discount + membership discount)

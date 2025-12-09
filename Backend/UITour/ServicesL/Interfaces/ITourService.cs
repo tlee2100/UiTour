@@ -13,6 +13,7 @@ namespace UITour.ServicesL.Interfaces
         Task<Tour> CreateAsync(Tour tour);
         Task<Tour> CreateAsync(CreateTourDto dto);
         Task<bool> UpdateAsync(Tour tour);
+        Task<bool> UpdateTourAsync(int id,UpdateTourDto tour);
         Task<bool> DeleteAsync(int id);
 
         // ======== FILTERING & RELATIONSHIP ========
@@ -34,5 +35,7 @@ namespace UITour.ServicesL.Interfaces
         Task<TourPhoto> AddPhotoAsync(TourPhoto photo);
         Task<bool> DeletePhotoAsync(int photoId);
         Task<IEnumerable<ExperienceDetails>> GetExperienceDetailAsync(int tourId);
+        Task ReplacePhotosAsync(int tourId, List<TourPhotoDto> photosDto);
+        Task ReplaceExperienceDetailsAsync(int tourId, List<ExperienceDetailDto> detailsDto);
     }
 }
