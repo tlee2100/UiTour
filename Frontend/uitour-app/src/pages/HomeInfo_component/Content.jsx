@@ -135,12 +135,10 @@ const Content = ({ property }) => {
                 <div className="content-description">
                     <p className="content-text">
                         {description}
-                        <br />...
+                        <br />
                     </p>
 
-                    <ButtonWhite className="content-button-underline">
-                        {t(language, "homeContent.showMore")}
-                    </ButtonWhite>
+            
                 </div>
 
                 <div className="content-divider" />
