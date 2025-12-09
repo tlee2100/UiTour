@@ -254,10 +254,9 @@ function PaymentPage() {
       </div>
     );
   }
-
-  const isProperty = !!bookingData.PropertyID;
+  const isProperty = Boolean(bookingData.PropertyID || bookingData.propertyID);
   const itemTitle = isProperty 
-    ? (propertyData?.listingTitle || propertyData?.title || "Property")
+    ? (propertyData?.listingTitle || propertyData?.title || propertyData?.ListingTitle || "Property" )
     : (tourData?.tourName || tourData?.title || "Tour");
 
   // Read price breakdown directly from bookingData (all values calculated in HIBookingBox)
