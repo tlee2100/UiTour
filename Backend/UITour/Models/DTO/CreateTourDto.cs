@@ -11,7 +11,7 @@ namespace UITour.Models.DTO
         public int? CountryID { get; set; }
         public int DurationDays { get; set; } = 1;
         public int? DurationHours { get; set; }
-        public int MaxGuests { get; set; } = 10;
+        public int MaxGuests { get; set; }
         public decimal Price { get; set; }
         public string Currency { get; set; } = "USD";
         public DateTime StartDate { get; set; }
