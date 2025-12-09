@@ -5,6 +5,7 @@ import { t } from "../../utils/translations";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useCurrency } from "../../contexts/CurrencyContext";
 import sampleImg from "../../assets/sample-room.jpg";
+import authAPI from "../../services/authAPI";
 
 const API_BASE = "http://localhost:5069"; // 🎯 ALWAYS backend URL
 
@@ -38,7 +39,7 @@ export default function HostStayEdit() {
         setLoading(true);
         setError("");
 
-        const apiUrl = `${API_BASE}/api/host/stays/${id}`;
+        const apiUrl = `${API_BASE}/api/properties/${id}`;
         const res = await fetch(apiUrl, { headers: { Accept: "application/json" } });
 
         const text = await res.text();
@@ -108,23 +109,57 @@ export default function HostStayEdit() {
   // Save Changes
   // -------------------------------
   async function handleSave() {
-    try {
-      const res = await fetch(`${API_BASE}/api/host/stays/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          photos: photos,
-        }),
-      });
+  try {
+    const payload = {
+      listingTitle: data.listingTitle,
+      description: data.description,
 
-      if (!res.ok) throw new Error("Update failed");
+      location: data.location.addressLine,
+      cityID: data.cityID ?? 0,
+      countryID: data.countryID ?? 0,
 
-      navigate(`/host/stay/${id}/preview`);
-    } catch (e) {
-      alert("❌ Update failed: " + e.message);
-    }
+      bedrooms: data.bedrooms,
+      beds: data.beds,
+      bathrooms: data.bathrooms,
+      accommodates: data.accommodates,
+
+      basePrice: data.pricing.basePrice,
+      cleaningFee: data.pricing.cleaningFee,
+      extraPeopleFee: data.pricing.extraPeopleFee,
+      weekendMultiplier: data.pricing.weekendMultiplier,
+      extraPeopleThreshold: data.pricing.extraPeopleThreshold,
+
+      currency: data.currency ?? "USD",
+      active: true,
+
+      propertyType: data.propertyTypeLabel,
+      roomTypeID: data.roomTypeID ?? 1,
+
+      lat: data.lat ?? "",
+      lng: data.lng ?? "",
+
+      houseRules: data.houseRules.map(r => ({ label: r.label })),
+
+      photos: photos.map((p, index) => ({
+        url: p.url || p.imageUrl || "",
+        caption: p.caption || "",
+        sortIndex: index
+      })),
+
+      amenities: data.amenities.map(a => ({
+        amenityID: a.amenityID || a.id
+      }))
+    };
+
+    const updated = await authAPI.updateProperty(id, payload);
+
+    console.log("✔ Updated:", updated);
+    navigate(`/host/listings`);
+  } catch (e) {
+    alert("❌ Update failed: " + e.message);
   }
+}
+
 
   // Safe deep update
   const onChange = (path, value) => {
