@@ -1203,6 +1203,7 @@
   },
   "membership": {
     "tier": {
+      "starter": "STARTER MEMBER",
       "bronze": "BRONZE MEMBER",
       "silver": "SILVER MEMBER",
       "gold": "GOLD MEMBER"
@@ -1215,6 +1216,11 @@
     "maxTierMessage": "Congratulations! You have reached the highest tier!",
     "benefitsTitle": "Your benefits:",
     "benefits": {
+      "starter": {
+        "access": "Full access to all destinations",
+        "support": "Basic customer support",
+        "perks": "Start your journey to unlock perks"
+      },
       "bronze": {
         "discount": "5% discount for each booking",
         "support": "Priority customer support"
