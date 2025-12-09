@@ -104,9 +104,7 @@ export default function InfoThingsToKnow({ property }) {
           </div>
 
           <div className="itk-link">
-            <span className="itk-link-text">
-              {t(language, "homeThings.showMore")}
-            </span>
+            
           </div>
         </div>
 
@@ -131,9 +129,7 @@ export default function InfoThingsToKnow({ property }) {
           )}
 
           <div className="itk-link">
-            <span className="itk-link-text">
-              {t(language, "homeThings.cancel.showDetails")}
-            </span>
+            
           </div>
         </div>
 
