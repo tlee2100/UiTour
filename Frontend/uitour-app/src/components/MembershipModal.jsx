@@ -24,7 +24,19 @@ export default function MembershipModal({ isOpen, onClose }) {
 
   // Determine tier and progress
   const getTierInfo = () => {
-    if (tripCount >= 1 && tripCount <= 5) {
+    if (tripCount === 0) {
+      return {
+        tier: 'starter',
+        current: 0,
+        target: 1,
+        nextTier: 'bronze',
+        benefits: [
+          t(language, 'membership.benefits.starter.access'),
+          t(language, 'membership.benefits.starter.support'),
+          t(language, 'membership.benefits.starter.perks')
+        ]
+      };
+    } else if (tripCount >= 1 && tripCount <= 5) {
       return {
         tier: 'bronze',
         current: tripCount,
