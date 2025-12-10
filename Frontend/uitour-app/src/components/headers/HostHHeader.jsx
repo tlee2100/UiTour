@@ -28,10 +28,10 @@ export default function HostHHeader() {
     const [menuOpen, setMenuOpen] = useState(false);
 
     const navItems = [
-        { id: "today", key: "host.today", path: "/host/today" },
-        { id: "listings", key: "host.listings", path: "/host/listings" },
-        { id: "dashboard", key: "host.dashboard", path: "/host/dashboard" },
-        { id: "messages", key: "host.messages", path: "/host/messages" },
+        { id: "today", key: "hostNav.today", path: "/host/today" },
+        { id: "listings", key: "hostNav.listings", path: "/host/listings" },
+        { id: "dashboard", key: "hostNav.dashboard", path: "/host/dashboard" },
+        { id: "messages", key: "hostNav.messages", path: "/host/messages" },
     ];
 
     const isActiveNav = (path) => {

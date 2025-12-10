@@ -1237,5 +1237,58 @@
         "upgrade": "Free upgrade when available"
       }
     }
+  },
+  "host": {
+    "loadingBookings": "Loading bookings...",
+    "error": "Error",
+    "tryAgain": "Try again",
+    "noBookingsYet": "No bookings yet",
+    "bookingsWillAppear": "Bookings will appear here as soon as guests confirm.",
+    "notHostYet": "You are not registered as a host yet.",
+    "upcoming": "Upcoming",
+    "checkInToday": "Check-in today",
+    "staying": "Staying",
+    "completed": "Completed",
+    "propertyListingLabel": "Property",
+    "tourListingLabel": "Tour",
+    "guestName": "Guest",
+    "stayDuration": "Stay",
+    "night": "night",
+    "nights": "nights",
+    "guest": "guest",
+    "guests": "guests",
+    "paid": "Paid",
+    "pending": "Pending",
+    "failed": "Failed",
+    "refunded": "Refunded",
+    "noPayment": "No payment"
+  },
+  "hostNav": {
+    "today": "Today",
+    "listings": "Listings",
+    "dashboard": "Dashboard",
+    "messages": "Messages"
+  },
+  "hostListing": {
+    "yourListings": "Your Listings",
+    "publishNewStay": "Publish a new stay",
+    "createNewListing": "Create New Listing",
+    "approved": "Approved",
+    "pending": "Pending",
+    "stay": "Stay",
+    "tour": "Tour",
+    "loading": "Loading listings...",
+    "noListingsYet": "No listings yet"
+  },
+  "hostMessages": {
+    "title": "Messages",
+    "searchConversations": "Search conversations",
+    "loadingMessages": "Loading messages...",
+    "noMessagesYet": "No messages yet",
+    "typeAMessage": "Type a message",
+    "selectConversation": "Select a conversation to start chatting",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "justNow": "Just now"
   }
 }

@@ -5,6 +5,7 @@ import sampleImg from "../../assets/sample-room.jpg";
 import { useApp } from "../../contexts/AppContext";
 import authAPI from "../../services/authAPI";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useCurrency } from "../../contexts/CurrencyContext";
 import { t } from "../../utils/translations";
 import { useLanguageCurrencyModal } from "../../contexts/LanguageCurrencyModalContext";
 import LanguageCurrencySelector from "../../components/LanguageCurrencySelector";
@@ -20,6 +21,7 @@ export default function HostToday() {
   const navigate = useNavigate();
   const { user, profile, dispatch } = useApp();
   const { language } = useLanguage();
+  const { format, convertToCurrent } = useCurrency();
   const {
     isOpen: languageCurrencyOpen,
     openModal: openLanguageCurrency,
@@ -107,12 +109,24 @@ export default function HostToday() {
 
           const now = new Date();
 
-          let status = t(language, "host.upcoming");
-          if (checkInOriginal.toDateString() === now.toDateString())
-            status = t(language, "host.checkInToday");
-          else if (checkInOriginal <= now && checkOut >= now)
-            status = t(language, "host.staying");
-          else if (checkOut < now) status = t(language, "host.completed");
+          let statusKey = "upcoming";
+          if (checkInOriginal.toDateString() === now.toDateString()) {
+            statusKey = "check-in-today";
+          } else if (checkInOriginal <= now && checkOut >= now) {
+            statusKey = "staying";
+          } else if (checkOut < now) {
+            statusKey = "completed";
+          }
+          const statusLabel = t(
+            language,
+            statusKey === "check-in-today"
+              ? "host.checkInToday"
+              : statusKey === "completed"
+                ? "host.completed"
+                : statusKey === "staying"
+                  ? "host.staying"
+                  : "host.upcoming"
+          );
 
           // =========================
           // PAYMENT STATUS (ĐÃ SỬA)
@@ -244,7 +258,8 @@ export default function HostToday() {
 
           return {
             id: booking.BookingID || booking.bookingID,
-            status,
+            statusLabel,
+            statusKey,
             title,
             rating: rating > 0 ? rating.toFixed(2) : null,
             guest: guestName,
@@ -270,10 +285,10 @@ export default function HostToday() {
       const completed = t(language, "host.completed");
 
       const statusOrder = {
-        [checkInToday]: 0,
-        [staying]: 1,
-        [upcoming]: 2,
-        [completed]: 3,
+        "check-in-today": 0,
+        staying: 1,
+        upcoming: 2,
+        completed: 3,
       };
       const paymentOrder = {
         paid: 0,
@@ -284,8 +299,8 @@ export default function HostToday() {
       };
 
       formatted.sort((a, b) => {
-        if (statusOrder[a.status] !== statusOrder[b.status])
-          return statusOrder[a.status] - statusOrder[b.status];
+        if (statusOrder[a.statusKey] !== statusOrder[b.statusKey])
+          return statusOrder[a.statusKey] - statusOrder[b.statusKey];
         if (paymentOrder[a.paymentStatus] !== paymentOrder[b.paymentStatus])
           return (
             paymentOrder[a.paymentStatus] - paymentOrder[b.paymentStatus]
@@ -342,12 +357,8 @@ export default function HostToday() {
         ) : (
           bookings.map((b) => (
             <div className="booking-card" key={b.id}>
-              <div
-                className={`status-badge ${b.status
-                  .replace(/\s+/g, "-")
-                  .toLowerCase()}`}
-              >
-                {b.status}
+              <div className={`status-badge ${b.statusKey}`}>
+                {b.statusLabel}
               </div>
 
               <div
@@ -399,11 +410,7 @@ export default function HostToday() {
                 </p>
 
                 <p className="booking-price">
-                  {b.totalPrice > 0 &&
-                    new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: b.currency || "USD",
-                    }).format(b.totalPrice)}
+                  {b.totalPrice > 0 && format(convertToCurrent(b.totalPrice))}
                 </p>
               </div>
             </div>
