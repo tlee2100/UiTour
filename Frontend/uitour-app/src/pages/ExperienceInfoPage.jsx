@@ -17,7 +17,7 @@ import ErrorMessage from "../components/ErrorMessage";
 export default function ExperienceInfoPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useApp();
+  const { user, token, tripCount } = useApp();
   const {
     currentExperience,
     loading,
@@ -153,6 +153,14 @@ export default function ExperienceInfoPage() {
   // -----------------------
   // Handle Booking
   // -----------------------
+  const getMembershipDiscountPercent = useCallback(() => {
+    if (!user || !token || tripCount < 1) return 0;
+    if (tripCount >= 1 && tripCount <= 5) return 5; // Bronze
+    if (tripCount >= 6 && tripCount <= 10) return 10; // Silver
+    if (tripCount > 10) return 15; // Gold
+    return 0;
+  }, [token, tripCount, user]);
+
   const handleBookTour = useCallback(async (guests, selectedDate) => {
     if (!currentExperience?.id) return;
     if (!user?.UserID) {
@@ -178,7 +186,13 @@ export default function ExperienceInfoPage() {
 
     const tourDate = new Date(selectedDate);
     const pricePerPerson = currentExperience.pricing?.basePrice ?? currentExperience.price ?? 0;
-    const totalPrice = pricePerPerson * guests;
+    const guestsCount = Math.min(Math.max(guests, 1), currentExperience.maxGuests || guests);
+    const baseTotal = pricePerPerson * guestsCount;
+    const membershipDiscountPercent = getMembershipDiscountPercent();
+    const membershipDiscount = membershipDiscountPercent > 0
+      ? baseTotal * (membershipDiscountPercent / 100)
+      : 0;
+    const totalPrice = baseTotal - membershipDiscount;
     const hostId = currentExperience.hostId || currentExperience.host?.id;
 
     if (!hostId) {
@@ -198,22 +212,35 @@ export default function ExperienceInfoPage() {
       CheckIn: tourDate.toISOString(),
       CheckOut: tourDate.toISOString(), // Same day for tour
       Nights: 1,
-      GuestsCount: Math.min(guests, currentExperience.maxGuests || guests),
+      GuestsCount: guestsCount,
       BasePrice: pricePerPerson,
       CleaningFee: 0,
       ServiceFee: 0,
       TotalPrice: totalPrice,
       Currency: currentExperience.currency || currentExperience.pricing?.currency || "USD",
     };
+    // Enrich client-side so payment page shows the same breakdown
+    const breakdown = {
+      subtotal: baseTotal,
+      discount: membershipDiscount,
+      cleaningFee: 0,
+      serviceFee: 0,
+      taxFee: 0,
+      totalPrice,
+      guests: guestsCount,
+      nights: 1,
+      basePrice: pricePerPerson,
+    };
 
     setBookingFeedback(null);
     setBookingLoading(true);
     try {
       const createdBooking = await authAPI.createBooking(payload);
+      const enrichedBooking = { ...createdBooking, ...breakdown };
       // Navigate to payment page with booking data
       navigate("/payment", {
         state: {
-          bookingData: createdBooking,
+          bookingData: enrichedBooking,
           tourData: currentExperience,
           bookingType: "tour"
         }
@@ -225,7 +252,7 @@ export default function ExperienceInfoPage() {
       });
       setBookingLoading(false);
     }
-  }, [currentExperience, id, navigate, user]);
+  }, [currentExperience, getMembershipDiscountPercent, id, navigate, token, tripCount, user]);
 
   if (loading || localLoading) {
     return <LoadingSpinner message="Loading experience..." />;

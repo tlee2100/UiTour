@@ -55,7 +55,7 @@ export default function HostListings() {
     // ===========================
     useEffect(() => {
         loadListings();
-    }, [user]);
+    }, [user, language]);
 
     useEffect(() => {
         const refresh = () => user && loadListings();
@@ -98,10 +98,14 @@ export default function HostListings() {
                         : 0;
 
                 const isActive = p.Active ?? p.active ?? false;
+                const statusKey = isActive ? "approved" : "pending";
 
                 return {
                     id: p.PropertyID || p.propertyID || p.id,
-                    status: isActive ? t(language, "host.approved") : t(language, "host.pending"),
+                    statusKey,
+                    statusLabel: statusKey === "approved"
+                        ? t(language, "hostListing.approved")
+                        : t(language, "hostListing.pending"),
                     title: p.ListingTitle || p.listingTitle || "Untitled",
                     rating,
                     image: img || sampleImg,
@@ -146,10 +150,14 @@ export default function HostListings() {
                         : 0;
 
                 const isActive = tour.Active ?? tour.active ?? false;
+                const statusKey = isActive ? "approved" : "pending";
 
                 return {
                     id: tour.TourID || tour.tourID || tour.id,
-                    status: isActive ? t(language, "host.approved") : t(language, "host.pending"),
+                    statusKey,
+                    statusLabel: statusKey === "approved"
+                        ? t(language, "hostListing.approved")
+                        : t(language, "hostListing.pending"),
                     title: tour.TourName || tour.tourName || tour.title || "Untitled",
                     rating,
                     image: img || sampleImg,
@@ -213,8 +221,8 @@ export default function HostListings() {
             <div className="listing-content">
                 <div className="listing-header">
                     <div>
-                        <h1>{t(language, "host.yourListings")}</h1>
-                        <p>{t(language, "host.publishNewStay")}</p>
+                        <h1>{t(language, "hostListing.yourListings")}</h1>
+                        <p>{t(language, "hostListing.publishNewStay")}</p>
                     </div>
 
                     <button
@@ -222,24 +230,24 @@ export default function HostListings() {
                         onClick={() => navigate("/host/becomehost")}
                     >
                         <Icon icon="mdi:plus" width="20" height="20" />
-                        {t(language, "host.createNewListing")}
+                        {t(language, "hostListing.createNewListing")}
                     </button>
                 </div>
 
                 <div className="listing-grid">
                     {loading ? (
                         <div style={{ padding: "40px", textAlign: "center", gridColumn: "1 / -1" }}>
-                            {t(language, "host.loading")}
+                            {t(language, "hostListing.loading")}
                         </div>
                     ) : listings.length === 0 ? (
                         <div style={{ padding: "40px", textAlign: "center", color: "#666", gridColumn: "1 / -1" }}>
-                            {t(language, "host.noListingsYet")}
+                            {t(language, "hostListing.noListingsYet")}
                         </div>
                     ) : (
                         listings.map((item) => (
                             <div key={`${item.type}-${item.id}`} className="listing-card">
-                                <div className={`listing-status ${item.status === t(language, "host.pending") ? "pending" : "approved"}`}>
-                                    {item.status}
+                                <div className={`listing-status ${item.statusKey === "pending" ? "pending" : "approved"}`}>
+                                    {item.statusLabel}
                                 </div>
 
                                 <div className="listing-type-badge">
@@ -248,7 +256,7 @@ export default function HostListings() {
                                         width="14"
                                         height="14"
                                     />
-                                    {item.type === "property" ? t(language, "host.stay") : t(language, "host.tour")}
+                                    {item.type === "property" ? t(language, "hostListing.stay") : t(language, "hostListing.tour")}
                                 </div>
 
                                 <button
