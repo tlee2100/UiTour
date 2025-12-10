@@ -603,7 +603,7 @@
       "house": "Nhà riêng",
       "apartment": "Căn hộ",
       "guestHouse": "Nhà khách",
-      "hotel": "Khách sạn"
+      "homestay": "Home stay"
     },
     "description": {
       "title": "Tạo mô tả cho chỗ ở của bạn",
@@ -939,7 +939,7 @@
       "house": "Nhà",
       "apartment": "Căn hộ",
       "guesthouse": "Nhà khách",
-      "hotel": "Khách sạn"
+      "homestay": "Home stay"
     }
   },
   "footer": {
