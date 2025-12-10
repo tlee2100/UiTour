@@ -5,6 +5,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { t } from "../../utils/translations";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ErrorMessage from "../../components/ErrorMessage";
+import authAPI from "../../services/authAPI";
 
 const API_BASE = "http://localhost:5069"; // 🎯 ALWAYS use BE port, not FE port
 
@@ -126,20 +127,27 @@ export default function HostExperienceEdit() {
     // ---------------------------------------------
     async function handleSave() {
         try {
-            const res = await fetch(`${API_BASE}/api/Tour/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data),
-            });
+            const payload = {
+                tourName: data.tourName,
+                description: data.description,
+                mainCategory: data.mainCategory,
+                durationDays: data.durationDays,
+                location: data.location.addressLine,
+                price: data.pricing.basePrice,
+                maxGuests: data.capacity.maxGuests,
+                experienceDetails: data.experienceDetails,
+                photos: data.photos
+            };
 
-            if (!res.ok) throw new Error("Failed to update");
-
-            navigate(`/host/experience/${id}/preview`);
+            const updated = await authAPI.updateTour(id, payload);
+            console.log("✔ Updated:", updated);
+            navigate(`/host/listings`);
 
         } catch (e) {
             alert("❌ Update failed: " + e.message);
         }
     }
+
 
     // SAFE DEEP UPDATE
     const onChange = (path, value) => {
@@ -401,7 +409,6 @@ export default function HostExperienceEdit() {
                 <button className="he-edit-save-btn" onClick={handleSave}>
                     💾 Save Changes
                 </button>
-
             </div>
         </div>
     );

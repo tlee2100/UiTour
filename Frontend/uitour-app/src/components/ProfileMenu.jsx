@@ -28,7 +28,10 @@ const ProfileMenu = forwardRef(function ProfileMenu({ onClose }, ref) {
       setTripLoading(true);
       try {
         const data = await authAPI.getUserBookings(user.UserID);
-        if (mounted) setTripCount((data || []).length);
+        const confirmed = (data || []).filter(
+          (b) => (b.Status || b.status || '').toLowerCase() === 'confirmed'
+        );
+        if (mounted) setTripCount(confirmed.length);
       } catch {
         if (mounted) setTripCount(0);
       } finally {

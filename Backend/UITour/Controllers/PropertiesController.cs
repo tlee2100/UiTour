@@ -87,14 +87,37 @@ namespace UITour.API.Controllers
         }
 
         // PUT: api/properties/5
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Property property)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateProperty(int id, [FromBody] PropertyUpdateDto dto)
         {
-            if (id != property.PropertyID)
-                return BadRequest("ID in URL does not match ID in body");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var updated = await _propertyService.UpdateAsync(property);
-            return Ok(updated);
+            try
+            {
+                var updatedProperty = await _propertyService.UpdateAsync(id, dto);
+
+                return Ok(new
+                {
+                    message = "Property updated successfully",
+                    data = updatedProperty
+                });
+            }
+            catch (ArgumentNullException)
+            {
+                return NotFound(new
+                {
+                    message = "Property not found"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while updating the property",
+                    error = ex.Message
+                });
+            }
         }
 
         // DELETE: api/properties/5 (Admin or Owner only)

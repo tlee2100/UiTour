@@ -278,6 +278,87 @@ namespace UITour.ServicesL.Implementations
             return true;
         }
 
+        public async Task<bool> UpdateTourAsync(int id, UpdateTourDto tour)
+        {
+            var existing = await _unitOfWork.Tours.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Location = tour.Location;
+            existing.Description = tour.Description;
+            existing.DurationDays = tour.DurationDays;
+            existing.TourName = tour.TourName;
+            existing.mainCategory = tour.MainCategory;
+            existing.Price = tour.Price;
+            existing.MaxGuests = tour.MaxGuests;
+            
+            await ReplaceExperienceDetailsAsync(id, tour.ExperienceDetails);
+            await ReplacePhotosAsync(id, tour.Photos);
+
+
+            _unitOfWork.Tours.Update(existing);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task ReplacePhotosAsync(int tourId, List<TourPhotoDto> photosDto)
+        {
+            var existing = await _unitOfWork.TourPhotos.Query()
+                .Where(p => p.TourID == tourId)
+                .ToListAsync();
+
+            // Xóa ảnh cũ
+            _unitOfWork.TourPhotos.RemoveRange(existing);
+
+            // Nếu không có ảnh mới → return
+            if (photosDto == null || !photosDto.Any())
+            {
+                await _unitOfWork.SaveChangesAsync();
+                return;
+            }
+
+            // Add ảnh mới
+            var newPhotos = photosDto.Select((p, index) => new TourPhoto
+            {
+                TourID = tourId,
+                Url = p.Url,
+                Caption = p.Caption,
+                SortIndex = p.SortIndex > 0 ? p.SortIndex : index + 1
+            });
+
+            await _unitOfWork.TourPhotos.AddRangeAsync(newPhotos);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task ReplaceExperienceDetailsAsync(int tourId, List<ExperienceDetailDto> detailsDto)
+        {
+            var existing = await _unitOfWork.ExperienceDetails.Query()
+                .Where(d => d.TourID == tourId)
+                .ToListAsync();
+
+            // Xóa toàn bộ itinerary cũ
+            _unitOfWork.ExperienceDetails.RemoveRange(existing);
+
+            if (detailsDto == null || !detailsDto.Any())
+            {
+                await _unitOfWork.SaveChangesAsync();
+                return;
+            }
+
+            // Add lại chi tiết mới
+            var newDetails = detailsDto.Select((d, index) => new ExperienceDetails
+            {
+                TourID = tourId,
+                ImageUrl = d.ImageUrl,
+                Title = d.Title,
+                Description = d.Description,
+                SortIndex = d.SortIndex > 0 ? d.SortIndex : index + 1
+            });
+
+            await _unitOfWork.ExperienceDetails.AddRangeAsync(newDetails);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+
         public async Task<bool> DeleteAsync(int id)
         {
             var tour = await _unitOfWork.Tours.GetByIdAsync(id);
