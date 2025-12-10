@@ -604,7 +604,7 @@
       "house": "House",
       "apartment": "Apartment",
       "guestHouse": "Guest house",
-      "hotel": "Hotel"
+      "homestay": "Homestay"
     },
     "description": {
       "title": "Create your description",
@@ -940,7 +940,7 @@
       "house": "House",
       "apartment": "Apartment",
       "guesthouse": "Guest House",
-      "hotel": "Hotel"
+      "homestay": "Homestay"
     }
   },
   "footer": {

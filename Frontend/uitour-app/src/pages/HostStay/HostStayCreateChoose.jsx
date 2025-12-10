@@ -13,7 +13,7 @@ export default function HostStayCreateChoose() {
     { id: 1, label: t(language, "hostStay.choose.house"), icon: "mdi:home-outline" },
     { id: 2, label: t(language, "hostStay.choose.apartment"), icon: "ph:building-apartment-light" },
     { id: 3, label: t(language, "hostStay.choose.guestHouse"), icon: "hugeicons:house-04" },
-    { id: 4, label: t(language, "hostStay.choose.hotel"), icon: "hugeicons:hotel-01" }
+    { id: 4, label: t(language, "hostStay.choose.homestay"), icon: "hugeicons:hotel-01" }
   ];
 
   const handleSelect = (id, label) => {
