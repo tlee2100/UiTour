@@ -192,10 +192,10 @@ export default function HostListings() {
             setListings((prev) => prev.filter((p) => !(p.id === id && p.type === type)));
             setDeleteConfirm(null);
 
-            alert(t(language, "host.hasBeenDeleted"));
+            //alert(t(language, "host.hasBeenDeleted"));
         } catch (err) {
             console.error("Delete error:", err);
-            alert(t(language, "host.errorDeleting"));
+            //alert(t(language, "host.errorDeleting"));
         } finally {
             setDeletingId(null);
         }
