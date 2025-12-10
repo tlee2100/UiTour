@@ -774,6 +774,7 @@ export function HostProvider({ children }) {
         setStayData(prev => ({
           ...prev,
           houseRules: values
+          
         }));
         setCompletedStep(prev => ({ ...prev, houseRules: true }));
         return;
@@ -1981,8 +1982,8 @@ function formatStayDataForAPI(d) {
     "";
 
   const houseRulesString = Array.isArray(d.houseRules)
-    ? d.houseRules.join(", ")
-    : safe(d.houseRules);
+    ? JSON.stringify(d.houseRules) // ✅ Dùng JSON.stringify() để chuyển mảng object thành chuỗi JSON
+    : safe(d.houseRules);
 
   return {
     UserID: d.userID || d.UserID || null,

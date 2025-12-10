@@ -8,6 +8,7 @@ using UITour.DAL.Interfaces;
 using UITour.ServicesL.Interfaces;
 using UITour.Models.DTO;
 using Host = UITour.Models.Host;
+using Microsoft.AspNetCore.Mvc;
 
 namespace UITour.ServicesL.Implementations
 {
@@ -181,7 +182,7 @@ namespace UITour.ServicesL.Implementations
             existingProperty.Description = property.Description;
             existingProperty.Price = property.Price;
             existingProperty.HostID = property.HostID;
-            
+
             // Update fees if provided
             if (property.CleaningFee.HasValue)
                 existingProperty.CleaningFee = property.CleaningFee;
@@ -199,6 +200,139 @@ namespace UITour.ServicesL.Implementations
             await _unitOfWork.SaveChangesAsync();
             return existingProperty;
         }
+
+
+        public async Task<Property> UpdateAsync(int id, [FromBody] PropertyUpdateDto dto)
+        {
+            var property = await GetByIdAsync(id);
+            if (property == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            // ----- Basic fields -----
+            property.Description = dto.Description;
+            property.ListingTitle = dto.ListingTitle;
+
+            property.Price = dto.BasePrice;
+            property.CleaningFee = dto.CleaningFee;
+            property.ExtraPeopleFee = dto.ExtraPeopleFee;
+            property.Currency = dto.Currency;
+            property.Active = dto.Active;
+            property.PropertyType = dto.PropertyType;
+            property.RoomTypeID = dto.RoomTypeID;
+            property.Bedrooms = dto.Bedrooms;
+            property.Location = dto.Location;
+            property.Beds = dto.Beds;
+            property.Bathrooms = dto.Bathrooms;
+            property.Accommodates = dto.Accommodates;
+            property.lat = dto.lat;
+            property.lng = dto.lng;
+            property.UpdatedAt = DateTime.Now;
+
+            // ----- Amenities -----
+            await ReplaceAmenitiesAsync(id, dto.Amenities);
+            // ----- Photos -----
+            await ReplacePhotosAsync(id, dto.Photos);
+            // ----- House Rules -----
+            await ReplaceHouseRulesAsync(id,
+                dto.HouseRules != null
+                    ? string.Join("\n", dto.HouseRules.Select(r => r.Label))
+                    : "");
+
+            _unitOfWork.Properties.Update(property);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return property;
+
+        }
+
+
+        public async Task<bool> ReplaceAmenitiesAsync(int propertyId, List<PropertyAmenityDto> newAmenities)
+        {
+            var property = await _unitOfWork.Properties.Query()
+                .Include(p => p.PropertyAmenities)
+                .FirstOrDefaultAsync(p => p.PropertyID == propertyId);
+
+            if (property == null)
+                throw new InvalidOperationException("Property not found");
+
+            // Xóa tất cả amenities cũ
+            _unitOfWork.PropertyAmenities.RemoveRange(property.PropertyAmenities);
+
+            if (newAmenities != null && newAmenities.Any())
+            {
+                // Loại duplicate và invalid IDs
+                var amenityIds = newAmenities
+                    .Select(a => a.AmenityID)
+                    .Where(id => id > 0)
+                    .Distinct()
+                    .ToList();
+
+                foreach (var id in amenityIds)
+                {
+                    await _unitOfWork.PropertyAmenities.AddAsync(new PropertyAmenity
+                    {
+                        PropertyID = propertyId,
+                        AmenityID = id
+                    });
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> ReplacePhotosAsync(int propertyId, List<PropertyPhotoDto> newPhotos)
+        {
+            var property = await _unitOfWork.Properties.Query()
+                .Include(p => p.Photos)
+                .FirstOrDefaultAsync(p => p.PropertyID == propertyId);
+
+            if (property == null)
+                throw new InvalidOperationException("Property not found");
+
+            // Xóa toàn bộ ảnh cũ
+            _unitOfWork.PropertyPhotos.RemoveRange(property.Photos);
+
+            if (newPhotos != null && newPhotos.Any())
+            {
+                var photos = newPhotos
+                    .Where(p => !string.IsNullOrEmpty(p.Url))
+                    .OrderBy(p => p.SortIndex)
+                    .ToList();
+
+                foreach (var p in photos)
+                {
+                    await _unitOfWork.PropertyPhotos.AddAsync(new PropertyPhoto
+                    {
+                        PropertyID = propertyId,
+                        Url = p.Url,
+                        Caption = p.Caption,
+                        SortIndex = p.SortIndex
+                    });
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> ReplaceHouseRulesAsync(int propertyId, string newRules)
+        {
+            var property = await _unitOfWork.Properties.Query()
+                .FirstOrDefaultAsync(p => p.PropertyID == propertyId);
+
+            if (property == null)
+                throw new InvalidOperationException("Property not found");
+
+            property.HouseRules = newRules ?? "";
+
+            property.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
 
         public async Task<bool> DeleteAsync(int id)
         {

@@ -245,6 +245,28 @@ async resetPassword(email, otp, newPassword) {
   }
   }
 
+  async updateProperty(propertyId, propertyData) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${PROPERTY_BASE_URL}/${propertyId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(propertyData),
+      });
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to update property');
+      }
+      const data = await response.json();
+      return data; // Returns updated property
+    } catch (err) {
+      throw err;
+    }
+  }
+
   // Search properties with filters
   async searchProperties(filters = {}) {
     try {
@@ -479,6 +501,28 @@ async resetPassword(email, otp, newPassword) {
       }
 
       return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async updateTour(tourId, tourData) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${TOUR_BASE_URL}/${tourId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(tourData),
+      });
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to update tour');
+      }
+      const data = await response.json();
+      return data; // Returns updated tour
     } catch (err) {
       throw err;
     }

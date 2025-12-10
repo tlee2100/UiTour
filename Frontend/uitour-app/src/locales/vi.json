@@ -603,7 +603,7 @@
       "house": "Nhà riêng",
       "apartment": "Căn hộ",
       "guestHouse": "Nhà khách",
-      "hotel": "Khách sạn"
+      "homestay": "Home stay"
     },
     "description": {
       "title": "Tạo mô tả cho chỗ ở của bạn",
@@ -939,7 +939,7 @@
       "house": "Nhà",
       "apartment": "Căn hộ",
       "guesthouse": "Nhà khách",
-      "hotel": "Khách sạn"
+      "homestay": "Home stay"
     }
   },
   "footer": {
@@ -1202,6 +1202,7 @@
   },
   "membership": {
     "tier": {
+      "starter": "THÀNH VIÊN STARTER",
       "bronze": "THÀNH VIÊN ĐỒNG",
       "silver": "THÀNH VIÊN BẠC",
       "gold": "THÀNH VIÊN VÀNG"
@@ -1214,6 +1215,11 @@
     "maxTierMessage": "Chúc mừng! Bạn đã đạt tier cao nhất!",
     "benefitsTitle": "Quyền lợi của bạn:",
     "benefits": {
+      "starter": {
+        "access": "Truy cập đầy đủ tất cả điểm đến",
+        "support": "Hỗ trợ khách hàng cơ bản",
+        "perks": "Bắt đầu hành trình để nhận ưu đãi"
+      },
       "bronze": {
         "discount": "Ưu đãi 5% cho mỗi booking",
         "support": "Hỗ trợ khách hàng ưu tiên"

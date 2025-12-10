@@ -705,6 +705,7 @@ export default function HomeInfoPage() {
           propertyData: currentProperty,
           bookingType: "property"
         }
+        
       });
     } catch (err) {
       setBookingFeedback({
