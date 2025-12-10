@@ -23,6 +23,13 @@
     min-height: 100vh;
 }
 
+/* Hide AI chatbot on Host Messages */
+.hide-ai-chat .ai-chat-fab,
+.hide-ai-chat .ai-chat-dialog,
+.hide-ai-chat .ai-chat-backdrop {
+    display: none !important;
+}
+
 /* =====================================
    LEFT SIDEBAR - CONVERSATION LIST
 ===================================== */
@@ -398,7 +405,7 @@
 
 .message-bubble.sent {
     align-self: flex-end;
-    background: #111;
+    background: #00BCD4;
     color: #ffffff;
     border-bottom-right-radius: 4px;
 }

@@ -39,7 +39,7 @@ function formatTimeAgo(timestamp, language, tFn) {
         });
     }
 
-    if (diffMs < ONE_MINUTE) return tFn(language, "host.justNow");
+        if (diffMs < ONE_MINUTE) return tFn(language, "hostMessages.justNow");
 
     const mins = Math.floor(diffMs / ONE_MINUTE);
     const hours = Math.floor(diffMs / ONE_HOUR);
@@ -169,6 +169,14 @@ export default function HostMessages() {
             .catch((err) => console.error(err))
             .finally(() => setLoading(false));
     }, [currentUserId]);
+
+    // Hide global AI chatbot on Host Messages
+    useEffect(() => {
+        document.body.classList.add("hide-ai-chat");
+        return () => {
+            document.body.classList.remove("hide-ai-chat");
+        };
+    }, []);
 
     // ======= Hàm load conversation giữa host và partner =======
     const loadConversation = async (userId1, userId2, partnerName) => {
@@ -345,8 +353,8 @@ export default function HostMessages() {
         const today = new Date();
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
-        if (date.toDateString() === today.toDateString()) return t(language, "host.today");
-        if (date.toDateString() === yesterday.toDateString()) return t(language, "host.yesterday");
+        if (date.toDateString() === today.toDateString()) return t(language, "hostMessages.today");
+        if (date.toDateString() === yesterday.toDateString()) return t(language, "hostMessages.yesterday");
         return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     };
 
@@ -356,7 +364,7 @@ export default function HostMessages() {
                 <div className="messages-sidebar">
                     <div className="messages-sidebar-header">
                         <div className="messages-sidebar-title-row">
-                            <h2 className="messages-title">{t(language, "host.messages")}</h2>
+                            <h2 className="messages-title">{t(language, "hostMessages.title")}</h2>
                             <div className="new-chat-button-wrapper">
                                 <button
                                     type="button"
@@ -400,7 +408,7 @@ export default function HostMessages() {
                             <Icon icon="mdi:magnify" width="20" height="20" />
                             <input
                                 type="text"
-                                placeholder={t(language, "host.searchConversations")}
+                                placeholder={t(language, "hostMessages.searchConversations")}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -410,11 +418,11 @@ export default function HostMessages() {
                     <div className="conversations-list">
                         {loading ? (
                             <div style={{ padding: "40px", textAlign: "center", color: "#666" }}>
-                                {t(language, "host.loadingMessages")}
+                                {t(language, "hostMessages.loadingMessages")}
                             </div>
                         ) : filteredConversations.length === 0 ? (
                             <div style={{ padding: "40px", textAlign: "center", color: "#666" }}>
-                                {t(language, "host.noMessagesYet")}
+                                {t(language, "hostMessages.noMessagesYet")}
                             </div>
                         ) : (
                             filteredConversations.map((conv) => {
@@ -497,7 +505,7 @@ export default function HostMessages() {
                                     })
                                 ) : (
                                     <div className="no-messages">
-                                        <p>{t(language, "host.noMessagesYet")}</p>
+                                        <p>{t(language, "hostMessages.noMessagesYet")}</p>
                                     </div>
                                 )}
                             </div>
@@ -507,7 +515,7 @@ export default function HostMessages() {
                                     <div className="messages-input-wrapper">
                                         <input
                                             type="text"
-                                            placeholder={t(language, "host.typeAMessage")}
+                                            placeholder={t(language, "hostMessages.typeAMessage")}
                                             value={messageInput}
                                             onChange={(e) => setMessageInput(e.target.value)}
                                             className="messages-input"
@@ -522,7 +530,7 @@ export default function HostMessages() {
                     ) : (
                         <div className="messages-empty">
                             <Icon icon="mdi:message-outline" width="64" height="64" />
-                            <p>{t(language, "host.selectConversation")}</p>
+                            <p>{t(language, "hostMessages.selectConversation")}</p>
                         </div>
                     )}
                 </div>
