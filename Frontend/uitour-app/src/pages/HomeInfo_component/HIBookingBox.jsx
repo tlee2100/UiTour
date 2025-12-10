@@ -15,6 +15,7 @@ function HIBookingBox({
   onBook,
   bookingLoading = false,
   bookingFeedback = null,
+  availability, // ✅ ADDED: nhận trạng thái availability từ HomeInfoPage
 }) {
   // Nếu chưa có dữ liệu, tạo dữ liệu mặc định
   if (!property) return null;
@@ -197,14 +198,28 @@ function HIBookingBox({
       <button
         className="hib-book-button"
         onClick={handleBook}
-        disabled={bookingLoading}
+        disabled={
+          bookingLoading ||
+          availability?.loading ||        
+          availability?.isAvailable === false 
+        }
       >
         <span className="hib-book-text">
-          {bookingLoading ? t(language, "booking.processing") : t(language, "booking.bookNow")}
+          {availability?.loading
+          ? "Checking availability..." // ✅ ADDED
+          : bookingLoading
+          ? t(language, "booking.processing")
+          : t(language, "booking.bookNow")}
         </span>
       </button>
 
-      <div className="hib-note">{t(language, "booking.youWontBeChargedYet")}</div>
+      <div className="hib-note">
+        {availability?.error && (
+        <div className="hib-feedback error"> {/* ✅ ADDED */}
+          {availability.error}
+        </div>
+      )}
+      {t(language, "booking.youWontBeChargedYet")}</div>
 
       {bookingFeedback?.message && (
         <div className={`hib-feedback ${bookingFeedback.type}`}>

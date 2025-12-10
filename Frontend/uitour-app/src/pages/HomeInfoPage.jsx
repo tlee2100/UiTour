@@ -488,6 +488,11 @@ export default function HomeInfoPage() {
   });
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingFeedback, setBookingFeedback] = useState(null);
+  const [availability, setAvailability] = useState({
+    loading: false,
+    isAvailable: true,
+    error: null
+  });
 
   // -----------------------
   // Load property from API
@@ -738,6 +743,49 @@ export default function HomeInfoPage() {
     }));
   }, [currentProperty, refreshSaveState]);
 
+  useEffect(() => {
+    const { checkIn, checkOut } = bookingState;
+
+    if (!currentProperty?.id) return;
+    if (!checkIn || !checkOut) return;
+
+    const checkAvailability = async () => {
+      setAvailability({
+        loading: true,
+        isAvailable: true,
+        error: null
+      });
+
+      try {
+        const res = await authAPI.checkPropertyAvailability(
+          currentProperty.id,
+          new Date(checkIn).toISOString(),
+          new Date(checkOut).toISOString()
+        );
+
+        setAvailability({
+          loading: false,
+          isAvailable: res.isAvailable,
+          error: res.isAvailable
+            ? null
+            : "Property is not available for selected dates"
+        });
+      } catch (err) {
+        setAvailability({
+          loading: false,
+          isAvailable: false,
+          error: err.message || "Failed to check availability"
+        });
+      }
+    };
+
+    checkAvailability();
+  }, [
+    bookingState.checkIn,
+    bookingState.checkOut,
+    currentProperty?.id
+  ]);
+
   if (loading) {
     return <LoadingSpinner message="Đang tải thông tin chỗ ở..." />;
   }
@@ -789,6 +837,7 @@ export default function HomeInfoPage() {
               onBook={handleBookProperty}
               bookingLoading={bookingLoading}
               bookingFeedback={bookingFeedback}
+              availability={availability}
             />
           </div>
         </div>
