@@ -1106,27 +1106,29 @@ async updateUserProfile(userId, form) {
   }
 
   // Get bookings for listings owned by the host (hostId or userId)
-async getBookingsByHost(hostId) {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${BOOKING_BASE_URL}/host/${hostId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-    });
+  // Trước: gọi /api/host/{hostId}/bookings
+  async getBookingsByHost(hostId) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${BOOKING_BASE_URL}/host/${hostId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(errText || 'Failed to fetch bookings');
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to fetch bookings');
+      }
+
+      return await response.json();
+    } catch (err) {
+      console.error('getBookingsByHost error:', err);
+      throw err;
     }
-
-    return await response.json();
-  } catch (err) {
-    console.error('getBookingsByHost error:', err);
-    throw err;
   }
-}
+
 
 
   // Get host profile by associated user ID
