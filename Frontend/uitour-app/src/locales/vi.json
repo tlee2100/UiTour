@@ -1236,5 +1236,58 @@
         "upgrade": "Nâng hạng miễn phí khi có sẵn"
       }
     }
+  },
+  "host": {
+    "loadingBookings": "Đang tải đơn đặt...",
+    "error": "Lỗi",
+    "tryAgain": "Thử lại",
+    "noBookingsYet": "Chưa có đặt chỗ nào",
+    "bookingsWillAppear": "Các đơn sẽ xuất hiện tại đây khi khách xác nhận.",
+    "notHostYet": "Bạn chưa đăng ký làm host.",
+    "upcoming": "Sắp tới",
+    "checkInToday": "Check-in hôm nay",
+    "staying": "Đang ở",
+    "completed": "Đã hoàn thành",
+    "propertyListingLabel": "Chỗ ở",
+    "tourListingLabel": "Trải nghiệm",
+    "guestName": "Khách",
+    "stayDuration": "Thời gian lưu trú",
+    "night": "đêm",
+    "nights": "đêm",
+    "guest": "khách",
+    "guests": "khách",
+    "paid": "Đã thanh toán",
+    "pending": "Đang chờ",
+    "failed": "Thất bại",
+    "refunded": "Đã hoàn",
+    "noPayment": "Chưa thanh toán"
+  },
+  "hostNav": {
+    "today": "Hôm nay",
+    "listings": "Danh sách",
+    "dashboard": "Bảng điều khiển",
+    "messages": "Tin nhắn"
+  },
+  "hostListing": {
+    "yourListings": "Danh sách của bạn",
+    "publishNewStay": "Đăng chỗ ở mới",
+    "createNewListing": "Tạo danh sách mới",
+    "approved": "Đã duyệt",
+    "pending": "Đang chờ",
+    "stay": "Chỗ ở",
+    "tour": "Trải nghiệm",
+    "loading": "Đang tải danh sách...",
+    "noListingsYet": "Chưa có danh sách nào"
+  },
+  "hostMessages": {
+    "title": "Tin nhắn",
+    "searchConversations": "Tìm cuộc trò chuyện",
+    "loadingMessages": "Đang tải tin nhắn...",
+    "noMessagesYet": "Chưa có tin nhắn nào",
+    "typeAMessage": "Nhập tin nhắn",
+    "selectConversation": "Chọn một cuộc trò chuyện để bắt đầu",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "justNow": "Vừa xong"
   }
 }
