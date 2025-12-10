@@ -757,6 +757,44 @@ async updateUserProfile(userId, form) {
     }
   }
 
+  async checkPropertyAvailability(propertyId, checkIn, checkOut) {
+    try {
+      const token = localStorage.getItem('token');
+
+      if (!propertyId || !checkIn || !checkOut) {
+        throw new Error('Missing parameters for availability check');
+      }
+
+      // ✅ Build query string
+      const params = new URLSearchParams({
+        checkIn,
+        checkOut
+      }).toString();
+
+      const response = await fetch(
+        `${BOOKING_BASE_URL}/property/${propertyId}/availability?${params}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to check property availability');
+      }
+
+      // ✅ { propertyId, checkIn, checkOut, isAvailable }
+      return await response.json();
+
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getBookingById(bookingId) {
     try {
       const token = localStorage.getItem('token');
