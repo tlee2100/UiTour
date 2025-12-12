@@ -1,3 +1,4 @@
+// src/pages/ProfileEditPage.jsx
 import { useEffect, useMemo, useState } from 'react';
 import './ProfilePage.css';
 import { useNavigate } from 'react-router-dom';
@@ -10,87 +11,91 @@ export default function ProfileEditPage() {
   const { language } = useLanguage();
   const { user, profile, dispatch } = useApp();
   const navigate = useNavigate();
+
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // Chuẩn hoá dữ liệu từ backend -> form
+  const normalizeImageUrl = (rawUrl) => {
+    if (!rawUrl || typeof rawUrl !== 'string') return '';
+    const trimmed = rawUrl.trim();
+    if (!trimmed) return '';
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    if (trimmed.startsWith('data:image')) return trimmed;
+    if (trimmed.startsWith('/')) return `http://localhost:5069${trimmed}`;
+    return `http://localhost:5069/${trimmed}`;
+  };
+
   const normalizeToForm = (u = {}, p = null) => {
-    // Ưu tiên dùng dữ liệu thật từ backend; nếu context profile có sẵn thì merge
     const fullName = u.fullName ?? u.FullName ?? p?.displayName ?? '';
     const email = u.email ?? u.Email ?? p?.email ?? '';
-    const about = u.userAbout ?? u.about ?? p?.about ?? '';
+    const about = u.userAbout ?? u.UserAbout ?? u.about ?? p?.about ?? '';
 
-    // interests từ backend có thể là string "A, B, C"
-    const interestsArr = Array.isArray(u.interests)
-      ? u.interests
-      : (typeof u.interests === 'string'
-          ? u.interests.split(',').map(s => s.trim()).filter(Boolean)
+    // ✅ AVATAR đúng field DB/BE
+    const avatar = u.avatar ?? u.Avatar ?? '';
+
+    const interestsRaw = u.interests ?? u.Interests;
+    const interestsArr = Array.isArray(interestsRaw)
+      ? interestsRaw
+      : (typeof interestsRaw === 'string'
+          ? interestsRaw.split(',').map(s => s.trim()).filter(Boolean)
           : (Array.isArray(p?.interests) ? p.interests : []));
 
-    // age: backend trả 0 khi chưa có -> convert thành ''
-    const ageValue =
-      typeof u.age === 'number' && u.age > 0
-        ? u.age
-        : (typeof p?.age === 'number' && p.age > 0 ? p.age : '');
+    const ageRaw = u.age ?? u.Age;
+    const ageValue = (typeof ageRaw === 'number' && ageRaw > 0) ? ageRaw : (p?.age ?? '');
+
+    const gender = u.gender ?? u.Gender ?? p?.gender ?? '';
+    const nationality = u.nationality ?? u.Nationality ?? p?.nationality ?? '';
 
     return {
       displayName: fullName,
       email,
       about,
       interests: interestsArr,
-      visitedTagsEnabled: !!p?.visitedTagsEnabled, // nếu BE chưa có, vẫn giữ UI state
+      visitedTagsEnabled: !!p?.visitedTagsEnabled,
       visitedTags: Array.isArray(p?.visitedTags) ? p.visitedTags : [],
       age: ageValue,
-      gender: u.gender ?? p?.gender ?? '',
-      nationality: u.nationality ?? p?.nationality ?? '',
+      gender,
+      nationality,
+      avatar, // ✅
     };
   };
 
   useEffect(() => {
     let mounted = true;
+
     async function load() {
       try {
         if (!user || !(user.UserID ?? user.userID)) {
           setError(t(language, 'profile.missingLoginInfo'));
           return;
         }
+
         setLoading(true);
         setError('');
 
         const userId = user.UserID ?? user.userID;
 
-        // 1) cố lấy profile thật (nếu BE có route /{id}/profile)
-        // 2) nếu 404 hoặc rỗng, fallback lấy user base /{id}
-        let core = null;
-        try {
-          core = await authAPI.getUserProfile(userId);
-        } catch (_) {
-          // im lặng fallback
-        }
-        if (!core || typeof core !== 'object') {
-          core = await authAPI.getUserById(userId);
-        }
+        // Backend bạn chắc chắn có GET /api/user/{id}
+        const core = await authAPI.getUserById(userId);
 
         if (!mounted) return;
         const draft = normalizeToForm(core, profile);
         setForm(draft);
 
-        // đồng bộ context profile cho các màn khác (View)
         dispatch({
           type: 'SET_PROFILE',
           payload: {
             displayName: draft.displayName,
             about: draft.about,
             interests: draft.interests,
-            visitedTagsEnabled: draft.visitedTagsEnabled,
-            visitedTags: draft.visitedTags,
             email: draft.email,
             age: draft.age,
             gender: draft.gender,
             nationality: draft.nationality,
-          }
+            avatar: draft.avatar,
+          },
         });
       } catch (err) {
         if (mounted) setError(err.message || t(language, 'profile.unableToLoadProfile'));
@@ -98,13 +103,14 @@ export default function ProfileEditPage() {
         if (mounted) setLoading(false);
       }
     }
+
     load();
     return () => { mounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language]);
 
   const initial = useMemo(
-    () => (form?.displayName?.charAt(0) || 'U').toUpperCase(),
+    () => (form?.displayName?.trim()?.charAt(0) || 'U').toUpperCase(),
     [form]
   );
 
@@ -120,35 +126,25 @@ export default function ProfileEditPage() {
       return { ...prev, interests: arr };
     });
 
-  const toggleVisitedEnabled = () => {
-    setForm(prev => ({ ...prev, visitedTagsEnabled: !prev?.visitedTagsEnabled }));
-  };
-
-  const addVisitedTag = () =>
-    setForm(prev => ({ ...prev, visitedTags: [...(prev?.visitedTags || []), ''] }));
-
-  const removeVisitedTag = (idx) =>
-    setForm(prev => {
-      const arr = [...(prev?.visitedTags || [])];
-      arr.splice(idx, 1);
-      return { ...prev, visitedTags: arr };
-    });
-
   const handleSave = async () => {
     if (!user || !(user.UserID ?? user.userID)) {
       setError(t(language, 'profile.missingLoginInfoEdit'));
       return;
     }
+
     setSaving(true);
     setError('');
+
     try {
       const userId = user.UserID ?? user.userID;
 
-      // Gọi backend để cập nhật
-      const saved = await authAPI.updateUserProfile(userId, form);
+      // 1) update
+      await authAPI.updateUserProfile(userId, form);
 
-      // Chuẩn hoá dữ liệu BE trả về để đồng bộ lại form + context
-      const nextForm = normalizeToForm(saved, form);
+      // 2) fetch lại user vì backend đang trả {message}
+      const fresh = await authAPI.getUserById(userId);
+
+      const nextForm = normalizeToForm(fresh, form);
       setForm(nextForm);
 
       dispatch({
@@ -157,12 +153,11 @@ export default function ProfileEditPage() {
           displayName: nextForm.displayName,
           about: nextForm.about,
           interests: nextForm.interests,
-          visitedTagsEnabled: nextForm.visitedTagsEnabled,
-          visitedTags: nextForm.visitedTags,
           email: nextForm.email,
           age: nextForm.age,
           gender: nextForm.gender,
           nationality: nextForm.nationality,
+          avatar: nextForm.avatar,
         },
       });
 
@@ -175,7 +170,11 @@ export default function ProfileEditPage() {
   };
 
   if (loading || !form) {
-    return <div className="profile-section" style={{ padding: 16 }}>{t(language, 'profile.loadingProfile')}</div>;
+    return (
+      <div className="profile-section" style={{ padding: 16 }}>
+        {t(language, 'profile.loadingProfile')}
+      </div>
+    );
   }
 
   return (
@@ -187,38 +186,70 @@ export default function ProfileEditPage() {
       <div className="profile-divider" />
 
       <main className="profile-main">
-        {/* Card avatar + tên hiển thị */}
+        {/* Avatar + upload */}
         <section className="profile-section">
-          <div className="profile-card">
-            <div className="profile-avatar-large">{initial}</div>
-            <div className="profile-name-role">
-              <input
-                value={form.displayName || ''}
-                onChange={e => update('displayName', e.target.value)}
-                placeholder={t(language, 'profile.displayName')}
-                style={{
-                  fontSize: 22,
-                  fontWeight: 600,
-                  border: '1px solid #eee',
-                  borderRadius: 8,
-                  padding: '8px 10px',
-                  outline: 'none',
-                  transition: 'border-color 0.2s',
-                  fontFamily: 'inherit'
-                }}
-                onFocus={(e) => e.target.style.borderColor = 'var(--uitour-color)'}
-                onBlur={(e) => e.target.style.borderColor = '#eee'}
-              />
-              {form.email && (
-                <div style={{ color: '#666', marginTop: 6 }}>
-                  {form.email}
+          <div className="profile-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              {form.avatar ? (
+                <img
+                  src={normalizeImageUrl(form.avatar)}
+                  alt="avatar"
+                  className="profile-avatar-large"
+                  style={{ objectFit: 'cover' }}
+                  onError={(e) => { e.currentTarget.src = ''; }}
+                />
+              ) : (
+                <div className="profile-avatar-large">{initial}</div>
+              )}
+
+              <div>
+                <div className="profile-display-name" style={{ fontSize: 20, fontWeight: 700 }}>
+                  {form.displayName || t(language, 'profile.user')}
                 </div>
+                {form.email && <div style={{ color: '#666', marginTop: 4 }}>{form.email}</div>}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <label className="profile-primary-btn" style={{ background: '#f1f1f1', color: '#333' }}>
+                + {t(language, 'profile.uploadAvatar') || 'Upload Avatar'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    try {
+                      setSaving(true);
+                      const url = await authAPI.uploadImage(file); // "/uploads/images/xxx.png"
+                      update('avatar', url); // ✅ QUAN TRỌNG
+                    } catch (err) {
+                      setError(err.message || 'Upload avatar failed');
+                    } finally {
+                      setSaving(false);
+                      e.target.value = '';
+                    }
+                  }}
+                />
+              </label>
+
+              {form.avatar && (
+                <button
+                  className="profile-primary-btn"
+                  style={{ background: '#ffecec', color: '#b40000' }}
+                  type="button"
+                  onClick={() => update('avatar', '')}
+                >
+                  {t(language, 'profile.removeAvatar') || 'Remove'}
+                </button>
               )}
             </div>
           </div>
         </section>
 
-        {/* Giới thiệu bản thân */}
+        {/* About */}
         <section className="profile-section">
           <div className="profile-completion-title">{t(language, 'profile.introduceYourself')}</div>
           <textarea
@@ -242,84 +273,21 @@ export default function ProfileEditPage() {
           />
         </section>
 
-        {/* Nơi tôi từng đến */}
-        <section className="profile-section">
-          <div className="profile-completion-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span>{t(language, 'profile.placesIVisited')}</span>
-            <label style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input
-                type="checkbox"
-                checked={!!form.visitedTagsEnabled}
-                onChange={toggleVisitedEnabled}
-              />
-              <span>{t(language, 'profile.show')}</span>
-            </label>
-          </div>
-
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
-            {(form.visitedTags || []).map((t, idx) => (
-              <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <input
-                  value={t}
-                  onChange={e => {
-                    const v = e.target.value;
-                    setForm(prev => {
-                      const arr = [...(prev.visitedTags || [])];
-                      arr[idx] = v;
-                      return { ...prev, visitedTags: arr };
-                    });
-                  }}
-                  style={{
-                    border: '1px solid #eee',
-                    borderRadius: 20,
-                    padding: '8px 12px',
-                    minWidth: 160,
-                    outline: 'none',
-                    transition: 'border-color 0.2s',
-                    fontFamily: 'inherit'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = 'var(--uitour-color)'}
-                  onBlur={(e) => e.target.style.borderColor = '#eee'}
-                />
-                <button
-                  className="profile-primary-btn"
-                  style={{ background: '#ffecec', color: '#b40000' }}
-                  onClick={() => removeVisitedTag(idx)}
-                >
-                  {t(language, 'profile.delete')}
-                </button>
-              </div>
-            ))}
-            <button
-              className="profile-primary-btn"
-              style={{ background: '#f1f1f1', color: '#333' }}
-              onClick={addVisitedTag}
-            >
-              + {t(language, 'profile.addPlaceVisited')}
-            </button>
-          </div>
-        </section>
-
-        {/* Thông tin cá nhân: Tuổi / Giới tính / Quốc tịch */}
+        {/* Personal info */}
         <section className="profile-section">
           <div className="profile-completion-title">{t(language, 'profile.personalInformation')}</div>
           <div className="info-grid info-grid-edit">
-            {/* Age */}
             <label>
               <strong>{t(language, 'profile.age')}</strong>
               <input
                 type="number"
                 min="0"
                 value={form.age ?? ''}
-                onChange={e => {
-                  const v = e.target.value;
-                  update('age', v === '' ? '' : Number(v));
-                }}
+                onChange={e => update('age', e.target.value === '' ? '' : Number(e.target.value))}
                 placeholder={t(language, 'profile.agePlaceholder')}
               />
             </label>
 
-            {/* Gender */}
             <label>
               <strong>{t(language, 'profile.gender')}</strong>
               <select
@@ -333,7 +301,6 @@ export default function ProfileEditPage() {
               </select>
             </label>
 
-            {/* Nationality */}
             <label>
               <strong>{t(language, 'profile.nationality')}</strong>
               <input
@@ -346,7 +313,7 @@ export default function ProfileEditPage() {
           </div>
         </section>
 
-        {/* Sở thích của tôi */}
+        {/* Interests */}
         <section className="profile-section">
           <div className="profile-completion-title">{t(language, 'profile.myInterests')}</div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
@@ -362,9 +329,9 @@ export default function ProfileEditPage() {
                       return { ...prev, interests: arr };
                     });
                   }}
-                  style={{ 
-                    border: '1px dashed #bbb', 
-                    borderRadius: 24, 
+                  style={{
+                    border: '1px dashed #bbb',
+                    borderRadius: 24,
                     padding: '8px 14px',
                     outline: 'none',
                     transition: 'border-color 0.2s',
@@ -377,6 +344,7 @@ export default function ProfileEditPage() {
                   className="profile-primary-btn"
                   style={{ background: '#ffecec', color: '#b40000' }}
                   onClick={() => removeInterest(idx)}
+                  type="button"
                 >
                   {t(language, 'profile.delete')}
                 </button>
@@ -386,30 +354,34 @@ export default function ProfileEditPage() {
               className="profile-primary-btn"
               style={{ background: '#f1f1f1', color: '#333' }}
               onClick={addInterest}
+              type="button"
             >
               + {t(language, 'profile.addInterest')}
             </button>
           </div>
         </section>
 
-        {/* Lỗi nếu có */}
         {!!error && (
-          <div className="profile-section" style={{ color: '#c00' }}>{error}</div>
+          <div className="profile-section" style={{ color: '#c00' }}>
+            {error}
+          </div>
         )}
 
-        {/* Nút hành động */}
         <div className="profile-section" style={{ display: 'flex', gap: 12 }}>
           <button
             className="profile-primary-btn"
             onClick={() => navigate(-1)}
             style={{ background: '#eee', color: '#333' }}
+            type="button"
           >
             {t(language, 'profile.cancel')}
           </button>
+
           <button
             className="profile-primary-btn"
             onClick={handleSave}
             disabled={saving}
+            type="button"
           >
             {saving ? t(language, 'profile.saving') : t(language, 'profile.done')}
           </button>
