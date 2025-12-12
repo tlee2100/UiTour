@@ -9,4 +9,5 @@ public class UpdateUserProfileDto
     [StringLength(20)] public string Gender { get; set; }
     [StringLength(100)] public string Nationality { get; set; }
     public string Interests { get; set; }
+    public string? Avatar { get; set; }
 }

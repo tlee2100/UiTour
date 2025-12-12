@@ -172,7 +172,20 @@ export default function ProfilePage() {
   const age = userData?.age ?? '';
   const gender = userData?.gender ?? '';
   const nationality = userData?.nationality ?? '';
-  const avatarUrl = userData?.avatarUrl ?? userData?.avatar ?? userData?.profilePicture ?? '';
+  const normalizeImageUrl = (rawUrl) => {
+      if (!rawUrl || typeof rawUrl !== "string") return "";
+      const trimmed = rawUrl.trim();
+      if (!trimmed) return "";
+      if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+      if (trimmed.startsWith("/")) return `http://localhost:5069${trimmed}`;
+      return `http://localhost:5069/${trimmed}`;
+    };
+
+  const avatarUrlRaw =
+  userData?.Avatar ?? userData?.avatar ?? userData?.profilePicture ?? userData?.avatarUrl ?? "";
+
+  const avatarUrl = normalizeImageUrl(avatarUrlRaw);
+
 
   const interestsRaw = userData?.interests;
   const interests = Array.isArray(interestsRaw)

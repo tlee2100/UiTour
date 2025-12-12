@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UITour.Models
 {
@@ -30,7 +31,8 @@ namespace UITour.Models
         // hoặc có thể dùng kiểu List<string> và cấu hình Value Converter trong DbContext.
         public string? Interests { get; set; }
         public ICollection<Host> Hosts { get; set; }
-      
+
+        public string? Avatar { get; set; }
         public ICollection<Booking> Bookings { get; set; }
         public ICollection<Message> SentMessages { get; set; }
         public ICollection<Message> ReceivedMessages { get; set; }

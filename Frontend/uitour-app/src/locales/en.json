@@ -111,7 +111,9 @@
     "done": "Done",
     "cancel": "Cancel",
     "failedToSaveProfile": "Failed to save profile",
-    "missingLoginInfoEdit": "Missing login information. Please log in again."
+    "missingLoginInfoEdit": "Missing login information. Please log in again.",
+    "uploadAvatar": "Upload Avatar",
+    "removeAvatar": "Delete Avatar"
   },
   "accountSettings": {
     "title": "Account settings",
