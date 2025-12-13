@@ -15,17 +15,8 @@ import HIBookingBox from "./HomeInfo_component/HIBookingBox";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
 
-// ✅ Normalize function để chuyển đổi dữ liệu từ backend sang format mà component cần
-const normalizeProperty = (p) => {
-    // Tính rating từ reviews
-  const reviews = Array.isArray(p.reviews) ? p.reviews : [];
-  const rating = reviews.length > 0 
-    ? reviews.reduce((sum, r) => sum + (r.rating || r.Rating || 0), 0) / reviews.length 
-    : 0;
-  const reviewsCount = reviews.length;
-
-  // Helper function to normalize image URL
-  const normalizeImageUrl = (url) => {
+// Helper function to normalize image URL
+const normalizeImageUrl = (url) => {
     if (!url || url.trim().length === 0) return null;
     // If already a full URL (http/https), use as is
     if (url.startsWith('http://') || url.startsWith('https://')) {
@@ -37,7 +28,18 @@ const normalizeProperty = (p) => {
     }
     // Otherwise, assume it's a relative path and prepend backend base URL
     return `http://localhost:5069/${url}`;
-  };
+};
+// ✅ Normalize function để chuyển đổi dữ liệu từ backend sang format mà component cần
+const normalizeProperty = (p) => {
+    // Tính rating từ reviews
+  const reviews = Array.isArray(p.reviews) ? p.reviews : [];
+  const rating = reviews.length > 0 
+    ? reviews.reduce((sum, r) => sum + (r.rating || r.Rating || 0), 0) / reviews.length 
+    : 0;
+  const reviewsCount = reviews.length;
+
+  
+  
 
   // Xử lý photos - filter ra các URL không hợp lệ (base64 bị cắt, empty, etc.)
   const photos = Array.isArray(p.photos) 
@@ -188,10 +190,20 @@ const normalizeProperty = (p) => {
 
   // ✅ Xử lý host với đầy đủ thông tin từ database
   const hostData = p.host || p.Host;
+  const rawHostAvatar =
+  hostData.user?.avatar ||
+  hostData.user?.Avatar ||
+  hostData.User?.avatar ||
+  hostData.User?.Avatar ||
+  "";
+  
+
   const host = hostData ? {
     id: hostData.hostID || hostData.hostId || hostData.HostID || hostData.HostId,
     name: hostData.user?.fullName || hostData.user?.FullName || hostData.User?.fullName || hostData.User?.FullName || "Host",
-    avatar: hostData.user?.avatar || hostData.user?.Avatar || hostData.User?.avatar || hostData.User?.Avatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+    avatar:
+    normalizeImageUrl(rawHostAvatar) ||
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     isSuperhost: hostData.isSuperHost !== undefined ? hostData.isSuperHost : (hostData.IsSuperHost !== undefined ? hostData.IsSuperHost : false),
     joinedDate: hostData.hostSince || hostData.HostSince || hostData.hostSince || hostData.HostSince,
     about: hostData.hostAbout || hostData.HostAbout || "",
@@ -435,7 +447,10 @@ const normalizeProperty = (p) => {
         r.userName || // fallback nếu API đã phẳng
         "Guest";
 
-      const userAvatar = userData?.avatar || userData?.Avatar || r.userAvatar || "";
+      const userAvatarRaw = userData?.avatar || userData?.Avatar || r.userAvatar || "";
+
+      const userAvatar = normalizeImageUrl(userAvatarRaw);
+
 
       // Parse và normalize rating (đảm bảo là number và trong khoảng 0-5)
       const rawRating = r.rating ?? r.Rating ?? 0;
