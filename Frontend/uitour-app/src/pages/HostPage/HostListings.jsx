@@ -21,6 +21,7 @@ export default function HostListings() {
     const { user } = useApp();
     const { language } = useLanguage();
 
+
     // ===========================
     // IMAGE HELPERS
     // ===========================
@@ -49,6 +50,7 @@ export default function HostListings() {
 
         return normalizeImageUrl(raw);
     };
+
 
     // ===========================
     // LOAD LISTINGS (original logic preserved)
@@ -244,70 +246,89 @@ export default function HostListings() {
                             {t(language, "hostListing.noListingsYet")}
                         </div>
                     ) : (
-                        listings.map((item) => (
-                            <div key={`${item.type}-${item.id}`} className="listing-card">
-                                <div className={`listing-status ${item.statusKey === "pending" ? "pending" : "approved"}`}>
-                                    {item.statusLabel}
-                                </div>
+                        listings.map((item) => {
+                            const canEdit = item.statusKey === "approved";
 
-                                <div className="listing-type-badge">
-                                    <Icon
-                                        icon={item.type === "property" ? "mdi:home" : "mdi:map-marker"}
-                                        width="14"
-                                        height="14"
-                                    />
-                                    {item.type === "property" ? t(language, "hostListing.stay") : t(language, "hostListing.tour")}
-                                </div>
-
-                                <button
-                                    className="listing-edit-btn"
-                                    onClick={() =>
-                                        navigate(
-                                            item.type === "tour"
-                                                ? `/host/experience/edit/${item.id}`
-                                                : `/host/stay/edit/${item.id}`
-                                        )
-                                    }
+                            return (
+                                <div
+                                    key={`${item.type}-${item.id}`}
+                                    className={`listing-card ${!canEdit ? "pending-card" : ""}`}
                                 >
-                                    <Icon icon="mdi:pencil-outline" width="18" height="18" />
-                                </button>
+                                    <div
+                                        className={`listing-status ${item.statusKey === "pending" ? "pending" : "approved"
+                                            }`}
+                                    >
+                                        {item.statusLabel}
+                                    </div>
 
-                                <button
-                                    className="listing-delete-btn"
-                                    onClick={() => handleDeleteClick(item)}
-                                    disabled={deletingId === item.id}
-                                >
-                                    {deletingId === item.id ? (
-                                        <Icon icon="mdi:loading" width="18" height="18" className="spinning" />
-                                    ) : (
-                                        <Icon icon="mdi:delete-outline" width="18" height="18" />
-                                    )}
-                                </button>
+                                    <div className="listing-type-badge">
+                                        <Icon
+                                            icon={item.type === "property" ? "mdi:home" : "mdi:map-marker"}
+                                            width="14"
+                                            height="14"
+                                        />
+                                        {item.type === "property"
+                                            ? t(language, "hostListing.stay")
+                                            : t(language, "hostListing.tour")}
+                                    </div>
 
-                                <img
-                                    src={item.image}
-                                    alt={item.title}
-                                    className="listing-img"
-                                    onError={(e) => (e.target.src = sampleImg)}
-                                />
+                                    {/* ✅ EDIT BUTTON */}
+                                    <button
+                                        className={`listing-edit-btn ${!canEdit ? "disabled" : ""}`}
+                                        disabled={!canEdit}
+                                        onClick={() => {
+                                            if (!canEdit) return;
+                                            navigate(
+                                                item.type === "tour"
+                                                    ? `/host/experience/edit/${item.id}`
+                                                    : `/host/stay/edit/${item.id}`
+                                            );
+                                        }}
+                                        title={!canEdit ? t(language, "hostListing.pendingEditDisabled") : ""}
+                                    >
+                                        <Icon icon="mdi:pencil-outline" width="18" height="18" />
+                                    </button>
 
-                                <div className="listing-info">
-                                    <h3>
-                                        {item.title}
-                                        {item.rating > 0 && (
-                                            <span className="listing-rating">★ {item.rating.toFixed(1)}</span>
+                                    {/* DELETE BUTTON */}
+                                    <button
+                                        className="listing-delete-btn"
+                                        onClick={() => handleDeleteClick(item)}
+                                        disabled={deletingId === item.id}
+                                    >
+                                        {deletingId === item.id ? (
+                                            <Icon icon="mdi:loading" width="18" height="18" className="spinning" />
+                                        ) : (
+                                            <Icon icon="mdi:delete-outline" width="18" height="18" />
                                         )}
-                                    </h3>
+                                    </button>
 
-                                    {item.location && (
-                                        <p className="listing-location">
-                                            <Icon icon="mdi:map-marker" width="14" height="14" />
-                                            {item.location}
-                                        </p>
-                                    )}
+                                    <img
+                                        src={item.image}
+                                        alt={item.title}
+                                        className="listing-img"
+                                        onError={(e) => (e.target.src = sampleImg)}
+                                    />
+
+                                    <div className="listing-info">
+                                        <h3>
+                                            {item.title}
+                                            {item.rating > 0 && (
+                                                <span className="listing-rating">
+                                                    ★ {item.rating.toFixed(1)}
+                                                </span>
+                                            )}
+                                        </h3>
+
+                                        {item.location && (
+                                            <p className="listing-location">
+                                                <Icon icon="mdi:map-marker" width="14" height="14" />
+                                                {item.location}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
             </div>

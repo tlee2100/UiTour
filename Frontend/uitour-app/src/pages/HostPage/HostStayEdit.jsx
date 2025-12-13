@@ -22,13 +22,23 @@ export default function HostStayEdit() {
   // Helper: Check valid URL
   const isValidUrl = (u) => u && typeof u === "string" && !u.startsWith("blob:");
 
-  const normalizeImage = (p) =>
-    p?.url ||
-    p?.serverUrl ||
-    p?.imageUrl ||
-    p?.photoUrl ||
-    p?.preview ||
-    "";
+  const normalizeImage = (p) => {
+    const raw =
+      p?.url ||
+      p?.serverUrl ||
+      p?.imageUrl ||
+      p?.photoUrl ||
+      p?.preview ||
+      "";
+
+    if (!raw || typeof raw !== "string") return "";
+
+    if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+    if (raw.startsWith("/")) return `http://localhost:5069${raw}`;
+
+    return `http://localhost:5069/${raw}`;
+  };
+
 
   // -------------------------------
   // Fetch Stay From API
@@ -66,28 +76,73 @@ export default function HostStayEdit() {
           description: json.description || "",
 
           location: {
-            addressLine: json.location?.addressLine || json.addressLine || "",
-            city: json.location?.city || json.city || "",
-            country: json.location?.country || json.country || "",
+            addressLine: json.location || "",
+            city: json.city?.cityName || "",
+            country: json.country?.countryName || "",
           },
 
-          propertyTypeLabel: json.propertyTypeLabel || "",
-          roomTypeLabel: json.roomTypeLabel || "",
+          propertyType: json.propertyType || "",
+
+          roomType: {
+            id: json.roomTypeID ?? null,
+            name: json.roomType?.name ?? ""
+          },
+
 
           bedrooms: json.bedrooms ?? 1,
           beds: json.beds ?? 1,
           bathrooms: json.bathrooms ?? 1,
           accommodates: json.accommodates ?? 1,
 
-          amenities: Array.isArray(json.amenities) ? json.amenities : [],
-          houseRules: Array.isArray(json.houseRules) ? json.houseRules : [],
+          amenities: Array.isArray(json.propertyAmenities)
+            ? json.propertyAmenities.map(pa => ({
+              id: pa.amenity?.amenityID,
+              name: pa.amenity?.amenityName
+            }))
+            : [],
+
+          houseRules: (() => {
+            try {
+              return JSON.parse(json.houseRules || "[]");
+            } catch {
+              return [];
+            }
+          })(),
+
+          rules: {
+            selfCheckIn: json.selfCheckIn ?? false,
+            self_checkin_method: json.self_checkin_method || "",
+
+            no_smoking: json.no_smoking ?? false,
+            no_open_flames: json.no_open_flames ?? false,
+            pets_allowed: json.pets_allowed ?? false,
+
+            covidSafety: json.covidSafety ?? false,
+            surfacesSanitized: json.surfacesSanitized ?? false,
+            carbonMonoxideAlarm: json.carbonMonoxideAlarm ?? false,
+            smokeAlarm: json.smokeAlarm ?? false,
+          },
 
           pricing: {
-            basePrice: json.pricing?.basePrice ?? 0,
-            weekendMultiplier: json.pricing?.weekendMultiplier ?? 1,
-            cleaningFee: json.pricing?.cleaningFee ?? 0,
-            extraPeopleFee: json.pricing?.extraPeopleFee ?? 0,
-            extraPeopleThreshold: json.pricing?.extraPeopleThreshold ?? 1,
+            basePrice: json.price ?? 0,
+            weekendMultiplier: json.weekendMultiplier ?? 1,
+            cleaningFee: json.cleaningFee ?? 0,
+            extraPeopleFee: json.extraPeopleFee ?? 0,
+            extraPeopleThreshold: json.extraPeopleThreshold ?? 1,
+
+            serviceFee: {
+              percent: json.serviceFee ?? 0,
+            },
+            taxFee: {
+              percent: json.taxFee ?? 0,
+            },
+
+            discounts: {
+              weekly: { percent: json.weeklyDiscount ?? 0 },
+              monthly: { percent: json.monthlyDiscount ?? 0 },
+              seasonalDiscounts: json.seasonalDiscounts ?? [],
+              earlyBird: json.earlyBird ?? [],
+            },
           },
         };
 
@@ -109,56 +164,71 @@ export default function HostStayEdit() {
   // Save Changes
   // -------------------------------
   async function handleSave() {
-  try {
-    const payload = {
-      listingTitle: data.listingTitle,
-      description: data.description,
+    try {
+      const payload = {
+        listingTitle: data.listingTitle,
+        description: data.description,
 
-      location: data.location.addressLine,
-      cityID: data.cityID ?? 0,
-      countryID: data.countryID ?? 0,
+        location: data.location.addressLine,
+        cityID: data.cityID ?? 0,
+        countryID: data.countryID ?? 0,
 
-      bedrooms: data.bedrooms,
-      beds: data.beds,
-      bathrooms: data.bathrooms,
-      accommodates: data.accommodates,
+        bedrooms: data.bedrooms,
+        beds: data.beds,
+        bathrooms: data.bathrooms,
+        accommodates: data.accommodates,
 
-      basePrice: data.pricing.basePrice,
-      cleaningFee: data.pricing.cleaningFee,
-      extraPeopleFee: data.pricing.extraPeopleFee,
-      weekendMultiplier: data.pricing.weekendMultiplier,
-      extraPeopleThreshold: data.pricing.extraPeopleThreshold,
+        basePrice: data.pricing.basePrice,
+        cleaningFee: data.pricing.cleaningFee,
+        extraPeopleFee: data.pricing.extraPeopleFee,
+        weekendMultiplier: data.pricing.weekendMultiplier,
+        extraPeopleThreshold: data.pricing.extraPeopleThreshold,
 
-      currency: data.currency ?? "USD",
-      active: true,
+        currency: data.currency ?? "USD",
+        active: true,
 
-      propertyType: data.propertyTypeLabel,
-      roomTypeID: data.roomTypeID ?? 1,
+        propertyType: data.propertyType,      // string
+        roomTypeID: data.roomType.id,         // ID
 
-      lat: data.lat ?? "",
-      lng: data.lng ?? "",
+        lat: data.lat ?? "",
+        lng: data.lng ?? "",
 
-      houseRules: data.houseRules.map(r => ({ label: r.label })),
+        houseRules: data.houseRules.map(r => ({ label: r.label })),
+        selfCheckIn: data.rules.selfCheckIn,
+        self_checkin_method: data.rules.self_checkin_method,
 
-      photos: photos.map((p, index) => ({
-        url: p.url || p.imageUrl || "",
-        caption: p.caption || "",
-        sortIndex: index
-      })),
+        no_smoking: data.rules.no_smoking,
+        no_open_flames: data.rules.no_open_flames,
+        pets_allowed: data.rules.pets_allowed,
 
-      amenities: data.amenities.map(a => ({
-        amenityID: a.amenityID || a.id
-      }))
-    };
+        covidSafety: data.rules.covidSafety,
+        surfacesSanitized: data.rules.surfacesSanitized,
+        carbonMonoxideAlarm: data.rules.carbonMonoxideAlarm,
+        smokeAlarm: data.rules.smokeAlarm,
 
-    const updated = await authAPI.updateProperty(id, payload);
+        serviceFee: data.pricing.serviceFee.percent,
+        taxFee: data.pricing.taxFee.percent,
+        weeklyDiscount: data.pricing.discounts.weekly.percent,
+        monthlyDiscount: data.pricing.discounts.monthly.percent,
+        photos: photos.map((p, index) => ({
+          url: p.url || p.imageUrl || "",
+          caption: p.caption || "",
+          sortIndex: index
+        })),
 
-    console.log("✔ Updated:", updated);
-    navigate(`/host/listings`);
-  } catch (e) {
-    alert("❌ Update failed: " + e.message);
+        amenities: data.amenities.map(a => ({
+          amenityID: a.amenityID || a.id
+        }))
+      };
+
+      const updated = await authAPI.updateProperty(id, payload);
+
+      console.log("✔ Updated:", updated);
+      navigate(`/host/listings`);
+    } catch (e) {
+      alert("❌ Update failed: " + e.message);
+    }
   }
-}
 
 
   // Safe deep update
@@ -230,8 +300,8 @@ export default function HostStayEdit() {
               <b>{t(language, "hostStay.preview.propertyType")}:</b>
               <input
                 className="hs-edit-input"
-                value={d.propertyTypeLabel}
-                onChange={(e) => onChange("propertyTypeLabel", e.target.value)}
+                value={d.propertyType}
+                onChange={(e) => onChange("propertyType", e.target.value)}
               />
             </div>
 
@@ -239,7 +309,8 @@ export default function HostStayEdit() {
               <b>{t(language, "hostStay.preview.typeOfPlace")}:</b>
               <input
                 className="hs-edit-input"
-                value={d.roomTypeLabel}
+                value={d.roomType.name}
+                disabled
                 onChange={(e) => onChange("roomTypeLabel", e.target.value)}
               />
             </div>
@@ -300,23 +371,6 @@ export default function HostStayEdit() {
               />
             </div>
 
-            <div className="hs-edit-row">
-              <b>{t(language, "hostStay.preview.city")}:</b>
-              <input
-                className="hs-edit-input"
-                value={d.location.city}
-                onChange={(e) => onChange("location.city", e.target.value)}
-              />
-            </div>
-
-            <div className="hs-edit-row">
-              <b>{t(language, "hostStay.preview.country")}:</b>
-              <input
-                className="hs-edit-input"
-                value={d.location.country}
-                onChange={(e) => onChange("location.country", e.target.value)}
-              />
-            </div>
           </div>
         </section>
 
@@ -326,17 +380,12 @@ export default function HostStayEdit() {
 
           <div className="hs-edit-card">
             {d.amenities.map((item, idx) => (
-              <div key={idx} className="hs-edit-row">
-                <input
-                  className="hs-edit-input"
-                  value={item}
-                  onChange={(e) => {
-                    const clone = [...d.amenities];
-                    clone[idx] = e.target.value;
-                    onChange("amenities", clone);
-                  }}
-                />
-              </div>
+              <input
+                key={idx}
+                className="hs-edit-input"
+                value={item.name}
+                disabled
+              />
             ))}
           </div>
         </section>
@@ -398,26 +447,118 @@ export default function HostStayEdit() {
           </div>
         </section>
 
-        {/* RULES */}
+        {/* DISCOUNTS */}
         <section className="hs-edit-section">
-          <h2 className="hs-edit-section-title">{t(language, "hostStay.preview.rulesSafety")}</h2>
+          <h2 className="hs-edit-section-title">
+            {t(language, "hostStay.preview.discounts")}
+          </h2>
 
           <div className="hs-edit-card">
-            {d.houseRules.map((rule, idx) => (
-              <div key={idx} className="hs-edit-row">
+            <div className="hs-edit-row">
+              <b>Weekly discount (%)</b>
+              <input
+                type="number"
+                className="hs-edit-input"
+                value={d.pricing.discounts.weekly.percent}
+                onChange={(e) =>
+                  onChange("pricing.discounts.weekly.percent", Number(e.target.value))
+                }
+              />
+            </div>
+
+            <div className="hs-edit-row">
+              <b>Monthly discount (%)</b>
+              <input
+                type="number"
+                className="hs-edit-input"
+                value={d.pricing.discounts.monthly.percent}
+                onChange={(e) =>
+                  onChange("pricing.discounts.monthly.percent", Number(e.target.value))
+                }
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* RULES & SAFETY */}
+        <section className="hs-edit-section">
+          <h2 className="hs-edit-section-title">
+            {t(language, "hostStay.preview.rulesSafety")}
+          </h2>
+
+          <div className="hs-edit-card">
+
+            {[
+              ["no_smoking", "No smoking"],
+              ["no_open_flames", "No open flames"],
+              ["pets_allowed", "Pets allowed"],
+            ].map(([key, label]) => (
+              <label key={key} className="hs-edit-row">
                 <input
-                  className="hs-edit-input"
-                  value={rule.label}
-                  onChange={(e) => {
-                    const arr = [...d.houseRules];
-                    arr[idx].label = e.target.value;
-                    onChange("houseRules", arr);
-                  }}
+                  type="checkbox"
+                  checked={d.rules[key]}
+                  onChange={(e) => onChange(`rules.${key}`, e.target.checked)}
                 />
-              </div>
+                {label}
+              </label>
+            ))}
+
+            <hr />
+
+            {[
+              ["smokeAlarm", "Smoke alarm"],
+              ["carbonMonoxideAlarm", "CO alarm"],
+              ["covidSafety", "Enhanced cleaning"],
+              ["surfacesSanitized", "Surfaces sanitized"],
+            ].map(([key, label]) => (
+              <label key={key} className="hs-edit-row">
+                <input
+                  type="checkbox"
+                  checked={d.rules[key]}
+                  onChange={(e) => onChange(`rules.${key}`, e.target.checked)}
+                />
+                {label}
+              </label>
             ))}
           </div>
         </section>
+
+
+        {/* SELF CHECK-IN */}
+        <section className="hs-edit-section">
+          <h2 className="hs-edit-section-title">
+            {t(language, "hostStay.preview.selfCheckin")}
+          </h2>
+
+          <div className="hs-edit-card">
+            <div className="hs-edit-row">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={d.rules.selfCheckIn}
+                  onChange={(e) =>
+                    onChange("rules.selfCheckIn", e.target.checked)
+                  }
+                />
+                {" "}Self check-in
+              </label>
+            </div>
+
+            {d.rules.selfCheckIn && (
+              <div className="hs-edit-row">
+                <b>{t(language, "hostStay.preview.method")}:</b>
+                <input
+                  className="hs-edit-input"
+                  value={d.rules.self_checkin_method}
+                  onChange={(e) =>
+                    onChange("rules.self_checkin_method", e.target.value)
+                  }
+                />
+              </div>
+            )}
+          </div>
+        </section>
+
 
         {/* PHOTOS */}
         <section className="hs-edit-section">
