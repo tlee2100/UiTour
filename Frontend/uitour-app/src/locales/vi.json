@@ -1,4 +1,13 @@
 {
+  "menu": "Menu",
+  "newToHosting": "Mới làm chủ nhà?",
+  "discoverBestPractices": "Khám phá các phương pháp hay nhất được chia sẻ bởi các chủ nhà được đánh giá cao và bắt đầu chào đón khách với sự tự tin.",
+  "getStarted": "Bắt đầu",
+  "accountSettingsLabel": "Cài đặt tài khoản",
+  "languageCurrency": "Ngôn ngữ & tiền tệ",
+  "getSupport": "Nhận hỗ trợ",
+  "createNewListing": "Tạo danh sách mới",
+  "logOut": "Đăng xuất",
   "common": {
     "stays": "Chỗ ở",
     "experiences": "Trải nghiệm",
@@ -111,7 +120,10 @@
     "done": "Hoàn tất",
     "cancel": "Hủy",
     "failedToSaveProfile": "Không thể lưu hồ sơ",
-    "missingLoginInfoEdit": "Thiếu thông tin đăng nhập. Vui lòng đăng nhập lại."
+    "missingLoginInfoEdit": "Thiếu thông tin đăng nhập. Vui lòng đăng nhập lại.",
+    "uploadAvatar": "Cập nhật ảnh đại diện",
+    "removeAvatar": "Xóa hình đại diện"
+    
   },
   "accountSettings": {
     "title": "Cài đặt tài khoản",

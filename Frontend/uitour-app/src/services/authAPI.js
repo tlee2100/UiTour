@@ -34,7 +34,36 @@ class AuthAPI {
        throw err;
      }
    }
- 
+  
+   _getToken() {
+    return localStorage.getItem('token');
+  }
+
+  async _fetchJson(url, options = {}) {
+    const token = this._getToken();
+
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        ...(options.headers || {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    const text = await res.text();
+    if (!res.ok) throw new Error(text || res.statusText || 'Request failed');
+
+    // nếu response rỗng thì return null
+    if (!text) return null;
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text; // phòng trường hợp backend trả plain string
+    }
+  }
+
+
   // Login user
   async login(email, password) {
     try {
@@ -649,44 +678,33 @@ _toProfilePayload(form) {
     // có thể bổ sung age, gender, nationality nếu BE hỗ trợ
     age: form?.age ?? null,
     gender: form?.gender ?? '',
-    nationality: form?.nationality ?? ''
+    nationality: form?.nationality ?? '',
+    AvatarUrl: form?.avatarUrl ?? '', 
   };
 }
 
 // Cập nhật hồ sơ (ưu tiên endpoint /{id}/profile; fallback PUT /{id})
 async updateUserProfile(userId, form) {
-  const token = localStorage.getItem('token');
-  const payload = this._toProfilePayload(form);
+  const interestsValue = Array.isArray(form?.interests)
+    ? form.interests.filter(Boolean).join(', ')
+    : (typeof form?.interests === 'string' ? form.interests : '');
 
-  // Thử endpoint RESTful chuyên cho profile trước
-  const tryProfile = await fetch(`${API_BASE_URL}/${userId}/profile`, {
+  const payload = {
+    FullName: form?.displayName ?? '',
+    UserAbout: form?.about ?? '',
+    Age: typeof form?.age === 'number' ? form.age : null,
+    Gender: form?.gender ?? '',
+    Nationality: form?.nationality ?? '',
+    Interests: interestsValue,
+  };
+
+  return await this._fetchJson(`http://localhost:5069/api/user/${userId}/profile`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-
-  if (tryProfile.ok) return await tryProfile.json();
-
-  // Nếu BE chưa có /profile, fallback về PUT /{id}
-  if (tryProfile.status === 404) {
-    const tryUser = await fetch(`${API_BASE_URL}/${userId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify(payload),
-    });
-    if (!tryUser.ok) throw new Error(await tryUser.text() || 'Failed to update user');
-    return await tryUser.json();
-  }
-
-  // Các lỗi khác
-  throw new Error(await tryProfile.text() || 'Failed to update profile');
 }
+
 
   async updateUserEmail(userId, newEmail) {
     const token = localStorage.getItem('token');
@@ -924,31 +942,7 @@ async updateUserProfile(userId, form) {
   }
 
   // ============ UPLOAD IMAGES ============
-  async uploadImage(file) {
-    try {
-      const token = localStorage.getItem('token');
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch(`${UPLOAD_BASE_URL}/image`, {
-        method: 'POST',
-        headers: {
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(errText || 'Failed to upload image');
-      }
-
-      const data = await response.json();
-      return data.url; // Returns the URL path
-    } catch (err) {
-      throw err;
-    }
-  }
+   // ✅ Upload 1 image, trả về "/uploads/images/xxx.png"
 
   async uploadImages(files) {
     try {
@@ -1004,6 +998,65 @@ async updateUserProfile(userId, form) {
       throw err;
     }
   }
+
+  async uploadImage(file) {
+  try {
+    const token = localStorage.getItem('token'); 
+    console.log("UPLOAD TOKEN:", token);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${UPLOAD_BASE_URL}/image`, {
+        method: 'POST',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Failed to upload image');
+      }
+
+      const data = await response.json();
+      return data.url;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+    
+
+    // ✅ Update profile: gọi đúng endpoint bạn đang có: PUT /api/user/{id}/profile
+    async updateUserProfile(userId, form) {
+      const token = this._getToken();
+
+      const interestsValue = Array.isArray(form?.interests)
+        ? form.interests.filter(Boolean).join(', ')
+        : (typeof form?.interests === 'string' ? form.interests : '');
+
+      // ✅ Gửi đúng tên field theo DTO backend (PascalCase / camelCase đều bind được)
+      const payload = {
+        FullName: form?.displayName ?? '',
+        UserAbout: form?.about ?? '',
+        Age: form?.age ?? null,
+        Gender: form?.gender ?? '',
+        Nationality: form?.nationality ?? '',
+        Interests: interestsValue,
+        Avatar: form?.avatar ?? '', // ✅ QUAN TRỌNG
+      };
+
+      // endpoint backend của bạn trả {message}, nên FE sẽ fetch lại user sau khi update
+      return this._fetchJson(`${API_BASE_URL}/${userId}/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+    }
 
   // Create tour
   async createTour(tourData) {

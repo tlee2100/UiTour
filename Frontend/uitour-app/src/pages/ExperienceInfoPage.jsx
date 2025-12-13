@@ -35,6 +35,7 @@ export default function ExperienceInfoPage() {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingFeedback, setBookingFeedback] = useState(null);
 
+  
   const loadExperience = useCallback(async (experienceId) => {
     if (!experienceId || hasLoaded) return;
 
@@ -263,11 +264,28 @@ export default function ExperienceInfoPage() {
   }
 
   const exp = currentExperience;
+  const hostData = exp.host
+    ? {
+        ...exp.host,
+        avatar: exp.host.user?.avatar || exp.host.avatar ||
+          "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?semt=ais_hybrid&w=740&q=80",
+        fullName: exp.host.user?.fullName || "Host",
+        joinedDate: exp.host.hostSince,
+        description: exp.host.hostAbout,
+      }
+    : null;
 
+  const reviewsData = exp.reviews?.map(r => ({
+    ...r,
+    avatar: r.user?.avatar ||
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+    name: r.user?.fullName || "Reviewer",
+  })) || [];
   // Debug: Log experienceDetails
-  console.log("🔍 ExperienceInfoPage - exp.experienceDetails:", exp?.experienceDetails);
-  console.log("🔍 ExperienceInfoPage - exp.experienceDetails length:", exp?.experienceDetails?.length || 0);
-
+  //console.log("🔍 ExperienceInfoPage - exp.experienceDetails:", exp?.experienceDetails);
+  //console.log("🔍 ExperienceInfoPage - exp.experienceDetails length:", exp?.experienceDetails?.length || 0);
+  //console.log("🔍 ExperienceInfoPage - exp:", exp.host);
+  //console.log("🔍 ExperienceInfoPage - hostData:", hostData);
   return (
     <div className="experience-info-page">
 
@@ -294,7 +312,7 @@ export default function ExperienceInfoPage() {
             duration={`${exp.durationHours} hours`}
             price={exp.pricing?.basePrice || exp.price}
             currency={exp.pricing?.currency || exp.currency}
-            host={exp.host}
+            host={hostData}
             onSaveToggle={handleToggleSave}
             isSaved={saveState.isSaved}
             saveLoading={saveState.loading}
@@ -331,13 +349,13 @@ export default function ExperienceInfoPage() {
       <InfoReview
         rating={exp.rating}
         reviewsCount={exp.reviewsCount}
-        reviews={exp.reviews}
+        reviews={reviewsData}
       />
 
       <div className="expif-divider" />
 
       {/* Host */}
-      <InfoHost host={exp.host} />
+      <InfoHost host={hostData} />
 
       <div className="expif-divider" />
 
