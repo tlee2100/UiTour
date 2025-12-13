@@ -141,8 +141,13 @@ export default function ProfilePage() {
         const normalized = await enrichTrips(bookings ?? []);
         if (!isMounted) return;
         setTrips(normalized);
-        // Update trip count in AppContext
-        dispatch({ type: 'SET_TRIP_COUNT', payload: normalized.length });
+        // Update trip count in AppContext - only count confirmed bookings (matching AppContext logic)
+        const confirmed = Array.isArray(bookings)
+          ? bookings.filter(
+              (b) => (b.Status || b.status || '').toLowerCase() === 'confirmed'
+            )
+          : [];
+        dispatch({ type: 'SET_TRIP_COUNT', payload: confirmed.length });
       } catch (err) {
         if (isMounted) {
           setTripsError(err.message || t(language, 'profile.unableToLoadTrips'));

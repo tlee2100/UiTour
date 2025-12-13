@@ -171,7 +171,15 @@ export default function HostHHeader() {
                             <div className="host-menu-card-content">
                                 <h3>{t(language, "newToHosting")}</h3>
                                 <p>{t(language, "discoverBestPractices")}</p>
-                                <button className="host-menu-card-action">{t(language, "getStarted")}</button>
+                                <button 
+                                    className="host-menu-card-action"
+                                    onClick={() => {
+                                        setMenuOpen(false);
+                                        navigate("/host/becomehost");
+                                    }}
+                                >
+                                    {t(language, "getStarted")}
+                                </button>
                             </div>
                         </div>
 
