@@ -4,13 +4,30 @@ import "./InfoHost.css";
 
 export default function InfoHost({ host }) {
   // ✅ Chắc chắn host luôn là object
-  const safeHost = host && typeof host === "object" ? host : {};
+  const safeHost = host || {};
+  const normalizeImageUrl = (url) => {
+    if (!url || url.trim().length === 0) return null;
+    // If already a full URL (http/https), use as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url.trim();
+    }
+    // If relative path starting with /, prepend backend base URL
+    if (url.startsWith('/')) {
+      return `http://localhost:5069${url}`;
+    }
+    // Otherwise, assume it's a relative path and prepend backend base URL
+    return `http://localhost:5069/${url}`;
+  };
+  const safeAvatar =
+    normalizeImageUrl(safeHost.avatar) ||
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150";
 
   // ✅ Merge default trước rồi override từ host
+  console.log(safeHost);
   const defaultHost = {
+    ...safeHost, // giữ nguyên dữ liệu gốc trước
     name: "Host",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
-    joinedDate: "2020-01-01",
+    avatar: normalizeImageUrl(safeHost.avatar || safeHost.user?.avatar || safeHost.user?.Avatar),
     responseRate: 95,
     responseTime: "within an hour",
     isSuperhost: false,
@@ -53,7 +70,7 @@ export default function InfoHost({ host }) {
           <div className="ih-avatar">
             <div className="ih-avatar-base" />
             <img
-              src={avatar}
+              src={safeAvatar}
               alt={`${name || "Host"} Avatar`}
               className="ih-avatar-img"
               onError={(e) => (e.target.src = 
