@@ -24,12 +24,13 @@ export default function Header() {
   const { isOpen: languageCurrencyOpen, openModal: openLanguageCurrency, closeModal: closeLanguageCurrency } = useLanguageCurrencyModal();
 
   // Determine badge type based on trip count
-  // 1-5 trips: BRONZE, 6-10 trips: SILVER, 11+ trips: GOLD
+  // 0 trips: STARTER, 1-5 trips: BRONZE, 6-10 trips: SILVER, 11+ trips: GOLD
+  // This logic must match MembershipModal.jsx exactly
   const getBadgeType = () => {
     if (tripCount === 0) return 'starter';
     if (tripCount >= 1 && tripCount <= 5) return 'bronze';
     if (tripCount >= 6 && tripCount <= 10) return 'silver';
-    if (tripCount > 10) return 'gold';
+    if (tripCount >= 11) return 'gold'; // Changed from > 10 to >= 11 for consistency
     return null; // No badge if no trips
   };
 
