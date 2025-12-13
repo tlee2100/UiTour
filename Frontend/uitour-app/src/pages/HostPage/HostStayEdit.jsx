@@ -5,7 +5,33 @@ import { t } from "../../utils/translations";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useCurrency } from "../../contexts/CurrencyContext";
 import sampleImg from "../../assets/sample-room.jpg";
+import EditableRow from "../../components/modals/EditableRow";
+import SvgIcon from "../../components/SvgIcon"
 import authAPI from "../../services/authAPI";
+
+const AMENITY_ICON_MAP = {
+  1: "amen_wifi",
+  7: "amen_tv",
+  6: "amen_ac",
+  8: "amen_kitchen",
+  2: "amen_washer",
+  15: "amen_dryer",
+  3: "amen_heating",
+  4: "amen_iron",
+  9: "amen_gym",
+  11: "amen_free_parking",
+  17: "amen_hottub",
+  14: "amen_pool",
+  19: "amen_bbq",
+  18: "amen_ev_charger",
+  13: "amen_smoke_alarm",
+  12: "amen_breakfast",
+  10: "amen_workspace",
+  5: "amen_king_bed",
+  16: "amen_hair_dryer",
+};
+
+
 
 const API_BASE = "http://localhost:5069"; // 🎯 ALWAYS backend URL
 
@@ -18,6 +44,13 @@ export default function HostStayEdit() {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeField, setActiveField] = useState(null);
+  const [draftValue, setDraftValue] = useState("");
+
+
+  const LOCKED_HINT =
+    "Trường này không thể chỉnh sửa. Nếu có thay đổi lớn, vui lòng tạo listing mới.";
+
 
   // Helper: Check valid URL
   const isValidUrl = (u) => u && typeof u === "string" && !u.startsWith("blob:");
@@ -97,7 +130,8 @@ export default function HostStayEdit() {
           amenities: Array.isArray(json.propertyAmenities)
             ? json.propertyAmenities.map(pa => ({
               id: pa.amenity?.amenityID,
-              name: pa.amenity?.amenityName
+              name: pa.amenity?.amenityName,
+              icon: AMENITY_ICON_MAP[pa.amenity?.amenityID] || null
             }))
             : [],
 
@@ -137,12 +171,9 @@ export default function HostStayEdit() {
               percent: json.taxFee ?? 0,
             },
 
-            discounts: {
-              weekly: { percent: json.weeklyDiscount ?? 0 },
-              monthly: { percent: json.monthlyDiscount ?? 0 },
-              seasonalDiscounts: json.seasonalDiscounts ?? [],
-              earlyBird: json.earlyBird ?? [],
-            },
+            discount: json.discount ?? 0,
+            discountPercentage: json.discountPercentage ?? 0,
+
           },
         };
 
@@ -169,13 +200,6 @@ export default function HostStayEdit() {
         listingTitle: data.listingTitle,
         description: data.description,
 
-        location: data.location.addressLine,
-        cityID: data.cityID ?? 0,
-        countryID: data.countryID ?? 0,
-
-        bedrooms: data.bedrooms,
-        beds: data.beds,
-        bathrooms: data.bathrooms,
         accommodates: data.accommodates,
 
         basePrice: data.pricing.basePrice,
@@ -186,12 +210,6 @@ export default function HostStayEdit() {
 
         currency: data.currency ?? "USD",
         active: true,
-
-        propertyType: data.propertyType,      // string
-        roomTypeID: data.roomType.id,         // ID
-
-        lat: data.lat ?? "",
-        lng: data.lng ?? "",
 
         houseRules: data.houseRules.map(r => ({ label: r.label })),
         selfCheckIn: data.rules.selfCheckIn,
@@ -208,8 +226,8 @@ export default function HostStayEdit() {
 
         serviceFee: data.pricing.serviceFee.percent,
         taxFee: data.pricing.taxFee.percent,
-        weeklyDiscount: data.pricing.discounts.weekly.percent,
-        monthlyDiscount: data.pricing.discounts.monthly.percent,
+        discount: data.pricing.discount,
+        discountPercentage: data.pricing.discountPercentage,
         photos: photos.map((p, index) => ({
           url: p.url || p.imageUrl || "",
           caption: p.caption || "",
@@ -252,6 +270,22 @@ export default function HostStayEdit() {
 
   const d = data;
 
+  const openEditor = (field, value) => {
+    setActiveField(field);
+    setDraftValue(value ?? "");
+  };
+
+  const closeEditor = () => {
+    setActiveField(null);
+    setDraftValue("");
+  };
+
+  const saveEditor = () => {
+    onChange(activeField, draftValue);
+    closeEditor();
+  };
+
+
   return (
     <div className="hs-edit-page">
       <div className="hs-edit-container">
@@ -268,24 +302,28 @@ export default function HostStayEdit() {
             />
           )}
 
-          {/* title */}
-          <input
-            className="hs-edit-title-input"
-            value={d.listingTitle}
-            onChange={(e) => onChange("listingTitle", e.target.value)}
-          />
+          <div className="hs-edit-hero-text">
+            <EditableRow
+              value={d.listingTitle}
+              editable
+              variant="title"
+              onEdit={() => openEditor("listingTitle", d.listingTitle)}
+            />
 
-          {/* description */}
-          <textarea
-            className="hs-edit-summary-input"
-            value={d.description}
-            onChange={(e) => onChange("description", e.target.value)}
-          />
+            <EditableRow
+              value={d.description}
+              editable
+              variant="description"
+              onEdit={() => openEditor("description", d.description)}
+            />
+          </div>
+
 
           <input
             className="hs-edit-location-input"
             value={d.location.addressLine}
-            onChange={(e) => onChange("location.addressLine", e.target.value)}
+            disabled
+            title={LOCKED_HINT}
           />
         </div>
 
@@ -301,7 +339,8 @@ export default function HostStayEdit() {
               <input
                 className="hs-edit-input"
                 value={d.propertyType}
-                onChange={(e) => onChange("propertyType", e.target.value)}
+                disabled
+                title={LOCKED_HINT}
               />
             </div>
 
@@ -311,7 +350,7 @@ export default function HostStayEdit() {
                 className="hs-edit-input"
                 value={d.roomType.name}
                 disabled
-                onChange={(e) => onChange("roomTypeLabel", e.target.value)}
+                title={LOCKED_HINT}
               />
             </div>
 
@@ -321,7 +360,8 @@ export default function HostStayEdit() {
                 type="number"
                 className="hs-edit-input"
                 value={d.bedrooms}
-                onChange={(e) => onChange("bedrooms", Number(e.target.value))}
+                disabled
+                title={LOCKED_HINT}
               />
             </div>
 
@@ -331,7 +371,8 @@ export default function HostStayEdit() {
                 type="number"
                 className="hs-edit-input"
                 value={d.beds}
-                onChange={(e) => onChange("beds", Number(e.target.value))}
+                disabled
+                title={LOCKED_HINT}
               />
             </div>
 
@@ -341,19 +382,27 @@ export default function HostStayEdit() {
                 type="number"
                 className="hs-edit-input"
                 value={d.bathrooms}
-                onChange={(e) => onChange("bathrooms", Number(e.target.value))}
+                disabled
+                title={LOCKED_HINT}
               />
             </div>
 
             <div className="hs-edit-row">
               <b>{t(language, "hostStay.preview.accommodates")}:</b>
-              <input
-                type="number"
-                className="hs-edit-input"
-                value={d.accommodates}
-                onChange={(e) => onChange("accommodates", Number(e.target.value))}
-              />
+
+              <div className="hs-edit-display hs-edit-display-editable">
+                <span>{d.accommodates}</span>
+
+                <button
+                  className="hs-edit-icon-btn"
+                  onClick={() => openEditor("accommodates", d.accommodates)}
+                  title="Edit"
+                >
+                  ✎
+                </button>
+              </div>
             </div>
+
           </div>
         </section>
 
@@ -367,7 +416,8 @@ export default function HostStayEdit() {
               <input
                 className="hs-edit-input"
                 value={d.location.addressLine}
-                onChange={(e) => onChange("location.addressLine", e.target.value)}
+                disabled
+                title={LOCKED_HINT}
               />
             </div>
 
@@ -376,19 +426,36 @@ export default function HostStayEdit() {
 
         {/* AMENITIES */}
         <section className="hs-edit-section">
-          <h2 className="hs-edit-section-title">{t(language, "hostStay.preview.amenities")}</h2>
+          <h2 className="hs-edit-section-title">
+            {t(language, "hostStay.preview.amenities")}
+          </h2>
 
-          <div className="hs-edit-card">
-            {d.amenities.map((item, idx) => (
-              <input
-                key={idx}
-                className="hs-edit-input"
-                value={item.name}
-                disabled
-              />
-            ))}
+          <div className="hs-edit-card hs-edit-amenities">
+            {d.amenities.length > 0 ? (
+              d.amenities.map((amenity, idx) => (
+                <div key={idx} className="hs-edit-amenity-row">
+                  {amenity.icon ? (
+                    <SvgIcon
+                      name={amenity.icon}
+                      className="hs-edit-amenity-icon"
+                    />
+                  ) : (
+                    <div className="hs-edit-amenity-icon-placeholder">•</div>
+                  )}
+
+                  <span className="hs-edit-amenity-text">
+                    {amenity.name}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="hs-edit-amenity-empty">
+                No amenities selected
+              </div>
+            )}
           </div>
         </section>
+
 
         {/* PRICING */}
         <section className="hs-edit-section">
@@ -397,51 +464,57 @@ export default function HostStayEdit() {
           <div className="hs-edit-card">
             <div className="hs-edit-row">
               <b>{t(language, "hostStay.preview.basePrice")}:</b>
-              <input
-                type="number"
-                className="hs-edit-input"
+              <EditableRow
                 value={d.pricing.basePrice}
-                onChange={(e) => onChange("pricing.basePrice", Number(e.target.value))}
+                editable
+                onEdit={() => openEditor("pricing.basePrice", d.pricing.basePrice)}
               />
             </div>
 
             <div className="hs-edit-row">
               <b>{t(language, "hostStay.preview.weekendMultiplier")}:</b>
-              <input
-                type="number"
-                className="hs-edit-input"
+              <EditableRow
                 value={d.pricing.weekendMultiplier}
-                onChange={(e) => onChange("pricing.weekendMultiplier", Number(e.target.value))}
+                editable
+                onEdit={() =>
+                  openEditor("pricing.weekendMultiplier", d.pricing.weekendMultiplier)
+                }
               />
             </div>
 
             <div className="hs-edit-row">
               <b>{t(language, "hostStay.preview.cleaningFee")}:</b>
-              <input
-                type="number"
-                className="hs-edit-input"
+              <EditableRow
                 value={d.pricing.cleaningFee}
-                onChange={(e) => onChange("pricing.cleaningFee", Number(e.target.value))}
+                editable
+                onEdit={() =>
+                  openEditor("pricing.cleaningFee", d.pricing.cleaningFee)
+                }
               />
             </div>
 
             <div className="hs-edit-row">
               <b>{t(language, "hostStay.preview.extraFee")}:</b>
-              <input
-                type="number"
-                className="hs-edit-input"
+              <EditableRow
                 value={d.pricing.extraPeopleFee}
-                onChange={(e) => onChange("pricing.extraPeopleFee", Number(e.target.value))}
+                editable
+                onEdit={() =>
+                  openEditor("pricing.extraPeopleFee", d.pricing.extraPeopleFee)
+                }
               />
             </div>
 
             <div className="hs-edit-row">
               <b>{t(language, "hostStay.preview.extraThreshold")}:</b>
-              <input
-                type="number"
-                className="hs-edit-input"
+              <EditableRow
                 value={d.pricing.extraPeopleThreshold}
-                onChange={(e) => onChange("pricing.extraPeopleThreshold", Number(e.target.value))}
+                editable
+                onEdit={() =>
+                  openEditor(
+                    "pricing.extraPeopleThreshold",
+                    d.pricing.extraPeopleThreshold
+                  )
+                }
               />
             </div>
           </div>
@@ -453,30 +526,29 @@ export default function HostStayEdit() {
             {t(language, "hostStay.preview.discounts")}
           </h2>
 
-          <div className="hs-edit-card">
-            <div className="hs-edit-row">
-              <b>Weekly discount (%)</b>
-              <input
-                type="number"
-                className="hs-edit-input"
-                value={d.pricing.discounts.weekly.percent}
-                onChange={(e) =>
-                  onChange("pricing.discounts.weekly.percent", Number(e.target.value))
-                }
-              />
-            </div>
+          <div className="hs-edit-row">
+            <b>Discount amount</b>
+            <EditableRow
+              value={d.pricing.discount}
+              editable
+              onEdit={() =>
+                openEditor("pricing.discount", d.pricing.discount)
+              }
+            />
+          </div>
 
-            <div className="hs-edit-row">
-              <b>Monthly discount (%)</b>
-              <input
-                type="number"
-                className="hs-edit-input"
-                value={d.pricing.discounts.monthly.percent}
-                onChange={(e) =>
-                  onChange("pricing.discounts.monthly.percent", Number(e.target.value))
-                }
-              />
-            </div>
+          <div className="hs-edit-row">
+            <b>Discount percentage (%)</b>
+            <EditableRow
+              value={d.pricing.discountPercentage}
+              editable
+              onEdit={() =>
+                openEditor(
+                  "pricing.discountPercentage",
+                  d.pricing.discountPercentage
+                )
+              }
+            />
           </div>
         </section>
 
@@ -523,43 +595,6 @@ export default function HostStayEdit() {
           </div>
         </section>
 
-
-        {/* SELF CHECK-IN */}
-        <section className="hs-edit-section">
-          <h2 className="hs-edit-section-title">
-            {t(language, "hostStay.preview.selfCheckin")}
-          </h2>
-
-          <div className="hs-edit-card">
-            <div className="hs-edit-row">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={d.rules.selfCheckIn}
-                  onChange={(e) =>
-                    onChange("rules.selfCheckIn", e.target.checked)
-                  }
-                />
-                {" "}Self check-in
-              </label>
-            </div>
-
-            {d.rules.selfCheckIn && (
-              <div className="hs-edit-row">
-                <b>{t(language, "hostStay.preview.method")}:</b>
-                <input
-                  className="hs-edit-input"
-                  value={d.rules.self_checkin_method}
-                  onChange={(e) =>
-                    onChange("rules.self_checkin_method", e.target.value)
-                  }
-                />
-              </div>
-            )}
-          </div>
-        </section>
-
-
         {/* PHOTOS */}
         <section className="hs-edit-section">
           <h2 className="hs-edit-section-title">{t(language, "hostStay.preview.photos")}</h2>
@@ -581,6 +616,33 @@ export default function HostStayEdit() {
           💾 Save Changes
         </button>
       </div>
+      {activeField && (
+        <div className="hs-modal">
+          <div className="hs-modal-backdrop" onClick={closeEditor} />
+
+          <div className="hs-modal-card">
+            <div className="hs-modal-header">
+              <b>Edit</b>
+              <button onClick={closeEditor}>✕</button>
+            </div>
+
+            <div className="hs-modal-body">
+              <input
+                type={typeof draftValue === "number" ? "number" : "text"}
+                value={draftValue}
+                onChange={(e) => setDraftValue(e.target.value)}
+                className="hs-input"
+              />
+            </div>
+
+            <div className="hs-modal-footer">
+              <button onClick={closeEditor}>Cancel</button>
+              <button onClick={saveEditor}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
