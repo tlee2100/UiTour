@@ -418,5 +418,3 @@ FodyWeavers.xsd
 *.msp
 /Backend/UITour/appsettings.json
 /Backend/UITour/wwwroot/uploads/images
-/Backend/UITour/appsettings.json
-/.gitignore

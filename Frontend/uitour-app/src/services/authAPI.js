@@ -943,6 +943,62 @@ async updateUserProfile(userId, form) {
 
   // ============ UPLOAD IMAGES ============
    // ✅ Upload 1 image, trả về "/uploads/images/xxx.png"
+
+  async uploadImages(files) {
+    try {
+      if (!files || files.length === 0) {
+        throw new Error('No files to upload');
+      }
+
+      // Filter out invalid files
+      const validFiles = files.filter(file => file instanceof File);
+      if (validFiles.length === 0) {
+        throw new Error('No valid files to upload');
+      }
+
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      validFiles.forEach(file => {
+        formData.append('files', file);
+      });
+
+      const response = await fetch(`${UPLOAD_BASE_URL}/images`, {
+        method: 'POST',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          // Don't set Content-Type header - browser will set it automatically with boundary for FormData
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        let errText = '';
+        try {
+          errText = await response.text();
+          // Try to parse as JSON for better error message
+          try {
+            const errJson = JSON.parse(errText);
+            errText = errJson.error || errJson.message || errText;
+          } catch {
+            // Not JSON, use as is
+          }
+        } catch {
+          errText = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errText || 'Failed to upload images');
+      }
+
+      const data = await response.json();
+      if (!data.files || data.files.length === 0) {
+        throw new Error('No files were uploaded successfully');
+      }
+      return data.files.map(f => f.url); // Returns array of URLs
+    } catch (err) {
+      console.error('Upload images error:', err);
+      throw err;
+    }
+  }
+
   async uploadImage(file) {
   try {
     const token = localStorage.getItem('token'); 
@@ -970,6 +1026,7 @@ async updateUserProfile(userId, form) {
     }
   }
 
+    
 
     // ✅ Update profile: gọi đúng endpoint bạn đang có: PUT /api/user/{id}/profile
     async updateUserProfile(userId, form) {
