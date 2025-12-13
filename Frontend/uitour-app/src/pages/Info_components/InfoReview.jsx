@@ -6,7 +6,7 @@ import ButtonWhite from "../../components/ButtonWhite";
 /* ---------------- HEADER ---------------- */
 const InfoReviewHeader = ({ rating, reviewsCount }) => {
   const safeRating = typeof rating === "number" ? rating : 0;
-
+  
   return (
     <div className="inforeview">
       <div className="ir-icon-text">
@@ -20,7 +20,19 @@ const InfoReviewHeader = ({ rating, reviewsCount }) => {
     </div>
   );
 };
-
+const normalizeImageUrl = (url) => {
+    if (!url || url.trim().length === 0) return null;
+    // If already a full URL (http/https), use as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url.trim();
+    }
+    // If relative path starting with /, prepend backend base URL
+    if (url.startsWith('/')) {
+      return `http://localhost:5069${url}`;
+    }
+    // Otherwise, assume it's a relative path and prepend backend base URL
+    return `http://localhost:5069/${url}`;
+  };
 /* ---------------- REVIEW CARD ---------------- */
 const IrReviewCard = ({ review = {} }) => {
   const {
@@ -31,7 +43,9 @@ const IrReviewCard = ({ review = {} }) => {
     createdAt,
     location = "Unknown",
   } = review;
-
+  const safeAvatar =
+    normalizeImageUrl(userAvatar) ||
+    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80";
   const [expanded, setExpanded] = useState(false);
 
   const safeRating = Math.min(5, Math.max(0, Number(rating) || 0));
@@ -63,7 +77,7 @@ const IrReviewCard = ({ review = {} }) => {
         <div className="ir-review-avatar">
           <img
             src={
-              userAvatar ||
+              safeAvatar ||
               "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80"
             }
             alt={userName}
