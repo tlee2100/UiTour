@@ -23,11 +23,17 @@ export default function Calendar({
       setSelectedStart(checkInDate);
       setCurrentMonth(checkInDate.getMonth());
       setCurrentYear(checkInDate.getFullYear());
+    } else {
+      // Clear check-in date when value is empty
+      setSelectedStart(null);
     }
     if (value?.checkOut) {
       const checkOutDate = new Date(value.checkOut);
       checkOutDate.setHours(0, 0, 0, 0);
       setSelectedEnd(checkOutDate);
+    } else {
+      // Clear check-out date when value is empty
+      setSelectedEnd(null);
     }
   }, [value]);
 

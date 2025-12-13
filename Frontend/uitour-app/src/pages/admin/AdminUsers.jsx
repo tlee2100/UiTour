@@ -3,12 +3,17 @@ import './admin.css';
 import adminAPI from '../../services/adminAPI';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { t } from '../../utils/translations';
+import ConfirmationModal from '../../components/modals/ConfirmationModal';
+import ToastContainer from '../../components/ToastContainer';
+import { useToast } from '../../hooks/useToast';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { language } = useLanguage();
+  const [roleConfirm, setRoleConfirm] = useState(null);
+  const { toasts, success, error: showError, removeToast } = useToast();
 
   useEffect(() => {
     loadUsers();
@@ -36,16 +41,26 @@ export default function AdminUsers() {
     return 'ACTIVE';
   };
 
-  const handleUpdateRole = async (userId, newRole) => {
-    if (!window.confirm(`Are you sure you want to change this user's role to "${newRole}"?`)) {
-      return;
-    }
+  const handleUpdateRole = (userId, newRole) => {
+    const user = users.find(u => (u.UserID || u.userID || u.id) === userId);
+    setRoleConfirm({
+      userId,
+      newRole,
+      userName: user?.FullName || user?.fullName || `User #${userId}`
+    });
+  };
+
+  const confirmUpdateRole = async () => {
+    if (!roleConfirm) return;
+    
     try {
-      await adminAPI.updateUserRole(userId, newRole);
-      alert('Role updated successfully!');
+      await adminAPI.updateUserRole(roleConfirm.userId, roleConfirm.newRole);
+      success('Role updated successfully!');
       loadUsers();
+      setRoleConfirm(null);
     } catch (err) {
-      alert('Error: ' + (err.message || 'Unable to update role'));
+      showError('Error: ' + (err.message || 'Unable to update role'));
+      setRoleConfirm(null);
     }
   };
 
@@ -122,6 +137,27 @@ export default function AdminUsers() {
           )}
         </div>
       </div>
+
+      {/* Role Update Confirmation Modal */}
+      {roleConfirm && (
+        <ConfirmationModal
+          isOpen={true}
+          onClose={() => setRoleConfirm(null)}
+          onConfirm={confirmUpdateRole}
+          title="Change User Role"
+          message={`Are you sure you want to change this user's role to "${roleConfirm.newRole}"?`}
+          details={{
+            'User': roleConfirm.userName,
+            'New Role': roleConfirm.newRole
+          }}
+          confirmText="Confirm"
+          cancelText="Cancel"
+          type="warning"
+        />
+      )}
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }

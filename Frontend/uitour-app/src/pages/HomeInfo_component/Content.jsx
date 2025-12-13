@@ -5,7 +5,18 @@ import Calendar from "../../components/Calendar";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { t } from "../../utils/translations";
 
-const Content = ({ property }) => {
+// Helper function to format date for display (e.g., "Oct 21, 2025")
+const formatDateForDisplay = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const month = monthNames[date.getMonth()];
+    const day = date.getDate();
+    const year = date.getFullYear();
+    return `${month} ${day}, ${year}`;
+};
+
+const Content = ({ property, checkInDate, checkOutDate, onDatesChange }) => {
     const { language } = useLanguage();
 
     const defaultProperty = {
@@ -236,13 +247,31 @@ const Content = ({ property }) => {
                         </div>
 
                         <div className="content-calendar-subtitle">
-                            Oct 21, 2025 - Oct 25, 2025
+                            {checkInDate && checkOutDate
+                                ? `${formatDateForDisplay(checkInDate)} - ${formatDateForDisplay(checkOutDate)}`
+                                : checkInDate
+                                ? formatDateForDisplay(checkInDate)
+                                : ""}
                         </div>
                     </div>
 
-                    <Calendar />
+                    <Calendar 
+                        value={{ checkIn: checkInDate || '', checkOut: checkOutDate || '' }}
+                        onChange={(dates) => {
+                            // Update checkIn date
+                            onDatesChange?.('checkIn', dates.checkIn || '');
+                            // Update checkOut date (may be empty string when starting new selection)
+                            onDatesChange?.('checkOut', dates.checkOut || '');
+                        }}
+                    />
 
-                    <ButtonWhite className="content-button-clear-days">
+                    <ButtonWhite 
+                        className="content-button-clear-days"
+                        onClick={() => {
+                            onDatesChange?.('checkIn', '');
+                            onDatesChange?.('checkOut', '');
+                        }}
+                    >
                         {t(language, "homeContent.calendar.clear")}
                     </ButtonWhite>
                 </div>
