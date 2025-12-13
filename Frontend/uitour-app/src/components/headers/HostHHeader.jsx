@@ -160,7 +160,7 @@ export default function HostHHeader() {
 
                     <aside className="host-menu-panel">
                         <div className="host-menu-header">
-                            <h2>{t(language, "host.menu")}</h2>
+                            <h2>{t(language, "menu")}</h2>
                             <button className="host-menu-close" onClick={() => setMenuOpen(false)}>
                                 <Icon icon="mdi:close" width="24" />
                             </button>
@@ -169,9 +169,9 @@ export default function HostHHeader() {
                         <div className="host-menu-card">
                             <img src={sampleImg} className="host-menu-card-img" alt="" />
                             <div className="host-menu-card-content">
-                                <h3>{t(language, "host.newToHosting")}</h3>
-                                <p>{t(language, "host.discoverBestPractices")}</p>
-                                <button className="host-menu-card-action">{t(language, "host.getStarted")}</button>
+                                <h3>{t(language, "newToHosting")}</h3>
+                                <p>{t(language, "discoverBestPractices")}</p>
+                                <button className="host-menu-card-action">{t(language, "getStarted")}</button>
                             </div>
                         </div>
 
@@ -184,7 +184,7 @@ export default function HostHHeader() {
                                 }}
                             >
                                 <Icon icon="mdi:cog-outline" width="20" />
-                                <span>{t(language, "host.accountSettings")}</span>
+                                <span>{t(language, "accountSettingsLabel")}</span>
                             </button>
 
                             <button
@@ -195,7 +195,7 @@ export default function HostHHeader() {
                                 }}
                             >
                                 <Icon icon="mdi:earth" width="20" />
-                                <span>{t(language, "host.languageCurrency")}</span>
+                                <span>{t(language, "languageCurrency")}</span>
                             </button>
 
                             <button
@@ -206,7 +206,7 @@ export default function HostHHeader() {
                                 }}
                             >
                                 <Icon icon="mdi:lifebuoy" width="20" />
-                                <span>{t(language, "host.getSupport")}</span>
+                                <span>{t(language, "getSupport")}</span>
                             </button>
 
                             <button
@@ -217,14 +217,14 @@ export default function HostHHeader() {
                                 }}
                             >
                                 <Icon icon="mdi:plus-circle-outline" width="20" />
-                                <span>{t(language, "host.createNewListing")}</span>
+                                <span>{t(language, "createNewListing")}</span>
                             </button>
 
                             <div className="host-menu-divider" />
 
                             <button className="host-menu-link host-menu-link-secondary" onClick={handleLogout}>
                                 <Icon icon="mdi:logout" width="20" />
-                                <span>{t(language, "host.logOut")}</span>
+                                <span>{t(language, "logOut")}</span>
                             </button>
                         </nav>
                     </aside>
