@@ -71,7 +71,9 @@ namespace UITour.ServicesL.Implementations
                 SentAt = m.SentAt,
                 IsRead = m.IsRead,
                 PartnerId = m.FromUserID == userId1 ? m.ToUserID ?? 0 : m.FromUserID ?? 0,
-                PartnerName = m.FromUserID == userId1 ? m.ToUser?.FullName ?? "" : m.FromUser?.FullName ?? ""
+                PartnerName = m.FromUserID == userId1 ? m.ToUser?.FullName ?? "" : m.FromUser?.FullName ?? "",
+                FromUserAvatar = m.FromUser?.Avatar ?? "",
+                ToUserAvatar = m.ToUser?.Avatar ?? ""
             });
         }
 
@@ -113,7 +115,7 @@ namespace UITour.ServicesL.Implementations
                     {
                         ConversationId = partner.UserID,
                         PartnerName = partner.FullName,
-                        PartnerAvatar = null, // nếu có field avatar thì gán
+                        PartnerAvatar = partner.Avatar, // nếu có field avatar thì gán
                         LastMessage = lastMsg.Content,
                         LastMessageAt = lastMsg.SentAt,
                         UnreadCount = g.Count(m => !m.IsRead && m.ToUserID == userId)
@@ -148,4 +150,7 @@ public class MessageDto
 
     public int PartnerId { get; set; } // người đối diện
     public string PartnerName { get; set; }
+    // 👇 thêm avatar
+    public string FromUserAvatar { get; set; }
+    public string ToUserAvatar { get; set; }
 }

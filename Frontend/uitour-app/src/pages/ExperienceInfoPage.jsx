@@ -282,10 +282,10 @@ export default function ExperienceInfoPage() {
     name: r.user?.fullName || "Reviewer",
   })) || [];
   // Debug: Log experienceDetails
-  console.log("🔍 ExperienceInfoPage - exp.experienceDetails:", exp?.experienceDetails);
-  console.log("🔍 ExperienceInfoPage - exp.experienceDetails length:", exp?.experienceDetails?.length || 0);
-  console.log("🔍 ExperienceInfoPage - exp:", exp.host);
-  console.log("🔍 ExperienceInfoPage - hostData:", hostData);
+  //console.log("🔍 ExperienceInfoPage - exp.experienceDetails:", exp?.experienceDetails);
+  //console.log("🔍 ExperienceInfoPage - exp.experienceDetails length:", exp?.experienceDetails?.length || 0);
+  //console.log("🔍 ExperienceInfoPage - exp:", exp.host);
+  //console.log("🔍 ExperienceInfoPage - hostData:", hostData);
   return (
     <div className="experience-info-page">
 

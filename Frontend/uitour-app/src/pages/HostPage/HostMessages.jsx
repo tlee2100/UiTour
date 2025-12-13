@@ -110,6 +110,20 @@ export default function HostMessages() {
         navigate("/");
     };
 
+
+    const normalizeImageUrl = (url) => {
+        if (!url || url.trim().length === 0) return null;
+        // If already a full URL (http/https), use as is
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url.trim();
+        }
+        // If relative path starting with /, prepend backend base URL
+        if (url.startsWith('/')) {
+        return `http://localhost:5069${url}`;
+        }
+        // Otherwise, assume it's a relative path and prepend backend base URL
+        return `http://localhost:5069/${url}`;
+    };
     const currentUserId = user?.UserID || user?.id;
 
     useEffect(() => {
@@ -193,12 +207,14 @@ export default function HostMessages() {
                 toUserId: m.toUserID ?? m.ToUserID,
                 text: m.content ?? m.Content,
                 timestamp: m.sentAt ?? m.SentAt,
+                partnerAvatar: m.partnerAvatar ?? m.toUserAvatar ?? m.PartnerAvatar?? null,  
             }));
 
             setSelectedConversation({
                 partnerId: userId2,
                 partnerName: partnerName || data?.[0]?.partnerName || "",
                 messages,
+                partnerAvatar: data?.[0]?.partnerAvatar || data?.[0]?.toUserAvatar || null,
             });
         } catch (err) {
             console.error("Failed to load conversation:", err);
@@ -276,6 +292,7 @@ export default function HostMessages() {
         const partner = {
             id: conversation.conversationId,
             name: conversation.partnerName,
+            partnerAvatar: conversation.partnerAvatar,
         };
         setSelectedUser(partner);
         loadConversation(currentUserId, partner.id, partner.name);
@@ -300,6 +317,7 @@ export default function HostMessages() {
             setSelectedConversation({
                 partnerId,
                 partnerName,
+                partnerAvatar: found.avatar || found.Avatar || null, // ✅
                 messages: [],
             });
 
@@ -326,27 +344,6 @@ export default function HostMessages() {
             setIsCreatingChat(false);
         }
     };
-    /*const handleSendMessage = (e) => {
-        e.preventDefault();
-        if (messageInput.trim()) {
-            const newMessage = {
-                id: selectedConversation.messages.length + 1,
-                sender: "host",
-                text: messageInput,
-                timestamp: new Date().toISOString(),
-            };
-
-            const updated = {
-                ...selectedConversation,
-                messages: [...selectedConversation.messages, newMessage],
-                lastMessage: messageInput,
-                timestamp: "Just now",
-            };
-
-            setSelectedConversation(updated);
-            setMessageInput("");
-        }
-    };*/
 
     const formatMessageDate = (timestamp) => {
         const date = new Date(timestamp);
@@ -357,7 +354,7 @@ export default function HostMessages() {
         if (date.toDateString() === yesterday.toDateString()) return t(language, "hostMessages.yesterday");
         return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     };
-
+    
     return (
         <div className="host-messages">
             <div className="messages-container">
@@ -429,6 +426,7 @@ export default function HostMessages() {
                                 const isActive =
                                     selectedConversation &&
                                     selectedConversation.partnerId === conv.conversationId;
+                                const safeAvatar = normalizeImageUrl(conv.partnerAvatar);
                                 return (
                                     <div
                                         key={conv.conversationId} // sửa từ conv.id -> conv.conversationId
@@ -437,7 +435,7 @@ export default function HostMessages() {
                                     >
                                         <div className="conversation-avatar">
                                             {conv.partnerAvatar ? (
-                                                <img src={conv.partnerAvatar} alt={conv.partnerName} />
+                                                <img src={safeAvatar} alt={conv.partnerName} />
                                             ) : (
                                                 <div className="avatar-placeholder">
                                                     {conv.partnerName ? conv.partnerName.charAt(0) : "?"}
@@ -468,7 +466,14 @@ export default function HostMessages() {
                                 <div className="thread-header-info">
                                     <div className="thread-avatar">
                                         {selectedConversation.partnerAvatar ? (
-                                            <img src={selectedConversation.partnerAvatar} alt={selectedConversation.partnerName} />
+                                            <img
+                                            src={normalizeImageUrl(selectedConversation.partnerAvatar)}
+                                            alt={selectedConversation.partnerName}
+                                            onError={(e) =>
+                                                (e.target.src =
+                                                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150")
+                                            }
+                                            />
                                         ) : (
                                             <div className="avatar-placeholder">{selectedConversation.partnerName ? selectedConversation.partnerName.charAt(0) : "?"}</div>
                                         )}
