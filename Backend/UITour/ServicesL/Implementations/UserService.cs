@@ -95,21 +95,38 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<bool> UpdateProfileAsync(int userId, UpdateUserProfileDto dto)
         {
-            var existingUser = await GetByIdAsync(userId);
-            if (existingUser == null) throw new InvalidOperationException("User not found");
+            var user = await GetByIdAsync(userId);
+            if (user == null)
+                throw new InvalidOperationException("User not found");
 
-            // Cập nhật các trường từ DTO
-            existingUser.FullName = dto.FullName;
-            existingUser.UserAbout = dto.UserAbout;
-            existingUser.Age = dto.Age;
-            existingUser.Gender = dto.Gender;
-            existingUser.Nationality = dto.Nationality;
-            existingUser.Interests = dto.Interests;
+            // Chỉ update khi có dữ liệu (KHÔNG overwrite null)
+            if (!string.IsNullOrWhiteSpace(dto.FullName))
+                user.FullName = dto.FullName.Trim();
 
-            _unitOfWork.Users.Update(existingUser);
+            if (!string.IsNullOrWhiteSpace(dto.UserAbout))
+                user.UserAbout = dto.UserAbout.Trim();
+
+            if (dto.Age.HasValue)
+                user.Age = dto.Age;
+
+            if (!string.IsNullOrWhiteSpace(dto.Gender))
+                user.Gender = dto.Gender;
+
+            if (!string.IsNullOrWhiteSpace(dto.Nationality))
+                user.Nationality = dto.Nationality;
+
+            if (!string.IsNullOrWhiteSpace(dto.Interests))
+                user.Interests = dto.Interests;
+
+            // ⭐ AVATAR
+            if (!string.IsNullOrWhiteSpace(dto.Avatar))
+                user.Avatar = dto.Avatar;
+
+            _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync();
             return true;
         }
+
 
         public async Task<bool> UpdateUserRoleAsync(int userId, string newRole)
         {

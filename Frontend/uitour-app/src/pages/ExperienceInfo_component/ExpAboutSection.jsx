@@ -17,7 +17,7 @@ export default function ExpAboutSection({
   onSaveToggle,
   isSaved = false,
   saveLoading = false,
-  onShare
+  onShare,
 }) {
   const { convertToCurrent, format } = useCurrency();
   
@@ -34,12 +34,25 @@ export default function ExpAboutSection({
     (host?.pricing?.basePrice) ??
     0;
   const finalPrice = convertToCurrent(finalPriceUSD);
-
+  // Helper function to normalize image URL
+  const normalizeImageUrl = (url) => {
+      if (!url || url.trim().length === 0) return null;
+      // If already a full URL (http/https), use as is
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url.trim();
+      }
+      // If relative path starting with /, prepend backend base URL
+      if (url.startsWith('/')) {
+        return `http://localhost:5069${url}`;
+      }
+      // Otherwise, assume it's a relative path and prepend backend base URL
+      return `http://localhost:5069/${url}`;
+  };
   // ✅ Host safe data
   const safeHost = host || {};
   const safeHostName = safeHost.name || "Host";
   const safeAvatar =
-    safeHost.avatar ||
+    normalizeImageUrl(safeHost.avatar) ||
     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150";
 
   return (

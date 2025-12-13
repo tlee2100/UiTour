@@ -1,4 +1,13 @@
 {
+  "menu": "Menu",
+  "newToHosting": "New to hosting?",
+  "discoverBestPractices": "Discover best practices shared by top-rated hosts and start welcoming guests with confidence.",
+  "getStarted": "Get started",
+  "accountSettingsLabel": "Account",
+  "languageCurrency": "Language & currency",
+  "getSupport": "Get support",
+  "createNewListing": "Create a new listing",
+  "logOut": "Log out",
   "common": {
     "stays": "Stays",
     "experiences": "Experiences",
@@ -111,7 +120,9 @@
     "done": "Done",
     "cancel": "Cancel",
     "failedToSaveProfile": "Failed to save profile",
-    "missingLoginInfoEdit": "Missing login information. Please log in again."
+    "missingLoginInfoEdit": "Missing login information. Please log in again.",
+    "uploadAvatar": "Upload Avatar",
+    "removeAvatar": "Delete Avatar"
   },
   "accountSettings": {
     "title": "Account settings",
