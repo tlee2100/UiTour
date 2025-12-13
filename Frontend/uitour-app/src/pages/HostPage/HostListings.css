@@ -400,3 +400,27 @@
 .listing-card:hover .listing-edit-btn {
     opacity: 1;
 }
+
+/* =====================================
+   EDIT BUTTON - DISABLED / PENDING
+===================================== */
+.listing-edit-btn.disabled,
+.listing-edit-btn:disabled {
+    opacity: 0.35;
+    background: rgba(107, 114, 128, 0.6); /* gray-500 */
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Không hover, không scale khi disabled */
+.listing-edit-btn.disabled:hover,
+.listing-edit-btn:disabled:hover {
+    background: rgba(107, 114, 128, 0.6);
+    transform: none;
+}
+
+/* Icon cũng mờ theo */
+.listing-edit-btn.disabled svg,
+.listing-edit-btn:disabled svg {
+    opacity: 0.8;
+}
