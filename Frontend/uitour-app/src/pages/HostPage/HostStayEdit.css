@@ -1,7 +1,5 @@
 /* ============================================================
-   HOST STAY – EDIT PAGE (Matches Stay Preview style)
-   Clean, minimal, editable version of preview UI
-   Prefix: hs-edit-
+   HOST STAY – EDIT PAGE
 ============================================================ */
 
 .hs-edit-page {
@@ -19,7 +17,7 @@
 }
 
 /* ============================
-   HERO (image + inputs)
+   HERO
 ============================ */
 
 .hs-edit-hero {
@@ -35,43 +33,42 @@
   margin-bottom: 20px;
 }
 
-/* TITLE INPUT */
-.hs-edit-title-input {
-  width: 100%;
+.hs-edit-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+/* TITLE */
+.editable-hero-title {
   font-size: 28px;
   font-weight: 600;
   text-align: center;
-  border: none;
-  background: transparent;
-  outline: none;
-  margin-bottom: 12px;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
-.hs-edit-title-input::placeholder {
-  color: #aaa;
-}
-
-/* SUMMARY INPUT */
-.hs-edit-summary-input {
-  width: 100%;
-  min-height: 80px;
-  resize: vertical;
-  border: none;
-  background: transparent;
-  outline: none;
+/* DESCRIPTION */
+.editable-hero-description {
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.6;
   text-align: center;
-  margin-bottom: 14px;
+  max-width: 680px;
+  cursor: pointer;
   color: #333;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
-/* LOCATION INPUT */
+/* LOCATION */
 .hs-edit-location-input {
   width: 100%;
   text-align: center;
   border: none;
-  outline: none;
   background: transparent;
   color: #555;
   font-size: 16px;
@@ -92,7 +89,6 @@
   margin-bottom: 14px;
 }
 
-/* CARD */
 .hs-edit-card {
   background: #fff;
   border: 1px solid #e8e8e8;
@@ -101,7 +97,7 @@
   font-size: 16px;
 }
 
-/* ROWS */
+/* ROW */
 .hs-edit-row {
   display: flex;
   align-items: center;
@@ -114,22 +110,75 @@
   font-weight: 600;
 }
 
-/* INPUTS */
+/* ============================
+   INPUT (LOCKED)
+============================ */
+
 .hs-edit-input {
   flex: 1;
   padding: 10px 12px;
   border: 1.5px solid #ddd;
   border-radius: 10px;
   font-size: 15px;
-  outline: none;
   background: #fafafa;
-  transition: 0.15s ease;
 }
 
-.hs-edit-input:focus {
-  border-color: #000;
+/* ============================
+   READONLY EDITABLE FIELD
+============================ */
+
+.hs-edit-display {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  background: #fafafa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+}
+
+.hs-edit-display-editable {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid #626262;
+  border-radius: 10px;
   background: #fff;
-  box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+}
+
+.hs-edit-display.editable {
+  cursor: pointer;
+}
+
+.hs-edit-display.editable:hover {
+  border-color: #bbb;
+  background: #fff;
+}
+
+.hs-edit-display.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* EDIT ICON */
+.hs-edit-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
+
+.hs-edit-icon-btn:hover {
+  color: #000;
+}
+
+.hs-lock-icon {
+  color: #aaa;
 }
 
 /* ============================
@@ -142,16 +191,11 @@
   gap: 12px;
 }
 
-.hs-edit-photo-wrapper {
-  position: relative;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
 .hs-edit-photo-item {
   width: 100%;
   height: 150px;
   object-fit: cover;
+  border-radius: 10px;
 }
 
 /* ============================
@@ -160,7 +204,7 @@
 
 .hs-edit-save-btn {
   width: 100%;
-  padding: 16px 20px;
+  padding: 16px;
   border-radius: 12px;
   border: none;
   background: #111;
@@ -168,30 +212,161 @@
   font-size: 17px;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.2s ease;
   margin-top: 40px;
 }
 
 .hs-edit-save-btn:hover {
   background: #000;
-  transform: translateY(-1px);
-}
-
-.hs-edit-save-btn:active {
-  transform: translateY(1px);
 }
 
 /* ============================
-   RESPONSIVE
+   MODAL
 ============================ */
 
-@media (max-width: 720px) {
-  .hs-edit-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.hs-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
 
-  .hs-edit-row b {
-    margin-bottom: 4px;
-  }
+.hs-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.hs-modal-card {
+  max-width: 420px;
+  margin: 12vh auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.hs-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px solid #ddd;
+  font-size: 15px;
+}
+
+/* ============================
+   MODAL HEADER
+============================ */
+
+.hs-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.hs-modal-header b {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.hs-modal-header button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+  line-height: 1;
+}
+
+.hs-modal-header button:hover {
+  color: #000;
+}
+
+/* ============================
+   MODAL BODY
+============================ */
+
+.hs-modal-body {
+  margin-bottom: 20px;
+}
+
+/* ============================
+   MODAL FOOTER
+============================ */
+
+.hs-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* CANCEL */
+.hs-modal-footer button:first-child {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #f0f0f0;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.hs-modal-footer button:first-child:hover {
+  background: #e6e6e6;
+}
+
+/* SAVE */
+.hs-modal-footer button:last-child {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  background: #111;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hs-modal-footer button:last-child:hover {
+  background: #000;
+}
+
+/* ============================
+   AMENITIES (VIEW ONLY)
+============================ */
+
+.hs-edit-amenities {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hs-edit-amenity-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  color: #333;
+}
+
+.hs-edit-amenity-icon {
+  width: 22px;
+  height: 22px;
+  color: #444;
+  flex-shrink: 0;
+}
+
+.hs-edit-amenity-icon-placeholder {
+  width: 22px;
+  text-align: center;
+  color: #999;
+  font-size: 18px;
+}
+
+.hs-edit-amenity-text {
+  line-height: 1.4;
+}
+
+.hs-edit-amenity-empty {
+  color: #777;
+  font-size: 14px;
 }
