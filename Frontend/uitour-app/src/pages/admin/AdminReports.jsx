@@ -2,10 +2,13 @@ import { useState } from 'react';
 import './admin.css';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { t } from '../../utils/translations';
+import ToastContainer from '../../components/ToastContainer';
+import { useToast } from '../../hooks/useToast';
 
 export default function AdminReports() {
   const [selectedReport, setSelectedReport] = useState(null);
   const { language } = useLanguage();
+  const { toasts, success, removeToast } = useToast();
   
   // Mock data - replace with API call when backend is ready
   const rows = [
@@ -19,14 +22,14 @@ export default function AdminReports() {
 
   const handleResolve = () => {
     if (selectedReport) {
-      alert(`Đã giải quyết báo cáo #${selectedReport.id}`);
+      success(`Đã giải quyết báo cáo #${selectedReport.id}`);
       setSelectedReport(null);
     }
   };
 
   const handleMarkProcessing = () => {
     if (selectedReport) {
-      alert(`Đã đánh dấu báo cáo #${selectedReport.id} là đang xử lý`);
+      success(`Đã đánh dấu báo cáo #${selectedReport.id} là đang xử lý`);
     }
   };
 
@@ -89,6 +92,9 @@ export default function AdminReports() {
           </button>
         </div>
       </aside>
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }

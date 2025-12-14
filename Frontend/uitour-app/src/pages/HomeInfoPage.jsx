@@ -838,7 +838,12 @@ export default function HomeInfoPage() {
         {/* ✅ Main layout */}
         <div className="homeinfo-main">
           <div className="homeinfo-left">
-            <Content property={p} />
+            <Content 
+              property={p}
+              checkInDate={bookingState.checkIn}
+              checkOutDate={bookingState.checkOut}
+              onDatesChange={handleDatesChange}
+            />
           </div>
 
           <div className="homeinfo-right">

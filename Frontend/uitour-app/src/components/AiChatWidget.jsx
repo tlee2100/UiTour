@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useApp } from "../contexts/AppContext";
 import "./AiChatWidget.css";
 
 /**
@@ -13,6 +15,9 @@ const CHATBOT_ENDPOINT = API_BASE_URL
   : "/api/chatbot";
 
 function AiChatWidget() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, token } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -26,6 +31,12 @@ function AiChatWidget() {
       }),
     },
   ]);
+
+  // Hide chatbot on login and signup pages
+  const shouldHide = location.pathname === "/login" || location.pathname === "/signup";
+  
+  // Check if user is logged in
+  const isLoggedIn = !!(user && token);
 
   const fabRef = useRef(null);
   const inputRef = useRef(null);
@@ -83,6 +94,8 @@ function AiChatWidget() {
 
   const handleFabClick = (event) => {
     event.preventDefault();
+    // If not logged in, open chat to show login prompt
+    // If logged in, open chat normally
     openChat();
   };
 
@@ -178,6 +191,11 @@ function AiChatWidget() {
       setIsSending(false);
     }
   };
+
+  // Don't render on login/signup pages
+  if (shouldHide) {
+    return null;
+  }
 
   return (
     <>
@@ -275,92 +293,143 @@ function AiChatWidget() {
               </div>
             </header>
             <div className="ai-chat-modal-body">
-              <div
-                className="ai-chat-messages"
-                ref={messagesRef}
-                aria-live="polite"
-              >
-                {messages.map((m, index) => {
-                  const isUser = m.side === "user";
-                  const isLastUser =
-                    isUser &&
-                    index ===
-                      messages.reduce(
-                        (lastIdx, msg, idx) =>
-                          msg.side === "user" ? idx : lastIdx,
-                        -1
-                      );
-
-                  return (
-                    <div
-                      key={m.id}
-                      className={`ai-chat-message ai-chat-message-${
-                        isUser ? "user" : "bot"
-                      }`}
-                    >
-                      {!isUser && (
-                        <div className="ai-chat-message-avatar">
-                          <span className="ai-chat-message-avatar-icon" />
-                        </div>
-                      )}
+              {!isLoggedIn ? (
+                // Show login prompt when not logged in
+                <div className="ai-chat-login-prompt">
+                  <div className="ai-chat-messages" ref={messagesRef} aria-live="polite">
+                    <div className="ai-chat-message ai-chat-message-bot">
+                      <div className="ai-chat-message-avatar">
+                        <span className="ai-chat-message-avatar-icon" />
+                      </div>
                       <div className="ai-chat-message-content">
-                        <div className="ai-chat-bubble">{m.text}</div>
-                        <div className="ai-chat-meta-row">
-                          {!isUser && (
-                            <span className="ai-chat-meta-author">
-                              UITAssistant &bull; {m.timestamp}
-                            </span>
-                          )}
-                          {isUser && (
-                            <span className="ai-chat-meta-author">
-                              YOU &bull; {m.timestamp}
-                            </span>
-                          )}
+                        <div className="ai-chat-bubble">
+                          Please log in to use the chatbot. You need to be signed in to chat with our AI assistant.
                         </div>
-                        {isLastUser && (
-                          <div className="ai-chat-read-indicator">Read</div>
-                        )}
+                        <div className="ai-chat-meta-row">
+                          <span className="ai-chat-meta-author">
+                            UITAssistant &bull; {new Date().toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-
-              <form className="ai-chat-input-bar" onSubmit={handleSubmit}>
-                <div className="ai-chat-input-wrapper">
-                  <label className="visually-hidden" htmlFor="ai-chat-input">
-                    Write a message
-                  </label>
-                  <input
-                    id="ai-chat-input"
-                    ref={inputRef}
-                    className="ai-chat-input"
-                    type="text"
-                    autoComplete="off"
-                    placeholder="Write a message"
-                  />
+                  </div>
+                  <div className="ai-chat-login-actions">
+                    <button
+                      type="button"
+                      className="ai-chat-login-btn"
+                      onClick={() => {
+                        closeChat();
+                        navigate("/login");
+                      }}
+                    >
+                      Log In
+                    </button>
+                    <button
+                      type="button"
+                      className="ai-chat-signup-btn"
+                      onClick={() => {
+                        closeChat();
+                        navigate("/signup");
+                      }}
+                    >
+                      Sign Up
+                    </button>
+                  </div>
                 </div>
-                <button
-                  type="submit"
-                  className="ai-chat-send-btn"
-                  aria-label="Send message"
-                  disabled={isSending}
-                >
-                  {/* Inline send icon (paper plane) */}
-                  <svg
-                    className="ai-chat-send-icon"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    focusable="false"
+              ) : (
+                // Show normal chat when logged in
+                <>
+                  <div
+                    className="ai-chat-messages"
+                    ref={messagesRef}
+                    aria-live="polite"
                   >
-                    <path d="M3.4 20.6 20.5 12 3.4 3.4 3 10.5l9 1.5-9 1.5z" />
-                  </svg>
-                </button>
-              </form>
-              {errorMessage && (
-                <div className="ai-chat-error" role="status">
-                  {errorMessage}
-                </div>
+                    {messages.map((m, index) => {
+                      const isUser = m.side === "user";
+                      const isLastUser =
+                        isUser &&
+                        index ===
+                          messages.reduce(
+                            (lastIdx, msg, idx) =>
+                              msg.side === "user" ? idx : lastIdx,
+                            -1
+                          );
+
+                      return (
+                        <div
+                          key={m.id}
+                          className={`ai-chat-message ai-chat-message-${
+                            isUser ? "user" : "bot"
+                          }`}
+                        >
+                          {!isUser && (
+                            <div className="ai-chat-message-avatar">
+                              <span className="ai-chat-message-avatar-icon" />
+                            </div>
+                          )}
+                          <div className="ai-chat-message-content">
+                            <div className="ai-chat-bubble">{m.text}</div>
+                            <div className="ai-chat-meta-row">
+                              {!isUser && (
+                                <span className="ai-chat-meta-author">
+                                  UITAssistant &bull; {m.timestamp}
+                                </span>
+                              )}
+                              {isUser && (
+                                <span className="ai-chat-meta-author">
+                                  YOU &bull; {m.timestamp}
+                                </span>
+                              )}
+                            </div>
+                            {isLastUser && (
+                              <div className="ai-chat-read-indicator">Read</div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <form className="ai-chat-input-bar" onSubmit={handleSubmit}>
+                    <div className="ai-chat-input-wrapper">
+                      <label className="visually-hidden" htmlFor="ai-chat-input">
+                        Write a message
+                      </label>
+                      <input
+                        id="ai-chat-input"
+                        ref={inputRef}
+                        className="ai-chat-input"
+                        type="text"
+                        autoComplete="off"
+                        placeholder="Write a message"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="ai-chat-send-btn"
+                      aria-label="Send message"
+                      disabled={isSending}
+                    >
+                      {/* Inline send icon (paper plane) */}
+                      <svg
+                        className="ai-chat-send-icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        <path d="M3.4 20.6 20.5 12 3.4 3.4 3 10.5l9 1.5-9 1.5z" />
+                      </svg>
+                    </button>
+                  </form>
+                  {errorMessage && (
+                    <div className="ai-chat-error" role="status">
+                      {errorMessage}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </section>

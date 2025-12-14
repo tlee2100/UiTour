@@ -72,7 +72,7 @@
   background: transparent;
   color: #555;
   font-size: 16px;
-  margin-top: 4px;
+  margin-top: 16px;
 }
 
 /* ============================
@@ -238,6 +238,7 @@
 .hs-modal-card {
   max-width: 420px;
   margin: 12vh auto;
+  max-height: 80vh;
   background: #fff;
   border-radius: 16px;
   padding: 20px;
@@ -297,6 +298,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 /* CANCEL */
@@ -345,7 +347,7 @@
   align-items: center;
   gap: 12px;
   font-size: 15px;
-  color: #333;
+  color: #000000;
 }
 
 .hs-edit-amenity-icon {
@@ -369,4 +371,191 @@
 .hs-edit-amenity-empty {
   color: #777;
   font-size: 14px;
+}
+
+/* ============================
+   PHOTO ITEM CONTROLS
+============================ */
+
+.hs-edit-photo-wrapper {
+  position: relative;
+}
+
+/* REMOVE BUTTON (TOP RIGHT) */
+.hs-photo-remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 3;
+}
+
+.hs-photo-remove-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+/* COVER BADGE (TOP LEFT) */
+.hs-cover-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  z-index: 2;
+}
+
+/* COVER VISUAL */
+.hs-edit-photo-item.is-cover {
+  outline: 3px solid #000;
+}
+
+.hs-modal-card.large .hs-modal-body {
+  flex: 1;                   /* chiếm phần còn lại */
+  overflow-y: auto;          /* ✅ scroll */
+  padding-right: 6px;        /* tránh che scrollbar */
+}
+
+/* ============================
+   ADD / UPLOAD PHOTOS BUTTON
+============================ */
+
+.hs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 12px 18px;
+  border-radius: 12px;
+
+  border: 1.5px dashed #bbb;
+  background: #fafafa;
+
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+}
+
+.hs-btn:hover {
+  background: #f2f2f2;
+  border-color: #000;
+  color: #000;
+}
+
+.hs-btn:active {
+  transform: scale(0.98);
+}
+
+/* ============================
+   AMENITIES GRID (MODAL)
+============================ */
+
+.hs-amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* ✅ 2 ô / dòng */
+  gap: 14px;
+}
+
+/* ============================
+   AMENITY CARD
+============================ */
+
+.hs-amenity-card {
+  aspect-ratio: 1 / 1;            /* 🔥 hình vuông */
+  border-radius: 14px;
+
+  width: 150px !important;
+
+  border: 1.5px solid #e0e0e0;
+  background: #fafafa;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  font-size: 14px;
+  text-align: center;
+  padding: 12px;
+}
+
+.hs-amenity-card .hs-icon {
+  width: 32px;
+  height: 32px;
+  color: #333;
+}
+
+.hs-amenity-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #222;
+  line-height: 1.3;
+}
+
+.hs-amenity-card:hover {
+  background: #fff;
+  border-color: #000;
+}
+
+.hs-amenity-card.is-selected {
+  border-color: #000;
+  background: #fff;
+}
+
+.hs-amenity-card.is-selected .hs-icon {
+  color: #000;
+}
+
+.hs-amenity-card.is-selected .hs-amenity-label {
+  font-weight: 600;
+}
+
+.hs-amenity-card:active {
+  transform: scale(0.97);
+}
+
+/* ============================
+   HERO TITLE / DESCRIPTION
+============================ */
+
+.hs-hero-title {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.25;
+
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+
+  text-align: center;
+}
+
+.hs-hero-description {
+  font-size: 21px;
+  line-height: 1.7;
+  max-width: 680px;
+
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+
+  color: #333;
+  text-align: center;
 }

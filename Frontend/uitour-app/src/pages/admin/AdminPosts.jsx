@@ -4,6 +4,9 @@ import './admin.css';
 import adminAPI from '../../services/adminAPI';
 import { Icon } from '@iconify/react';
 import { useApp } from '../../contexts/AppContext';
+import ConfirmationModal from '../../components/modals/ConfirmationModal';
+import ToastContainer from '../../components/ToastContainer';
+import { useToast } from '../../hooks/useToast';
 
 export default function AdminPosts() {
   const navigate = useNavigate();
@@ -19,6 +22,9 @@ export default function AdminPosts() {
   const [rejecting, setRejecting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [rejectConfirm, setRejectConfirm] = useState(null);
+  const { toasts, success, error: showError, removeToast } = useToast();
 
   useEffect(() => {
     // Check if user is admin before loading
@@ -100,7 +106,7 @@ export default function AdminPosts() {
       } else {
         await adminAPI.approveTour(itemId);
       }
-      alert('Approved successfully!');
+      success('Post approved successfully!');
       loadData();
       setShowModal(false);
       setSelectedItem(null);
@@ -109,9 +115,9 @@ export default function AdminPosts() {
       const errorMsg = err.message || 'Unable to approve';
       
       if (errorMsg.includes('Unauthorized') || errorMsg.includes('Forbidden')) {
-        alert(`Error: ${errorMsg}\n\nPlease:\n1. Check if user has Admin role in database\n2. Log out and log in again to get a new token`);
+        showError(`Error: ${errorMsg}\n\nPlease:\n1. Check if user has Admin role in database\n2. Log out and log in again to get a new token`);
       } else {
-        alert('Error: ' + errorMsg);
+        showError('Error: ' + errorMsg);
       }
     }
   };
@@ -121,22 +127,22 @@ export default function AdminPosts() {
     
     // Validation: Cảnh báo nếu không có lý do (nhưng vẫn cho phép reject)
     if (!rejectReason || rejectReason.trim().length === 0) {
-      const confirmReject = window.confirm(
-        'You have not entered a rejection reason. Do you want to continue rejecting this post?'
-      );
-      if (!confirmReject) {
-        return; // User cancelled
-      }
+      setRejectConfirm({
+        show: true,
+        skipReason: true
+      });
+      return;
     }
     
     // Final confirmation
-    const finalConfirm = window.confirm(
-      `Are you sure you want to reject the post "${getItemTitle(selectedItem)}"?\n\n` +
-      `After rejection, the post will not be displayed on the website.`
-    );
-    if (!finalConfirm) {
-      return;
-    }
+    setRejectConfirm({
+      show: true,
+      skipReason: false
+    });
+  };
+
+  const confirmReject = async () => {
+    if (!selectedItem || rejecting) return;
     
     try {
       setRejecting(true);
@@ -167,11 +173,12 @@ export default function AdminPosts() {
         throw new Error(`Unknown item type: ${type}. Cannot reject.`);
       }
       
-      alert('Post rejected successfully!');
+      success('Post rejected successfully!');
       loadData(); // Reload to update the list
       setShowModal(false);
       setSelectedItem(null);
       setRejectReason('');
+      setRejectConfirm(null);
     } catch (err) {
       console.error('Reject error:', err);
       let errorMsg = err.message || 'Unable to reject';
@@ -187,13 +194,13 @@ export default function AdminPosts() {
       }
       
       if (errorMsg.includes('Unauthorized') || errorMsg.includes('Forbidden')) {
-        alert(`Error: ${errorMsg}\n\nPlease:\n1. Check if user has Admin role in database\n2. Log out and log in again to get a new token`);
+        error(`Error: ${errorMsg}\n\nPlease:\n1. Check if user has Admin role in database\n2. Log out and log in again to get a new token`);
       } else if (errorMsg.includes('not found') || errorMsg.includes('Tour not found') || errorMsg.includes('Property not found')) {
-        alert(`Error: ${errorMsg}\n\nThis post may have been deleted or does not exist in the database.\nPlease refresh the page to update the list.`);
+        error(`Error: ${errorMsg}\n\nThis post may have been deleted or does not exist in the database.\nPlease refresh the page to update the list.`);
         // Auto reload data to refresh the list
         loadData();
       } else {
-        alert('Error: ' + errorMsg);
+        error('Error: ' + errorMsg);
       }
     } finally {
       setRejecting(false);
@@ -211,21 +218,23 @@ export default function AdminPosts() {
     setRejectReason('');
   };
 
-  const handleDelete = async (item) => {
+  const handleDelete = (item) => {
     const itemId = getItemId(item);
     const type = getItemType(item);
     const itemTitle = getItemTitle(item);
     
-    const confirmDelete = window.confirm(
-      `Are you sure you want to PERMANENTLY DELETE this ${type === 'property' ? 'property' : 'tour'}?\n\n` +
-      `Title: ${itemTitle}\n` +
-      `ID: ${itemId}\n\n` +
-      `⚠️ WARNING: This action cannot be undone! The post will be completely removed from the database.`
-    );
+    setDeleteConfirm({
+      itemId,
+      type,
+      itemTitle,
+      item
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
     
-    if (!confirmDelete) {
-      return;
-    }
+    const { itemId, type, item } = deleteConfirm;
     
     try {
       setDeleting(true);
@@ -241,8 +250,9 @@ export default function AdminPosts() {
         throw new Error(`Unknown item type: ${type}`);
       }
       
-      alert(`${type === 'property' ? 'Property' : 'Tour'} deleted successfully!`);
+      success(`${type === 'property' ? 'Property' : 'Tour'} deleted successfully!`);
       loadData(); // Reload to update the list
+      setDeleteConfirm(null);
     } catch (err) {
       console.error('Delete error:', err);
       let errorMsg = err.message || 'Unable to delete';
@@ -258,9 +268,9 @@ export default function AdminPosts() {
       }
       
       if (errorMsg.includes('Unauthorized') || errorMsg.includes('Forbidden')) {
-        alert(`Error: ${errorMsg}\n\nPlease:\n1. Check if user has Admin role in database\n2. Log out and log in again to get a new token`);
+        showError(`Error: ${errorMsg}\n\nPlease:\n1. Check if user has Admin role in database\n2. Log out and log in again to get a new token`);
       } else {
-        alert('Error: ' + errorMsg);
+        showError('Error: ' + errorMsg);
       }
     } finally {
       setDeleting(false);
@@ -703,6 +713,55 @@ export default function AdminPosts() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <ConfirmationModal
+          isOpen={true}
+          onClose={() => setDeleteConfirm(null)}
+          onConfirm={confirmDelete}
+          title={`Delete ${deleteConfirm.type === 'property' ? 'Property' : 'Tour'}`}
+          message={`Are you sure you want to PERMANENTLY DELETE this ${deleteConfirm.type === 'property' ? 'property' : 'tour'}?`}
+          details={{
+            'Title': deleteConfirm.itemTitle,
+            'ID': deleteConfirm.itemId
+          }}
+          warning="WARNING: This action cannot be undone! The post will be completely removed from the database."
+          confirmText="Delete"
+          cancelText="Cancel"
+          type="danger"
+          loading={deleting && deletingId === deleteConfirm.itemId}
+        />
+      )}
+
+      {/* Reject Confirmation Modal */}
+      {rejectConfirm && rejectConfirm.show && selectedItem && (
+        <ConfirmationModal
+          isOpen={true}
+          onClose={() => setRejectConfirm(null)}
+          onConfirm={() => {
+            setRejectConfirm(null);
+            confirmReject();
+          }}
+          title={rejectConfirm.skipReason ? "Continue Without Reason?" : "Confirm Rejection"}
+          message={rejectConfirm.skipReason 
+            ? "You have not entered a rejection reason. Do you want to continue rejecting this post?"
+            : `Are you sure you want to reject the post "${getItemTitle(selectedItem)}"?\n\nAfter rejection, the post will not be displayed on the website.`
+          }
+          details={!rejectConfirm.skipReason ? {
+            'Type': getItemType(selectedItem) === 'property' ? 'Property' : 'Tour',
+            'ID': getItemId(selectedItem),
+            'Title': getItemTitle(selectedItem)
+          } : null}
+          confirmText="Confirm"
+          cancelText="Cancel"
+          type="warning"
+          loading={rejecting}
+        />
+      )}
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }
