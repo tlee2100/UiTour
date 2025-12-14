@@ -59,11 +59,9 @@
   justify-content: center;
   gap: 10px;
 
-  padding: 12px 28px !important; /* TĂNG CHIỀU DÀI */
-  min-width: 260px !important;   /* GẤP ĐÔI KÍCH THƯỚC CŨ */
+  padding: 12px 28px !important;
+  min-width: 260px !important;
   height: 48px;
-  margin: 0 auto !important;
-  margin-right: 150px !important;
 
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -74,11 +72,10 @@
   cursor: pointer;
 
   box-shadow: 0 2px 6px rgba(0,0,0,0.10);
-  transition: 
-    background 0.22s ease,
-    box-shadow 0.22s ease,
-    transform 0.15s ease;
-}
+  transition: background 0.22s ease, box-shadow 0.22s ease, transform 0.15s ease;
+
+  margin-left: 300px;
+}  
 
 .headerif_smallSearch:hover {
   background:#f7f7f7; /* same hover feel as uitour buttons */

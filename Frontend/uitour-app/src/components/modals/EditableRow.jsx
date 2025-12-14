@@ -5,10 +5,11 @@ export default function EditableRow({
   editable = false,
   onEdit,
   variant = "default", // default | title | description
+  className = "",      // ✅ thêm
 }) {
   return (
     <div
-      className={`hs-edit-display hs-edit-display-editable ${variant}`}
+      className={`hs-edit-display hs-edit-display-editable ${variant} ${className}`}
       onClick={editable ? onEdit : undefined}
     >
       <span className="hs-edit-display-text">

@@ -59,7 +59,8 @@ export default function MembershipModal({ isOpen, onClose }) {
           t(language, 'membership.benefits.silver.cancellation')
         ]
       };
-    } else {
+    } else if (tripCount >= 11) {
+      // Gold tier: 11+ trips
       return {
         tier: 'gold',
         current: tripCount,

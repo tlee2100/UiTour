@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./HostStayEdit.css";
 import { t } from "../../utils/translations";
@@ -31,6 +31,27 @@ const AMENITY_ICON_MAP = {
   16: "amen_hair_dryer",
 };
 
+const AMENITIES_LIST = [
+  { id: 1, tKey: "wifi", icon: "amen_wifi" },
+  { id: 7, tKey: "tv", icon: "amen_tv" },
+  { id: 6, tKey: "ac", icon: "amen_ac" },
+  { id: 8, tKey: "kitchen", icon: "amen_kitchen" },
+  { id: 2, tKey: "washer", icon: "amen_washer" },
+  { id: 15, tKey: "dryer", icon: "amen_dryer" },
+  { id: 3, tKey: "heating", icon: "amen_heating" },
+  { id: 4, tKey: "iron", icon: "amen_iron" },
+  { id: 9, tKey: "gym", icon: "amen_gym" },
+  { id: 11, tKey: "freeParking", icon: "amen_free_parking" },
+  { id: 17, tKey: "hotTub", icon: "amen_hottub" },
+  { id: 14, tKey: "pool", icon: "amen_pool" },
+  { id: 19, tKey: "bbq", icon: "amen_bbq" },
+  { id: 18, tKey: "evCharger", icon: "amen_ev_charger" },
+  { id: 13, tKey: "smokeAlarm", icon: "amen_smoke_alarm" },
+  { id: 12, tKey: "breakfast", icon: "amen_breakfast" },
+  { id: 10, tKey: "workspace", icon: "amen_workspace" },
+  { id: 5, tKey: "kingBed", icon: "amen_king_bed" },
+  { id: 16, tKey: "hairDryer", icon: "amen_hair_dryer" },
+];
 
 
 const API_BASE = "http://localhost:5069"; // 🎯 ALWAYS backend URL
@@ -46,6 +67,12 @@ export default function HostStayEdit() {
   const [error, setError] = useState("");
   const [activeField, setActiveField] = useState(null);
   const [draftValue, setDraftValue] = useState("");
+  const [amenitiesModalOpen, setAmenitiesModalOpen] = useState(false);
+  const [amenitiesDraft, setAmenitiesDraft] = useState([]);
+  const [photosModalOpen, setPhotosModalOpen] = useState(false);
+  const [photosDraft, setPhotosDraft] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
 
   const LOCKED_HINT =
@@ -61,8 +88,10 @@ export default function HostStayEdit() {
       p?.serverUrl ||
       p?.imageUrl ||
       p?.photoUrl ||
-      p?.preview ||
       "";
+
+    // 🔥 blob preview → return trực tiếp
+    if (p?.preview) return p.preview;
 
     if (!raw || typeof raw !== "string") return "";
 
@@ -71,6 +100,19 @@ export default function HostStayEdit() {
 
     return `http://localhost:5069/${raw}`;
   };
+
+
+  useEffect(() => {
+    return () => {
+      photos.forEach(p => {
+        if (p.preview) URL.revokeObjectURL(p.preview);
+      });
+      photosDraft.forEach(p => {
+        if (p.preview) URL.revokeObjectURL(p.preview);
+      });
+    };
+  }, []); // ⬅️ CHỈ CHẠY KHI UNMOUNT
+
 
 
   // -------------------------------
@@ -196,55 +238,62 @@ export default function HostStayEdit() {
   // -------------------------------
   async function handleSave() {
     try {
+      setUploading(true);
+
+      const finalPhotos = [];
+
+      for (const p of photos) {
+        let url = p.url || p.imageUrl;
+
+        // 🔥 CHỈ Ở ĐÂY MỚI UPLOAD
+        if (!url && p.file) {
+          const formData = new FormData();
+          formData.append("file", p.file);
+
+          const res = await fetch(`${API_BASE}/api/photos/upload`, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!res.ok) {
+            throw new Error("Upload photo failed");
+          }
+
+          const data = await res.json();
+          url = data.url;
+        }
+
+        finalPhotos.push({
+          url,
+          caption: p.caption || "",
+          sortIndex: p.sortIndex,
+        });
+      }
+
       const payload = {
         listingTitle: data.listingTitle,
         description: data.description,
-
         accommodates: data.accommodates,
-
         basePrice: data.pricing.basePrice,
         cleaningFee: data.pricing.cleaningFee,
         extraPeopleFee: data.pricing.extraPeopleFee,
         weekendMultiplier: data.pricing.weekendMultiplier,
         extraPeopleThreshold: data.pricing.extraPeopleThreshold,
-
-        currency: data.currency ?? "USD",
-        active: true,
-
-        houseRules: data.houseRules.map(r => ({ label: r.label })),
-        selfCheckIn: data.rules.selfCheckIn,
-        self_checkin_method: data.rules.self_checkin_method,
-
-        no_smoking: data.rules.no_smoking,
-        no_open_flames: data.rules.no_open_flames,
-        pets_allowed: data.rules.pets_allowed,
-
-        covidSafety: data.rules.covidSafety,
-        surfacesSanitized: data.rules.surfacesSanitized,
-        carbonMonoxideAlarm: data.rules.carbonMonoxideAlarm,
-        smokeAlarm: data.rules.smokeAlarm,
-
         serviceFee: data.pricing.serviceFee.percent,
         taxFee: data.pricing.taxFee.percent,
         discount: data.pricing.discount,
         discountPercentage: data.pricing.discountPercentage,
-        photos: photos.map((p, index) => ({
-          url: p.url || p.imageUrl || "",
-          caption: p.caption || "",
-          sortIndex: index
-        })),
-
-        amenities: data.amenities.map(a => ({
-          amenityID: a.amenityID || a.id
-        }))
+        active: true,
+        photos: finalPhotos,
+        amenities: data.amenities.map(a => ({ amenityID: a.id })),
       };
 
-      const updated = await authAPI.updateProperty(id, payload);
-
-      console.log("✔ Updated:", updated);
-      navigate(`/host/listings`);
+      await authAPI.updateProperty(id, payload);
+      navigate("/host/listings");
     } catch (e) {
-      alert("❌ Update failed: " + e.message);
+      alert(e.message);
+    } finally {
+      setUploading(false);
     }
   }
 
@@ -285,6 +334,114 @@ export default function HostStayEdit() {
     closeEditor();
   };
 
+  const toggleAmenity = (id) => {
+    setAmenitiesDraft(prev =>
+      prev.includes(id)
+        ? prev.filter(x => x !== id)
+        : [...prev, id]
+    );
+  };
+
+  const saveAmenities = () => {
+    const updated = AMENITIES_LIST
+      .filter(a => amenitiesDraft.includes(a.id))
+      .map(a => ({
+        id: a.id,
+        name: t(language, `hostStay.amenities.${a.tKey}`),
+        icon: a.icon
+      }));
+
+    onChange("amenities", updated);
+    setAmenitiesModalOpen(false);
+  };
+
+  const openPhotosModal = () => {
+    const draft = photos.map(p => ({
+      ...p,
+      isCover: p.sortIndex === 1
+    }));
+
+    setPhotosDraft(draft);
+    setPhotosModalOpen(true);
+  };
+
+  const handleAddPhotos = (e) => {
+    const files = Array.from(e.target.files || []);
+
+    const added = files.map((file, idx) => ({
+      file,
+      preview: URL.createObjectURL(file),
+      caption: "",
+      isCover: false,
+    }));
+
+    setPhotosDraft(prev => {
+      const merged = [...prev, ...added];
+      if (!merged.some(p => p.isCover) && merged.length > 0) {
+        merged[0].isCover = true;
+      }
+      return merged;
+    });
+
+    e.target.value = "";
+  };
+
+  const setAsCover = (photo) => {
+    setPhotosDraft(prev =>
+      prev.map(p => ({ ...p, isCover: p === photo }))
+    );
+  };
+
+  const removePhoto = (photo) => {
+    setPhotosDraft(prev => {
+      if (prev.length <= 1) return prev;
+      const list = prev.filter(p => p !== photo);
+      if (!list.some(p => p.isCover) && list.length > 0) {
+        list[0].isCover = true;
+      }
+      return list;
+    });
+  };
+
+  const uploadPhoto = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch(`${API_BASE}/api/photos/upload`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      throw new Error("Upload photo failed");
+    }
+
+    const data = await res.json();
+    return data.url; // BE phải trả về { url: "..." }
+  };
+
+
+  const savePhotos = () => {
+    const ordered = [
+      ...photosDraft.filter(p => p.isCover),
+      ...photosDraft.filter(p => !p.isCover),
+    ];
+
+    setPhotos(
+      ordered.map((p, i) => ({
+        ...p,
+        sortIndex: i + 1, // cover = 1
+      }))
+    );
+
+    setPhotosModalOpen(false);
+  };
+
+
+  const openAmenitiesModal = () => {
+    setAmenitiesDraft(data.amenities.map(a => a.id));
+    setAmenitiesModalOpen(true);
+  };
 
   return (
     <div className="hs-edit-page">
@@ -307,6 +464,7 @@ export default function HostStayEdit() {
               value={d.listingTitle}
               editable
               variant="title"
+              className="hs-hero-title"
               onEdit={() => openEditor("listingTitle", d.listingTitle)}
             />
 
@@ -314,6 +472,7 @@ export default function HostStayEdit() {
               value={d.description}
               editable
               variant="description"
+              className="hs-hero-description"
               onEdit={() => openEditor("description", d.description)}
             />
           </div>
@@ -426,8 +585,15 @@ export default function HostStayEdit() {
 
         {/* AMENITIES */}
         <section className="hs-edit-section">
+
           <h2 className="hs-edit-section-title">
             {t(language, "hostStay.preview.amenities")}
+            <button
+              className="hs-edit-icon-btn"
+              onClick={openAmenitiesModal}
+            >
+              ✎
+            </button>
           </h2>
 
           <div className="hs-edit-card hs-edit-amenities">
@@ -597,7 +763,15 @@ export default function HostStayEdit() {
 
         {/* PHOTOS */}
         <section className="hs-edit-section">
-          <h2 className="hs-edit-section-title">{t(language, "hostStay.preview.photos")}</h2>
+          <h2 className="hs-edit-section-title">
+            {t(language, "hostStay.preview.photos")}
+            <button
+              className="hs-edit-icon-btn"
+              onClick={openPhotosModal}
+            >
+              ✎
+            </button>
+          </h2>
 
           <div className="hs-edit-photo-grid">
             {photos.map((p, idx) => (
@@ -638,6 +812,106 @@ export default function HostStayEdit() {
             <div className="hs-modal-footer">
               <button onClick={closeEditor}>Cancel</button>
               <button onClick={saveEditor}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {amenitiesModalOpen && (
+        <div className="hs-modal">
+          <div className="hs-modal-backdrop" onClick={() => setAmenitiesModalOpen(false)} />
+
+          <div className="hs-modal-card large">
+            <div className="hs-modal-header">
+              <b>Edit amenities</b>
+              <button onClick={() => setAmenitiesModalOpen(false)}>✕</button>
+            </div>
+
+            <div className="hs-modal-body">
+              <div className="hs-amenities-grid">
+                {AMENITIES_LIST.map(a => (
+                  <button
+                    key={a.id}
+                    type="button"
+                    className={`hs-amenity-card ${amenitiesDraft.includes(a.id) ? "is-selected" : ""
+                      }`}
+                    onClick={() => toggleAmenity(a.id)}
+                  >
+                    <SvgIcon name={a.icon} className="hs-icon" />
+                    <div className="hs-amenity-label">
+                      {t(language, `hostStay.amenities.${a.tKey}`)}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="hs-modal-footer">
+              <button onClick={() => setAmenitiesModalOpen(false)}>Cancel</button>
+              <button onClick={saveAmenities}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {photosModalOpen && (
+        <div className="hs-modal">
+          <div className="hs-modal-backdrop" onClick={() => setPhotosModalOpen(false)} />
+
+          <div className="hs-modal-card large">
+            <div className="hs-modal-header">
+              <b>Edit photos</b>
+              <button onClick={() => setPhotosModalOpen(false)}>✕</button>
+            </div>
+
+            <div className="hs-modal-body">
+              <button
+                className="hs-btn"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                ➕ Upload photos
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                onChange={handleAddPhotos}
+              />
+
+              <div className="hs-edit-photo-grid">
+                {photosDraft.map((p, idx) => (
+                  <div key={p.url || p.preview}
+                    className="hs-edit-photo-wrapper">
+                    <img
+                      src={p.preview || normalizeImage(p)}
+                      className={`hs-edit-photo-item ${p.isCover ? "is-cover" : ""}`}
+                      onClick={() => setAsCover(p)}
+                    />
+
+                    {p.isCover && <span className="hs-cover-badge">Cover</span>}
+
+                    <button
+                      className="hs-photo-remove-btn"
+                      onClick={(e) => {
+                        e.stopPropagation(); // ⛔ RẤT QUAN TRỌNG
+                        removePhoto(p);
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="hs-modal-footer">
+              <button onClick={() => setPhotosModalOpen(false)}>Cancel</button>
+              <button onClick={savePhotos} disabled={uploading}>
+                {uploading ? "Uploading..." : "Save"}
+              </button>
             </div>
           </div>
         </div>
