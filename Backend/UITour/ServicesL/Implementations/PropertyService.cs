@@ -88,6 +88,12 @@ namespace UITour.ServicesL.Implementations
                 lat = dto.lat,
                 lng = dto.lng,
                 HouseRules = dto.HouseRules,
+                checkin_after = dto.checkin_after,
+                checkout_before = dto.checkout_before,
+                CovidSafety = dto.CovidSafety,
+                SurfacesSanitized = dto.SurfacesSanitized,
+                CarbonMonoxideAlarm = dto.CarbonMonoxideAlarm,
+                SmokeAlarm = dto.SmokeAlarm,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
                 Photos = dto.Photos?.Select(p => new PropertyPhoto
@@ -215,17 +221,17 @@ namespace UITour.ServicesL.Implementations
             property.Price = dto.BasePrice;
             property.CleaningFee = dto.CleaningFee;
             property.ExtraPeopleFee = dto.ExtraPeopleFee;
-            property.Currency = dto.Currency;
-            property.Active = dto.Active;
-            property.PropertyType = dto.PropertyType;
-            property.RoomTypeID = dto.RoomTypeID;
-            property.Bedrooms = dto.Bedrooms;
-            property.Location = dto.Location;
-            property.Beds = dto.Beds;
-            property.Bathrooms = dto.Bathrooms;
+            //property.Currency = dto.Currency;
+            //property.Active = dto.Active;
+            //property.PropertyType = dto.PropertyType;
+            //property.RoomTypeID = dto.RoomTypeID;
+            //property.Bedrooms = dto.Bedrooms;
+            //property.Location = dto.Location;
+            //property.Beds = dto.Beds;
+            //property.Bathrooms = dto.Bathrooms;
             property.Accommodates = dto.Accommodates;
-            property.lat = dto.lat;
-            property.lng = dto.lng;
+            //property.lat = dto.lat;
+            //property.lng = dto.lng;
             property.UpdatedAt = DateTime.Now;
 
             // ----- Amenities -----

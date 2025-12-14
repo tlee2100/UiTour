@@ -40,18 +40,7 @@ export default function HostStayPreview() {
         16: "hostStay.amenities.hairDryer",
     };
 
-    const QUICK_RULE_KEYS = {
-        no_smoking: "hostStay.rules.quick.noSmoking",
-        no_open_flames: "hostStay.rules.quick.noFlames",
-        pets_allowed: "hostStay.rules.quick.petsAllowed",
-    };
-
-    const SAFETY_KEYS = {
-        covidSafety: "hostStay.rules.safety.enhancedCleaning",
-        surfacesSanitized: "hostStay.rules.safety.sanitized",
-        carbonMonoxideAlarm: "hostStay.rules.safety.coAlarm",
-        smokeAlarm: "hostStay.rules.safety.smokeAlarm",
-    };
+    
 
     const PROPERTY_TYPE_KEY = {
         "House": "hostStay.choose.house",
@@ -271,59 +260,73 @@ export default function HostStayPreview() {
 
                 {/* RULES & SAFETY */}
                 <section className="hs-preview-section">
-                    <h2 className="hs-preview-section-title">
-                        {safeT("hostStay.preview.rulesSafety")}
-                    </h2>
+                <h2 className="hs-preview-section-title">
+                    {safeT("hostStay.preview.rulesSafety")}
+                </h2>
 
-                    <div className="hs-preview-card">
+                <div className="hs-preview-card">
 
-                        {d.houseRules.length > 0 && (
-                            <>
-                                <h3 className="hs-preview-subtitle">{safeT("hostStay.preview.houseRules")}</h3>
+                    {/* HOUSE RULES */}
+                    {d.houseRules.length > 0 && (
+                    <>
+                        <h3 className="hs-preview-subtitle">
+                        {safeT("hostStay.preview.houseRules")}
+                        </h3>
 
-                                {d.houseRules.map((r, i) => (
-                                    <div key={i}>✔ {r.label}</div>
-                                ))}
-                            </>
+                        {d.houseRules.map((r, i) => (
+                        <div key={i}>✔ {r.label}</div>
+                        ))}
+                    </>
+                    )}
+
+                    {/* SAFETY */}
+                    {(d.covidSafety ||
+                    d.surfacesSanitized ||
+                    d.carbonMonoxideAlarm ||
+                    d.smokeAlarm) && (
+                    <>
+                        <h3 className="hs-preview-subtitle">
+                        {safeT("hostStay.preview.safety")}
+                        </h3>
+
+                        {d.covidSafety && (
+                        <div>✔ {safeT("hostStay.rules.safety.enhancedCleaning")}</div>
                         )}
 
-                        {/* QUICK RULES */}
-                        {Object.keys(QUICK_RULE_KEYS).some(k => d.rules[k]) && (
-                            <>
-                                <h3 className="hs-preview-subtitle">{safeT("hostStay.preview.quickRules")}</h3>
-
-                                {Object.keys(QUICK_RULE_KEYS)
-                                    .filter(k => d.rules[k])
-                                    .map((k, i) => (
-                                        <div key={i}>✔ {safeT(QUICK_RULE_KEYS[k])}</div>
-                                    ))}
-                            </>
+                        {d.surfacesSanitized && (
+                        <div>✔ {safeT("hostStay.rules.safety.sanitized")}</div>
                         )}
 
-                        {/* SAFETY */}
-                        {Object.keys(SAFETY_KEYS).some(k => d.rules[k]) && (
-                            <>
-                                <h3 className="hs-preview-subtitle">{safeT("hostStay.preview.safety")}</h3>
-
-                                {Object.keys(SAFETY_KEYS)
-                                    .filter(k => d.rules[k])
-                                    .map((k, i) => (
-                                        <div key={i}>✔ {safeT(SAFETY_KEYS[k])}</div>
-                                    ))}
-                            </>
+                        {d.carbonMonoxideAlarm && (
+                        <div>✔ {safeT("hostStay.rules.safety.coAlarm")}</div>
                         )}
 
-                        {/* SELF CHECK-IN */}
-                        {d.rules.selfCheckIn && (
-                            <>
-                                <h3 className="hs-preview-subtitle">{safeT("hostStay.preview.selfCheckin")}</h3>
-
-                                <div>
-                                    {safeT("hostStay.preview.method")} <b>{d.rules.self_checkin_method}</b>
-                                </div>
-                            </>
+                        {d.smokeAlarm && (
+                        <div>✔ {safeT("hostStay.rules.safety.smokeAlarm")}</div>
                         )}
-                    </div>
+                    </>
+                    )}
+
+                    {/* CHECK-IN / OUT */}
+                    {(d.checkin_after || d.checkout_before) && (
+                    <>
+                        <h3 className="hs-preview-subtitle">
+                        {safeT("hostStay.preview.checkInOut")}
+                        </h3>
+
+                        <div>
+                        {safeT("hostStay.rules.checkInOut.after")}:{" "}
+                        <b>{d.checkin_after || "14:00"}</b>
+                        </div>
+
+                        <div>
+                        {safeT("hostStay.rules.checkInOut.before")}:{" "}
+                        <b>{d.checkout_before || "11:00"}</b>
+                        </div>
+                    </>
+                    )}
+
+                </div>
                 </section>
 
                 {/* PHOTOS */}
