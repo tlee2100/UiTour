@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./HostExperienceEdit.css";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { t } from "../../utils/translations";
+import EditableRow from "../../components/modals/EditableRow";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ErrorMessage from "../../components/ErrorMessage";
 import authAPI from "../../services/authAPI";
 
-const API_BASE = "http://localhost:5069"; // 🎯 ALWAYS use BE port, not FE port
+const API_BASE = "http://localhost:5069";
+
+const LOCKED_HINT =
+    "Trường này không thể chỉnh sửa. Nếu có thay đổi lớn, vui lòng tạo listing mới.";
 
 export default function HostExperienceEdit() {
     const { id } = useParams();
@@ -18,57 +22,69 @@ export default function HostExperienceEdit() {
     const [err, setErr] = useState("");
     const [data, setData] = useState(null);
 
-    // Helpers
-    const isValidUrl = (u) => u && typeof u === "string" && !u.startsWith("blob:");
+    const [activeField, setActiveField] = useState(null);
+    const [draftValue, setDraftValue] = useState("");
+    const [editing, setEditing] = useState(false);
+    const [editingId, setEditingId] = useState(null);
 
-    const normalizeImage = (p) =>
-        p?.url ||
-        p?.serverUrl ||
-        p?.imageUrl ||
-        p?.photoUrl ||
-        p?.preview ||
-        "";
+    const [title, setTitle] = useState("");
+    const [content, setContent] = useState("");
+    const [photosModalOpen, setPhotosModalOpen] = useState(false);
+    const [photosDraft, setPhotosDraft] = useState([]);
+    const [itineraryDraft, setItineraryDraft] = useState(null);
+    const [itineraryModalOpen, setItineraryModalOpen] = useState(false);
+    const [itineraryImageRAM, setItineraryImageRAM] = useState({});
 
-    // ---------------------------------------------
-    // LOAD EXPERIENCE (HARDENED, NO CRASH)
-    // ---------------------------------------------
+    const fileInputRef = useRef(null);
+
+
+    const inputRef = useRef(null);
+
+
+    /* ================= HELPERS ================= */
+
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            if (!file) return resolve(null);
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+
+    const normalizeImage = (p) => {
+        if (p?.preview) return p.preview;
+
+        const raw = p?.url || p?.imageUrl || "";
+        if (!raw) return "";
+        if (raw.startsWith("http")) return raw;
+        if (raw.startsWith("/")) return `${API_BASE}${raw}`;
+        return `${API_BASE}/${raw}`;
+    };
+
+
+    /* ================= LOAD ================= */
+
     useEffect(() => {
         async function load() {
             try {
                 setLoading(true);
                 setErr("");
 
-                if (!id) {
-                    setErr("Invalid ID");
-                    return;
-                }
-
-                // 🎯 ALWAYS call correct backend URL
-                const apiUrl = `${API_BASE}/api/Tour/${id}`;
-
-                const res = await fetch(apiUrl, {
-                    headers: { Accept: "application/json" }
+                const res = await fetch(`${API_BASE}/api/Tour/${id}`, {
+                    headers: { Accept: "application/json" },
                 });
 
                 const text = await res.text();
-
-                // ❌ If server returns HTML → reject
                 if (!res.ok || text.startsWith("<")) {
-                    console.error("❌ Backend returned HTML instead of JSON:", text);
-                    setErr("Server returned invalid response");
+                    setErr("Invalid server response");
                     return;
                 }
 
-                let json;
-                try {
-                    json = JSON.parse(text);
-                } catch (e) {
-                    console.error("❌ Cannot parse JSON:", text);
-                    setErr("Invalid JSON from server");
-                    return;
-                }
+                const json = JSON.parse(text);
 
-                // SAFE NORMALIZED MODEL
                 const safe = {
                     tourName: json.tourName || "",
                     summary: json.summary || "",
@@ -77,30 +93,30 @@ export default function HostExperienceEdit() {
                     durationDays: json.durationDays ?? 0,
 
                     location: {
-                        addressLine: json.location?.addressLine || json.addressLine || "",
-                        city: json.location?.city || json.city || "",
-                        country: json.location?.country || json.country || "",
+                        addressLine: json.location || "",
+                        city: json.city?.cityName || "",
+                        country: json.country?.countryName || "",
                     },
 
                     pricing: {
-                        basePrice: json.pricing?.basePrice ?? 0,
-                        priceUnit: json.pricing?.priceUnit || "",
+                        basePrice: json.price ?? 0,
+                        priceUnit: json.priceUnit || "",
                     },
 
                     capacity: {
-                        maxGuests: json.capacity?.maxGuests ?? 1,
-                    },
-
-                    booking: {
-                        timeSlots: Array.isArray(json.booking?.timeSlots)
-                            ? json.booking.timeSlots
-                            : [],
+                        maxGuests: json.maxGuests ?? 1,
                     },
 
                     qualifications: {
                         intro: json.qualifications?.intro || "",
                         expertise: json.qualifications?.expertise || "",
                         recognition: json.qualifications?.recognition || "",
+                    },
+
+                    booking: {
+                        timeSlots: Array.isArray(json.booking?.timeSlots)
+                            ? json.booking.timeSlots
+                            : [],
                     },
 
                     experienceDetails: Array.isArray(json.experienceDetails)
@@ -111,9 +127,8 @@ export default function HostExperienceEdit() {
                 };
 
                 setData(safe);
-
             } catch (e) {
-                setErr(e.message || "Unknown error");
+                setErr(e.message);
             } finally {
                 setLoading(false);
             }
@@ -122,26 +137,113 @@ export default function HostExperienceEdit() {
         load();
     }, [id]);
 
-    // ---------------------------------------------
-    // SAVE CHANGE
-    // ---------------------------------------------
+    /* ================= SAVE ================= */
+
+    const uploadPhoto = async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch(`${API_BASE}/api/photos/upload`, {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!res.ok) {
+            throw new Error("Upload itinerary image failed");
+        }
+
+        const data = await res.json();
+        return data.url; // BE trả về { url }
+    };
+
+
     async function handleSave() {
         try {
+            /* ======================
+               1️⃣ PROCESS PHOTOS
+            ====================== */
+            const finalPhotos = [];
+
+            for (const p of data.photos) {
+                let url = p.url || p.imageUrl;
+
+                if (!url && p.file) {
+                    const formData = new FormData();
+                    formData.append("file", p.file);
+
+                    const res = await fetch(`${API_BASE}/api/photos/upload`, {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    if (!res.ok) {
+                        throw new Error("Upload experience photo failed");
+                    }
+
+                    const result = await res.json();
+                    url = result.url;
+                }
+
+                finalPhotos.push({
+                    url,
+                    caption: p.caption || "",
+                    sortIndex: p.sortIndex,
+                });
+            }
+
+            /* ======================
+               2️⃣ PROCESS ITINERARY
+            ====================== */
+            const processedDetails = [];
+
+            for (const it of data.experienceDetails) {
+                const ram = itineraryImageRAM[it.id];
+                let imageUrl = it.imageUrl || "";
+
+                if (!imageUrl && ram?.file) {
+                    const formData = new FormData();
+                    formData.append("file", ram.file);
+
+                    const res = await fetch(`${API_BASE}/api/photos/upload`, {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    if (!res.ok) {
+                        throw new Error("Upload itinerary image failed");
+                    }
+
+                    const result = await res.json();
+                    imageUrl = result.url;
+                }
+
+                processedDetails.push({
+                    ...it,
+                    imageUrl,
+                });
+            }
+
+            /* ======================
+               3️⃣ PAYLOAD (QUAN TRỌNG)
+            ====================== */
             const payload = {
                 tourName: data.tourName,
+                summary: data.summary,
                 description: data.description,
                 mainCategory: data.mainCategory,
                 durationDays: data.durationDays,
                 location: data.location.addressLine,
                 price: data.pricing.basePrice,
                 maxGuests: data.capacity.maxGuests,
-                experienceDetails: data.experienceDetails,
-                photos: data.photos
+                experienceDetails: processedDetails,
+                photos: finalPhotos,
             };
 
-            const updated = await authAPI.updateTour(id, payload);
-            console.log("✔ Updated:", updated);
-            navigate(`/host/listings`);
+            /* ======================
+               4️⃣ CALL API
+            ====================== */
+            await authAPI.updateTour(id, payload);
+            navigate("/host/listings");
 
         } catch (e) {
             alert("❌ Update failed: " + e.message);
@@ -149,65 +251,169 @@ export default function HostExperienceEdit() {
     }
 
 
-    // SAFE DEEP UPDATE
+
+    /* ================= STATE UPDATE ================= */
+
     const onChange = (path, value) => {
         setData((prev) => {
             const clone = structuredClone(prev);
             const keys = path.split(".");
-
             let obj = clone;
             keys.slice(0, -1).forEach((k) => {
-                if (obj[k] == null || typeof obj[k] !== "object") obj[k] = {};
+                if (!obj[k] || typeof obj[k] !== "object") obj[k] = {};
                 obj = obj[k];
             });
-
             obj[keys[keys.length - 1]] = value;
             return clone;
         });
     };
 
-    // ---------------------------------------------
-    // RENDER
-    // ---------------------------------------------
+    /* ================= MODAL ================= */
+
+    const openPhotosModal = () => {
+        const draft = (data.photos || []).map(p => ({
+            ...p,
+            preview: normalizeImage(p),
+            isCover: p.sortIndex === 1,
+        }));
+
+        setPhotosDraft(draft);
+        setPhotosModalOpen(true);
+    };
+
+    const handleAddPhotos = (e) => {
+        const files = Array.from(e.target.files || []);
+
+        const added = files.map(file => ({
+            file,
+            preview: URL.createObjectURL(file),
+            caption: "",
+            isCover: false,
+        }));
+
+        setPhotosDraft(prev => {
+            const merged = [...prev, ...added];
+            if (!merged.some(p => p.isCover) && merged.length > 0) {
+                merged[0].isCover = true;
+            }
+            return merged;
+        });
+
+        e.target.value = "";
+    };
+
+    const setAsCover = (photo) => {
+        setPhotosDraft(prev =>
+            prev.map(p => ({ ...p, isCover: p === photo }))
+        );
+    };
+
+    const removePhoto = (photo) => {
+        setPhotosDraft(prev => {
+            if (prev.length <= 1) return prev;
+            const list = prev.filter(p => p !== photo);
+            if (!list.some(p => p.isCover)) list[0].isCover = true;
+            return list;
+        });
+    };
+
+    const savePhotos = () => {
+        const ordered = [
+            ...photosDraft.filter(p => p.isCover),
+            ...photosDraft.filter(p => !p.isCover),
+        ];
+
+        setData(prev => ({
+            ...prev,
+            photos: ordered.map((p, i) => ({
+                url: p.url,
+                imageUrl: p.imageUrl,
+                file: p.file,
+                preview: p.preview,
+                caption: p.caption || "",
+                sortIndex: i + 1,
+            })),
+
+        }));
+
+        setPhotosModalOpen(false);
+    };
+
+    const openEditor = (field, value) => {
+        setActiveField(field);
+        setDraftValue(value ?? "");
+    };
+
+    const closeEditor = () => {
+        setActiveField(null);
+        setDraftValue("");
+    };
+
+    const saveEditor = () => {
+        onChange(activeField, draftValue);
+        closeEditor();
+    };
+
+    const startEditActivity = (item) => {
+        setEditing(true);
+        setEditingId(item.id);
+        setTitle(item.title || "");
+        setContent(item.description || "");
+
+        setItineraryImageRAM(prev => ({
+            ...prev,
+            [item.id]: {
+                file: null,
+                preview: item.imageUrl
+                    ? normalizeImage({ imageUrl: item.imageUrl })
+                    : "",
+                serverUrl: item.imageUrl || "",
+            }
+        }));
+    };
+
+
+    /* ================= RENDER ================= */
+
     if (loading) return <LoadingSpinner />;
     if (err) return <ErrorMessage message={err} />;
     if (!data) return null;
 
     const d = data;
-    const photos = d.photos || [];
-    const cover = photos.length > 0 ? normalizeImage(photos[0]) : "";
-    const itinerary = d.experienceDetails || [];
+    const cover = d.photos[0] ? normalizeImage(d.photos[0]) : "";
 
     return (
         <div className="he-edit-page">
             <div className="he-edit-container">
 
-                {/* HERO ------------------------------------------------ */}
+                {/* HERO */}
                 <div className="he-edit-hero">
-                    {isValidUrl(cover) && (
-                        <img src={cover} className="he-edit-cover" />
-                    )}
+                    {cover && <img src={cover} className="he-edit-cover" />}
 
-                    <input
-                        className="he-edit-title-input"
+                    <EditableRow
                         value={d.tourName}
-                        onChange={(e) => onChange("tourName", e.target.value)}
+                        editable
+                        variant="title"
+                        className="he-hero-title"
+                        onEdit={() => openEditor("tourName", d.tourName)}
                     />
 
-                    <textarea
-                        className="he-edit-summary-input"
-                        value={d.summary}
-                        onChange={(e) => onChange("summary", e.target.value)}
+                    <EditableRow
+                        value={d.description}
+                        editable
+                        variant="description"
+                        className="he-hero-description"
+                        onEdit={() => openEditor("summary", d.description)}
                     />
 
                     <input
                         className="he-edit-location-input"
                         value={d.location.addressLine}
-                        onChange={(e) => onChange("location.addressLine", e.target.value)}
+                        disabled
                     />
                 </div>
 
-                {/* BASIC INFO ---------------------------------------- */}
+                {/* BASIC INFO */}
                 <section className="he-edit-section">
                     <h2 className="he-edit-section-title">
                         {t(language, "hostExperience.preview.basicInfo")}
@@ -219,72 +425,65 @@ export default function HostExperienceEdit() {
                             <input
                                 className="he-edit-input"
                                 value={d.mainCategory}
-                                onChange={(e) => onChange("mainCategory", e.target.value)}
+                                disabled
+                                title={LOCKED_HINT}
                             />
                         </div>
 
                         <div className="he-edit-row">
                             <b>{t(language, "hostExperience.preview.yearsOfExperience")}:</b>
-                            <input
-                                type="number"
-                                className="he-edit-input"
+                            <EditableRow
                                 value={d.durationDays}
-                                onChange={(e) => onChange("durationDays", Number(e.target.value))}
+                                editable
+                                onEdit={() => openEditor("durationDays", d.durationDays)}
                             />
                         </div>
 
                         <div className="he-edit-row">
                             <b>{t(language, "hostExperience.preview.description")}:</b>
-                            <textarea
-                                className="he-edit-textarea"
+                            <EditableRow
                                 value={d.description}
-                                onChange={(e) => onChange("description", e.target.value)}
+                                editable
+                                onEdit={() => openEditor("description", d.description)}
                             />
                         </div>
                     </div>
                 </section>
 
-                {/* QUALIFICATIONS ------------------------------------ */}
-                <section className="he-edit-section">
-                    <h2 className="he-edit-section-title">
-                        {t(language, "hostExperience.preview.qualifications")}
-                    </h2>
-
-                    <div className="he-edit-card">
-                        {["intro", "expertise", "recognition"].map((field) => (
-                            <div className="he-edit-row" key={field}>
-                                <b>{t(language, `hostExperience.qualification.${field}`)}:</b>
-                                <textarea
-                                    className="he-edit-textarea"
-                                    value={d.qualifications[field] || ""}
-                                    onChange={(e) => onChange(`qualifications.${field}`, e.target.value)}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* LOCATION ------------------------------------------ */}
+                {/* LOCATION */}
                 <section className="he-edit-section">
                     <h2 className="he-edit-section-title">
                         {t(language, "hostExperience.preview.location")}
                     </h2>
 
                     <div className="he-edit-card">
-                        {["addressLine", "city", "country"].map((field) => (
-                            <div className="he-edit-row" key={field}>
-                                <b>{t(language, `hostExperience.preview.${field}`)}:</b>
-                                <input
-                                    className="he-edit-input"
-                                    value={d.location[field] || ""}
-                                    onChange={(e) => onChange(`location.${field}`, e.target.value)}
-                                />
+                        <div className="he-edit-row">
+                            <b>{t(language, "hostExperience.preview.address")}:</b>
+                            <input
+                                className="he-edit-input"
+                                value={d.location.addressLine}
+                                disabled
+                                title={LOCKED_HINT}
+                            />
+                        </div>
+
+                        {d.location.city && (
+                            <div className="he-edit-row">
+                                <b>{t(language, "hostExperience.preview.city")}:</b>
+                                <span>{d.location.city}</span>
                             </div>
-                        ))}
+                        )}
+
+                        {d.location.country && (
+                            <div className="he-edit-row">
+                                <b>{t(language, "hostExperience.preview.country")}:</b>
+                                <span>{d.location.country}</span>
+                            </div>
+                        )}
                     </div>
                 </section>
 
-                {/* PRICING ------------------------------------------- */}
+                {/* PRICING */}
                 <section className="he-edit-section">
                     <h2 className="he-edit-section-title">
                         {t(language, "hostExperience.preview.pricing")}
@@ -293,26 +492,18 @@ export default function HostExperienceEdit() {
                     <div className="he-edit-card">
                         <div className="he-edit-row">
                             <b>{t(language, "hostExperience.preview.basePrice")}:</b>
-                            <input
-                                type="number"
-                                className="he-edit-input"
+                            <EditableRow
                                 value={d.pricing.basePrice}
-                                onChange={(e) => onChange("pricing.basePrice", Number(e.target.value))}
-                            />
-                        </div>
-
-                        <div className="he-edit-row">
-                            <b>{t(language, "hostExperience.preview.pricePer")}:</b>
-                            <input
-                                className="he-edit-input"
-                                value={d.pricing.priceUnit}
-                                onChange={(e) => onChange("pricing.priceUnit", e.target.value)}
+                                editable
+                                onEdit={() =>
+                                    openEditor("pricing.basePrice", d.pricing.basePrice)
+                                }
                             />
                         </div>
                     </div>
                 </section>
 
-                {/* CAPACITY ------------------------------------------ */}
+                {/* CAPACITY */}
                 <section className="he-edit-section">
                     <h2 className="he-edit-section-title">
                         {t(language, "hostExperience.preview.capacity")}
@@ -321,95 +512,279 @@ export default function HostExperienceEdit() {
                     <div className="he-edit-card">
                         <div className="he-edit-row">
                             <b>{t(language, "hostExperience.preview.maxGuests")}:</b>
-                            <input
-                                type="number"
-                                className="he-edit-input"
+                            <EditableRow
                                 value={d.capacity.maxGuests}
-                                onChange={(e) => onChange("capacity.maxGuests", Number(e.target.value))}
+                                editable
+                                onEdit={() =>
+                                    openEditor("capacity.maxGuests", d.capacity.maxGuests)
+                                }
                             />
                         </div>
                     </div>
                 </section>
 
-                {/* TIME SLOTS ---------------------------------------- */}
-                <section className="he-edit-section">
-                    <h2 className="he-edit-section-title">
-                        {t(language, "hostExperience.preview.timeSlots")}
-                    </h2>
-
-                    <div className="he-edit-card">
-                        {(d.booking.timeSlots || []).map((slot, idx) => (
-                            <div key={idx} className="he-edit-row">
-                                <input
-                                    className="he-edit-input"
-                                    value={slot.startTime || ""}
-                                    onChange={(e) => {
-                                        const clone = [...d.booking.timeSlots];
-                                        clone[idx].startTime = e.target.value;
-                                        onChange("booking.timeSlots", clone);
-                                    }}
-                                />
-                            </div>
-                        ))}
-
-                        {d.booking.timeSlots.length === 0 && (
-                            <p style={{ opacity: 0.6 }}>No time slots available.</p>
-                        )}
-                    </div>
-                </section>
-
-                {/* ITINERARY ----------------------------------------- */}
+                {/* ITINERARY */}
                 <section className="he-edit-section">
                     <h2 className="he-edit-section-title">
                         {t(language, "hostExperience.preview.itinerary")}
                     </h2>
 
                     <div className="he-edit-card">
-                        {itinerary.map((item, idx) => {
-                            const img = normalizeImage(item);
-                            return (
-                                <div key={idx} className="he-edit-itinerary-item">
-
-                                    {isValidUrl(img) && (
-                                        <img src={img} className="he-edit-itinerary-photo" />
-                                    )}
-
-                                    <div className="he-edit-itinerary-body">
-                                        <input
-                                            className="he-edit-input"
-                                            value={item.title || ""}
-                                            onChange={(e) => {
-                                                const clone = [...itinerary];
-                                                clone[idx].title = e.target.value;
-                                                onChange("experienceDetails", clone);
-                                            }}
+                        {d.experienceDetails.length === 0 ? (
+                            <div>—</div>
+                        ) : (
+                            d.experienceDetails.map((it) => (
+                                <div key={it.id}>
+                                    {/* VIEW */}
+                                    <div
+                                        className="he-edit-itinerary-item"
+                                        onClick={() => startEditActivity(it)}
+                                    >
+                                        <img
+                                            src={
+                                                itineraryImageRAM[it.id]?.preview
+                                                || (it.imageUrl
+                                                    ? normalizeImage({ imageUrl: it.imageUrl })
+                                                    : "/placeholder.png")
+                                            }
+                                            className="he-edit-itinerary-photo"
+                                            alt=""
                                         />
 
-                                        <textarea
-                                            className="he-edit-textarea"
-                                            value={item.content || ""}
-                                            onChange={(e) => {
-                                                const clone = [...itinerary];
-                                                clone[idx].content = e.target.value;
-                                                onChange("experienceDetails", clone);
-                                            }}
-                                        />
+                                        <div className="he-edit-itinerary-body">
+                                            <div className="he-itinerary-title">{it.title}</div>
+                                            <div className="he-itinerary-description">{it.description}</div>
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
 
-                        {itinerary.length === 0 && (
-                            <p style={{ opacity: 0.6 }}>No itinerary items.</p>
+                                    {/* EDITOR */}
+                                    {editing && editingId === it.id && (
+                                        <div className="he-activity-editor he-editor-inline">
+                                            <div className="he-editor-left">
+                                                <div
+                                                    className="he-editor-thumb"
+                                                    onClick={() => inputRef.current?.click()}
+                                                >
+                                                    {itineraryImageRAM[editingId]?.preview
+                                                        ? <img src={itineraryImageRAM[editingId].preview} />
+                                                        : <span>📷</span>}
+                                                </div>
+
+                                                <input
+                                                    ref={inputRef}
+                                                    type="file"
+                                                    accept="image/*"
+                                                    hidden
+                                                    onChange={(e) => {
+                                                        const f = e.target.files?.[0];
+                                                        if (!f) return;
+
+                                                        setItineraryImageRAM(prev => ({
+                                                            ...prev,
+                                                            [editingId]: {
+                                                                file: f,
+                                                                preview: URL.createObjectURL(f),
+                                                                serverUrl: prev[editingId]?.serverUrl || "",
+                                                            }
+                                                        }));
+
+                                                        e.target.value = "";
+                                                    }}
+                                                />
+                                            </div>
+
+                                            <div className="he-editor-right">
+                                                <input
+                                                    className="he-editor-title"
+                                                    value={title}
+                                                    onChange={(e) => setTitle(e.target.value)}
+                                                />
+
+                                                <textarea
+                                                    className="he-editor-content"
+                                                    rows={3}
+                                                    value={content}
+                                                    onChange={(e) => setContent(e.target.value)}
+                                                />
+
+                                                <div className="he-editor-actions">
+                                                    <button
+                                                        className="he-tertiary-btn"
+                                                        onClick={() => {
+                                                            setEditing(false);
+                                                            setEditingId(null);
+                                                        }}
+                                                    >
+                                                        Cancel
+                                                    </button>
+
+                                                    <button
+                                                        className="he-primary-btn"
+                                                        onClick={() => {
+                                                            setData((prev) => {
+                                                                const clone = structuredClone(prev);
+                                                                const idx = clone.experienceDetails.findIndex(
+                                                                    (x) => x.id === editingId
+                                                                );
+
+                                                                if (idx !== -1) {
+                                                                    clone.experienceDetails[idx] = {
+                                                                        ...clone.experienceDetails[idx],
+                                                                        title,
+                                                                        description: content,
+                                                                        imageUrl:
+                                                                            itineraryImageRAM[editingId]?.serverUrl
+                                                                            || clone.experienceDetails[idx].imageUrl
+                                                                            || "",
+                                                                    };
+                                                                }
+                                                                return clone;
+                                                            });
+
+                                                            setEditing(false);
+                                                            setEditingId(null);
+                                                            setImage(null);
+                                                        }}
+                                                    >
+                                                        Save
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
                         )}
                     </div>
                 </section>
+                <section className="he-edit-section">
+                    <h2 className="he-edit-section-title">
+                        {t(language, "hostExperience.preview.photos")}
+                        <button
+                            className="hs-edit-icon-btn"
+                            onClick={openPhotosModal}
+                            title="Edit photos"
+                        >
+                            ✎
+                        </button>
+                    </h2>
 
-                {/* SAVE BUTTON ---------------------------------------- */}
+                    <div className="he-edit-photo-grid">
+                        {data.photos.map((p, i) => (
+                            <img
+                                key={i}
+                                src={normalizeImage(p)}
+                                className="he-edit-photo-item"
+                                alt=""
+                            />
+                        ))}
+                    </div>
+                </section>
+
                 <button className="he-edit-save-btn" onClick={handleSave}>
                     💾 Save Changes
                 </button>
             </div>
+
+            {/* EDIT MODAL */}
+            {activeField && (
+                <div className="hs-modal">
+                    <div className="hs-modal-backdrop" onClick={closeEditor} />
+
+                    <div className="hs-modal-card">
+                        <div className="hs-modal-header">
+                            <b>Edit</b>
+                            <button onClick={closeEditor}>✕</button>
+                        </div>
+
+                        <div className="hs-modal-body">
+                            <input
+                                className="hs-input"
+                                value={draftValue}
+                                onChange={(e) => setDraftValue(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="hs-modal-footer">
+                            <button onClick={closeEditor}>Cancel</button>
+                            <button onClick={saveEditor}>Save</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {photosModalOpen && (
+                <div className="hs-modal">
+                    <div
+                        className="hs-modal-backdrop"
+                        onClick={() => setPhotosModalOpen(false)}
+                    />
+
+                    <div className="hs-modal-card large">
+                        <div className="hs-modal-header">
+                            <b>Edit photos</b>
+                            <button onClick={() => setPhotosModalOpen(false)}>✕</button>
+                        </div>
+
+                        <div className="hs-modal-body">
+                            <button
+                                className="hs-btn"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                ➕ Upload photos
+                            </button>
+
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                hidden
+                                onChange={handleAddPhotos}
+                            />
+
+                            <div className="hs-edit-photo-grid">
+                                {photosDraft.map((p) => (
+                                    <div
+                                        key={p.url || p.preview}
+                                        className="hs-edit-photo-wrapper"
+                                    >
+                                        <img
+                                            src={p.preview || normalizeImage(p)}
+                                            className={`hs-edit-photo-item ${p.isCover ? "is-cover" : ""
+                                                }`}
+                                            onClick={() => setAsCover(p)}
+                                        />
+
+                                        {p.isCover && (
+                                            <span className="hs-cover-badge">Cover</span>
+                                        )}
+
+                                        <button
+                                            className="hs-photo-remove-btn"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                removePhoto(p);
+                                            }}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="hs-modal-footer">
+                            <button onClick={() => setPhotosModalOpen(false)}>
+                                Cancel
+                            </button>
+                            <button onClick={savePhotos}>
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }
