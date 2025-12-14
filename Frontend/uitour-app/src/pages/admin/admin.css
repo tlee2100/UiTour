@@ -54,14 +54,19 @@
 .chart-card {
   background: #ffffff;
   border-radius: 18px;
-  min-height: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
+  min-height: 320px;              /* tăng chiều cao cho đủ chỗ title + chart */
   border: 1px solid #e5e7eb;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+
+  /* layout */
+  display: flex;
+  flex-direction: column;
+  align-items: center;            /* canh giữa theo ngang */
+  justify-content: center;        /* canh giữa theo dọc */
+  padding: 16px 18px;
+  gap: 12px;
 }
+
 
 .table-card {
   background: #ffffff;
