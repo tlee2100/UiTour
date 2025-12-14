@@ -162,28 +162,28 @@ const initialStayData = {
   // ======================================================================================
   // RULES & SAFETY – quy tắc nhà và an toàn
   // ======================================================================================
-  rules: {
     // ------------------------------
-    checkin_after: "14:00",    // Nhận phòng sau 14:00
-    checkout_before: "11:00",  // Trả phòng trước 11:00
+  checkin_after: "14:00",    // Nhận phòng sau 14:00
+  checkout_before: "11:00",  // Trả phòng trước 11:00
 
     // BOOLEAN PROPERTY FLAGS – quy tắc nhanh (Quick Rules)
     // ------------------------------
-    no_smoking: false,           // Cấm hút thuốc trong nhà?
-    no_open_flames: false,       // Cấm lửa trần (nến, bếp ga di động...)?
-    pets_allowed: false,         // Có cho phép thú cưng không?
+  //no_smoking: false,           // Cấm hút thuốc trong nhà?
+  //no_open_flames: false,       // Cấm lửa trần (nến, bếp ga di động...)?
+  //pets_allowed: false,         // Có cho phép thú cưng không?
 
     // ------------------------------
     // HEALTH & SAFETY – tiêu chuẩn an toàn theo Airbnb
     // ------------------------------
-    covidSafety: false,          // Enhanced Cleaning? (chuẩn vệ sinh nâng cao)
-    surfacesSanitized: false,    // Có khử khuẩn bề mặt thường xuyên?
-    carbonMonoxideAlarm: false,  // Có máy cảnh báo khí CO?
-    smokeAlarm: false,           // Có máy cảnh báo khói?     
+  // HEALTH & SAFETY – PHẢI camelCase
+  covidSafety: false,
+  surfacesSanitized: false,
+  carbonMonoxideAlarm: false,
+  smokeAlarm: false,           // Có máy cảnh báo khói?     
 
-    selfCheckIn: false,        // Có tự checkin hay không
-    self_checkin_method: "Lockbox", // Kiểu check-in: Lockbox, Smart lock…
-  },
+  selfCheckIn: false,        // Có tự checkin hay không
+  self_checkin_method: "Lockbox", // Kiểu check-in: Lockbox, Smart lock…
+  
 
 
   // ======================================================================================
@@ -389,7 +389,12 @@ function sanitizeStayData(raw) {
   };
 
   clean.houseRules = raw.houseRules || [];
-  clean.rules = raw.rules || initialStayData.rules;
+  clean.checkin_after = raw.checkin_after || "14:00";
+  clean.checkout_before = raw.checkout_before || "11:00";
+  clean.covidSafety = !!raw.covidSafety;
+  clean.surfacesSanitized = !!raw.surfacesSanitized;
+  clean.carbonMonoxideAlarm = !!raw.carbonMonoxideAlarm;
+  clean.smokeAlarm = !!raw.smokeAlarm;
 
   clean.active = !!raw.active;
   clean.isBusinessReady = !!raw.isBusinessReady;
@@ -762,14 +767,35 @@ export function HostProvider({ children }) {
         setCompletedStep(prev => ({ ...prev, [step]: true }));
         return;
       }
-      if (step === "rules") {
+      //if (step === "rules") {
+      //  setStayData(prev => ({
+      //    ...prev,
+      //    rules: { ...prev.rules, ...values }
+      //  }));
+      //  setCompletedStep(prev => ({ ...prev, rules: true }));
+      //  return;
+      //}
+      if (step === "checkin") {
         setStayData(prev => ({
           ...prev,
-          rules: { ...prev.rules, ...values }
+          checkin_after: values.checkin_after ?? prev.checkin_after,
+          checkout_before: values.checkout_before ?? prev.checkout_before,
         }));
-        setCompletedStep(prev => ({ ...prev, rules: true }));
+        setCompletedStep(prev => ({ ...prev, checkin: true }));
         return;
       }
+      if (step === "safety") {
+        setStayData(prev => ({
+          ...prev,
+          covidSafety: values.covidSafety ?? prev.covidSafety,
+          surfacesSanitized: values.surfacesSanitized ?? prev.surfacesSanitized,
+          carbonMonoxideAlarm: values.carbonMonoxideAlarm ?? prev.carbonMonoxideAlarm,
+          smokeAlarm: values.smokeAlarm ?? prev.smokeAlarm,
+        }));
+        setCompletedStep(prev => ({ ...prev, safety: true }));
+        return;
+      }
+
       if (step === "houseRules") {
         setStayData(prev => ({
           ...prev,
@@ -1383,7 +1409,7 @@ export function HostProvider({ children }) {
         } else {
           console.warn("⚠️ WARNING: No photos in payload! This property will have no images.");
         }
-
+        console.log("🚀 FINAL PAYLOAD FULL:", JSON.stringify(payload, null, 2));
         const result = await authAPI.createProperty(payload);
         return {
           ok: true,
@@ -2010,7 +2036,13 @@ function formatStayDataForAPI(d) {
     lng: d.location?.lng ? String(d.location.lng) : null,
 
     HouseRules: houseRulesString,
+    checkin_after: safe(d.checkin_after),
+    checkout_before: safe(d.checkout_before),
 
+    CovidSafety: !!d.covidSafety,
+    SurfacesSanitized: !!d.surfacesSanitized,
+    CarbonMonoxideAlarm: !!d.carbonMonoxideAlarm,
+    SmokeAlarm: !!d.smokeAlarm,
     Photos: photos.map((p) => ({
       Url: p.url,
       Caption: p.caption,
