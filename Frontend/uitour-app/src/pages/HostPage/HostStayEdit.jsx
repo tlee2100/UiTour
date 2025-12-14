@@ -271,9 +271,23 @@ export default function HostStayEdit() {
       }
 
       const payload = {
+        // ===== BASIC =====
         listingTitle: data.listingTitle,
         description: data.description,
+        PropertyType: data.propertyType,
+
+        // ===== LOCATION (BE BẮT BUỘC) =====
+        Location: data.location.addressLine,
+        lat: data.location.lat ?? 0,
+        lng: data.location.lng ?? 0,
+
+        // ===== CURRENCY (BE BẮT BUỘC) =====
+        Currency: "VND",
+
+        // ===== CAPACITY =====
         accommodates: data.accommodates,
+
+        // ===== PRICING =====
         basePrice: data.pricing.basePrice,
         cleaningFee: data.pricing.cleaningFee,
         extraPeopleFee: data.pricing.extraPeopleFee,
@@ -283,10 +297,18 @@ export default function HostStayEdit() {
         taxFee: data.pricing.taxFee.percent,
         discount: data.pricing.discount,
         discountPercentage: data.pricing.discountPercentage,
+
+        // ===== HOUSE RULES (BE BẮT BUỘC) =====
+        HouseRules: JSON.stringify(data.houseRules ?? []),
+
+        // ===== STATUS =====
         active: true,
+
+        // ===== MEDIA =====
         photos: finalPhotos,
         amenities: data.amenities.map(a => ({ amenityID: a.id })),
       };
+
 
       await authAPI.updateProperty(id, payload);
       navigate("/host/listings");
