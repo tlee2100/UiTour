@@ -2,6 +2,53 @@
 const API_BASE_URL = 'http://localhost:5069/api';
 
 class AdminAPI {
+
+    async getRevenueByMonth(year) {
+      try {
+        const token = localStorage.getItem("token");
+        const y = year || new Date().getFullYear();
+
+        const response = await fetch(`${API_BASE_URL}/admin/stats/revenue-by-month?year=${y}`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(errText || "Failed to fetch revenue chart");
+        }
+
+        return await response.json(); // { year, currency, monthly: [12] }
+      } catch (err) {
+        throw err;
+      }
+    }
+
+    async getUserGrowth(year) {
+      try {
+        const token = localStorage.getItem("token");
+        const y = year || new Date().getFullYear();
+
+        const response = await fetch(`${API_BASE_URL}/admin/stats/user-growth?year=${y}`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(errText || "Failed to fetch user growth chart");
+        }
+
+        return await response.json(); // { year, monthly: [12] }
+      } catch (err) {
+        throw err;
+      }
+    }
+
   async getAllUsers() {
     try {
       const token = localStorage.getItem('token');
