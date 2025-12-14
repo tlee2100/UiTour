@@ -19,7 +19,17 @@
         public string PropertyType { get; set; }
         public string lat { get; set; }
         public string lng { get; set; }
+
+        //rules
         public string HouseRules { get; set; }
+        public string? checkin_after { get; set; }
+        public string? checkout_before { get; set; }
+
+        //safety
+        public bool CovidSafety { get; set; } = false;
+        public bool SurfacesSanitized { get; set; } = false;
+        public bool CarbonMonoxideAlarm { get; set; } = false;
+        public bool SmokeAlarm { get; set; } = false;
 
         // Fees
         public decimal? CleaningFee { get; set; }

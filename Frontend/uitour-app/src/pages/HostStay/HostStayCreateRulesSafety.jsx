@@ -23,7 +23,10 @@ export default function HostStayCreateRulesSafety() {
     { id: "no_visitors", label: t(language, "hostStay.rules.house.noVisitors") },
     { id: "no_children", label: t(language, "hostStay.rules.house.noChildren") },
     { id: "no_shoes_inside", label: t(language, "hostStay.rules.house.noShoes") },
-    { id: "no_food_in_bedrooms", label: t(language, "hostStay.rules.house.noFoodBedrooms") }
+    { id: "no_food_in_bedrooms", label: t(language, "hostStay.rules.house.noFoodBedrooms") },
+    { id: "no_smoking", label: t(language, "hostStay.rules.quick.noSmoking") },
+    { id: "no_open_flames", label: t(language, "hostStay.rules.quick.noFlames") },
+    { id: "pets_allowed", label: t(language, "hostStay.rules.quick.petsAllowed") }
   ];
 
   const toggleHouseRule = (id) => {
@@ -36,13 +39,17 @@ export default function HostStayCreateRulesSafety() {
     updateField("houseRules", updated);
   };
 
-  const toggleFlag = (key) => {
-    updateField("rules", {
-      ...rules,
-      [key]: !rules[key],
+  const toggleSafety = (key) => {
+    updateField("safety", {
+      [key]: !stayData[key]
     });
   };
-
+  console.log("SAFETY STATE", {
+    covidSafety: stayData.covidSafety,
+    surfacesSanitized: stayData.surfacesSanitized,
+    carbonMonoxideAlarm: stayData.carbonMonoxideAlarm,
+    smokeAlarm: stayData.smokeAlarm,
+  });
   return (
     <div className="hs-page">
       <div className="hs-main">
@@ -60,14 +67,14 @@ export default function HostStayCreateRulesSafety() {
           <div className="hs-rs-row disabled">
             <span>{t(language, "hostStay.rules.checkInOut.after")}</span>
             <span className="hs-rs-fixed-text">
-              {stayData.rules?.checkin_after || "14:00"}
+              {stayData.checkin_after || "14:00"}
             </span>
           </div>
 
           <div className="hs-rs-row disabled">
             <span>{t(language, "hostStay.rules.checkInOut.before")}</span>
             <span className="hs-rs-fixed-text">
-              {stayData.rules?.checkout_before || "11:00"}
+              {stayData.checkout_before || "11:00"}
             </span>
           </div>
         </div>
@@ -93,37 +100,6 @@ export default function HostStayCreateRulesSafety() {
           })}
         </div>
 
-        {/* QUICK RULES */}
-        <h2 className="hs-rs-section-title">
-          {t(language, "hostStay.rules.quick.title")}
-        </h2>
-
-        <div className="hs-rs-list">
-
-          <div
-            className={`hs-rs-row ${rules.no_smoking ? "is-selected" : ""}`}
-            onClick={() => toggleFlag("no_smoking")}
-          >
-            <span>{t(language, "hostStay.rules.quick.noSmoking")}</span>
-            <input type="checkbox" checked={rules.no_smoking} readOnly className="hs-rs-toggle" />
-          </div>
-
-          <div
-            className={`hs-rs-row ${rules.no_open_flames ? "is-selected" : ""}`}
-            onClick={() => toggleFlag("no_open_flames")}
-          >
-            <span>{t(language, "hostStay.rules.quick.noFlames")}</span>
-            <input type="checkbox" checked={rules.no_open_flames} readOnly className="hs-rs-toggle" />
-          </div>
-
-          <div
-            className={`hs-rs-row ${rules.pets_allowed ? "is-selected" : ""}`}
-            onClick={() => toggleFlag("pets_allowed")}
-          >
-            <span>{t(language, "hostStay.rules.quick.petsAllowed")}</span>
-            <input type="checkbox" checked={rules.pets_allowed} readOnly className="hs-rs-toggle" />
-          </div>
-        </div>
 
         {/* SAFETY */}
         <h2 className="hs-rs-section-title">
@@ -133,108 +109,56 @@ export default function HostStayCreateRulesSafety() {
         <div className="hs-rs-list">
 
           <div
-            className={`hs-rs-row ${rules.covidSafety ? "is-selected" : ""}`}
-            onClick={() => toggleFlag("covidSafety")}
+            className={`hs-rs-row ${stayData.covidSafety ? "is-selected" : ""}`}
+            onClick={() => toggleSafety("covidSafety")}
           >
             <span>{t(language, "hostStay.rules.safety.enhancedCleaning")}</span>
-            <input type="checkbox" checked={rules.covidSafety} readOnly className="hs-rs-toggle" />
+            <input
+              type="checkbox"
+              checked={!!stayData.covidSafety}
+              readOnly
+              className="hs-rs-toggle"
+            />
           </div>
 
           <div
-            className={`hs-rs-row ${rules.surfacesSanitized ? "is-selected" : ""}`}
-            onClick={() => toggleFlag("surfacesSanitized")}
+            className={`hs-rs-row ${stayData.surfacesSanitized ? "is-selected" : ""}`}
+            onClick={() => toggleSafety("surfacesSanitized")}
           >
             <span>{t(language, "hostStay.rules.safety.sanitized")}</span>
-            <input type="checkbox" checked={rules.surfacesSanitized} readOnly className="hs-rs-toggle" />
+            <input
+              type="checkbox"
+              checked={!!stayData.surfacesSanitized}
+              readOnly
+              className="hs-rs-toggle"
+            />
           </div>
 
           <div
-            className={`hs-rs-row ${rules.carbonMonoxideAlarm ? "is-selected" : ""}`}
-            onClick={() => toggleFlag("carbonMonoxideAlarm")}
+            className={`hs-rs-row ${stayData.carbonMonoxideAlarm ? "is-selected" : ""}`}
+            onClick={() => toggleSafety("carbonMonoxideAlarm")}
           >
             <span>{t(language, "hostStay.rules.safety.coAlarm")}</span>
-            <input type="checkbox" checked={rules.carbonMonoxideAlarm} readOnly className="hs-rs-toggle" />
+            <input
+              type="checkbox"
+              checked={!!stayData.carbonMonoxideAlarm}
+              readOnly
+              className="hs-rs-toggle"
+            />
           </div>
 
           <div
-            className={`hs-rs-row ${rules.smokeAlarm ? "is-selected" : ""}`}
-            onClick={() => toggleFlag("smokeAlarm")}
+            className={`hs-rs-row ${stayData.smokeAlarm ? "is-selected" : ""}`}
+            onClick={() => toggleSafety("smokeAlarm")}
           >
             <span>{t(language, "hostStay.rules.safety.smokeAlarm")}</span>
-            <input type="checkbox" checked={rules.smokeAlarm} readOnly className="hs-rs-toggle" />
+            <input
+              type="checkbox"
+              checked={!!stayData.smokeAlarm}
+              readOnly
+              className="hs-rs-toggle"
+            />
           </div>
-        </div>
-
-        {/* SELF CHECK-IN */}
-        <h2 className="hs-rs-section-title">
-          {t(language, "hostStay.rules.selfCheckIn.title")}
-        </h2>
-
-        <div className="hs-rs-list">
-
-          <div
-            className={`hs-rs-row ${rules.selfCheckIn ? "is-selected" : ""}`}
-            onClick={() => {
-              updateField("rules", {
-                ...rules,
-                selfCheckIn: !rules.selfCheckIn,
-              });
-              setShowSelect(false);
-            }}
-          >
-            <span>{t(language, "hostStay.rules.selfCheckIn.available")}</span>
-            <input type="checkbox" checked={rules.selfCheckIn} readOnly className="hs-rs-toggle" />
-          </div>
-
-          {rules.selfCheckIn && (
-            <div ref={selectWrapperRef} className="hs-rs-select-wrapper">
-
-              <div
-                className="hs-rs-select-display"
-                onClick={() => {
-                  const rect = selectWrapperRef.current.getBoundingClientRect();
-                  const spaceBelow = window.innerHeight - rect.bottom;
-                  const dropdownHeight = 220;
-                  setOpenUp(spaceBelow < dropdownHeight);
-                  setShowSelect(!showSelect);
-                }}
-              >
-                {rules.self_checkin_method || t(language, "hostStay.rules.selfCheckIn.select")}
-
-                <span className={`hs-rs-select-arrow ${showSelect ? "arrow-up" : "arrow-down"}`}>
-                  ⌄
-                </span>
-              </div>
-
-              {showSelect && (
-                <div className={`hs-rs-dropdown ${openUp ? "open-up" : "open-down"}`}>
-
-                  {[
-                    t(language, "hostStay.rules.selfCheckIn.methods.lockbox"),
-                    t(language, "hostStay.rules.selfCheckIn.methods.smartlock"),
-                    t(language, "hostStay.rules.selfCheckIn.methods.keypad"),
-                    t(language, "hostStay.rules.selfCheckIn.methods.staff"),
-                    t(language, "hostStay.rules.selfCheckIn.methods.other"),
-                  ].map((opt) => (
-                    <button
-                      key={opt}
-                      type="button"
-                      className={`hs-rs-dropdown-item ${rules.self_checkin_method === opt ? "active" : ""}`}
-                      onClick={() => {
-                        updateField("rules", {
-                          ...rules,
-                          self_checkin_method: opt,
-                        });
-                        setShowSelect(false);
-                      }}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
       </div>
