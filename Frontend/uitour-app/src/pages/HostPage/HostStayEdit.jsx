@@ -53,6 +53,21 @@ const AMENITIES_LIST = [
   { id: 16, tKey: "hairDryer", icon: "amen_hair_dryer" },
 ];
 
+// 🔧 ADDED: Map rule key (FE) -> Label (BE DTO expects)
+const HOUSE_RULE_LABEL_MAP = {
+  quiet_hours: "Quiet hours",
+  no_parties: "No parties",
+  no_visitors: "No visitors",
+  no_children: "No children",
+  no_shoes_inside: "No shoes inside",
+  no_food_in_bedrooms: "No food in bedrooms",
+
+  // quick rules
+  no_smoking: "No smoking",
+  no_open_flames: "No open flames",
+  pets_allowed: "Pets allowed",
+};
+
 
 const API_BASE = "http://localhost:5069"; // 🎯 ALWAYS backend URL
 
@@ -149,25 +164,15 @@ export default function HostStayEdit() {
         const safe = {
           listingTitle: json.listingTitle || "",
           description: json.description || "",
-
-          location: {
-            addressLine: json.location || "",
-            city: json.city?.cityName || "",
-            country: json.country?.countryName || "",
-          },
-
-          propertyType: json.propertyType || "",
-
-          roomType: {
-            id: json.roomTypeID ?? null,
-            name: json.roomType?.name ?? ""
-          },
-
-
-          bedrooms: json.bedrooms ?? 1,
-          beds: json.beds ?? 1,
-          bathrooms: json.bathrooms ?? 1,
           accommodates: json.accommodates ?? 1,
+           // ✅ chỉ lưu text
+          locationText: json.location || "",
+          propertyType: json.propertyType || "",
+          roomType: json.roomType || null,
+          bedrooms: json.bedrooms ?? 0,
+          beds: json.beds ?? 0,
+          bathrooms: json.bathrooms ?? 0,
+          rules: json.rules ?? {},
 
           amenities: Array.isArray(json.propertyAmenities)
             ? json.propertyAmenities.map(pa => ({
@@ -185,38 +190,14 @@ export default function HostStayEdit() {
             }
           })(),
 
-          rules: {
-            selfCheckIn: json.selfCheckIn ?? false,
-            self_checkin_method: json.self_checkin_method || "",
 
-            no_smoking: json.no_smoking ?? false,
-            no_open_flames: json.no_open_flames ?? false,
-            pets_allowed: json.pets_allowed ?? false,
-
-            covidSafety: json.covidSafety ?? false,
-            surfacesSanitized: json.surfacesSanitized ?? false,
-            carbonMonoxideAlarm: json.carbonMonoxideAlarm ?? false,
-            smokeAlarm: json.smokeAlarm ?? false,
-          },
-
-          pricing: {
-            basePrice: json.price ?? 0,
-            weekendMultiplier: json.weekendMultiplier ?? 1,
-            cleaningFee: json.cleaningFee ?? 0,
-            extraPeopleFee: json.extraPeopleFee ?? 0,
-            extraPeopleThreshold: json.extraPeopleThreshold ?? 1,
-
-            serviceFee: {
-              percent: json.serviceFee ?? 0,
-            },
-            taxFee: {
-              percent: json.taxFee ?? 0,
+            pricing: {
+              basePrice: json.basePrice ?? 0,
+              cleaningFee: json.cleaningFee ?? 0,
+              extraPeopleFee: json.extraPeopleFee ?? 0,
+              extraPeopleThreshold: json.extraPeopleThreshold ?? 1,
             },
 
-            discount: json.discount ?? 0,
-            discountPercentage: json.discountPercentage ?? 0,
-
-          },
         };
 
         setData(safe);
@@ -269,20 +250,18 @@ export default function HostStayEdit() {
           sortIndex: p.sortIndex,
         });
       }
+      // 🔧 ADDED: Convert rules object -> List<HouseRuleDto>
+      const houseRulesDto = Object.entries(data.rules ?? {})
+        .filter(([, checked]) => checked)
+        .map(([key]) => ({
+          label: HOUSE_RULE_LABEL_MAP[key],
+        }));
 
       const payload = {
         // ===== BASIC =====
         listingTitle: data.listingTitle,
         description: data.description,
-        PropertyType: data.propertyType,
 
-        // ===== LOCATION (BE BẮT BUỘC) =====
-        Location: data.location.addressLine,
-        lat: data.location.lat ?? 0,
-        lng: data.location.lng ?? 0,
-
-        // ===== CURRENCY (BE BẮT BUỘC) =====
-        Currency: "VND",
 
         // ===== CAPACITY =====
         accommodates: data.accommodates,
@@ -291,18 +270,11 @@ export default function HostStayEdit() {
         basePrice: data.pricing.basePrice,
         cleaningFee: data.pricing.cleaningFee,
         extraPeopleFee: data.pricing.extraPeopleFee,
-        weekendMultiplier: data.pricing.weekendMultiplier,
         extraPeopleThreshold: data.pricing.extraPeopleThreshold,
-        serviceFee: data.pricing.serviceFee.percent,
-        taxFee: data.pricing.taxFee.percent,
-        discount: data.pricing.discount,
-        discountPercentage: data.pricing.discountPercentage,
 
-        // ===== HOUSE RULES (BE BẮT BUỘC) =====
-        HouseRules: JSON.stringify(data.houseRules ?? []),
+        // ===== HOUSE RULES (BE BẮT BUỘC), =====
+        houseRules: houseRulesDto,
 
-        // ===== STATUS =====
-        active: true,
 
         // ===== MEDIA =====
         photos: finalPhotos,
@@ -502,7 +474,7 @@ export default function HostStayEdit() {
 
           <input
             className="hs-edit-location-input"
-            value={d.location.addressLine}
+            value={d.locationText}
             disabled
             title={LOCKED_HINT}
           />
@@ -519,7 +491,7 @@ export default function HostStayEdit() {
               <b>{t(language, "hostStay.preview.propertyType")}:</b>
               <input
                 className="hs-edit-input"
-                value={d.propertyType}
+                value={d.propertyType || ""}
                 disabled
                 title={LOCKED_HINT}
               />
@@ -529,7 +501,7 @@ export default function HostStayEdit() {
               <b>{t(language, "hostStay.preview.typeOfPlace")}:</b>
               <input
                 className="hs-edit-input"
-                value={d.roomType.name}
+                value={d.roomType?.name || ""}
                 disabled
                 title={LOCKED_HINT}
               />
@@ -540,7 +512,7 @@ export default function HostStayEdit() {
               <input
                 type="number"
                 className="hs-edit-input"
-                value={d.bedrooms}
+                value={d.bedrooms ?? ""}
                 disabled
                 title={LOCKED_HINT}
               />
@@ -551,7 +523,7 @@ export default function HostStayEdit() {
               <input
                 type="number"
                 className="hs-edit-input"
-                value={d.beds}
+                value={d.beds ?? ""}
                 disabled
                 title={LOCKED_HINT}
               />
@@ -562,7 +534,7 @@ export default function HostStayEdit() {
               <input
                 type="number"
                 className="hs-edit-input"
-                value={d.bathrooms}
+                value={d.bathrooms ?? ""}
                 disabled
                 title={LOCKED_HINT}
               />
@@ -596,7 +568,7 @@ export default function HostStayEdit() {
               <b>{t(language, "hostStay.preview.address")}:</b>
               <input
                 className="hs-edit-input"
-                value={d.location.addressLine}
+                value={d.locationText}
                 disabled
                 title={LOCKED_HINT}
               />
@@ -756,7 +728,7 @@ export default function HostStayEdit() {
               <label key={key} className="hs-edit-row">
                 <input
                   type="checkbox"
-                  checked={d.rules[key]}
+                  checked={!!d.rules[key]}
                   onChange={(e) => onChange(`rules.${key}`, e.target.checked)}
                 />
                 {label}
@@ -774,7 +746,7 @@ export default function HostStayEdit() {
               <label key={key} className="hs-edit-row">
                 <input
                   type="checkbox"
-                  checked={d.rules[key]}
+                  checked={!!d.rules[key]}
                   onChange={(e) => onChange(`rules.${key}`, e.target.checked)}
                 />
                 {label}
