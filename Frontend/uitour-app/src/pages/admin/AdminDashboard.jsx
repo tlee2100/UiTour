@@ -4,15 +4,33 @@ import './admin.css';
 import adminAPI from '../../services/adminAPI';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { t } from '../../utils/translations';
+import {
+  ResponsiveContainer,
+  LineChart, Line,
+  BarChart, Bar,
+  XAxis, YAxis, Tooltip, CartesianGrid
+} from "recharts";
+
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [charts, setCharts] = useState({ revenue: [], userGrowth: [] });
   const [stats, setStats] = useState({
     totalUsers: 0,
     pendingPosts: 0,
     revenue: 0,
     pendingReports: 0
   });
+
+  const buildMonthData = (monthlyArr, valueKey) => {
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return months.map((m, idx) => ({
+      month: m,
+      [valueKey]: Number(monthlyArr?.[idx] ?? 0),
+    }));
+  };
+
+
   const [loading, setLoading] = useState(true);
   const { language } = useLanguage();
 
@@ -23,11 +41,15 @@ export default function AdminDashboard() {
   const loadStats = async () => {
     try {
       setLoading(true);
-      const [users, properties, tours] = await Promise.all([
-        adminAPI.getAllUsers().catch(() => []),
-        adminAPI.getAllProperties().catch(() => []),
-        adminAPI.getAllTours().catch(() => [])
-      ]);
+      const year = new Date().getFullYear();
+
+    const [users, properties, tours, revenueRes, growthRes] = await Promise.all([
+      adminAPI.getAllUsers().catch(() => []),
+      adminAPI.getAllProperties().catch(() => []),
+      adminAPI.getAllTours().catch(() => []),
+      adminAPI.getRevenueByMonth(year).catch(() => ({ monthly: [] })),
+      adminAPI.getUserGrowth(year).catch(() => ({ monthly: [] })),
+    ]);
 
       const pendingProperties = (properties || []).filter(p => !p.Active && !p.active).length;
       const pendingTours = (tours || []).filter(t => !t.Active && !t.active).length;
@@ -39,6 +61,12 @@ export default function AdminDashboard() {
         revenue: 0, // Will need transaction data
         pendingReports: 0 // Will need reports data
       });
+
+      setCharts({
+        revenue: buildMonthData(revenueRes.monthly, "revenue"),
+        userGrowth: buildMonthData(growthRes.monthly, "users"),
+      });
+
     } catch (err) {
       console.error('Failed to load stats:', err);
     } finally {
@@ -79,9 +107,39 @@ export default function AdminDashboard() {
         </div>
       </div>
       <div className="chart-grid">
-        <div className="chart-card">{t(language, 'adminDashboard.revenueByMonth')}</div>
-        <div className="chart-card">{t(language, 'adminDashboard.userGrowth')}</div>
+        <div className="chart-card" style={{ padding: 16 }}>
+          {loading ? (
+            t(language, "adminDashboard.revenueByMonth")
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={charts.revenue}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="revenue" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        <div className="chart-card" style={{ padding: 16 }}>
+          {loading ? (
+            t(language, "adminDashboard.userGrowth")
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={charts.userGrowth}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="users" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
       </div>
+
       <div className="table-card">
         <div className="table-title">{t(language, 'adminDashboard.latestReports')}</div>
         <div className="table">
