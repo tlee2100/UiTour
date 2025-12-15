@@ -7,28 +7,27 @@ export default function TourPriceFilter({ current, onSelect }) {
   const { language } = useLanguage();
   const { currency } = useCurrency();
 
-  const formatAmount = (vndValue) => {
-    if (currency === "VND") {
-      return vndValue.toLocaleString("vi-VN") + "đ";
+  // INPUT = USD (CANONICAL)
+  const formatAmount = (usd) => {
+    if (currency === "USD") {
+      return "$" + usd.toFixed(2);
     }
-    const usd = vndValue / 25000;
-    return "$" + usd.toFixed(2);
+    const vnd = usd * 25000;
+    return vnd.toLocaleString("vi-VN") + "đ";
   };
 
   const priceLabels = {
-    under500: `${t(language, "filters.price.under")} ${formatAmount(500000)}`,
-    "500to2m": `${formatAmount(500000)} – ${formatAmount(2000000)}`,
-    "2to5": `${formatAmount(2000000)} – ${formatAmount(5000000)}`,
-    "5to10": `${formatAmount(5000000)} – ${formatAmount(10000000)}`,
-    over10: `${formatAmount(10000000)}+`,
+    under20: `${t(language, "filters.price.under")} ${formatAmount(20)}`,
+    "20to80": `${formatAmount(20)} – ${formatAmount(80)}`,
+    "80to200": `${formatAmount(80)} – ${formatAmount(200)}`,
+    over200: `${formatAmount(200)}+`,
   };
 
   const PRICE_OPTIONS = [
-    { key: "under500" },
-    { key: "500to2m" },
-    { key: "2to5" },
-    { key: "5to10" },
-    { key: "over10" },
+    { key: "under20" },
+    { key: "20to80" },
+    { key: "80to200" },
+    { key: "over200" },
   ];
 
   return (
