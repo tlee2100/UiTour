@@ -31,6 +31,14 @@ const AMENITY_ICON_MAP = {
   16: "amen_hair_dryer",
 };
 
+const MONEY_FIELDS = [
+  "pricing.basePrice",
+  "pricing.cleaningFee",
+  "pricing.extraPeopleFee",
+  "pricing.discount",
+];
+
+
 const AMENITIES_LIST = [
   { id: 1, tKey: "wifi", icon: "amen_wifi" },
   { id: 7, tKey: "tv", icon: "amen_tv" },
@@ -89,9 +97,16 @@ export default function HostStayEdit() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
+  const {
+    currency,
+    convertToCurrent,
+    convertToUSD,
+    format,
+  } = useCurrency();
+
 
   const LOCKED_HINT =
-    "Trường này không thể chỉnh sửa. Nếu có thay đổi lớn, vui lòng tạo listing mới.";
+    `${t(language, "hostEdit.stay.lockedHint")}`;
 
 
   // Helper: Check valid URL
@@ -165,7 +180,7 @@ export default function HostStayEdit() {
           listingTitle: json.listingTitle || "",
           description: json.description || "",
           accommodates: json.accommodates ?? 1,
-           // ✅ chỉ lưu text
+          // ✅ chỉ lưu text
           locationText: json.location || "",
           propertyType: json.propertyType || "",
           roomType: json.roomType || null,
@@ -191,12 +206,12 @@ export default function HostStayEdit() {
           })(),
 
 
-            pricing: {
-              basePrice: json.basePrice ?? 0,
-              cleaningFee: json.cleaningFee ?? 0,
-              extraPeopleFee: json.extraPeopleFee ?? 0,
-              extraPeopleThreshold: json.extraPeopleThreshold ?? 1,
-            },
+          pricing: {
+            basePrice: json.basePrice ?? 0,
+            cleaningFee: json.cleaningFee ?? 0,
+            extraPeopleFee: json.extraPeopleFee ?? 0,
+            extraPeopleThreshold: json.extraPeopleThreshold ?? 1,
+          },
 
         };
 
@@ -307,9 +322,9 @@ export default function HostStayEdit() {
     });
   };
 
-  if (loading) return <div style={{ padding: 40 }}>Loading…</div>;
+  if (loading) return <div style={{ padding: 40 }}>{t(language, "hostEdit.stay.loading")}</div>;
   if (error) return <div style={{ padding: 40 }}>❌ {error}</div>;
-  if (!data) return <div style={{ padding: 40 }}>Not found</div>;
+  if (!data) return <div style={{ padding: 40 }}>{t(language, "hostEdit.stay.notFound")}</div>;
 
   const d = data;
 
@@ -324,9 +339,16 @@ export default function HostStayEdit() {
   };
 
   const saveEditor = () => {
-    onChange(activeField, draftValue);
+    let value = draftValue;
+
+    if (MONEY_FIELDS.includes(activeField)) {
+      value = convertToUSD(Number(draftValue));
+    }
+
+    onChange(activeField, value);
     closeEditor();
   };
+
 
   const toggleAmenity = (id) => {
     setAmenitiesDraft(prev =>
@@ -610,7 +632,7 @@ export default function HostStayEdit() {
               ))
             ) : (
               <div className="hs-edit-amenity-empty">
-                No amenities selected
+                {t(language, "hostEdit.stay.noAmenities")}
               </div>
             )}
           </div>
@@ -623,18 +645,23 @@ export default function HostStayEdit() {
 
           <div className="hs-edit-card">
             <div className="hs-edit-row">
-              <b>{t(language, "hostStay.preview.basePrice")}:</b>
+              <b>{t(language, "hostStay.preview.basePrice")} ({currency}):</b>
               <EditableRow
-                value={d.pricing.basePrice}
+                value={format(convertToCurrent(d.pricing.basePrice))}
                 editable
-                onEdit={() => openEditor("pricing.basePrice", d.pricing.basePrice)}
+                onEdit={() =>
+                  openEditor(
+                    "pricing.basePrice",
+                    convertToCurrent(d.pricing.basePrice)
+                  )
+                }
               />
             </div>
 
             <div className="hs-edit-row">
               <b>{t(language, "hostStay.preview.weekendMultiplier")}:</b>
               <EditableRow
-                value={d.pricing.weekendMultiplier}
+                value={d.pricing.weekendMultiplier ?? 1}
                 editable
                 onEdit={() =>
                   openEditor("pricing.weekendMultiplier", d.pricing.weekendMultiplier)
@@ -643,23 +670,29 @@ export default function HostStayEdit() {
             </div>
 
             <div className="hs-edit-row">
-              <b>{t(language, "hostStay.preview.cleaningFee")}:</b>
+              <b>{t(language, "hostStay.preview.cleaningFee")} ({currency}):</b>
               <EditableRow
-                value={d.pricing.cleaningFee}
+                value={format(convertToCurrent(d.pricing.cleaningFee))}
                 editable
                 onEdit={() =>
-                  openEditor("pricing.cleaningFee", d.pricing.cleaningFee)
+                  openEditor(
+                    "pricing.cleaningFee",
+                    convertToCurrent(d.pricing.cleaningFee)
+                  )
                 }
               />
             </div>
 
             <div className="hs-edit-row">
-              <b>{t(language, "hostStay.preview.extraFee")}:</b>
+              <b>{t(language, "hostStay.preview.extraFee")} ({currency}):</b>
               <EditableRow
-                value={d.pricing.extraPeopleFee}
+                value={format(convertToCurrent(d.pricing.extraPeopleFee))}
                 editable
                 onEdit={() =>
-                  openEditor("pricing.extraPeopleFee", d.pricing.extraPeopleFee)
+                  openEditor(
+                    "pricing.extraPeopleFee",
+                    convertToCurrent(d.pricing.extraPeopleFee)
+                  )
                 }
               />
             </div>
@@ -687,20 +720,23 @@ export default function HostStayEdit() {
           </h2>
 
           <div className="hs-edit-row">
-            <b>Discount amount</b>
+            <b>{t(language, "hostEdit.stay.discountAmount")} ({currency}):</b>
             <EditableRow
-              value={d.pricing.discount}
+              value={format(convertToCurrent(d.pricing.discount ?? 0))}
               editable
               onEdit={() =>
-                openEditor("pricing.discount", d.pricing.discount)
+                openEditor(
+                  "pricing.discount",
+                  convertToCurrent(d.pricing.discount)
+                )
               }
             />
           </div>
 
           <div className="hs-edit-row">
-            <b>Discount percentage (%)</b>
+            <b>{t(language, "hostEdit.stay.discountPercent")}:</b>
             <EditableRow
-              value={d.pricing.discountPercentage}
+              value={d.pricing.discountPercentage ?? 0}
               editable
               onEdit={() =>
                 openEditor(
@@ -721,9 +757,9 @@ export default function HostStayEdit() {
           <div className="hs-edit-card">
 
             {[
-              ["no_smoking", "No smoking"],
-              ["no_open_flames", "No open flames"],
-              ["pets_allowed", "Pets allowed"],
+              ["no_smoking", `${t(language, "hostEdit.stay.rules.noSmoking")}`],
+              ["no_open_flames", `${t(language, "hostEdit.stay.rules.noOpenFlames")}`],
+              ["pets_allowed", `${t(language, "hostEdit.stay.rules.petsAllowed")}`],
             ].map(([key, label]) => (
               <label key={key} className="hs-edit-row">
                 <input
@@ -738,10 +774,10 @@ export default function HostStayEdit() {
             <hr />
 
             {[
-              ["smokeAlarm", "Smoke alarm"],
-              ["carbonMonoxideAlarm", "CO alarm"],
-              ["covidSafety", "Enhanced cleaning"],
-              ["surfacesSanitized", "Surfaces sanitized"],
+              ["smokeAlarm", `${t(language, "hostEdit.stay.rules.smokeAlarm")}`],
+              ["carbonMonoxideAlarm", `${t(language, "hostEdit.stay.rules.coAlarm")}`],
+              ["covidSafety", `${t(language, "hostEdit.stay.rules.enhancedCleaning")}`],
+              ["surfacesSanitized", `${t(language, "hostEdit.stay.rules.surfacesSanitized")}`],
             ].map(([key, label]) => (
               <label key={key} className="hs-edit-row">
                 <input
@@ -781,7 +817,7 @@ export default function HostStayEdit() {
         </section>
 
         <button className="hs-edit-save-btn" onClick={handleSave}>
-          💾 Save Changes
+          💾 {t(language, "hostEdit.stay.save")}
         </button>
       </div>
       {activeField && (
@@ -790,22 +826,22 @@ export default function HostStayEdit() {
 
           <div className="hs-modal-card">
             <div className="hs-modal-header">
-              <b>Edit</b>
+              <b>{t(language, "hostEdit.stay.edit")}</b>
               <button onClick={closeEditor}>✕</button>
             </div>
 
             <div className="hs-modal-body">
               <input
-                type={typeof draftValue === "number" ? "number" : "text"}
+                type="number"
                 value={draftValue}
-                onChange={(e) => setDraftValue(e.target.value)}
+                onChange={(e) => setDraftValue(Number(e.target.value))}
                 className="hs-input"
               />
             </div>
 
             <div className="hs-modal-footer">
-              <button onClick={closeEditor}>Cancel</button>
-              <button onClick={saveEditor}>Save</button>
+              <button onClick={closeEditor}>{t(language, "hostEdit.stay.cancel")}</button>
+              <button onClick={saveEditor}>{t(language, "hostEdit.stay.saveonly")}</button>
             </div>
           </div>
         </div>
@@ -817,7 +853,7 @@ export default function HostStayEdit() {
 
           <div className="hs-modal-card large">
             <div className="hs-modal-header">
-              <b>Edit amenities</b>
+              <b>{t(language, "hostEdit.stay.editAmenities")}</b>
               <button onClick={() => setAmenitiesModalOpen(false)}>✕</button>
             </div>
 
@@ -841,8 +877,8 @@ export default function HostStayEdit() {
             </div>
 
             <div className="hs-modal-footer">
-              <button onClick={() => setAmenitiesModalOpen(false)}>Cancel</button>
-              <button onClick={saveAmenities}>Save</button>
+              <button onClick={() => setAmenitiesModalOpen(false)}>{t(language, "hostEdit.stay.cancel")}</button>
+              <button onClick={saveAmenities}>{t(language, "hostEdit.stay.saveonly")}</button>
             </div>
           </div>
         </div>
@@ -854,7 +890,7 @@ export default function HostStayEdit() {
 
           <div className="hs-modal-card large">
             <div className="hs-modal-header">
-              <b>Edit photos</b>
+              <b>{t(language, "hostEdit.stay.editPhotos")}</b>
               <button onClick={() => setPhotosModalOpen(false)}>✕</button>
             </div>
 
@@ -863,7 +899,7 @@ export default function HostStayEdit() {
                 className="hs-btn"
                 onClick={() => fileInputRef.current?.click()}
               >
-                ➕ Upload photos
+                ➕ {t(language, "hostEdit.stay.uploadPhotos")}
               </button>
 
               <input
@@ -885,7 +921,7 @@ export default function HostStayEdit() {
                       onClick={() => setAsCover(p)}
                     />
 
-                    {p.isCover && <span className="hs-cover-badge">Cover</span>}
+                    {p.isCover && <span className="hs-cover-badge">{t(language, "hostEdit.stay.cover")}</span>}
 
                     <button
                       className="hs-photo-remove-btn"
@@ -902,9 +938,9 @@ export default function HostStayEdit() {
             </div>
 
             <div className="hs-modal-footer">
-              <button onClick={() => setPhotosModalOpen(false)}>Cancel</button>
+              <button onClick={() => setPhotosModalOpen(false)}>{t(language, "hostEdit.stay.cancel")}</button>
               <button onClick={savePhotos} disabled={uploading}>
-                {uploading ? "Uploading..." : "Save"}
+                {uploading ? `${t(language, "hostEdit.stay.uploading")}` : `${t(language, "hostEdit.stay.saveonly")}`}
               </button>
             </div>
           </div>
