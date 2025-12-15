@@ -28,11 +28,10 @@ export default function ToursPage() {
 
   // Price brackets in VND (same as Stay Filters)
   const PRICE_BRACKETS = {
-    under500: [0, 500000],
-    "500to2m": [500000, 2000000],
-    "2to5": [2000000, 5000000],
-    "5to10": [5000000, 10000000],
-    over10: [10000000, Infinity],
+    under20: [0, 20],
+    "20to80": [20, 80],
+    "80to200": [80, 200],
+    over200: [200, Infinity],
   };
 
 
@@ -135,11 +134,12 @@ export default function ToursPage() {
 
       // PRICE OPTION FILTER
       // PRICE FILTER — ALWAYS USE ORIGINAL VND PRICE
-      if (price) {
-        const tourPriceVND = convertToCurrent(tour.price ?? 0);
+      // PRICE FILTER — ALWAYS USE RAW VND PRICE (CANONICAL)
+      if (price && PRICE_BRACKETS[price]) {
+        const tourPriceUSD = Number(tour.price ?? 0); // USD gốc
         const [min, max] = PRICE_BRACKETS[price];
 
-        if (!(tourPriceVND >= min && tourPriceVND < max)) return false;
+        if (tourPriceUSD < min || tourPriceUSD >= max) return false;
       }
 
 
@@ -226,12 +226,12 @@ export default function ToursPage() {
   };
 
   const priceLabels = {
-    under500: `${t(language, "filters.price.under")} ${formatAmount(500000)}`,
-    "500to2m": `${formatAmount(500000)} – ${formatAmount(2000000)}`,
-    "2to5": `${formatAmount(2000000)} – ${formatAmount(5000000)}`,
-    "5to10": `${formatAmount(5000000)} – ${formatAmount(10000000)}`,
-    over10: `${formatAmount(10000000)}+`,
+    under20: `${t(language, "filters.price.under")} ${format(20)}`,
+    "20to80": `${format(20)} – ${format(80)}`,
+    "80to200": `${format(80)} – ${format(200)}`,
+    over200: `${format(200)}+`,
   };
+
 
   const PRICE_OPTIONS = [
     { key: "under500" },
