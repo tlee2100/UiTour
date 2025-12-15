@@ -5,7 +5,8 @@ import svgr from "vite-plugin-svgr";
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const backendUrl = env.VITE_API_BASE_URL || 'https://localhost:5069'
+  // Default to HTTP backend port used locally; avoids TLS mismatch on 5069.
+  const backendUrl = env.VITE_API_BASE_URL || 'http://localhost:5069'
 
   return {
     plugins: [react(), svgr()],

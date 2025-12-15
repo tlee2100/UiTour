@@ -1,10 +1,10 @@
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UITour.ServicesL.Interfaces;
 using UITour.Models.DTO.Chatbot; // adjust namespace if you moved DTOs
+using Microsoft.Extensions.Configuration;
 
 namespace UITour.ServicesL.Implementations
 {
@@ -12,11 +12,15 @@ namespace UITour.ServicesL.Implementations
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<ChatbotService> _logger;
+        private readonly string _baseUrl;
+        private readonly string _model;
 
-        public ChatbotService(HttpClient httpClient, ILogger<ChatbotService> logger)
+        public ChatbotService(HttpClient httpClient, ILogger<ChatbotService> logger, IConfiguration configuration)
         {
             _httpClient = httpClient;
             _logger = logger;
+            _baseUrl = configuration["Ollama:BaseUrl"]?.TrimEnd('/') ?? "http://localhost:11434";
+            _model = configuration["Ollama:Model"] ?? "llama3";
         }
 
         public async Task<ChatResponseDto> AskAsync(ChatRequestDto request)
@@ -30,10 +34,6 @@ namespace UITour.ServicesL.Implementations
 
             try
             {
-                // Call local Ollama
-                const string baseUrl = "http://localhost:11434";
-                const string model = "llama2"; // or "mistral"
-
                 var messages = new List<object>
                 {
                     new
@@ -59,14 +59,14 @@ namespace UITour.ServicesL.Implementations
 
                 var payload = new
                 {
-                    model,
+                    model = _model,
                     messages,
                     stream = false
                 };
 
                 var httpRequest = new HttpRequestMessage(
                     HttpMethod.Post,
-                    $"{baseUrl.TrimEnd('/')}/api/chat")
+                    $"{_baseUrl}/api/chat")
                 {
                     Content = new StringContent(
                         JsonSerializer.Serialize(payload),
