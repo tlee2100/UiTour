@@ -1410,6 +1410,17 @@ export function HostProvider({ children }) {
           console.warn("⚠️ WARNING: No photos in payload! This property will have no images.");
         }
         console.log("🚀 FINAL PAYLOAD FULL:", JSON.stringify(payload, null, 2));
+        if (Array.isArray(payload.Photos)) {
+        payload.Photos = payload.Photos.map((p) => {
+          const sortIndex = Number(p.SortIndex ?? p.sortIndex);
+          if (sortIndex === 1) {
+            return { ...p, Caption: "bedroom" };
+          }
+          return p;
+        });
+      }
+
+     
         const result = await authAPI.createProperty(payload);
         return {
           ok: true,
