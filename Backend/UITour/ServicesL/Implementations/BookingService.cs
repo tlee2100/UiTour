@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -112,12 +112,41 @@ namespace UITour.ServicesL.Implementations
             if (property == null)
                 throw new InvalidOperationException("Property not found");
 
-            var numberOfNights = (checkOut - checkIn).Days;
-            var basePrice = property.Price * numberOfNights;
-            var cleaningFee = property.CleaningFee ?? 0;
-            var serviceFee = basePrice * 0.1m; // 10% service fee
+            var nights = Math.Max(1, (checkOut.Date - checkIn.Date).Days);
 
-            return basePrice + cleaningFee + serviceFee;
+            // ✅ Base price (USD)
+            var basePriceUSD = property.Price;
+            var subtotalUSD = basePriceUSD * nights;
+
+            var propertyDiscountUSD = property.DiscountPercentage > 0
+              ? subtotalUSD * (property.DiscountPercentage / 100)
+              : 0;
+
+            // ✅ Cleaning fee (fixed)
+            var cleaningFeeUSD = property.CleaningFee ?? 0;
+
+            // ✅ Service fee (percent OR fixed)
+            var serviceFeeUSD =
+                property.ServiceFee > 1 && property.ServiceFee <= 100
+                    ? subtotalUSD * (property.ServiceFee / 100)
+                    : property.ServiceFee;
+
+            // ✅ Tax fee (percent OR fixed)
+            var taxFeeUSD =
+                property.TaxFee > 1 && property.TaxFee <= 100
+                    ? subtotalUSD * (property.TaxFee / 100)
+                    : property.TaxFee;
+
+            // ✅ Total
+            var totalUSD =
+                subtotalUSD
+                - propertyDiscountUSD
+                + cleaningFeeUSD
+                + serviceFeeUSD
+                + taxFeeUSD;
+
+            return totalUSD;
+
         }
 
         public async Task<decimal> CalculateTourTotalPriceAsync(int tourId, short guestsCount)

@@ -831,13 +831,22 @@ export default function HostStayEdit() {
             </div>
 
             <div className="hs-modal-body">
+              {activeField === "listingTitle" || activeField === "description" ? (
+              <input
+                type="text"
+                value={draftValue}
+                onChange={(e) => setDraftValue(e.target.value)}
+                className="hs-input"
+              />
+            ) : (
               <input
                 type="number"
                 value={draftValue}
                 onChange={(e) => setDraftValue(Number(e.target.value))}
                 className="hs-input"
               />
-            </div>
+            )}
+              </div>
 
             <div className="hs-modal-footer">
               <button onClick={closeEditor}>{t(language, "hostEdit.stay.cancel")}</button>
