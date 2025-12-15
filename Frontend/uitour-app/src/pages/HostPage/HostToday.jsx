@@ -141,27 +141,32 @@ export default function HostToday() {
               "";
             const low = rawStatus.toLowerCase().trim();
 
-            // coi như đã thanh toán nếu status chứa paid/completed/success/confirm
+            // Default to paid if a transaction exists.
+            paymentStatus = "paid";
+
+            // Failure overrides paid.
+            if (
+              ["failed", "declined", "error", "cancel"].some((s) =>
+                low.includes(s)
+              )
+            ) {
+              paymentStatus = "failed";
+            }
+
+            // Refund overrides everything.
+            if (
+              ["refunded", "refund"].some((s) => low.includes(s))
+            ) {
+              paymentStatus = "refunded";
+            }
+
+            // If status explicitly mentions paid/complete/success/confirm, keep paid.
             if (
               ["paid", "completed", "success", "confirm", "confirmed"].some(
                 (s) => low.includes(s)
               )
             ) {
               paymentStatus = "paid";
-            } else if (
-              ["pending", "processing", "waiting"].some((s) =>
-                low.includes(s)
-              )
-            ) {
-              paymentStatus = "pending";
-            } else if (
-              ["failed", "declined", "error"].some((s) => low.includes(s))
-            ) {
-              paymentStatus = "failed";
-            } else if (
-              ["refunded", "refund"].some((s) => low.includes(s))
-            ) {
-              paymentStatus = "refunded";
             }
           } else {
             // Không có transaction nhưng Booking.Status đã Confirm/Paid
