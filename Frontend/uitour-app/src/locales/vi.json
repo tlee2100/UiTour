@@ -123,7 +123,6 @@
     "missingLoginInfoEdit": "Thiếu thông tin đăng nhập. Vui lòng đăng nhập lại.",
     "uploadAvatar": "Cập nhật ảnh đại diện",
     "removeAvatar": "Xóa hình đại diện"
-    
   },
   "accountSettings": {
     "title": "Cài đặt tài khoản",
@@ -1301,5 +1300,45 @@
     "today": "Hôm nay",
     "yesterday": "Hôm qua",
     "justNow": "Vừa xong"
+  },
+  "hostEdit": {
+    "stay": {
+      "loading": "Đang tải…",
+      "notFound": "Không tìm thấy",
+      "save": "Lưu thay đổi",
+      "saveonly": "Lưu",
+      "edit": "Chỉnh sửa",
+      "editAmenities": "Chỉnh sửa tiện ích",
+      "editPhotos": "Chỉnh sửa ảnh",
+      "cancel": "Hủy",
+      "uploading": "Đang tải lên...",
+      "uploadPhotos": "Tải ảnh lên",
+      "cover": "Ảnh bìa",
+      "noAmenities": "Chưa chọn tiện nghi nào",
+      "lockedHint": "Trường này không thể chỉnh sửa. Nếu có thay đổi lớn, vui lòng tạo listing mới.",
+      "discountAmount": "Số tiền giảm giá",
+      "discountPercent": "Phần trăm giảm giá (%)",
+      "rules": {
+        "noSmoking": "Không hút thuốc",
+        "noOpenFlames": "Không dùng lửa",
+        "petsAllowed": "Cho phép thú cưng",
+        "smokeAlarm": "Báo khói",
+        "coAlarm": "Báo CO",
+        "enhancedCleaning": "Vệ sinh tăng cường",
+        "surfacesSanitized": "Khử trùng bề mặt"
+      }
+    },
+    "tour": {
+      "lockedHint": "Trường này không thể chỉnh sửa. Nếu có thay đổi lớn, vui lòng tạo listing mới.",
+      "invalidServerResponse": "Phản hồi từ máy chủ không hợp lệ",
+      "uploadItineraryImageFailed": "Tải ảnh hành trình thất bại",
+      "uploadPhotoFailed": "Tải ảnh trải nghiệm thất bại",
+      "updateFailed": "Cập nhật thất bại",
+      "editPhotos": "Chỉnh sửa ảnh",
+      "uploadPhotos": "Tải ảnh lên",
+      "noItinerary": "Chưa có hành trình",
+      "save": "Lưu thay đổi",
+      "coverAlt": "Ảnh bìa trải nghiệm"
+    }
   }
 }
