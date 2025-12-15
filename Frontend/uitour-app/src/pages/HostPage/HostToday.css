@@ -247,6 +247,11 @@
   color: #333;
 }
 
+.status-badge.completed {
+  background: #10b981; /* match paid/complete tone */
+  color: #fff;
+}
+
 /* Payment status badges */
 .payment-status-badge {
   position: absolute;
