@@ -592,6 +592,25 @@ class AdminAPI {
       throw err;
     }
   }
+
+  async getAllTransactions() {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/transaction`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(errText || 'Failed to fetch transactions');
+    }
+
+    return await response.json();
+  }
+
+
 }
 
 const adminAPI = new AdminAPI();
