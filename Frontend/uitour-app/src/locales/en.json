@@ -1301,5 +1301,45 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "justNow": "Just now"
+  },
+  "hostEdit": {
+    "stay": {
+      "loading": "Loading…",
+      "notFound": "Not found",
+      "save": "Save changes",
+      "saveonly": "Save",
+      "edit": "Edit",
+      "editAmenities": "Edit amenities",
+      "editPhotos": "Edit Photos",
+      "cancel": "Cancel",
+      "uploading": "Uploading...",
+      "uploadPhotos": "Upload photos",
+      "cover": "Cover",
+      "noAmenities": "No amenities selected",
+      "lockedHint": "This field cannot be edited. If you need major changes, please create a new listing.",
+      "discountAmount": "Discount amount",
+      "discountPercent": "Discount percentage (%)",
+      "rules": {
+        "noSmoking": "No smoking",
+        "noOpenFlames": "No open flames",
+        "petsAllowed": "Pets allowed",
+        "smokeAlarm": "Smoke alarm",
+        "coAlarm": "CO alarm",
+        "enhancedCleaning": "Enhanced cleaning",
+        "surfacesSanitized": "Surfaces sanitized"
+      }
+    },
+    "tour": {
+      "lockedHint": "This field cannot be edited. If you need major changes, please create a new listing.",
+      "invalidServerResponse": "Invalid server response",
+      "uploadItineraryImageFailed": "Failed to upload itinerary image",
+      "uploadPhotoFailed": "Failed to upload experience photo",
+      "updateFailed": "Update failed",
+      "editPhotos": "Edit photos",
+      "uploadPhotos": "Upload photos",
+      "noItinerary": "No itinerary yet",
+      "save": "Save changes",
+      "coverAlt": "Experience cover image"
+    }
   }
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./HostExperienceEdit.css";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useCurrency } from "../../contexts/CurrencyContext";
 import { t } from "../../utils/translations";
 import EditableRow from "../../components/modals/EditableRow";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -10,12 +11,14 @@ import authAPI from "../../services/authAPI";
 
 const API_BASE = "http://localhost:5069";
 
-const LOCKED_HINT =
-    "Trường này không thể chỉnh sửa. Nếu có thay đổi lớn, vui lòng tạo listing mới.";
+
+
 
 export default function HostExperienceEdit() {
     const { id } = useParams();
     const { language } = useLanguage();
+    const { currency, convertToCurrent, convertToUSD, format } = useCurrency();
+
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(true);
@@ -24,7 +27,6 @@ export default function HostExperienceEdit() {
 
     const [activeField, setActiveField] = useState(null);
     const [draftValue, setDraftValue] = useState("");
-    const [editing, setEditing] = useState(false);
     const [editingId, setEditingId] = useState(null);
 
     const [title, setTitle] = useState("");
@@ -39,6 +41,23 @@ export default function HostExperienceEdit() {
 
 
     const inputRef = useRef(null);
+
+    const LOCKED_HINT =
+        `${t(language, "hostEdit.tour.lockedHint")}`;
+
+    const CATEGORY_LABEL_MAP = {
+        art: "hostExperience.choose.categories.art",
+        fitness: "hostExperience.choose.categories.fitness",
+        food: "hostExperience.choose.categories.food",
+        history: "hostExperience.choose.categories.history",
+        nature: "hostExperience.choose.categories.nature",
+    };
+
+    const getCategoryLabel = (categoryId) => {
+        if (!categoryId) return "";
+        const key = CATEGORY_LABEL_MAP[categoryId.toLowerCase()];
+        return key ? t(language, key) : categoryId;
+    };
 
 
     /* ================= HELPERS ================= */
@@ -79,7 +98,7 @@ export default function HostExperienceEdit() {
 
                 const text = await res.text();
                 if (!res.ok || text.startsWith("<")) {
-                    setErr("Invalid server response");
+                    setErr(`${t(language, "hostEdit.tour.invalidServerResponse")}`);
                     return;
                 }
 
@@ -120,7 +139,10 @@ export default function HostExperienceEdit() {
                     },
 
                     experienceDetails: Array.isArray(json.experienceDetails)
-                        ? json.experienceDetails
+                        ? json.experienceDetails.map((it, index) => ({
+                            ...it,
+                            _uiKey: `ui-${index}-${crypto.randomUUID()}`
+                        }))
                         : [],
 
                     photos: Array.isArray(json.photos) ? json.photos : [],
@@ -149,7 +171,7 @@ export default function HostExperienceEdit() {
         });
 
         if (!res.ok) {
-            throw new Error("Upload itinerary image failed");
+            throw new Error(`${t(language, "hostEdit.tour.uploadItineraryImageFailed")}`);
         }
 
         const data = await res.json();
@@ -177,7 +199,7 @@ export default function HostExperienceEdit() {
                     });
 
                     if (!res.ok) {
-                        throw new Error("Upload experience photo failed");
+                        throw new Error(`${t(language, "hostEdit.tour.uploadPhotoFailed")}`);
                     }
 
                     const result = await res.json();
@@ -197,7 +219,7 @@ export default function HostExperienceEdit() {
             const processedDetails = [];
 
             for (const it of data.experienceDetails) {
-                const ram = itineraryImageRAM[it.id];
+                const ram = itineraryImageRAM[it._uiKey];
                 let imageUrl = it.imageUrl || "";
 
                 if (!imageUrl && ram?.file) {
@@ -210,7 +232,7 @@ export default function HostExperienceEdit() {
                     });
 
                     if (!res.ok) {
-                        throw new Error("Upload itinerary image failed");
+                        throw new Error(`${t(language, "hostEdit.tour.uploadItineraryImageFailed")}`);
                     }
 
                     const result = await res.json();
@@ -246,7 +268,7 @@ export default function HostExperienceEdit() {
             navigate("/host/listings");
 
         } catch (e) {
-            alert("❌ Update failed: " + e.message);
+            alert("❌" + `${t(language, "hostEdit.tour.updateFailed")}` + e.message);
         }
     }
 
@@ -350,19 +372,27 @@ export default function HostExperienceEdit() {
     };
 
     const saveEditor = () => {
-        onChange(activeField, draftValue);
+        let value = draftValue;
+
+        // 👉 Nếu đang edit price → convert về USD
+        if (activeField === "pricing.basePrice") {
+            const num = Number(draftValue) || 0;
+            value = convertToUSD(num);
+        }
+
+        onChange(activeField, value);
         closeEditor();
     };
 
     const startEditActivity = (item) => {
-        setEditing(true);
-        setEditingId(item.id);
+        setEditingId(item._uiKey);
+
         setTitle(item.title || "");
         setContent(item.description || "");
 
         setItineraryImageRAM(prev => ({
             ...prev,
-            [item.id]: {
+            [item._uiKey]: {
                 file: null,
                 preview: item.imageUrl
                     ? normalizeImage({ imageUrl: item.imageUrl })
@@ -381,6 +411,16 @@ export default function HostExperienceEdit() {
 
     const d = data;
     const cover = d.photos[0] ? normalizeImage(d.photos[0]) : "";
+
+    if (data?.experienceDetails) {
+        console.log(
+            "ITINERARY IDS:",
+            data.experienceDetails.map(it => ({
+                id: it.id,
+                title: it.title
+            }))
+        );
+    }
 
     return (
         <div className="he-edit-page">
@@ -424,7 +464,7 @@ export default function HostExperienceEdit() {
                             <b>{t(language, "hostExperience.preview.category")}:</b>
                             <input
                                 className="he-edit-input"
-                                value={d.mainCategory}
+                                value={getCategoryLabel(d.mainCategory)}
                                 disabled
                                 title={LOCKED_HINT}
                             />
@@ -491,12 +531,15 @@ export default function HostExperienceEdit() {
 
                     <div className="he-edit-card">
                         <div className="he-edit-row">
-                            <b>{t(language, "hostExperience.preview.basePrice")}:</b>
+                            <b>{t(language, "hostExperience.preview.basePrice")} ({currency}):</b>
                             <EditableRow
-                                value={d.pricing.basePrice}
+                                value={format(convertToCurrent(d.pricing.basePrice))}
                                 editable
                                 onEdit={() =>
-                                    openEditor("pricing.basePrice", d.pricing.basePrice)
+                                    openEditor(
+                                        "pricing.basePrice",
+                                        convertToCurrent(d.pricing.basePrice)
+                                    )
                                 }
                             />
                         </div>
@@ -533,8 +576,9 @@ export default function HostExperienceEdit() {
                         {d.experienceDetails.length === 0 ? (
                             <div>—</div>
                         ) : (
+
                             d.experienceDetails.map((it) => (
-                                <div key={it.id}>
+                                <div key={it._uiKey}>
                                     {/* VIEW */}
                                     <div
                                         className="he-edit-itinerary-item"
@@ -542,7 +586,7 @@ export default function HostExperienceEdit() {
                                     >
                                         <img
                                             src={
-                                                itineraryImageRAM[it.id]?.preview
+                                                itineraryImageRAM[it._uiKey]?.preview
                                                 || (it.imageUrl
                                                     ? normalizeImage({ imageUrl: it.imageUrl })
                                                     : "/placeholder.png")
@@ -558,39 +602,34 @@ export default function HostExperienceEdit() {
                                     </div>
 
                                     {/* EDITOR */}
-                                    {editing && editingId === it.id && (
+                                    {editingId === it._uiKey && (
                                         <div className="he-activity-editor he-editor-inline">
                                             <div className="he-editor-left">
-                                                <div
-                                                    className="he-editor-thumb"
-                                                    onClick={() => inputRef.current?.click()}
-                                                >
+                                                <label className="he-editor-thumb">
                                                     {itineraryImageRAM[editingId]?.preview
                                                         ? <img src={itineraryImageRAM[editingId].preview} />
-                                                        : <span>📷</span>}
-                                                </div>
+                                                        : <span>📷</span>
+                                                    }
 
-                                                <input
-                                                    ref={inputRef}
-                                                    type="file"
-                                                    accept="image/*"
-                                                    hidden
-                                                    onChange={(e) => {
-                                                        const f = e.target.files?.[0];
-                                                        if (!f) return;
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        hidden
+                                                        onChange={(e) => {
+                                                            const f = e.target.files?.[0];
+                                                            if (!f) return;
 
-                                                        setItineraryImageRAM(prev => ({
-                                                            ...prev,
-                                                            [editingId]: {
-                                                                file: f,
-                                                                preview: URL.createObjectURL(f),
-                                                                serverUrl: prev[editingId]?.serverUrl || "",
-                                                            }
-                                                        }));
-
-                                                        e.target.value = "";
-                                                    }}
-                                                />
+                                                            setItineraryImageRAM(prev => ({
+                                                                ...prev,
+                                                                [editingId]: {
+                                                                    file: f,
+                                                                    preview: URL.createObjectURL(f),
+                                                                    serverUrl: prev[editingId]?.serverUrl || "",
+                                                                }
+                                                            }));
+                                                        }}
+                                                    />
+                                                </label>
                                             </div>
 
                                             <div className="he-editor-right">
@@ -611,11 +650,10 @@ export default function HostExperienceEdit() {
                                                     <button
                                                         className="he-tertiary-btn"
                                                         onClick={() => {
-                                                            setEditing(false);
                                                             setEditingId(null);
                                                         }}
                                                     >
-                                                        Cancel
+                                                        {t(language, "hostEdit.stay.cancel")}
                                                     </button>
 
                                                     <button
@@ -624,7 +662,7 @@ export default function HostExperienceEdit() {
                                                             setData((prev) => {
                                                                 const clone = structuredClone(prev);
                                                                 const idx = clone.experienceDetails.findIndex(
-                                                                    (x) => x.id === editingId
+                                                                    (x) => x._uiKey === editingId
                                                                 );
 
                                                                 if (idx !== -1) {
@@ -640,13 +678,10 @@ export default function HostExperienceEdit() {
                                                                 }
                                                                 return clone;
                                                             });
-
-                                                            setEditing(false);
                                                             setEditingId(null);
-                                                            setImage(null);
                                                         }}
                                                     >
-                                                        Save
+                                                        {t(language, "hostEdit.stay.saveonly")}
                                                     </button>
                                                 </div>
                                             </div>
@@ -682,7 +717,7 @@ export default function HostExperienceEdit() {
                 </section>
 
                 <button className="he-edit-save-btn" onClick={handleSave}>
-                    💾 Save Changes
+                    💾 {t(language, "hostEdit.stay.save")}
                 </button>
             </div>
 
@@ -693,7 +728,7 @@ export default function HostExperienceEdit() {
 
                     <div className="hs-modal-card">
                         <div className="hs-modal-header">
-                            <b>Edit</b>
+                            <b>{t(language, "hostEdit.stay.edit")}</b>
                             <button onClick={closeEditor}>✕</button>
                         </div>
 
@@ -706,8 +741,8 @@ export default function HostExperienceEdit() {
                         </div>
 
                         <div className="hs-modal-footer">
-                            <button onClick={closeEditor}>Cancel</button>
-                            <button onClick={saveEditor}>Save</button>
+                            <button onClick={closeEditor}>{t(language, "hostEdit.stay.cancel")}</button>
+                            <button onClick={saveEditor}>{t(language, "hostEdit.stay.saveonly")}</button>
                         </div>
                     </div>
                 </div>
@@ -721,7 +756,7 @@ export default function HostExperienceEdit() {
 
                     <div className="hs-modal-card large">
                         <div className="hs-modal-header">
-                            <b>Edit photos</b>
+                            <b>{t(language, "hostEdit.stay.editPhotos")}</b>
                             <button onClick={() => setPhotosModalOpen(false)}>✕</button>
                         </div>
 
@@ -730,7 +765,7 @@ export default function HostExperienceEdit() {
                                 className="hs-btn"
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                ➕ Upload photos
+                                ➕ {t(language, "hostEdit.stay.uploadPhotos")}
                             </button>
 
                             <input
@@ -756,7 +791,7 @@ export default function HostExperienceEdit() {
                                         />
 
                                         {p.isCover && (
-                                            <span className="hs-cover-badge">Cover</span>
+                                            <span className="hs-cover-badge">{t(language, "hostEdit.stay.cover")}</span>
                                         )}
 
                                         <button
@@ -775,10 +810,10 @@ export default function HostExperienceEdit() {
 
                         <div className="hs-modal-footer">
                             <button onClick={() => setPhotosModalOpen(false)}>
-                                Cancel
+                                {t(language, "hostEdit.stay.cancel")}
                             </button>
                             <button onClick={savePhotos}>
-                                Save
+                                {t(language, "hostEdit.stay.saveonly")}
                             </button>
                         </div>
                     </div>
