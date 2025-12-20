@@ -86,12 +86,19 @@ namespace UITour.ServicesL.Implementations
 
         public async Task<bool> CancelBookingAsync(int bookingId)
         {
-            var booking = await GetByIdAsync(bookingId);
+            var booking = await _unitOfWork.Bookings.GetByIdAsync(bookingId);
             if (booking == null) return false;
 
-            booking.Status = "Cancelled";
-            _unitOfWork.Bookings.Update(booking);
+            var daysSinceCreated = (DateTime.Now - booking.CreatedAt).TotalDays;
+            
+            if (daysSinceCreated > 1)
+                throw new InvalidOperationException(
+                    "Booking can only be cancelled within 24 hours from creation"
+                );
+            
+            _unitOfWork.Bookings.Remove(booking);
             await _unitOfWork.SaveChangesAsync();
+
             return true;
         }
 
