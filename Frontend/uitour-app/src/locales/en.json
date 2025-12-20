@@ -1341,5 +1341,14 @@
       "save": "Save changes",
       "coverAlt": "Experience cover image"
     }
+  },
+     "trips": {
+    "cancelNoticeTitle": "Cancellation notice",
+    "cancelNotice": "You can only cancel tours or properties 48 hours after payment.",
+    "doNotShowLabel": "Don't show this again",
+    "dismiss": "Close",
+    "cancelConfirmTitle": "Cancel booking",
+    "cancelConfirmMessage": "Are you sure you want to cancel this booking? This action may be irreversible.",
+    "cancel": "Cancel booking"
   }
 }
