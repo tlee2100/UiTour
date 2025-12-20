@@ -476,18 +476,24 @@ namespace UITour.Controllers
             return BadRequest(new { error = "Booking is not linked to a property or tour" });
         }
 
-        // PUT: api/booking/5/cancel
-        [HttpPut("{id:int}/cancel")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> CancelBooking(int id)
         {
             try
             {
                 var result = await _bookingService.CancelBookingAsync(id);
-                return result ? Ok(new { message = "Booking cancelled successfully" }) : BadRequest("Failed to cancel booking");
+
+                if (!result)
+                    return NotFound(new { message = "Booking not found" });
+
+                return Ok(new
+                {
+                    message = "Booking cancelled (deleted) successfully"
+                });
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -668,5 +674,7 @@ namespace UITour.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+
     }
 }
