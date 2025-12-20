@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useApp } from '../contexts/AppContext';
 import authAPI from '../services/authAPI';
+import ConfirmationModal from '../components/modals/ConfirmationModal';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { t } from '../utils/translations';
@@ -18,10 +19,23 @@ export default function TripsPage() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState('');
   const [reviewSuccess, setReviewSuccess] = useState('');
+  // modal state for cancel notice
+  const [showCancelNotice, setShowCancelNotice] = useState(true);
+  const [persistShowCancelNotice, setPersistShowCancelNotice] = useState(true);
+  const [doNotShowChecked, setDoNotShowChecked] = useState(false);
+  // cancel booking confirmation modal state
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState(null);
+  const [canceling, setCanceling] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, dispatch } = useApp();
   const { convertToCurrent, format } = useCurrency();
   const { language } = useLanguage();
+  // Persist preference per-user so switching accounts/logging in shows the notice for the new user
+  const noticeStorageKey = useMemo(() => {
+    return user?.UserID ? `showTripCancelNotice:user:${user.UserID}` : 'showTripCancelNotice:anon';
+  }, [user?.UserID]);
 
   // Helper function to normalize image URL
   const normalizeImageUrl = useCallback((url) => {
@@ -249,6 +263,88 @@ export default function TripsPage() {
     loadTrips();
   }, [loadTrips]);
 
+  // load persisted preference for current user/account
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(noticeStorageKey);
+      if (stored === 'false') {
+        setPersistShowCancelNotice(false);
+        setShowCancelNotice(false);
+        setDoNotShowChecked(true);
+      } else {
+        // default: show notice for new users / new accounts
+        setPersistShowCancelNotice(true);
+        setShowCancelNotice(true);
+        setDoNotShowChecked(false);
+      }
+    } catch (err) {
+      // ignore storage errors
+    }
+  }, [noticeStorageKey]);
+
+  // show modal on each navigation to /trips unless persisted opt-out
+  useEffect(() => {
+    if (location?.pathname === '/trips') {
+      if (persistShowCancelNotice) {
+        setShowCancelNotice(true);
+        setDoNotShowChecked(false);
+      } else {
+        setShowCancelNotice(false);
+      }
+    }
+  }, [location?.pathname, persistShowCancelNotice]);
+
+  const closeCancelNotice = useCallback(() => {
+    try {
+      if (doNotShowChecked) {
+        localStorage.setItem(noticeStorageKey, 'false');
+        setPersistShowCancelNotice(false);
+      } else {
+        localStorage.setItem(noticeStorageKey, 'true');
+        setPersistShowCancelNotice(true);
+      }
+    } catch (err) {
+      // ignore storage errors
+    }
+    setShowCancelNotice(false);
+  }, [doNotShowChecked, noticeStorageKey]);
+
+  const openCancelConfirm = useCallback((booking) => {
+    setBookingToCancel(booking);
+    setConfirmOpen(true);
+  }, []);
+
+  const handleConfirmCancel = useCallback(async () => {
+    if (!bookingToCancel) return;
+    const bookingId = bookingToCancel.bookingID ?? bookingToCancel.BookingID;
+    if (!bookingId) return;
+
+    setCanceling(true);
+    try {
+      const token = authAPI._getToken ? authAPI._getToken() : localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5069/api/booking/${bookingId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Failed to cancel booking');
+      }
+
+      await loadTrips();
+      setConfirmOpen(false);
+      setBookingToCancel(null);
+    } catch (err) {
+      alert(err.message || 'Unable to cancel booking right now.');
+    } finally {
+      setCanceling(false);
+    }
+  }, [bookingToCancel, loadTrips]);
+
   const hasTrips = useMemo(() => trips.length > 0, [trips]);
 
   if (!user?.UserID) {
@@ -281,6 +377,43 @@ export default function TripsPage() {
   return (
     <div className="trips-page">
       <h1 className="trips-title">{t(language, "homeTrips.title")}</h1>
+
+      {showCancelNotice && (
+        <div className="cancel-notice-overlay" role="dialog" aria-modal="true" aria-labelledby="cancel-notice-title">
+          <div className="cancel-notice-modal" role="document">
+            <div className="cancel-notice-header">
+              <div className="cancel-notice-icon" aria-hidden="true">
+                <Icon icon="mdi:alert-circle" width="36" height="36" />
+              </div>
+              <div className="cancel-notice-headerText">
+                <h3 id="cancel-notice-title" className="cancel-notice-title">
+                  {t(language, "trips.cancelNoticeTitle") || "Cancellation policy"}
+                </h3>
+                <p className="cancel-notice-subtitle">
+                  {t(language, "trips.cancelNotice") || "You can only cancel tours or properties 48 hours after payment."}
+                </p>
+              </div>
+            </div>
+
+            <div className="cancel-notice-bodyActions">
+              <label className="cancel-notice-checkbox">
+                <input
+                  type="checkbox"
+                  checked={doNotShowChecked}
+                  onChange={(e) => setDoNotShowChecked(e.target.checked)}
+                />
+                <span>{t(language, "trips.doNotShowLabel") || "Don't show this again"}</span>
+              </label>
+
+              <div className="cancel-notice-actions">
+                <button className="trip-btn-primary" onClick={closeCancelNotice}>
+                  {t(language, "trips.dismiss") || "Close"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {!!error && (
         <div className="trips-feedback error">
@@ -424,6 +557,14 @@ export default function TripsPage() {
                     >
                       Chat with Host
                     </button>
+                    
+                    <button
+                      className="trip-btn-secondary trip-cancel-btn"
+                      onClick={() => openCancelConfirm(trip)}
+                      title={t(language, "trips.cancel") || "Cancel booking"}
+                    >
+                      {t(language, "trips.cancel") || "Cancel"}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -487,6 +628,18 @@ export default function TripsPage() {
           </div>
         </div>
       )}
+      
+      <ConfirmationModal
+        isOpen={confirmOpen}
+        onClose={() => { if (!canceling) setConfirmOpen(false); }}
+        onConfirm={handleConfirmCancel}
+        title={t(language, "trips.cancelConfirmTitle") || "Cancel booking"}
+        message={t(language, "trips.cancelConfirmMessage") || "Are you sure you want to cancel this booking? This action may be irreversible."}
+        confirmText={t(language, "trips.cancel") || "Cancel booking"}
+        cancelText={t(language, "common.cancel") || "Cancel"}
+        type="danger"
+        loading={canceling}
+      />
     </div>
   );
 }

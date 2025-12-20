@@ -1340,5 +1340,15 @@
       "save": "Lưu thay đổi",
       "coverAlt": "Ảnh bìa trải nghiệm"
     }
+  },
+  "trips": {
+    "cancelNoticeTitle": "Nhắc nhở về Chính sách hủy",
+    "cancelNotice": "Bạn chỉ có thể hủy tour hoặc chỗ ở trong vòng 48 giờ kể từ khi thanh toán.",
+    "doNotShowLabel": "Không hiển thị nữa",
+    "dismiss": "Đóng"
+  ,
+  "cancelConfirmTitle": "Hủy đặt chỗ",
+  "cancelConfirmMessage": "Bạn có chắc chắn muốn hủy đặt chỗ này? Hành động có thể không thể hoàn tác.",
+  "cancel": "Hủy đặt chỗ"
   }
 }
