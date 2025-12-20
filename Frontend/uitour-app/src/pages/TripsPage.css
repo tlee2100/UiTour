@@ -324,6 +324,115 @@
   color: #166534;
 }
 
+/* Modal-style cancel notice */
+.cancel-notice-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  z-index: 99999;
+  padding: 20px;
+}
+
+.cancel-notice-modal {
+  width: min(560px, 96%);
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px 32px;
+  box-shadow: 0 25px 50px rgba(16,24,40,0.25);
+  text-align: center;
+  position: relative;
+}
+
+.cancel-notice-icon {
+  margin: 0;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.12);
+  color: #f59e0b;
+}
+
+.cancel-notice-title {
+  font-size: 20px;
+  margin: 6px 0 12px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.cancel-notice-subtitle {
+  color: #374151;
+  line-height: 1.4;
+  margin: 0;
+  font-size: 14px;
+}
+
+.cancel-notice-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.cancel-notice-headerText {
+  text-align: left;
+}
+
+.cancel-notice-bodyActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.cancel-notice-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #374151;
+  font-size: 14px;
+}
+
+.cancel-notice-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #111827;
+}
+
+.cancel-notice-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cancel-notice-actions .trip-btn-primary {
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 18px rgba(17,24,39,0.08);
+}
+
+.trip-cancel-btn {
+  margin-left: 12px;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 @media (max-width: 1024px) {
   .trips-empty {
     grid-template-columns: 1fr;
