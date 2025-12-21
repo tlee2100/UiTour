@@ -321,27 +321,16 @@ export default function TripsPage() {
 
     setCanceling(true);
     try {
-      const token = authAPI._getToken ? authAPI._getToken() : localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5069/api/booking/${bookingId}/cancel`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || 'Failed to cancel booking');
-      }
-
+      // ✅ PHẢI GỌI NHƯ NÀY
+      await authAPI.cancelBooking(bookingId);
+      
       await loadTrips();
       setConfirmOpen(false);
       setBookingToCancel(null);
     } catch (err) {
       alert(err.message || 'Unable to cancel booking right now.');
     } finally {
-      setCanceling(false);
+      setCanceling(false); // ← QUAN TRỌNG: Phải tắt loading
     }
   }, [bookingToCancel, loadTrips]);
 
