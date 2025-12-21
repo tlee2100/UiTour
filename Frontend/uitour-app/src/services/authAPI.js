@@ -1544,6 +1544,53 @@ async updateUserProfile(userId, form) {
       throw err;
     }
   }
+
+   async cancelBooking(bookingId) {
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!bookingId) {
+        throw new Error('Booking ID is required');
+      }
+
+      const id = parseInt(bookingId, 10);
+      if (isNaN(id) || id <= 0) {
+        throw new Error('Invalid booking ID');
+      }
+
+      const response = await fetch(`${BOOKING_BASE_URL}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+      });
+
+      const responseText = await response.text();
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to cancel booking';
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch {
+          errorMessage = responseText || response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Parse response
+      try {
+        return JSON.parse(responseText);
+      } catch {
+        return { message: 'Booking cancelled successfully' };
+      }
+    } catch (err) {
+      console.error('cancelBooking error:', err);
+      throw err;
+    }
+  }
+
 }
 
 // Create singleton instance

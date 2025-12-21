@@ -481,6 +481,53 @@ namespace UITour.Controllers
         {
             try
             {
+                // ✅ Bước 1: Lấy thông tin booking
+                var booking = await _unitOfWork.Bookings.Query()
+                    .FirstOrDefaultAsync(b => b.BookingID == id);
+
+                if (booking == null)
+                    return NotFound(new { message = "Booking not found" });
+
+                // ✅ Bước 2: Kiểm tra 48h rule - Tìm transaction gần nhất
+                var transaction = await _unitOfWork.Transactions.Query()
+                    .Where(t => t.BookingID == id)
+                    .OrderByDescending(t => t.ProcessedAt)
+                    .FirstOrDefaultAsync();
+
+                // ✅ Bước 3: Nếu có transaction, check thời gian
+                if (transaction != null)
+                {
+                    // ✅ Xử lý cả trường hợp DateTime và DateTime?
+                    DateTime processedDate;
+
+                    if (transaction.ProcessedAt is DateTime dt)
+                    {
+                        processedDate = dt;
+                    }
+                    else
+                    {
+                        // Nếu ProcessedAt null thì không check 48h rule
+                        goto SkipTimeCheck;
+                    }
+
+                    var hoursSincePayment = (DateTime.UtcNow - processedDate).TotalHours;
+
+                    // Nếu chưa đủ 48 giờ
+                    if (hoursSincePayment < 48)
+                    {
+                        var remainingHours = Math.Ceiling(48 - hoursSincePayment);
+                        return BadRequest(new
+                        {
+                            message = $"Cancellation is only allowed 48 hours after payment. Please wait {remainingHours} more hours.",
+                            hoursSincePayment = Math.Floor(hoursSincePayment),
+                            hoursRemaining = remainingHours
+                        });
+                    }
+                }
+
+            SkipTimeCheck:
+
+                // ✅ Bước 4: Nếu không có transaction HOẶC đã quá 48h, cho phép cancel
                 var result = await _bookingService.CancelBookingAsync(id);
 
                 if (!result)
@@ -488,12 +535,18 @@ namespace UITour.Controllers
 
                 return Ok(new
                 {
-                    message = "Booking cancelled (deleted) successfully"
+                    message = "Booking cancelled successfully"
                 });
             }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log exception nếu có logging service
+                System.Diagnostics.Debug.WriteLine($"Error cancelling booking: {ex.Message}");
+                return StatusCode(500, new { message = "An error occurred while cancelling the booking" });
             }
         }
 
