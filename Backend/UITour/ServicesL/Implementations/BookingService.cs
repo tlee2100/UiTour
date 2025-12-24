@@ -91,9 +91,9 @@ namespace UITour.ServicesL.Implementations
 
             var daysSinceCreated = (DateTime.Now - booking.CreatedAt).TotalDays;
             
-            if (daysSinceCreated > 1)
+            if (daysSinceCreated > 2)
                 throw new InvalidOperationException(
-                    "Booking can only be cancelled within 24 hours from creation"
+                    "Booking can only be cancelled within 48 hours from creation"
                 );
             
             _unitOfWork.Bookings.Remove(booking);

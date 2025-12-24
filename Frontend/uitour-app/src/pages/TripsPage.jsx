@@ -4,6 +4,8 @@ import { Icon } from '@iconify/react';
 import { useApp } from '../contexts/AppContext';
 import authAPI from '../services/authAPI';
 import ConfirmationModal from '../components/modals/ConfirmationModal';
+import ToastContainer from '../components/ToastContainer';
+import { useToast } from '../hooks/useToast';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { t } from '../utils/translations';
@@ -29,9 +31,12 @@ export default function TripsPage() {
   const [canceling, setCanceling] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { toasts, success, removeToast } = useToast();
   const { user, dispatch } = useApp();
   const { convertToCurrent, format } = useCurrency();
   const { language } = useLanguage();
+  const [toast, setToast] = useState({ show: false, message: '' });
+
   // Persist preference per-user so switching accounts/logging in shows the notice for the new user
   const noticeStorageKey = useMemo(() => {
     return user?.UserID ? `showTripCancelNotice:user:${user.UserID}` : 'showTripCancelNotice:anon';
@@ -327,6 +332,11 @@ export default function TripsPage() {
       await loadTrips();
       setConfirmOpen(false);
       setBookingToCancel(null);
+      success(
+        t(language, "trips.cancelRefunded") ||
+          "Your refund has been credited back to your account."
+      );
+      setToast({ show: true, message: "Tiền của bạn đã được hoàn về tài khoản thành công." });
     } catch (err) {
       alert(err.message || 'Unable to cancel booking right now.');
     } finally {
@@ -629,6 +639,8 @@ export default function TripsPage() {
         type="danger"
         loading={canceling}
       />
+
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }
