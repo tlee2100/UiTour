@@ -1349,6 +1349,7 @@
   ,
   "cancelConfirmTitle": "Hủy đặt chỗ",
   "cancelConfirmMessage": "Bạn có chắc chắn muốn hủy đặt chỗ này? Hành động có thể không thể hoàn tác.",
+  "cancelRefunded": "Tien da duoc hoan vao tai khoan cua ban.",
   "cancel": "Hủy đặt chỗ"
   }
 }

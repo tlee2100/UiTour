@@ -1349,6 +1349,7 @@
     "dismiss": "Close",
     "cancelConfirmTitle": "Cancel booking",
     "cancelConfirmMessage": "Are you sure you want to cancel this booking? This action may be irreversible.",
+    "cancelRefunded": "Your refund has been credited back to your account.",
     "cancel": "Cancel booking"
   }
 }
