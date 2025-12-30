@@ -15,7 +15,8 @@ export default defineConfig({
   workers: process.env.CI ? 2 : undefined,
 
   use: {
-    baseURL,
+    baseURL:'http://localhost:5173',
+    headless: false,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
