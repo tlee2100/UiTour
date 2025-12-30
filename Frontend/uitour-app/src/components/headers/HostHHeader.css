@@ -332,19 +332,40 @@
 /* ----------- RESPONSIVE ----------- */
 @media (max-width: 1280px) {
   .host-header {
-    padding: 24px 80px;
+    padding: 18px 48px;
+    height: auto;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "logo right" "nav nav";
+    row-gap: 10px;
+  }
+
+  .header-logo {
+    grid-area: logo;
+  }
+
+  .nav-tabs {
+    grid-area: nav;
+    position: static;
+    transform: none;
+    justify-content: center;
+  }
+
+  .header-right {
+    grid-area: right;
+    justify-content: flex-end;
   }
 }
 
 @media (max-width: 1024px) {
   .host-header {
-    padding: 24px 40px;
+    padding: 16px 32px;
   }
 }
 
 @media (max-width: 768px) {
   .host-header {
-    padding: 16px 20px;
+    padding: 12px 16px;
     height: auto;
     flex-wrap: wrap;
     gap: 12px;
@@ -353,9 +374,15 @@
   .nav-tabs {
     position: static;
     transform: none;
-    margin: 0 auto;
-    max-width: 420px;
-    justify-content: center;
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 0 4px;
+    scrollbar-width: none;
+  }
+
+  .nav-tabs::-webkit-scrollbar {
+    display: none;
   }
 
   .header-right {
@@ -374,5 +401,29 @@
   .switch-title {
     font-size: 13px;
     padding: 8px 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .host-header {
+    padding: 10px 12px;
+  }
+
+  .header-right {
+    gap: 10px;
+  }
+
+  .switch-title {
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header_menu,
+  .header_avatarButton,
+  .globe-btn {
+    width: 36px;
+    height: 36px;
   }
 }
