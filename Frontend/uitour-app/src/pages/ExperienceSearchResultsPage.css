@@ -132,3 +132,16 @@
   }
 }
 
+@media (max-width: 600px) {
+  .esr-filter-bar .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .esr-filter-bar .filter-btn {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+

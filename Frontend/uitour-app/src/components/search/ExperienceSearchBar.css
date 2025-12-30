@@ -190,3 +190,15 @@
     border-radius: 14px;
   }
 }
+
+@media (max-width: 600px) {
+  .expsearch-bar {
+    max-width: 100%;
+  }
+
+  .exp-search-btn {
+    width: calc(100% - 24px);
+    border-radius: 12px;
+    margin: 8px 12px 12px;
+  }
+}
