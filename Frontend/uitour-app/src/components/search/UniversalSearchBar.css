@@ -93,6 +93,34 @@
   color: white;
 }
 
+@media (max-width: 768px) {
+  .uni-searchbar {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .uni-searchbar {
+    flex-direction: column;
+    border-radius: 20px;
+  }
+
+  .uni-sf {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .uni-sf:last-of-type {
+    border-bottom: none;
+  }
+
+  .uni-search-button {
+    width: calc(100% - 24px);
+    border-radius: 14px;
+    margin: 8px 12px 12px;
+  }
+}
+
 /* ❌ Removed:
 .uni-modal-overlay { ... }
 .uni-modal { ... }

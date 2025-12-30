@@ -1,10 +1,28 @@
 .app-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* đảm bảo footer luôn đẩy xuống cuối */
+  min-height: 100vh; /* Keep footer at bottom */
 }
 
 .main-content {
   flex: 1;
-  padding-top: 96px; /* Header height - bù cho header fixed */
+  padding-top: 96px; /* Header height - bA1 cho header fixed */
+}
+
+@media (max-width: 1024px) {
+  .main-content {
+    padding-top: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 136px;
+  }
+}
+
+@media (max-width: 600px) {
+  .main-content {
+    padding-top: 152px;
+  }
 }
