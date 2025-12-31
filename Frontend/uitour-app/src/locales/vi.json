@@ -417,7 +417,12 @@
     "roleUser": "Người dùng",
     "roleHost": "Chủ nhà",
     "roleAdmin": "Quản trị viên",
-    "loadError": "Không thể tải danh sách người dùng"
+    "loadError": "Không thể tải danh sách người dùng",
+    "deleteTitle": "Xoa nguoi dung",
+    "deleteMessage": "Xoa {name} va toan bo du lieu lien quan?",
+    "deleteWarning": "Hanh dong nay khong the hoan tac. Booking, phong, tour va du lieu lien quan se bi xoa vinh vien.",
+    "deleteSuccess": "Da xoa nguoi dung thanh cong!",
+    "deleteError": "Khong the xoa nguoi dung"
   },
   "adminTransactions": {
     "title": "Giao dịch gần đây",
@@ -1353,3 +1358,5 @@
   "cancel": "Hủy đặt chỗ"
   }
 }
+
+

@@ -13,6 +13,8 @@ export default function AdminUsers() {
   const [error, setError] = useState('');
   const { language } = useLanguage();
   const [roleConfirm, setRoleConfirm] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const { toasts, success, error: showError, removeToast } = useToast();
 
   useEffect(() => {
@@ -61,6 +63,30 @@ export default function AdminUsers() {
     } catch (err) {
       showError('Error: ' + (err.message || 'Unable to update role'));
       setRoleConfirm(null);
+    }
+  };
+
+  const handleDeleteUser = (user) => {
+    const userId = user?.UserID || user?.userID || user?.id;
+    setDeleteConfirm({
+      userId,
+      userName: user?.FullName || user?.fullName || `User #${userId}`
+    });
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!deleteConfirm || deleting) return;
+    try {
+      setDeleting(true);
+      await adminAPI.deleteUser(deleteConfirm.userId);
+      success(t(language, 'adminUsers.deleteSuccess'));
+      setDeleteConfirm(null);
+      loadUsers();
+    } catch (err) {
+      showError(err.message || t(language, 'adminUsers.deleteError'));
+      setDeleteConfirm(null);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -130,7 +156,16 @@ export default function AdminUsers() {
                     </select>
                   </div>
                   <div>{getStatus(u)}</div>
-                  <div>-</div>
+                  <div>
+                    <button
+                      className="ghost small"
+                      onClick={() => handleDeleteUser(u)}
+                      disabled={deleting}
+                      style={{ color: '#b91c1c', borderColor: '#fecaca' }}
+                    >
+                      {t(language, 'common.delete')}
+                    </button>
+                  </div>
                 </div>
               );
             })
@@ -153,6 +188,25 @@ export default function AdminUsers() {
           confirmText="Confirm"
           cancelText="Cancel"
           type="warning"
+        />
+      )}
+
+      {deleteConfirm && (
+        <ConfirmationModal
+          isOpen={true}
+          onClose={() => !deleting && setDeleteConfirm(null)}
+          onConfirm={confirmDeleteUser}
+          title={t(language, 'adminUsers.deleteTitle')}
+          message={t(language, 'adminUsers.deleteMessage').replace('{name}', deleteConfirm.userName)}
+          warning={t(language, 'adminUsers.deleteWarning')}
+          details={{
+            'User': deleteConfirm.userName,
+            'User ID': deleteConfirm.userId
+          }}
+          confirmText={t(language, 'common.delete')}
+          cancelText={t(language, 'common.cancel')}
+          type="danger"
+          loading={deleting}
         />
       )}
 
