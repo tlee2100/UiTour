@@ -306,7 +306,123 @@ namespace UITour.ServicesL.Implementations
             var user = await GetByIdAsync(userId);
             if (user == null) return false;
 
+            var hosts = await _unitOfWork.Hosts.Query()
+                .Where(h => h.UserID == userId)
+                .ToListAsync();
+            var hostIds = hosts.Select(h => h.HostID).ToList();
+            var hasHostIds = hostIds.Count > 0;
+
+            var properties = hasHostIds
+                ? await _unitOfWork.Properties.Query().Where(p => hostIds.Contains(p.HostID)).ToListAsync()
+                : new List<Property>();
+            var propertyIds = properties.Select(p => p.PropertyID).ToList();
+            var hasPropertyIds = propertyIds.Count > 0;
+
+            var tours = hasHostIds
+                ? await _unitOfWork.Tours.Query().Where(t => hostIds.Contains(t.HostID)).ToListAsync()
+                : new List<Tour>();
+            var tourIds = tours.Select(t => t.TourID).ToList();
+            var hasTourIds = tourIds.Count > 0;
+
+            var bookingIds = await _unitOfWork.Bookings.Query()
+                .Where(b =>
+                    b.UserID == userId ||
+                    (hasHostIds && hostIds.Contains(b.HostID)) ||
+                    (hasPropertyIds && b.PropertyID.HasValue && propertyIds.Contains(b.PropertyID.Value)) ||
+                    (hasTourIds && b.TourID.HasValue && tourIds.Contains(b.TourID.Value)))
+                .Select(b => b.BookingID)
+                .ToListAsync();
+            var hasBookingIds = bookingIds.Count > 0;
+
+            var transactions = hasBookingIds
+                ? await _unitOfWork.Transactions.Query().Where(t => bookingIds.Contains(t.BookingID)).ToListAsync()
+                : new List<Transaction>();
+
+            var approvedTransactions = await _unitOfWork.Transactions.Query()
+                .Where(t => t.ApprovedBy == userId && (!hasBookingIds || !bookingIds.Contains(t.BookingID)))
+                .ToListAsync();
+            foreach (var transaction in approvedTransactions)
+            {
+                transaction.ApprovedBy = null;
+                transaction.ApprovedAt = null;
+                transaction.ApprovalNote = null;
+            }
+
+            var messages = await _unitOfWork.Messages.Query()
+                .Where(m =>
+                    m.FromUserID == userId ||
+                    m.ToUserID == userId ||
+                    (hasBookingIds && m.BookingID.HasValue && bookingIds.Contains(m.BookingID.Value)))
+                .ToListAsync();
+
+            var reviews = await _unitOfWork.Reviews.Query()
+                .Where(r =>
+                    r.UserID == userId ||
+                    (hasPropertyIds && r.PropertyID.HasValue && propertyIds.Contains(r.PropertyID.Value)) ||
+                    (hasBookingIds && r.BookingID.HasValue && bookingIds.Contains(r.BookingID.Value)))
+                .ToListAsync();
+
+            var tourReviews = await _unitOfWork.TourReviews.Query()
+                .Where(tr => tr.UserID == userId || (hasTourIds && tourIds.Contains(tr.TourID)))
+                .ToListAsync();
+
+            var experienceDetails = hasTourIds
+                ? await _unitOfWork.ExperienceDetails.Query().Where(ed => tourIds.Contains(ed.TourID)).ToListAsync()
+                : new List<ExperienceDetails>();
+
+            var tourPhotos = hasTourIds
+                ? await _unitOfWork.TourPhotos.Query().Where(tp => tourIds.Contains(tp.TourID)).ToListAsync()
+                : new List<TourPhoto>();
+
+            var calendars = hasPropertyIds
+                ? await _unitOfWork.Calendars.Query().Where(c => propertyIds.Contains(c.PropertyID)).ToListAsync()
+                : new List<Calendar>();
+
+            var propertyPhotos = hasPropertyIds
+                ? await _unitOfWork.PropertyPhotos.Query().Where(pp => propertyIds.Contains(pp.PropertyID)).ToListAsync()
+                : new List<PropertyPhoto>();
+
+            var propertyAmenities = hasPropertyIds
+                ? await _unitOfWork.PropertyAmenities.Query().Where(pa => propertyIds.Contains(pa.PropertyID)).ToListAsync()
+                : new List<PropertyAmenity>();
+
+            var savedListings = await _unitOfWork.SavedListings.Query()
+                .Where(sl =>
+                    sl.UserID == userId ||
+                    (hasPropertyIds && sl.PropertyID.HasValue && propertyIds.Contains(sl.PropertyID.Value)) ||
+                    (hasTourIds && sl.TourID.HasValue && tourIds.Contains(sl.TourID.Value)))
+                .ToListAsync();
+
+            var favoriteLists = await _unitOfWork.FavoriteLists.Query()
+                .Where(fl => fl.UserID == userId)
+                .ToListAsync();
+
+            var hostVerifications = hasHostIds
+                ? await _unitOfWork.HostVerifications.Query().Where(hv => hostIds.Contains(hv.HostID)).ToListAsync()
+                : new List<HostVerification>();
+
+            var bookings = hasBookingIds
+                ? await _unitOfWork.Bookings.Query().Where(b => bookingIds.Contains(b.BookingID)).ToListAsync()
+                : new List<Booking>();
+
+            _unitOfWork.Messages.RemoveRange(messages);
+            _unitOfWork.Transactions.RemoveRange(transactions);
+            _unitOfWork.Reviews.RemoveRange(reviews);
+            _unitOfWork.TourReviews.RemoveRange(tourReviews);
+            _unitOfWork.ExperienceDetails.RemoveRange(experienceDetails);
+            _unitOfWork.TourPhotos.RemoveRange(tourPhotos);
+            _unitOfWork.SavedListings.RemoveRange(savedListings);
+            _unitOfWork.PropertyAmenities.RemoveRange(propertyAmenities);
+            _unitOfWork.PropertyPhotos.RemoveRange(propertyPhotos);
+            _unitOfWork.Calendars.RemoveRange(calendars);
+            _unitOfWork.Bookings.RemoveRange(bookings);
+            _unitOfWork.Properties.RemoveRange(properties);
+            _unitOfWork.Tours.RemoveRange(tours);
+            _unitOfWork.HostVerifications.RemoveRange(hostVerifications);
+            _unitOfWork.Hosts.RemoveRange(hosts);
+            _unitOfWork.FavoriteLists.RemoveRange(favoriteLists);
             _unitOfWork.Users.Remove(user);
+
             await _unitOfWork.SaveChangesAsync();
             return true;
         }
