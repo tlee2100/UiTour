@@ -188,6 +188,42 @@ class AdminAPI {
     }
   }
 
+  async deleteUser(userId) {
+    try {
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error('No authentication token found. Please login again.');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/user/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        if (response.status === 401) {
+          throw new Error('Unauthorized: Token may be invalid or expired. Please login again.');
+        }
+        if (response.status === 403) {
+          throw new Error('Forbidden: You do not have admin permissions.');
+        }
+        if (response.status === 404) {
+          throw new Error('User not found.');
+        }
+        throw new Error(errText || 'Failed to delete user');
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async updatePropertyStatus(propertyId, active) {
     try {
       const token = localStorage.getItem('token');

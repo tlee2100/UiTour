@@ -288,6 +288,7 @@ namespace UITour.API.Controllers
 
         // DELETE: api/user/{id}
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteAccount(int id)
         {
             try
