@@ -418,7 +418,12 @@
     "roleUser": "User",
     "roleHost": "Host",
     "roleAdmin": "Admin",
-    "loadError": "Unable to load users list"
+    "loadError": "Unable to load users list",
+    "deleteTitle": "Delete user",
+    "deleteMessage": "Delete {name} and all related data?",
+    "deleteWarning": "This action cannot be undone. Bookings, listings, tours, and related data will be permanently removed.",
+    "deleteSuccess": "User deleted successfully!",
+    "deleteError": "Unable to delete user"
   },
   "adminTransactions": {
     "title": "Recent transactions",
