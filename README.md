@@ -3,6 +3,7 @@ UiTour - WEBSITE QUẢNG BÁ DU LỊCH VÀ ĐẶT PHÒNG
 
 
 --CÀI ĐẶT VÀ CHẠY BACKEND--
+
 1.Clone repository
 
 2.Mở project trên IDE
@@ -16,6 +17,7 @@ UiTour - WEBSITE QUẢNG BÁ DU LỊCH VÀ ĐẶT PHÒNG
 6.Build và chạy ứng dụng
 
 --CÀI ĐẶT VÀ CHẠY FRONTEND--
+
 1.Clone repository
 
 2.Mở project trên IDE
