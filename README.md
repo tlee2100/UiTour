@@ -1,29 +1,53 @@
-# UiTour
-UiTour - WEBSITE QUẢNG BÁ DU LỊCH VÀ ĐẶT PHÒNG
+UiTour - Website Quảng Bá Du Lịch và Đặt Phòng
+UiTour là một nền tảng trực tuyến toàn diện kết nối người dùng với các dịch vụ lưu trú và trải nghiệm du lịch. Hệ thống hỗ trợ quản lý quy trình từ đăng tin, tìm kiếm, đặt chỗ cho đến thanh toán và đánh giá.
 
+📌 Tính năng chính
+Hệ thống được thiết kế với 3 tác nhân chính, mỗi tác nhân có bộ chức năng riêng biệt:
 
---CÀI ĐẶT VÀ CHẠY BACKEND--
+👤 Khách hàng (User)
+- Quản lý tài khoản: Đăng ký, đăng nhập và cập nhật hồ sơ cá nhân.
 
-1.Clone repository
+- Tìm kiếm thông minh: Tìm kiếm chỗ ở và tour theo vị trí, giá cả và thời gian.
 
-2.Mở project trên IDE
+- Đặt chỗ & Thanh toán: Đặt phòng/tour và thanh toán trực tuyến qua các phương thức hỗ trợ.
 
-3.Mở SQL Management Studio và execute file "script.sql"
+- Tương tác: Lưu yêu thích, viết đánh giá và gửi yêu cầu hỗ trợ.
 
-4.Nhập lệnh "dotnet user-secrets init" và set secrets theo appsettings.example.json
+🏠 Chủ nhà / Nhà cung cấp (Host)
+- Quản lý chỗ ở: Tạo mới, tải ảnh, quản lý tiện nghi và loại phòng.
 
-5.Nhập lệnh "dotnet run" trong terminal của thư mục chứa file "appsettings.json"
+- Quản lý Tour: Khởi tạo tour, thiết lập lịch trình chi tiết và giá cả.
 
-6.Build và chạy server
+- Vận hành: Cập nhật thông tin và theo dõi trạng thái bài đăng.
 
---CÀI ĐẶT VÀ CHẠY FRONTEND--
+🛡️ Quản trị viên (Admin)
+- Quản lý người dùng: Kiểm soát danh sách, khóa/mở khóa tài khoản vi phạm.
 
-1.Clone repository
+- Kiểm duyệt nội dung: Phê duyệt bài đăng mới, ẩn hoặc xóa các nội dung vi phạm.
 
-2.Mở project trên IDE
+- Xử lý phản hồi: Tiếp nhận báo cáo vi phạm, đánh giá mức độ và phản hồi cho các bên.
 
-3.Nhập lệnh "npm install" nếu đây là lần đầu chạy chương trình
+🛠 Công nghệ sử dụng
+- Backend: .NET (ASP.NET Core)
 
-4.Nhập lệnh "npm run dev" trong terminal của thư mục chứa file "package.json" 
+- Frontend: React/Vite (dựa trên cấu trúc npm)
 
-5.Build và chạy ứng dụng
+- Database: Microsoft SQL Server
+
+- Bảo mật: Mã hóa mật khẩu và dữ liệu thanh toán.
+⚙️ Hướng dẫn cài đặt
+1. Cài đặt và chạy Backend
+   
+Yêu cầu: .NET SDK và SQL Server Management Studio (SSMS).
+- Clone repository
+
+- Thiết lập cơ sở dữ liệu: Mở SQL Management Studio và thực thi file script.sql để tạo database.
+
+- Cấu hình Secrets: chạy lệnh "dotnet user-secrets init" và set secrets theo appsettings.example.json
+
+- Chạy ứng dụng: chạy "dotnet run"
+
+2. Cài đặt và chạy Frontend
+- Chạy lệnh "npm install" để cài đặt thư viện
+
+- Chạy lệnh "npm run dev"
