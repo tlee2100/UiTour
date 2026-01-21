@@ -35,6 +35,7 @@ Hệ thống được thiết kế với 3 tác nhân chính, mỗi tác nhân c
 - Database: Microsoft SQL Server
 
 - Bảo mật: Mã hóa mật khẩu và dữ liệu thanh toán.
+
 ⚙️ Hướng dẫn cài đặt
 1. Cài đặt và chạy Backend
    
