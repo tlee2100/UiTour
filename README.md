@@ -13,6 +13,8 @@ Hệ thống được thiết kế với 3 tác nhân chính, mỗi tác nhân c
 
 - Tương tác: Lưu yêu thích, viết đánh giá và gửi yêu cầu hỗ trợ.
 
+- Trợ giúp AI
+
 🏠 Chủ nhà / Nhà cung cấp (Host)
 - Quản lý chỗ ở: Tạo mới, tải ảnh, quản lý tiện nghi và loại phòng.
 
@@ -34,7 +36,9 @@ Hệ thống được thiết kế với 3 tác nhân chính, mỗi tác nhân c
 
 - Database: Microsoft SQL Server
 
-- Bảo mật: Mã hóa mật khẩu và dữ liệu thanh toán.
+- Bảo mật: Mã hóa mật khẩu bằng BCrypt và dữ liệu thanh toán. Authorization, Authentication: JWT 
+
+- Ollama: Tư vấn AI 
 
 ⚙️ Hướng dẫn cài đặt
 1. Cài đặt và chạy Backend
@@ -52,3 +56,8 @@ Yêu cầu: .NET SDK và SQL Server Management Studio (SSMS).
 - Chạy lệnh "npm install" để cài đặt thư viện
 
 - Chạy lệnh "npm run dev"
+
+3. Setup AI
+- Tải Ollama
+- Nhập lệnh "ollama run llama3"
+  
