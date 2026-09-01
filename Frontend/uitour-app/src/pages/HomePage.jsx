@@ -6,6 +6,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
 import UniversalSearchBar from '../components/search/UniversalSearchBar';
 import authAPI from '../services/authAPI';
+import { getImageUrl } from '../config/apiConfig';
 import { useApp } from '../contexts/AppContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -68,9 +69,7 @@ export default function HomePage() {
 
         const normalizeImageUrl = (url) => {
           if (!url || !url.trim()) return "/fallback.svg";
-          if (url.startsWith("http://") || url.startsWith("https://")) return url;
-          if (url.startsWith("/")) return `http://localhost:5069${url}`;
-          return `http://localhost:5069/${url}`;
+          return getImageUrl(url, "/fallback.svg");
         };
 
         const photos = p.photos || p.Photos || [];

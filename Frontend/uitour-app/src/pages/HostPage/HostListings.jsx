@@ -26,13 +26,8 @@ export default function HostListings() {
     // IMAGE HELPERS
     // ===========================
     const normalizeImageUrl = (url) => {
-        if (!url || typeof url !== "string") return null;
-
-        const trimmed = url.trim();
-        if (trimmed.startsWith("data:image")) return null;
-        if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
-        if (trimmed.startsWith("/")) return `http://localhost:5069${trimmed}`;
-        return `http://localhost:5069/${trimmed}`;
+        if (!url || !url.trim()) return "/fallback.svg";
+        return getImageUrl(url, "/fallback.svg");
     };
 
     const getFirstPhotoUrl = (item) => {

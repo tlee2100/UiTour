@@ -8,11 +8,9 @@ import EditableRow from "../../components/modals/EditableRow";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ErrorMessage from "../../components/ErrorMessage";
 import authAPI from "../../services/authAPI";
+import { API_BASE_URL } from "../../config/apiConfig";
 
-const API_BASE = "http://localhost:5069";
-
-
-
+const API_BASE = API_BASE_URL;
 
 export default function HostExperienceEdit() {
     const { id } = useParams();

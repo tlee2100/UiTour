@@ -7,7 +7,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { t } from "../../utils/translations";
 import { useLanguageCurrencyModal } from "../../contexts/LanguageCurrencyModalContext";
 import LanguageCurrencySelector from "../../components/LanguageCurrencySelector";
-import authAPI from "../../services/authAPI"; 
+import authAPI from "../../services/authAPI";
 // ⭐ NEW HEADER
 import HostHHeader from "../../components/headers/HostHHeader";
 
@@ -39,7 +39,7 @@ function formatTimeAgo(timestamp, language, tFn) {
         });
     }
 
-        if (diffMs < ONE_MINUTE) return tFn(language, "hostMessages.justNow");
+    if (diffMs < ONE_MINUTE) return tFn(language, "hostMessages.justNow");
 
     const mins = Math.floor(diffMs / ONE_MINUTE);
     const hours = Math.floor(diffMs / ONE_HOUR);
@@ -112,17 +112,8 @@ export default function HostMessages() {
 
 
     const normalizeImageUrl = (url) => {
-        if (!url || url.trim().length === 0) return null;
-        // If already a full URL (http/https), use as is
-        if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url.trim();
-        }
-        // If relative path starting with /, prepend backend base URL
-        if (url.startsWith('/')) {
-        return `http://localhost:5069${url}`;
-        }
-        // Otherwise, assume it's a relative path and prepend backend base URL
-        return `http://localhost:5069/${url}`;
+        if (!url || !url.trim()) return "/fallback.svg";
+        return getImageUrl(url, "/fallback.svg");
     };
     const currentUserId = user?.UserID || user?.id;
 
@@ -130,7 +121,7 @@ export default function HostMessages() {
         if (!hostEmail) return; // không có hostEmail thì bỏ qua effect này
 
         setNewChatEmail(hostEmail);
-        setShowNewChatBox(true);       
+        setShowNewChatBox(true);
         async function initChat() {
             try {
                 const found = await authAPI.getUserByEmail(hostEmail);
@@ -138,7 +129,7 @@ export default function HostMessages() {
                 if (found?.userID) {
                     const partnerId = found.userID;
                     const partnerName = found.fullName ?? found.email;
-                    
+
                     // Bước 2: Thiết lập cuộc trò chuyện tạm thời
                     // Việc thiết lập này sẽ làm cho box chat hiển thị (vì render dựa trên selectedConversation)
                     setSelectedConversation({
@@ -207,7 +198,7 @@ export default function HostMessages() {
                 toUserId: m.toUserID ?? m.ToUserID,
                 text: m.content ?? m.Content,
                 timestamp: m.sentAt ?? m.SentAt,
-                partnerAvatar: m.partnerAvatar ?? m.toUserAvatar ?? m.PartnerAvatar?? null,  
+                partnerAvatar: m.partnerAvatar ?? m.toUserAvatar ?? m.PartnerAvatar ?? null,
             }));
 
             setSelectedConversation({
@@ -256,24 +247,24 @@ export default function HostMessages() {
             setConversations((prev) =>
                 prev.some((c) => c.conversationId === selectedConversation.partnerId)
                     ? prev.map((c) =>
-                          c.conversationId === selectedConversation.partnerId
-                              ? {
-                                    ...c,
-                                    lastMessage: mappedMessage.text,
-                                    lastMessageAt: mappedMessage.timestamp,
-                                }
-                              : c
-                      )
+                        c.conversationId === selectedConversation.partnerId
+                            ? {
+                                ...c,
+                                lastMessage: mappedMessage.text,
+                                lastMessageAt: mappedMessage.timestamp,
+                            }
+                            : c
+                    )
                     : [
-                          {
-                              conversationId: selectedConversation.partnerId,
-                              partnerName: selectedConversation.partnerName,
-                              lastMessage: mappedMessage.text,
-                              lastMessageAt: mappedMessage.timestamp,
-                              unreadCount: 0,
-                          },
-                          ...prev,
-                      ]
+                        {
+                            conversationId: selectedConversation.partnerId,
+                            partnerName: selectedConversation.partnerName,
+                            lastMessage: mappedMessage.text,
+                            lastMessageAt: mappedMessage.timestamp,
+                            unreadCount: 0,
+                        },
+                        ...prev,
+                    ]
             );
 
             setMessageInput("");
@@ -287,7 +278,7 @@ export default function HostMessages() {
         conv.partnerName?.toLowerCase().includes(searchQuery.toLowerCase())
         //conv.propertyTitle.toLowerCase().includes(searchQuery.toLowerCase())
     );
-     // Click vào 1 conversation
+    // Click vào 1 conversation
     const handleSelectConversation = (conversation) => {
         const partner = {
             id: conversation.conversationId,
@@ -305,7 +296,7 @@ export default function HostMessages() {
         setIsCreatingChat(true);
         setNewChatError("");
         try {
-            
+
             const foundUser = await authAPI.getUserByEmail(newChatEmail.trim());
             if (!foundUser?.userID && !foundUser?.UserID) {
                 setNewChatError("User not found");
@@ -354,7 +345,7 @@ export default function HostMessages() {
         if (date.toDateString() === yesterday.toDateString()) return t(language, "hostMessages.yesterday");
         return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     };
-    
+
     return (
         <div className="host-messages">
             <div className="messages-container">
@@ -453,7 +444,7 @@ export default function HostMessages() {
                                             {/* <p className="conversation-property">{conv.propertyTitle}</p> */}
                                         </div>
                                     </div>
-                            );
+                                );
                             })
                         )}
                     </div>
@@ -467,12 +458,12 @@ export default function HostMessages() {
                                     <div className="thread-avatar">
                                         {selectedConversation.partnerAvatar ? (
                                             <img
-                                            src={normalizeImageUrl(selectedConversation.partnerAvatar)}
-                                            alt={selectedConversation.partnerName}
-                                            onError={(e) =>
+                                                src={normalizeImageUrl(selectedConversation.partnerAvatar)}
+                                                alt={selectedConversation.partnerName}
+                                                onError={(e) =>
                                                 (e.target.src =
-                                                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150")
-                                            }
+                                                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150")
+                                                }
                                             />
                                         ) : (
                                             <div className="avatar-placeholder">{selectedConversation.partnerName ? selectedConversation.partnerName.charAt(0) : "?"}</div>
@@ -491,7 +482,7 @@ export default function HostMessages() {
                                         const showDate =
                                             index === 0 ||
                                             formatMessageDate(msg.timestamp) !==
-                                                formatMessageDate(selectedConversation.messages[index - 1]?.timestamp);
+                                            formatMessageDate(selectedConversation.messages[index - 1]?.timestamp);
                                         return (
                                             <React.Fragment key={msg.id || index}>
                                                 {showDate && (

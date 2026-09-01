@@ -30,13 +30,8 @@ export default function HostToday() {
   const globeButtonRef = React.useRef(null);
 
   const normalizeImageUrl = (rawUrl) => {
-    if (!rawUrl || typeof rawUrl !== "string") return null;
-    const trimmed = rawUrl.trim();
-    if (!trimmed || trimmed.startsWith("data:image")) return null;
-    if (trimmed.startsWith("http://") || trimmed.startsWith("https://"))
-      return trimmed;
-    if (trimmed.startsWith("/")) return `http://localhost:5069${trimmed}`;
-    return `http://localhost:5069/${trimmed}`;
+    if (!url || !url.trim()) return "/fallback.svg";
+    return getImageUrl(url, "/fallback.svg");
   };
 
   const resolveHostIdentifier = (userData) => {
@@ -249,9 +244,9 @@ export default function HostToday() {
           const rating =
             reviews.length > 0
               ? reviews.reduce(
-                  (s, r) => s + (r.Rating || r.rating || 0),
-                  0
-                ) / reviews.length
+                (s, r) => s + (r.Rating || r.rating || 0),
+                0
+              ) / reviews.length
               : 0;
 
           const type = property ? "property" : "tour";

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using UITour.Models;
 using UITour.DAL;
 using UITour.DAL.Interfaces;
@@ -96,18 +96,22 @@ builder.Services.AddHttpClient<IMomoPaymentService, MomoPaymentService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddHttpClient<IChatbotService, ChatbotService>();
 
-// CORS for React dev servers
+// CORS configuration
 const string CorsPolicy = "CorsPolicy";
+var allowedOrigins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>() ?? new[]
+{
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://localhost:5173",
+    "https://localhost:3000"
+};
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(CorsPolicy, policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "https://localhost:5173",
-                "https://localhost:3000"
-            )
+        policy.WithOrigins(allowedOrigins)
+            .SetIsOriginAllowedToAllowWildcardSubdomains()
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -141,7 +145,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 
 app.UseRouting();

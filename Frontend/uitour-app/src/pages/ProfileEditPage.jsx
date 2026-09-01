@@ -6,6 +6,7 @@ import { useApp } from '../contexts/AppContext';
 import authAPI from '../services/authAPI';
 import { useLanguage } from '../contexts/LanguageContext';
 import { t } from '../utils/translations';
+import { getImageUrl } from '../config/apiConfig';
 
 export default function ProfileEditPage() {
   const { language } = useLanguage();
@@ -23,8 +24,7 @@ export default function ProfileEditPage() {
     if (!trimmed) return '';
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
     if (trimmed.startsWith('data:image')) return trimmed;
-    if (trimmed.startsWith('/')) return `http://localhost:5069${trimmed}`;
-    return `http://localhost:5069/${trimmed}`;
+    return getImageUrl(trimmed, '');
   };
 
   const normalizeToForm = (u = {}, p = null) => {
@@ -39,8 +39,8 @@ export default function ProfileEditPage() {
     const interestsArr = Array.isArray(interestsRaw)
       ? interestsRaw
       : (typeof interestsRaw === 'string'
-          ? interestsRaw.split(',').map(s => s.trim()).filter(Boolean)
-          : (Array.isArray(p?.interests) ? p.interests : []));
+        ? interestsRaw.split(',').map(s => s.trim()).filter(Boolean)
+        : (Array.isArray(p?.interests) ? p.interests : []));
 
     const ageRaw = u.age ?? u.Age;
     const ageValue = (typeof ageRaw === 'number' && ageRaw > 0) ? ageRaw : (p?.age ?? '');

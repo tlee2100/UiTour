@@ -1,15 +1,16 @@
 // Authentication API Service
 // Kết nối với backend API cho login và register
+import { API_BASE_URL as BASE_URL } from '../config/apiConfig';
 
-const API_BASE_URL = 'http://localhost:5069/api/user';
-const PROPERTY_BASE_URL = 'http://localhost:5069/api/properties';
-const TOUR_BASE_URL = 'http://localhost:5069/api/tour';
-const HOST_BASE_URL = 'http://localhost:5069/api/host';
-const WISHLIST_BASE_URL = 'http://localhost:5069/api/wishlist';
-const BOOKING_BASE_URL = 'http://localhost:5069/api/booking';
-const UPLOAD_BASE_URL = 'http://localhost:5069/api/upload';
-const PAYMENTS_BASE_URL = 'http://localhost:5069/api/payments';
-const MESSAGES_BASE_URL = 'http://localhost:5069/api/messages';
+const API_BASE_URL = `${BASE_URL}/api/user`;
+const PROPERTY_BASE_URL = `${BASE_URL}/api/properties`;
+const TOUR_BASE_URL = `${BASE_URL}/api/tour`;
+const HOST_BASE_URL = `${BASE_URL}/api/host`;
+const WISHLIST_BASE_URL = `${BASE_URL}/api/wishlist`;
+const BOOKING_BASE_URL = `${BASE_URL}/api/booking`;
+const UPLOAD_BASE_URL = `${BASE_URL}/api/upload`;
+const PAYMENTS_BASE_URL = `${BASE_URL}/api/payments`;
+const MESSAGES_BASE_URL = `${BASE_URL}/api/messages`;
 
 class AuthAPI {
    // Lấy thông tin user theo ID
@@ -698,7 +699,7 @@ async updateUserProfile(userId, form) {
     Interests: interestsValue,
   };
 
-  return await this._fetchJson(`http://localhost:5069/api/user/${userId}/profile`, {
+  return await this._fetchJson(`${API_BASE_URL}/${userId}/profile`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

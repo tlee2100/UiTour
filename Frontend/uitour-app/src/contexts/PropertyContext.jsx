@@ -314,7 +314,7 @@ export const PropertyProvider = ({ children }) => {
 
       // ✅ Gọi API thật từ backend thay vì mock data
       let list = [];
-      
+
       // Nếu có filters, gọi search API
       if (filters.location || filters.checkIn || filters.checkOut || filters.guests) {
         list = await authAPI.searchProperties(filters);
@@ -326,25 +326,14 @@ export const PropertyProvider = ({ children }) => {
       // Normalize dữ liệu từ backend giống như HomePage
       const normalizedList = list.map(p => {
         const reviews = Array.isArray(p.reviews) ? p.reviews : [];
-        const avgRating = reviews.length > 0 
-          ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviews.length 
+        const avgRating = reviews.length > 0
+          ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviews.length
           : 0;
 
         // Helper function to normalize image URL
         const normalizeImageUrl = (url) => {
-          if (!url || url.trim().length === 0) return "/fallback.svg";
-          // Skip base64 images (they might be truncated)
-          if (url.startsWith('data:image')) return "/fallback.svg";
-          // If already a full URL (http/https), use as is
-          if (url.startsWith('http://') || url.startsWith('https://')) {
-            return url.trim();
-          }
-          // If relative path starting with /, prepend backend base URL
-          if (url.startsWith('/')) {
-            return `http://localhost:5069${url}`;
-          }
-          // Otherwise, assume it's a relative path and prepend backend base URL
-          return `http://localhost:5069/${url}`;
+          if (!url || !url.trim()) return "/fallback.svg";
+          return getImageUrl(url, "/fallback.svg");
         };
 
         // Get first photo - check multiple possible field names and structures
@@ -364,13 +353,13 @@ export const PropertyProvider = ({ children }) => {
 
         if (firstPhoto) {
           // Try multiple possible URL field names (camelCase, PascalCase, etc.)
-          imageUrl = firstPhoto.url || 
-                     firstPhoto.Url || 
-                     firstPhoto.serverUrl || 
-                     firstPhoto.ServerUrl || 
-                     firstPhoto.imageUrl ||
-                     firstPhoto.ImageUrl ||
-                     "/fallback.svg";
+          imageUrl = firstPhoto.url ||
+            firstPhoto.Url ||
+            firstPhoto.serverUrl ||
+            firstPhoto.ServerUrl ||
+            firstPhoto.imageUrl ||
+            firstPhoto.ImageUrl ||
+            "/fallback.svg";
         }
 
         // Debug logging for missing photos

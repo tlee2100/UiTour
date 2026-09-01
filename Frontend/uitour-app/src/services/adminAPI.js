@@ -1,5 +1,7 @@
 // Admin API Service
-const API_BASE_URL = 'http://localhost:5069/api';
+import { API_BASE_URL as BASE_URL } from '../config/apiConfig';
+
+const API_BASE_URL = `${BASE_URL}/api`;
 
 class AdminAPI {
 

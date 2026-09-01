@@ -7,6 +7,7 @@ import React, {
   useCallback
 } from "react";
 import authAPI from "../services/authAPI";
+import { getImageUrl } from '../config/apiConfig';
 
 // -----------------------------
 // Initial State
@@ -243,10 +244,10 @@ export const ExperienceProvider = ({ children }) => {
 
         // Nếu bắt đầu bằng "/" → thêm host
         if (url.startsWith("/"))
-          return `http://localhost:5069${url}`;
+          return getImageUrl(url, '');
 
         // Nếu chỉ là tên file → thêm path đúng
-        return `http://localhost:5069/uploads/images/${url}`;
+        return getImageUrl(url, '/uploads/images/');
       };
 
 
@@ -401,17 +402,8 @@ export const ExperienceProvider = ({ children }) => {
 
       // Helper function to normalize image URL
       const normalizeImageUrl = (url) => {
-        if (!url || url.trim().length === 0) return null;
-        // If already a full URL (http/https), use as is
-        if (url.startsWith('http://') || url.startsWith('https://')) {
-          return url.trim();
-        }
-        // If relative path starting with /, prepend backend base URL
-        if (url.startsWith('/')) {
-          return `http://localhost:5069${url}`;
-        }
-        // Otherwise, assume it's a relative path and prepend backend base URL
-        return `http://localhost:5069/${url}`;
+        if (!url || !url.trim()) return "/fallback.svg";
+        return getImageUrl(url, "/fallback.svg");
       };
 
       const normalized = (tours || []).map(t => {

@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import "./InfoReview.css";
 import SvgIcon from "../../components/SvgIcon";
 import ButtonWhite from "../../components/ButtonWhite";
+import { getImageUrl } from "../../config/apiConfig";
 
 /* ---------------- HEADER ---------------- */
 const InfoReviewHeader = ({ rating, reviewsCount }) => {
   const safeRating = typeof rating === "number" ? rating : 0;
-  
+
   return (
     <div className="inforeview">
       <div className="ir-icon-text">
@@ -21,18 +22,9 @@ const InfoReviewHeader = ({ rating, reviewsCount }) => {
   );
 };
 const normalizeImageUrl = (url) => {
-    if (!url || url.trim().length === 0) return null;
-    // If already a full URL (http/https), use as is
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url.trim();
-    }
-    // If relative path starting with /, prepend backend base URL
-    if (url.startsWith('/')) {
-      return `http://localhost:5069${url}`;
-    }
-    // Otherwise, assume it's a relative path and prepend backend base URL
-    return `http://localhost:5069/${url}`;
-  };
+  if (!url || !url.trim()) return "/fallback.svg";
+  return getImageUrl(url, "/fallback.svg");
+};
 /* ---------------- REVIEW CARD ---------------- */
 const IrReviewCard = ({ review = {} }) => {
   const {
@@ -83,8 +75,8 @@ const IrReviewCard = ({ review = {} }) => {
             alt={userName}
             className="ir-review-avatar-img"
             onError={(e) =>
-              (e.target.src =
-                "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80")
+            (e.target.src =
+              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80")
             }
           />
         </div>
@@ -104,13 +96,13 @@ const IrReviewCard = ({ review = {} }) => {
           const starClass = `ir-review-star ${isFilled ? "filled" : "empty"}`;
           const starColor = isFilled ? "#222222" : "#d1d5db";
           const starOpacity = isFilled ? 1 : 0.5;
-          
+
           return (
             <div key={i} className={starClass} style={{ display: 'inline-flex' }}>
               <SvgIcon
                 name="review_star"
-                style={{ 
-                  fill: starColor, 
+                style={{
+                  fill: starColor,
                   color: starColor,
                   opacity: starOpacity,
                   width: '20px',

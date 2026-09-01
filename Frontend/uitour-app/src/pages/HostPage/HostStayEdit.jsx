@@ -8,6 +8,9 @@ import sampleImg from "../../assets/sample-room.jpg";
 import EditableRow from "../../components/modals/EditableRow";
 import SvgIcon from "../../components/SvgIcon"
 import authAPI from "../../services/authAPI";
+import { API_BASE_URL } from "../../config/apiConfig";
+
+const API_BASE = API_BASE_URL;
 
 const AMENITY_ICON_MAP = {
   1: "amen_wifi",
@@ -76,9 +79,6 @@ const HOUSE_RULE_LABEL_MAP = {
   pets_allowed: "Pets allowed",
 };
 
-
-const API_BASE = "http://localhost:5069"; // 🎯 ALWAYS backend URL
-
 export default function HostStayEdit() {
   const { id } = useParams();
   const { language } = useLanguage();
@@ -126,9 +126,9 @@ export default function HostStayEdit() {
     if (!raw || typeof raw !== "string") return "";
 
     if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
-    if (raw.startsWith("/")) return `http://localhost:5069${raw}`;
+    if (raw.startsWith("/")) return `${API_BASE}${raw}`;
 
-    return `http://localhost:5069/${raw}`;
+    return `${API_BASE}${raw}`;
   };
 
 
@@ -832,21 +832,21 @@ export default function HostStayEdit() {
 
             <div className="hs-modal-body">
               {activeField === "listingTitle" || activeField === "description" ? (
-              <input
-                type="text"
-                value={draftValue}
-                onChange={(e) => setDraftValue(e.target.value)}
-                className="hs-input"
-              />
-            ) : (
-              <input
-                type="number"
-                value={draftValue}
-                onChange={(e) => setDraftValue(Number(e.target.value))}
-                className="hs-input"
-              />
-            )}
-              </div>
+                <input
+                  type="text"
+                  value={draftValue}
+                  onChange={(e) => setDraftValue(e.target.value)}
+                  className="hs-input"
+                />
+              ) : (
+                <input
+                  type="number"
+                  value={draftValue}
+                  onChange={(e) => setDraftValue(Number(e.target.value))}
+                  className="hs-input"
+                />
+              )}
+            </div>
 
             <div className="hs-modal-footer">
               <button onClick={closeEditor}>{t(language, "hostEdit.stay.cancel")}</button>

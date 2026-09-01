@@ -3,20 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import './PropertyCard.css';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { getImageUrl } from '../../config/apiConfig';
 
 // Helper function to normalize image URL
 const normalizeImageUrl = (url) => {
   if (!url || url.trim().length === 0) return '/fallback.svg';
-  // If already a full URL (http/https), use as is
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
-  }
-  // If relative path starting with /, prepend backend base URL
-  if (url.startsWith('/')) {
-    return `http://localhost:5069${url}`;
-  }
-  // Otherwise, assume it's a relative path and prepend backend base URL
-  return `http://localhost:5069/${url}`;
+  return getImageUrl(url, '/fallback.svg');
 };
 
 export default function PropertyCard({ property }) {

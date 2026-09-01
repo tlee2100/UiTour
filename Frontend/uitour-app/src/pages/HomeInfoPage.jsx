@@ -17,48 +17,39 @@ import ErrorMessage from "../components/ErrorMessage";
 
 // Helper function to normalize image URL
 const normalizeImageUrl = (url) => {
-    if (!url || url.trim().length === 0) return null;
-    // If already a full URL (http/https), use as is
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url.trim();
-    }
-    // If relative path starting with /, prepend backend base URL
-    if (url.startsWith('/')) {
-      return `http://localhost:5069${url}`;
-    }
-    // Otherwise, assume it's a relative path and prepend backend base URL
-    return `http://localhost:5069/${url}`;
+  if (!url || !url.trim()) return "/fallback.svg";
+  return getImageUrl(url, "/fallback.svg");
 };
 // ✅ Normalize function để chuyển đổi dữ liệu từ backend sang format mà component cần
 const normalizeProperty = (p) => {
-    // Tính rating từ reviews
+  // Tính rating từ reviews
   const reviews = Array.isArray(p.reviews) ? p.reviews : [];
-  const rating = reviews.length > 0 
-    ? reviews.reduce((sum, r) => sum + (r.rating || r.Rating || 0), 0) / reviews.length 
+  const rating = reviews.length > 0
+    ? reviews.reduce((sum, r) => sum + (r.rating || r.Rating || 0), 0) / reviews.length
     : 0;
   const reviewsCount = reviews.length;
 
-  
-  
+
+
 
   // Xử lý photos - filter ra các URL không hợp lệ (base64 bị cắt, empty, etc.)
-  const photos = Array.isArray(p.photos) 
+  const photos = Array.isArray(p.photos)
     ? p.photos
-        .map(photo => {
-          const rawUrl = photo.url || photo.Url || "";
-          // Bỏ qua photos không có URL hoặc có base64 URL (có thể bị cắt)
-          if (!rawUrl || rawUrl.trim().length === 0 || rawUrl.startsWith('data:image')) {
-            return null;
-          }
-          const normalizedUrl = normalizeImageUrl(rawUrl);
-          if (!normalizedUrl) return null;
-          return {
-            url: normalizedUrl,
-            alt: photo.caption || photo.Caption || "Photo",
-            caption: photo.caption || photo.Caption || ""
-          };
-        })
-        .filter(photo => photo !== null)
+      .map(photo => {
+        const rawUrl = photo.url || photo.Url || "";
+        // Bỏ qua photos không có URL hoặc có base64 URL (có thể bị cắt)
+        if (!rawUrl || rawUrl.trim().length === 0 || rawUrl.startsWith('data:image')) {
+          return null;
+        }
+        const normalizedUrl = normalizeImageUrl(rawUrl);
+        if (!normalizedUrl) return null;
+        return {
+          url: normalizedUrl,
+          alt: photo.caption || photo.Caption || "Photo",
+          caption: photo.caption || photo.Caption || ""
+        };
+      })
+      .filter(photo => photo !== null)
     : [];
 
   // Xử lý location
@@ -79,7 +70,7 @@ const normalizeProperty = (p) => {
         const amenity = pa.amenity || pa.Amenity || pa;
         const amenityID = amenity?.amenityID || amenity?.AmenityID || pa.amenityID || pa.AmenityID;
         const amenityName = amenity?.amenityName || amenity?.AmenityName || amenity?.name || amenity?.Name || pa.name || pa.Name || "";
-        
+
         // Map amenity name to icon (normalize name to lowercase and match with available icons)
         const iconMap = {
           "wifi": "wifi",
@@ -113,10 +104,10 @@ const normalizeProperty = (p) => {
           "smoke alarm": "smoke_alarm",
           "smoke detector": "smoke_alarm"
         };
-        
+
         const nameLower = amenityName.toLowerCase().trim();
         const icon = iconMap[nameLower] || nameLower.replace(/\s+/g, "_");
-        
+
         return {
           id: amenityID,
           name: amenityName,
@@ -124,13 +115,13 @@ const normalizeProperty = (p) => {
         };
       });
     }
-    
+
     // Try direct amenities array (if backend returns it directly)
     if (Array.isArray(p.amenities)) {
       return p.amenities.map(a => {
         const amenityID = a.amenityID || a.AmenityID || a.id || a.ID;
         const amenityName = a.amenityName || a.AmenityName || a.name || a.Name || "";
-        
+
         const iconMap = {
           "wifi": "wifi",
           "air conditioning": "ac",
@@ -163,10 +154,10 @@ const normalizeProperty = (p) => {
           "smoke alarm": "smoke_alarm",
           "smoke detector": "smoke_alarm"
         };
-        
+
         const nameLower = amenityName.toLowerCase().trim();
         const icon = iconMap[nameLower] || nameLower.replace(/\s+/g, "_");
-        
+
         return {
           id: amenityID,
           name: amenityName,
@@ -174,7 +165,7 @@ const normalizeProperty = (p) => {
         };
       });
     }
-    
+
     return [];
   })();
 
@@ -191,19 +182,19 @@ const normalizeProperty = (p) => {
   // ✅ Xử lý host với đầy đủ thông tin từ database
   const hostData = p.host || p.Host;
   const rawHostAvatar =
-  hostData.user?.avatar ||
-  hostData.user?.Avatar ||
-  hostData.User?.avatar ||
-  hostData.User?.Avatar ||
-  "";
-  
+    hostData.user?.avatar ||
+    hostData.user?.Avatar ||
+    hostData.User?.avatar ||
+    hostData.User?.Avatar ||
+    "";
+
 
   const host = hostData ? {
     id: hostData.hostID || hostData.hostId || hostData.HostID || hostData.HostId,
     name: hostData.user?.fullName || hostData.user?.FullName || hostData.User?.fullName || hostData.User?.FullName || "Host",
     avatar:
-    normalizeImageUrl(rawHostAvatar) ||
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+      normalizeImageUrl(rawHostAvatar) ||
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     isSuperhost: hostData.isSuperHost !== undefined ? hostData.isSuperHost : (hostData.IsSuperHost !== undefined ? hostData.IsSuperHost : false),
     joinedDate: hostData.hostSince || hostData.HostSince || hostData.hostSince || hostData.HostSince,
     about: hostData.hostAbout || hostData.HostAbout || "",
@@ -253,63 +244,63 @@ const normalizeProperty = (p) => {
     p.hostId ||
     p.HostId ||
     null;
-  
+
   // ---------- HOUSE RULES ----------
-    let parsedHouseRules = [];
-    if (typeof p.houseRules === "string") {
-      try {
-        parsedHouseRules = JSON.parse(p.houseRules);
-      } catch (e) {
-        parsedHouseRules = [];
-      }
-    } else if (Array.isArray(p.houseRules)) {
-      parsedHouseRules = p.houseRules;
+  let parsedHouseRules = [];
+  if (typeof p.houseRules === "string") {
+    try {
+      parsedHouseRules = JSON.parse(p.houseRules);
+    } catch (e) {
+      parsedHouseRules = [];
     }
+  } else if (Array.isArray(p.houseRules)) {
+    parsedHouseRules = p.houseRules;
+  }
 
-    // ---------- HEALTH & SAFETY ----------
-    const healthAndSafety = {
-      covidSafety:
-        p.covidSafety === true || p.covidSafety === 1 || p.covidSafety === "true",
-      surfacesSanitized:
-        p.surfacesSanitized === true ||
-        p.surfacesSanitized === 1 ||
-        p.surfacesSanitized === "true",
-      carbonMonoxideAlarm:
-        p.carbonMonoxideAlarm === true ||
-        p.carbonMonoxideAlarm === 1 ||
-        p.carbonMonoxideAlarm === "true",
-      smokeAlarm:
-        p.smokeAlarm === true ||
-        p.smokeAlarm === 1 ||
-        p.smokeAlarm === "true",
-    };
+  // ---------- HEALTH & SAFETY ----------
+  const healthAndSafety = {
+    covidSafety:
+      p.covidSafety === true || p.covidSafety === 1 || p.covidSafety === "true",
+    surfacesSanitized:
+      p.surfacesSanitized === true ||
+      p.surfacesSanitized === 1 ||
+      p.surfacesSanitized === "true",
+    carbonMonoxideAlarm:
+      p.carbonMonoxideAlarm === true ||
+      p.carbonMonoxideAlarm === 1 ||
+      p.carbonMonoxideAlarm === "true",
+    smokeAlarm:
+      p.smokeAlarm === true ||
+      p.smokeAlarm === 1 ||
+      p.smokeAlarm === "true",
+  };
 
-    // ---------- RULE FLAGS ----------
-    const rules = {
-      noSmoking: p.no_smoking === true || p.no_smoking === 1 || p.no_smoking === "true",
-      noOpenFlames:
-        p.no_open_flames === true ||
-        p.no_open_flames === 1 ||
-        p.no_open_flames === "true",
-      petsAllowed:
-        p.pets_allowed === true ||
-        p.pets_allowed === 1 ||
-        p.pets_allowed === "true",
-    };
+  // ---------- RULE FLAGS ----------
+  const rules = {
+    noSmoking: p.no_smoking === true || p.no_smoking === 1 || p.no_smoking === "true",
+    noOpenFlames:
+      p.no_open_flames === true ||
+      p.no_open_flames === 1 ||
+      p.no_open_flames === "true",
+    petsAllowed:
+      p.pets_allowed === true ||
+      p.pets_allowed === 1 ||
+      p.pets_allowed === "true",
+  };
   const cancellationPolicy = p.cancellationPolicy
-  ? {
+    ? {
       id: p.cancellationPolicy.cancellationID || p.cancellationPolicy.CancellationID || null,
       name: p.cancellationPolicy.policyName || p.cancellationPolicy.PolicyName || "",
       description: p.cancellationPolicy.description || p.cancellationPolicy.Description || ""
     }
-  : null;
+    : null;
   return {
     id: p.propertyID || p.id,
     listingTitle: p.listingTitle || p.ListingTitle || "Untitled",
     title: p.listingTitle || p.ListingTitle || "Untitled",
     description: p.description || p.Description || "",
     summary: p.summary || p.Summary || "",
-    
+
     location: locationString,
     locationObj: locationObj,
     latitude: parseFloat(p.lat) || null,
@@ -353,17 +344,17 @@ const normalizeProperty = (p) => {
     highlights: (() => {
       const highlightsArray = [];
       const summary = p.summary || p.Summary || "";
-      
+
       // Đọc các thuộc tính boolean từ database
       const enhancedClean = p.enhancedClean === true || p.enhancedClean === "true" || p.enhancedClean === 1;
       const selfCheckIn = p.selfCheckIn === true || p.selfCheckIn === "true" || p.selfCheckIn === 1;
       const freeCancellation = p.freeCancellation === true || p.freeCancellation === "true" || p.freeCancellation === 1;
-       const roomTypeName =
+      const roomTypeName =
         (p.roomType && typeof p.roomType === "object" && (p.roomType.name || p.roomType.Name)) ||
         p.RoomType?.name ||
         (typeof p.roomType === "string" ? p.roomType : "") ||
         "";
-      
+
       // ✅ Nếu có summary, thêm nó như highlight chính
       // Summary có thể là text mô tả ngắn về property
       if (summary && summary.trim()) {
@@ -405,7 +396,7 @@ const normalizeProperty = (p) => {
           roomTypeLower.includes("whole") ||
           roomTypeLower.includes("private")
         ) {
-          
+
           highlightsArray.push({
             id: "entire_place",
             label: roomTypeName.toString()
@@ -420,7 +411,7 @@ const normalizeProperty = (p) => {
     })(),
 
     // Rules
-    
+
     houseRules: parsedHouseRules,
     rules: rules,
     healthAndSafety: healthAndSafety,
@@ -454,8 +445,8 @@ const normalizeProperty = (p) => {
 
       // Parse và normalize rating (đảm bảo là number và trong khoảng 0-5)
       const rawRating = r.rating ?? r.Rating ?? 0;
-      const numRating = typeof rawRating === 'number' 
-        ? rawRating 
+      const numRating = typeof rawRating === 'number'
+        ? rawRating
         : parseFloat(rawRating) || 0;
       const normalizedRating = Math.min(5, Math.max(0, numRating));
 
@@ -474,7 +465,7 @@ const normalizeProperty = (p) => {
       };
     }),
 
-    
+
     // Booking
     checkIn: p.checkin_after || p.checkin_after || null,
     checkOut: null,
@@ -485,7 +476,7 @@ const normalizeProperty = (p) => {
     createdAt: p.createdAt || p.CreatedAt,
     updatedAt: p.updatedAt || p.UpdatedAt
   };
-  
+
 };
 
 export default function HomeInfoPage() {
@@ -519,7 +510,7 @@ export default function HomeInfoPage() {
     setError(null);
     try {
       const property = await authAPI.getPropertyById(propertyId); // ✅ gọi authAPI
-      
+
       // Debug: Log raw property from backend
       console.log("🔍 Raw property from backend:", {
         propertyID: property?.propertyID || property?.PropertyID,
@@ -530,9 +521,9 @@ export default function HomeInfoPage() {
         discountPercentage: property?.discountPercentage || property?.DiscountPercentage,
         rawProperty: property
       });
-      
+
       const normalized = normalizeProperty(property); // ✅ normalize dữ liệu
-      
+
       // Debug: Log normalized property
       console.log("🔍 Normalized property:", {
         cleaningFee: normalized.cleaningFee,
@@ -541,7 +532,7 @@ export default function HomeInfoPage() {
         extraGuestFee: normalized.extraGuestFee,
         discountPercentage: normalized.discountPercentage
       });
-      
+
       setCurrentProperty(normalized);
     } catch (err) {
       console.error("Error loading property:", err);
@@ -610,7 +601,7 @@ export default function HomeInfoPage() {
     };
 
     if (navigator.share) {
-      navigator.share(shareData).catch(() => {});
+      navigator.share(shareData).catch(() => { });
     } else if (navigator.clipboard) {
       navigator.clipboard
         .writeText(shareData.url)
@@ -706,7 +697,7 @@ export default function HomeInfoPage() {
     setBookingLoading(true);
     try {
       const createdBooking = await authAPI.createBooking(payload);
-      
+
       // Add breakdown data to bookingData for PaymentPage
       const bookingWithBreakdown = {
         ...createdBooking,
@@ -717,7 +708,7 @@ export default function HomeInfoPage() {
         nights: breakdown.nights,
         guests: breakdown.guests
       };
-      
+
       // Navigate to payment page with booking data including breakdown
       navigate("/payment", {
         state: {
@@ -725,7 +716,7 @@ export default function HomeInfoPage() {
           propertyData: currentProperty,
           bookingType: "property"
         }
-        
+
       });
     } catch (err) {
       setBookingFeedback({
@@ -838,7 +829,7 @@ export default function HomeInfoPage() {
         {/* ✅ Main layout */}
         <div className="homeinfo-main">
           <div className="homeinfo-left">
-            <Content 
+            <Content
               property={p}
               checkInDate={bookingState.checkIn}
               checkOutDate={bookingState.checkOut}
@@ -863,10 +854,10 @@ export default function HomeInfoPage() {
         </div>
 
         <div className="homeif-divider" />
-        
+
         {/* Reviews */}
         <InfoReview
-        
+
           rating={p.rating}
           reviewsCount={p.reviewsCount}
           reviews={p.reviews}

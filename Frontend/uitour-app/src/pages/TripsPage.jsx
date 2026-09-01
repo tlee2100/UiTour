@@ -9,6 +9,7 @@ import { useToast } from '../hooks/useToast';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { t } from '../utils/translations';
+import { getImageUrl } from '../config/apiConfig';
 
 import './TripsPage.css';
 
@@ -62,11 +63,11 @@ export default function TripsPage() {
 
     // If it's a relative path (starts with /), add base URL
     if (trimmedUrl.startsWith('/')) {
-      return `http://localhost:5069${trimmedUrl}`;
+      return getImageUrl(trimmedUrl);
     }
 
     // If it doesn't start with /, add / and base URL
-    return `http://localhost:5069/${trimmedUrl}`;
+    return getImageUrl(trimmedUrl);
   }, []);
 
   // Helper function to get first photo URL from property/tour

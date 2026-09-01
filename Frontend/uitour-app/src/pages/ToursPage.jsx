@@ -11,6 +11,7 @@ import TourTimeFilter from "../components/toursFilters/TourTimeFilter";
 import TourPriceFilter from "../components/toursFilters/TourPriceFilter";
 import { useApp } from "../contexts/AppContext";
 import authAPI from "../services/authAPI";
+import { getImageUrl } from '../config/apiConfig';
 import { useCurrency } from "../contexts/CurrencyContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { t } from "../utils/translations";
@@ -372,9 +373,7 @@ export default function ToursPage() {
                   if (!url || url.trim().length === 0) return "/fallback.svg";
                   if (url.startsWith("http://") || url.startsWith("https://"))
                     return url.trim();
-                  if (url.startsWith("/"))
-                    return `http://localhost:5069${url}`;
-                  return `http://localhost:5069/${url}`;
+                  return getImageUrl(url, "/fallback.svg");
                 };
 
                 const imageUrl = tour.image?.url || tour.image || "/fallback.svg";

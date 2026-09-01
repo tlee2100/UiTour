@@ -20,7 +20,7 @@ export default function ExpAboutSection({
   onShare,
 }) {
   const { convertToCurrent, format } = useCurrency();
-  
+
   // ✅ Chuẩn hóa location
   const formattedLocation = typeof location === "string"
     ? location
@@ -36,17 +36,8 @@ export default function ExpAboutSection({
   const finalPrice = convertToCurrent(finalPriceUSD);
   // Helper function to normalize image URL
   const normalizeImageUrl = (url) => {
-      if (!url || url.trim().length === 0) return null;
-      // If already a full URL (http/https), use as is
-      if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url.trim();
-      }
-      // If relative path starting with /, prepend backend base URL
-      if (url.startsWith('/')) {
-        return `http://localhost:5069${url}`;
-      }
-      // Otherwise, assume it's a relative path and prepend backend base URL
-      return `http://localhost:5069/${url}`;
+    if (!url || !url.trim()) return "/fallback.svg";
+    return getImageUrl(url, "/fallback.svg");
   };
   // ✅ Host safe data
   const safeHost = host || {};
@@ -115,8 +106,8 @@ export default function ExpAboutSection({
             className="expAbout-hostAvatar"
             alt={safeHostName}
             onError={(e) =>
-              (e.target.src =
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150")
+            (e.target.src =
+              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150")
             }
           />
           <div className="expAbout-hostBox">

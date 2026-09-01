@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { t } from '../utils/translations';
+import { getImageUrl } from '../config/apiConfig';
 
 export default function ProfilePage() {
   const { language } = useLanguage();
@@ -109,8 +110,8 @@ export default function ProfilePage() {
         const interestsCtx = Array.isArray(interestsRaw)
           ? interestsRaw
           : (typeof interestsRaw === 'string'
-              ? interestsRaw.split(',').map(s => s.trim()).filter(Boolean)
-              : []);
+            ? interestsRaw.split(',').map(s => s.trim()).filter(Boolean)
+            : []);
         dispatch({
           type: 'SET_PROFILE',
           payload: {
@@ -144,8 +145,8 @@ export default function ProfilePage() {
         // Update trip count in AppContext - only count confirmed bookings (matching AppContext logic)
         const confirmed = Array.isArray(bookings)
           ? bookings.filter(
-              (b) => (b.Status || b.status || '').toLowerCase() === 'confirmed'
-            )
+            (b) => (b.Status || b.status || '').toLowerCase() === 'confirmed'
+          )
           : [];
         dispatch({ type: 'SET_TRIP_COUNT', payload: confirmed.length });
       } catch (err) {
@@ -169,25 +170,24 @@ export default function ProfilePage() {
   const email = userData?.email ?? userData?.Email ?? '';
   const about = userData?.userAbout ?? userData?.about ?? '';
   const roleRaw = userData?.role ?? userData?.Role ?? 'Guest';
-  const roleLabel = roleRaw === 'Host' 
-    ? t(language, 'profile.host') 
-    : roleRaw === 'Admin' 
-    ? t(language, 'profile.admin') 
-    : t(language, 'profile.guest');
+  const roleLabel = roleRaw === 'Host'
+    ? t(language, 'profile.host')
+    : roleRaw === 'Admin'
+      ? t(language, 'profile.admin')
+      : t(language, 'profile.guest');
   const age = userData?.age ?? '';
   const gender = userData?.gender ?? '';
   const nationality = userData?.nationality ?? '';
   const normalizeImageUrl = (rawUrl) => {
-      if (!rawUrl || typeof rawUrl !== "string") return "";
-      const trimmed = rawUrl.trim();
-      if (!trimmed) return "";
-      if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
-      if (trimmed.startsWith("/")) return `http://localhost:5069${trimmed}`;
-      return `http://localhost:5069/${trimmed}`;
-    };
+    if (!rawUrl || typeof rawUrl !== "string") return "";
+    const trimmed = rawUrl.trim();
+    if (!trimmed) return "";
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+    return getImageUrl(trimmed, "");
+  };
 
   const avatarUrlRaw =
-  userData?.Avatar ?? userData?.avatar ?? userData?.profilePicture ?? userData?.avatarUrl ?? "";
+    userData?.Avatar ?? userData?.avatar ?? userData?.profilePicture ?? userData?.avatarUrl ?? "";
 
   const avatarUrl = normalizeImageUrl(avatarUrlRaw);
 
@@ -196,8 +196,8 @@ export default function ProfilePage() {
   const interests = Array.isArray(interestsRaw)
     ? interestsRaw
     : (typeof interestsRaw === 'string'
-        ? interestsRaw.split(',').map(s => s.trim()).filter(Boolean)
-        : []);
+      ? interestsRaw.split(',').map(s => s.trim()).filter(Boolean)
+      : []);
 
   const initial = useMemo(
     () => (displayName?.trim()?.charAt(0) || 'U').toUpperCase(),
@@ -368,8 +368,8 @@ export default function ProfilePage() {
                   const detailLink = propertyInfo
                     ? `/property/${propertyInfo.PropertyID || propertyInfo.id || trip.propertyID || trip.PropertyID}`
                     : tourInfo
-                    ? `/experience/${tourInfo.tourID || tourInfo.id || trip.tourID || trip.TourID}`
-                    : null;
+                      ? `/experience/${tourInfo.tourID || tourInfo.id || trip.tourID || trip.TourID}`
+                      : null;
 
                   const checkIn = trip.checkIn || trip.CheckIn;
                   const checkOut = trip.checkOut || trip.CheckOut;
@@ -384,8 +384,8 @@ export default function ProfilePage() {
                       className="profile-trip-card"
                     >
                       <div className="trip-thumb">
-                        <img 
-                          src={coverImage} 
+                        <img
+                          src={coverImage}
                           alt={title}
                           onError={(e) => {
                             e.currentTarget.src = '/fallback.svg';

@@ -6,17 +6,8 @@ export default function InfoHost({ host }) {
   // ✅ Chắc chắn host luôn là object
   const safeHost = host || {};
   const normalizeImageUrl = (url) => {
-    if (!url || url.trim().length === 0) return null;
-    // If already a full URL (http/https), use as is
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url.trim();
-    }
-    // If relative path starting with /, prepend backend base URL
-    if (url.startsWith('/')) {
-      return `http://localhost:5069${url}`;
-    }
-    // Otherwise, assume it's a relative path and prepend backend base URL
-    return `http://localhost:5069/${url}`;
+    if (!url || !url.trim()) return "/fallback.svg";
+    return getImageUrl(url, "/fallback.svg");
   };
   const safeAvatar =
     normalizeImageUrl(safeHost.avatar) ||
@@ -73,7 +64,7 @@ export default function InfoHost({ host }) {
               src={safeAvatar}
               alt={`${name || "Host"} Avatar`}
               className="ih-avatar-img"
-              onError={(e) => (e.target.src = 
+              onError={(e) => (e.target.src =
                 "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
               )}
             />
