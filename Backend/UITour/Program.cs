@@ -18,6 +18,7 @@ builder.Services.AddControllersWithViews();
 var connectionString = builder.Configuration.GetConnectionString("MyDB");
 
 builder.Services.Configure<MomoSettings>(builder.Configuration.GetSection("MomoSettings"));
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 // Đăng ký DbContext với DI
 builder.Services.AddDbContext<UITourContext>(options =>
@@ -92,6 +93,7 @@ builder.Services.AddScoped<INeighbourhoodService, NeighbourhoodService>();
 builder.Services.AddScoped<ITourService, TourService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddHttpClient<IMomoPaymentService, MomoPaymentService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddHttpClient<IChatbotService, ChatbotService>();

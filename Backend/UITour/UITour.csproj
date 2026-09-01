@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -37,6 +37,9 @@
     
     <!-- Email Service -->
     <PackageReference Include="MailKit" Version="4.3.0" />
+    
+    <!-- Cloudinary for Media Storage -->
+    <PackageReference Include="CloudinaryDotNet" Version="1.26.2" />
   </ItemGroup>
 
 </Project>

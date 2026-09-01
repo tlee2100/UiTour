@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using UITour.ServicesL.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace UITour.Controllers
 {
@@ -11,12 +15,12 @@ namespace UITour.Controllers
     [Route("api/[controller]")]
     public class UploadController : ControllerBase
     {
-        private readonly IWebHostEnvironment _environment;
+        private readonly IPhotoService _photoService;
         private readonly ILogger<UploadController> _logger;
 
-        public UploadController(IWebHostEnvironment environment, ILogger<UploadController> logger)
+        public UploadController(IPhotoService photoService, ILogger<UploadController> logger)
         {
-            _environment = environment;
+            _photoService = photoService;
             _logger = logger;
         }
 
@@ -40,28 +44,20 @@ namespace UITour.Controllers
 
             try
             {
-                // Create uploads directory if it doesn't exist
-                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "images");
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
+                var result = await _photoService.AddPhotoAsync(file);
 
-                // Generate unique filename
-                var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                // Save file
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                if (result.Error != null)
                 {
-                    await file.CopyToAsync(stream);
+                    _logger.LogError("Cloudinary upload failed: {Error}", result.Error.Message);
+                    return BadRequest(new { error = result.Error.Message });
                 }
 
-                // Return URL path (relative to wwwroot)
-                var url = $"/uploads/images/{uniqueFileName}";
-                return Ok(new { url, fileName = uniqueFileName });
+                var url = result.SecureUrl?.AbsoluteUri ?? result.Url?.AbsoluteUri;
+                return Ok(new { url, publicId = result.PublicId, fileName = file.FileName });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error uploading image");
+                _logger.LogError(ex, "Error uploading image to Cloudinary");
                 return StatusCode(500, new { error = "Failed to upload image" });
             }
         }
@@ -76,10 +72,6 @@ namespace UITour.Controllers
                 return BadRequest(new { error = "No files uploaded" });
 
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "images");
-            if (!Directory.Exists(uploadsFolder))
-                Directory.CreateDirectory(uploadsFolder);
-
             var uploadedFiles = new List<object>();
 
             foreach (var file in files)
@@ -95,16 +87,16 @@ namespace UITour.Controllers
 
                 try
                 {
-                    var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    var result = await _photoService.AddPhotoAsync(file);
 
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    if (result.Error != null)
                     {
-                        await file.CopyToAsync(stream);
+                        _logger.LogError("Cloudinary upload failed for file {FileName}: {Error}", file.FileName, result.Error.Message);
+                        continue;
                     }
 
-                    var url = $"/uploads/images/{uniqueFileName}";
-                    uploadedFiles.Add(new { url, fileName = uniqueFileName });
+                    var url = result.SecureUrl?.AbsoluteUri ?? result.Url?.AbsoluteUri;
+                    uploadedFiles.Add(new { url, publicId = result.PublicId, fileName = file.FileName });
                 }
                 catch (Exception ex)
                 {
@@ -114,6 +106,31 @@ namespace UITour.Controllers
 
             return Ok(new { files = uploadedFiles });
         }
+
+        // DELETE: api/upload/image/{publicId}
+        [HttpDelete("image/{publicId}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteImage(string publicId)
+        {
+            if (string.IsNullOrWhiteSpace(publicId))
+                return BadRequest(new { error = "PublicId is required" });
+
+            try
+            {
+                var result = await _photoService.DeletePhotoAsync(publicId);
+                if (result.Error != null)
+                {
+                    _logger.LogError("Cloudinary delete failed: {Error}", result.Error.Message);
+                    return BadRequest(new { error = result.Error.Message });
+                }
+
+                return Ok(new { message = "Image deleted successfully", result = result.Result });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting image from Cloudinary");
+                return StatusCode(500, new { error = "Failed to delete image" });
+            }
+        }
     }
 }
-
